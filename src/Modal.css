@@ -1,5 +1,6 @@
 .Modal-overlay {
-    position: none;
+    position: fixed;
+    /* z-index: 1; */
     top: 0;
     left: 0;
     width: 100%;
@@ -18,7 +19,7 @@
     background-color: #242424;
     overflow: auto;
     border-radius: 10px;
-    display: none;
+    display: block;
 }
 
 .Modal-close {

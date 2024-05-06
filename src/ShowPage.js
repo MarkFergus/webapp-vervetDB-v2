@@ -15,11 +15,13 @@ class ShowPage extends Component {
             sortNameAscending: true,
             sortTroopAscending: false,
             sortYearAscending: false,
-            showModal: false,
+            isModalOpen: false,
+            selectedMonkey: null,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
+        this.toggleModal = this.toggleModal.bind(this);
     }
     sortByName() {
         if (!this.state.sortNameAscending) {
@@ -80,12 +82,23 @@ class ShowPage extends Component {
             });
         }
     }
+    toggleModal(m) {
+        this.setState((st) => ({
+            isModalOpen: !st.isModalOpen,
+            selectedMonkey: m || null,
+        }));
+    }
     render() {
         let monkeys = this.state.monkeys;
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
-                    <Modal />
+                    {this.state.isModalOpen && (
+                        <Modal
+                            toggleModal={this.toggleModal}
+                            monkey={this.state.selectedMonkey}
+                        />
+                    )}
                 </div>
                 <div className="ShowPage-nav">
                     <Nav />
@@ -107,14 +120,16 @@ class ShowPage extends Component {
                 </div>
                 <div className="ShowPage-monkeys">
                     {monkeys.map((m) => (
-                        <MonkeyCard
-                            key={m.name}
-                            name={m.name}
-                            sex={m.sex}
-                            year={m.year}
-                            troop={m.troop}
-                            img={m.img}
-                        />
+                        <div onClick={() => this.toggleModal(m)}>
+                            <MonkeyCard
+                                key={m.name}
+                                name={m.name}
+                                sex={m.sex}
+                                year={m.year}
+                                troop={m.troop}
+                                img={m.img}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

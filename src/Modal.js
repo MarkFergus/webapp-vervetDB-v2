@@ -5,17 +5,17 @@ import "./Modal.css";
 class Modal extends Component {
     constructor(props) {
         super(props);
-        this.closeModal = this.closeModal.bind(this);
+        this.toggleModal = this.toggleModal.bind(this);
     }
-    closeModal() {
-        console.log("close clicked");
+    toggleModal() {
+        this.props.toggleModal();
     }
     render() {
         return (
             <div className="Modal">
-                <div className="Modal-overlay" onClick={this.closeModal}></div>
+                <div className="Modal-overlay" onClick={this.toggleModal}></div>
                 <div className="Modal-window">
-                    <div className="Modal-close" onClick={this.closeModal}>
+                    <div className="Modal-close" onClick={this.toggleModal}>
                         <IconSquareRoundedX />
                     </div>
                     <div className="Modal-content">
