@@ -190,7 +190,7 @@ const monkeysArr = [
     },
     {
         name: "Trixi",
-        troop: "SSAV",
+        troop: "SAAV",
         sex: "female",
         year: 2023,
         img: "https://i.ibb.co/t4B6Brv/trixi-saav-apr2024.jpg",
