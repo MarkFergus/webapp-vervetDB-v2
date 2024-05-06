@@ -1,0 +1,34 @@
+.Modal-overlay {
+    position: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: block;
+}
+
+.Modal-window {
+    position: fixed;
+    z-index: 1;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    background-color: #242424;
+    overflow: auto;
+    border-radius: 10px;
+    display: none;
+}
+
+.Modal-close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+    color: rgb(192, 191, 191);
+}
+
+.Modal-close:hover {
+    color: white;
+}

@@ -2,6 +2,7 @@ import { Component } from "react";
 import { IconArrowsDownUp } from "@tabler/icons-react";
 import monkeysArr from "./monkeysArr";
 import MonkeyCard from "./MonkeyCard";
+import Modal from "./Modal";
 import Nav from "./Nav";
 import "./ShowPage.css";
 
@@ -14,6 +15,7 @@ class ShowPage extends Component {
             sortNameAscending: true,
             sortTroopAscending: false,
             sortYearAscending: false,
+            showModal: false,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
@@ -82,6 +84,9 @@ class ShowPage extends Component {
         let monkeys = this.state.monkeys;
         return (
             <div className="ShowPage">
+                <div className="ShowPage-modal">
+                    <Modal />
+                </div>
                 <div className="ShowPage-nav">
                     <Nav />
                 </div>
