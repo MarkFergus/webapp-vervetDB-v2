@@ -11,58 +11,70 @@ class ShowPage extends Component {
         this.state = {
             monkeys: monkeysArr.sort((a, b) => a.name.localeCompare(b.name)),
             //track sorting state to toggle on next click
-            sortNameAscending: false,
-            sortTroopAscending: true,
-            sortAgeAscending: true,
+            sortNameAscending: true,
+            sortTroopAscending: false,
+            sortYearAscending: false,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
     }
     sortByName() {
-        if (this.state.sortNameAscending) {
+        if (!this.state.sortNameAscending) {
             this.setState({
                 monkeys: this.state.monkeys.sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                ),
-                sortNameAscending: false,
-            });
-        } else {
-            this.setState({
-                monkeys: this.state.monkeys.sort((b, a) =>
                     a.name.localeCompare(b.name)
                 ),
                 sortNameAscending: true,
-            });
-        }
-    }
-    sortByTroop() {
-        if (this.state.sortTroopAscending) {
-            this.setState({
-                monkeys: this.state.monkeys.sort((a, b) =>
-                    a.troop.localeCompare(b.troop)
-                ),
                 sortTroopAscending: false,
-            });
-        } else {
-            this.setState({
-                monkeys: this.state.monkeys.sort((b, a) =>
-                    a.troop.localeCompare(b.troop)
-                ),
-                sortTroopAscending: true,
-            });
-        }
-    }
-    sortByYear() {
-        if (this.state.sortYearAscending) {
-            this.setState({
-                monkeys: this.state.monkeys.sort((a, b) => a.year - b.year),
                 sortYearAscending: false,
             });
         } else {
             this.setState({
-                monkeys: this.state.monkeys.sort((b, a) => a.year - b.year),
+                monkeys: this.state.monkeys.sort((b, a) =>
+                    a.name.localeCompare(b.name)
+                ),
+                sortNameAscending: false,
+                sortTroopAscending: false,
+                sortYearAscending: false,
+            });
+        }
+    }
+    sortByTroop() {
+        if (!this.state.sortTroopAscending) {
+            this.setState({
+                monkeys: this.state.monkeys.sort((a, b) =>
+                    a.troop.localeCompare(b.troop)
+                ),
+                sortTroopAscending: true,
+                sortNameAscending: false,
+                sortYearAscending: false,
+            });
+        } else {
+            this.setState({
+                monkeys: this.state.monkeys.sort((b, a) =>
+                    a.troop.localeCompare(b.troop)
+                ),
+                sortTroopAscending: false,
+                sortNameAscending: false,
+                sortYearAscending: false,
+            });
+        }
+    }
+    sortByYear() {
+        if (!this.state.sortYearAscending) {
+            this.setState({
+                monkeys: this.state.monkeys.sort((a, b) => a.year - b.year),
                 sortYearAscending: true,
+                sortTroopAscending: false,
+                sortNameAscending: false,
+            });
+        } else {
+            this.setState({
+                monkeys: this.state.monkeys.sort((b, a) => a.year - b.year),
+                sortYearAscending: false,
+                sortTroopAscending: false,
+                sortNameAscending: false,
             });
         }
     }
