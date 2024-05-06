@@ -1,0 +1,59 @@
+.MonkeyCard {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    cursor: pointer;
+}
+
+.MonkeyCard-image {
+    overflow: hidden;
+    padding-bottom: 0;
+    border-radius: 8px;
+}
+
+.MonkeyCard img {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-out;
+}
+
+.MonkeyCard:hover img {
+    transform: scale(1.1);
+}
+
+.MonkeyCard-info {
+    color: rgb(192, 191, 191);
+    width: 100%;
+    font-size: 1rem;
+    margin: 4px 0 0 0;
+    display: flex;
+    justify-content: start;
+    align-items: start;
+}
+
+.MonkeyCard:hover .MonkeyCard-info {
+    color: rgb(255, 255, 255);
+}
+
+.MonkeyCard-info-name,
+.MonkeyCard-info-troop,
+.MonkeyCard-info-year {
+    margin: 0;
+}
+
+.MonkeyCard-info-sex {
+    justify-self: start;
+    padding-top: 1px;
+    margin-left: 4px;
+}
+
+.MonkeyCard-info-year {
+    font-weight: 300;
+}
+
+.MonkeyCard-info-troop {
+    margin-left: auto;
+    font-weight: 300;
+}

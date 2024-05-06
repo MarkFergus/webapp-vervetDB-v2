@@ -1,0 +1,29 @@
+.Nav {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    font-size: 32px;
+}
+
+.Nav-icon {
+    margin-right: 8px;
+}
+
+.Nav p {
+    margin: 0;
+    padding-bottom: 4px;
+}
+
+.Nav button {
+    font-size: 16px;
+    margin-left: auto;
+    padding: 10px 32px;
+    border: none;
+    border-radius: 5px;
+    background-color: #242424;
+    cursor: pointer;
+}
+
+.Nav button:hover {
+    background-color: #3e3e3e;
+}
