@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/webapp-vervetDB-v2/static/css/main.eb30c995.css",
-    "main.js": "/webapp-vervetDB-v2/static/js/main.c3d503f4.js",
+    "main.css": "/webapp-vervetDB-v2/static/css/main.6dc896e6.css",
+    "main.js": "/webapp-vervetDB-v2/static/js/main.263d3014.js",
     "static/js/453.9694769f.chunk.js": "/webapp-vervetDB-v2/static/js/453.9694769f.chunk.js",
     "index.html": "/webapp-vervetDB-v2/index.html",
-    "main.eb30c995.css.map": "/webapp-vervetDB-v2/static/css/main.eb30c995.css.map",
-    "main.c3d503f4.js.map": "/webapp-vervetDB-v2/static/js/main.c3d503f4.js.map",
+    "main.6dc896e6.css.map": "/webapp-vervetDB-v2/static/css/main.6dc896e6.css.map",
+    "main.263d3014.js.map": "/webapp-vervetDB-v2/static/js/main.263d3014.js.map",
     "453.9694769f.chunk.js.map": "/webapp-vervetDB-v2/static/js/453.9694769f.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.eb30c995.css",
-    "static/js/main.c3d503f4.js"
+    "static/css/main.6dc896e6.css",
+    "static/js/main.263d3014.js"
   ]
 }
