@@ -4,7 +4,7 @@
 }
 
 .ShowPage-monkeys {
-    margin: 1rem 8px;
+    margin: 8px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -61,7 +61,7 @@
     }
 
     .ShowPage-monkeys {
-        margin: 1rem 24px;
+        margin: 8px 24px;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 2fr));
     }
