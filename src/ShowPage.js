@@ -84,8 +84,8 @@ class ShowPage extends Component {
     }
     toggleModal(m) {
         this.setState((st) => ({
+            selectedMonkey: m,
             isModalOpen: !st.isModalOpen,
-            selectedMonkey: m || null,
         }));
     }
     render() {
@@ -93,12 +93,11 @@ class ShowPage extends Component {
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
-                    {this.state.isModalOpen && (
-                        <Modal
-                            toggleModal={this.toggleModal}
-                            monkey={this.state.selectedMonkey}
-                        />
-                    )}
+                    <Modal
+                        onClose={this.toggleModal}
+                        isModalOpen={this.state.isModalOpen}
+                        monkey={this.state.selectedMonkey}
+                    />
                 </div>
                 <div className="ShowPage-nav">
                     <Nav />
