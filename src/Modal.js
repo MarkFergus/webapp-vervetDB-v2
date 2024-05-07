@@ -65,21 +65,12 @@ class Modal extends Component {
                                             Chip: <span>{monkey.chip}</span>
                                         </h3>
                                         <h3>
-                                            Bio:{" "}
-                                            <span>
-                                                Arrived as orphan together with
-                                                another orphan. Mother was
-                                                killed by a velociraptor. Really
-                                                likes toast. Fostered by Big
-                                                Mama.
-                                            </span>
+                                            Bio: <span>{monkey.bio}</span>
                                         </h3>
                                         <h3>
                                             Description:{" "}
                                             <span>
-                                                Golden coat, pacthy silhouettes
-                                                around eyes, slight notch on
-                                                left ear.
+                                                "Descrption will go here."
                                             </span>
                                         </h3>
                                     </div>
