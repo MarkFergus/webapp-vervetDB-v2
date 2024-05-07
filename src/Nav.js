@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { IconBrandDatabricks } from "@tabler/icons-react";
+import monkeyIcon from "./monkey-icon.png";
 import "./Nav.css";
 
 class Nav extends Component {
@@ -7,9 +7,9 @@ class Nav extends Component {
         return (
             <nav className="Nav">
                 <div className="Nav-icon">
-                    <IconBrandDatabricks stroke={1.5} />
+                    <img src={monkeyIcon} alt="monkey icon" />
                 </div>
-                <p>vervetDB</p>
+                <p className="Nav-title">vervetDB</p>
                 <button>Sign In</button>
             </nav>
         );

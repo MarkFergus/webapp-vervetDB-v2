@@ -3,13 +3,19 @@
     justify-content: start;
     align-items: center;
     font-size: 32px;
+    /* border-bottom: 1px solid #3e3e3e; */
 }
 
-.Nav-icon {
-    margin-right: 8px;
+.Nav-icon img {
+    height: 40px;
+    width: 40px;
+    margin-right: 4px;
+    padding-bottom: 8px;
+    filter: invert(100%);
 }
 
-.Nav p {
+.Nav-title {
+    font-family: "Russo One", sans-serif;
     margin: 0;
     padding-bottom: 4px;
 }
