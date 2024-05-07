@@ -92,20 +92,3 @@
 .Modal-details span {
     font-weight: 300;
 }
-
-/* @media (min-width: 551px) {
-    .Modal {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .Modal-window {
-        width: 550px;
-        height: 96%;
-        background-color: #242424;
-        overflow: auto;
-        border-radius: 10px;
-    }
-} */

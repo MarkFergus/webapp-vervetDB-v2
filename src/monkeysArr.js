@@ -213,7 +213,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41211,
         img: "https://i.ibb.co/ZBw3DfT/mia-dd-mar2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Jan 2024. History unknown but was kept as a pet for at least a month before handing over. Fostered by Hazel.",
     },
     {
         name: "Ildiko",
@@ -222,7 +222,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41217,
         img: "https://i.ibb.co/jw7bC76/ildiko-dd-apr2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Feb 2024. Mother was killed by a car and Ildiko was brought to Moholoholo Widlife Centre. Fostered by Hazel.",
     },
     {
         name: "Remy",
@@ -231,7 +231,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41195,
         img: "https://i.ibb.co/Q90b47c/remy-engeltjie-may2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Nov 2023. History unknown, was with Samber at Chimp Eden for a few days before coming to VMF. Arrived with broken left arm which delayed his move to foster-mums. Integrated with Duimpie as a soft-release due to lack of bond to foster-mums, although often looked after by Gladys.",
     },
     {
         name: "Duimpie",
@@ -240,7 +240,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41225,
         img: "https://i.ibb.co/chtSfPC/duimpie-engeltjie-apr2024-temp.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Dec 2023. Mother was killed by dogs and Duimpie was then kept as a pet for 3 months. Integrated with Remy as a soft-release due to lack of bond to foster-mums, although often looked after by Gladys",
     },
     {
         name: "Lyyti",
@@ -249,7 +249,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41178,
         img: "https://i.ibb.co/J35734k/lyyti-global-feb2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Nov 2024. Was found on a veranda in Haenertsburg alone and crying for at least 12 hours. Scabby face on arrival. Fostered by Meghan.",
     },
     {
         name: "Bugaloo",
@@ -258,7 +258,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41190,
         img: "https://i.ibb.co/RzMJ63S/bugaloo-bandits-mar2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Nov 2023. Mother was electrocuted in Hoedspruit. Was integrated into Skunkey troop but went missing after a week, was then found several days later being carried by adult female Eyebrows in the bandit troop. They seemed to have established a close bond",
     },
     {
         name: "Trixi",
@@ -267,7 +267,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41218,
         img: "https://i.ibb.co/t4B6Brv/trixi-saav-apr2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Mar 2024.Was found on deceased mother's body by workers on a farm, cold and dehydrated. Kept my owners wife for four days prior to arrival at VMF. Fostered by Acorn, but mostly with Dabney in troop.",
     },
     {
         name: "Harris",
@@ -276,7 +276,7 @@ const monkeysArr = [
         year: 2023,
         chip: 41219,
         img: "https://i.ibb.co/rtKmkfc/harris-saav-apr2024.jpg",
-        bio: "",
+        bio: "Arrived as an orphan in Mar 2024. History unknown, but was kept as a pet for at least 2 months. Fostered by Acorn.",
     },
 ];
 

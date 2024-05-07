@@ -88,6 +88,7 @@ class ShowPage extends Component {
             isModalOpen: !st.isModalOpen,
         }));
     }
+
     render() {
         let monkeys = this.state.monkeys;
         return (

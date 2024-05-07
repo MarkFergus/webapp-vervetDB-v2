@@ -31,7 +31,7 @@ class Modal extends Component {
                                 scale: 1,
                                 opacity: 1,
                                 transition: {
-                                    duration: 0.35,
+                                    duration: 0.3,
                                 },
                             }}
                             exit={{
