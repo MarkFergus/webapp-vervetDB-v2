@@ -62,7 +62,7 @@ class Modal extends Component {
                                             Born: <span>{monkey.year}</span>
                                         </h3>
                                         <h3>
-                                            Chip: <span>42888</span>
+                                            Chip: <span>{monkey.chip}</span>
                                         </h3>
                                         <h3>
                                             Bio:{" "}

@@ -126,6 +126,7 @@ class ShowPage extends Component {
                                 sex={m.sex}
                                 year={m.year}
                                 troop={m.troop}
+                                chip={m.chip}
                                 img={m.img}
                             />
                         </div>
