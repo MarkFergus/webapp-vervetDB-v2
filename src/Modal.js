@@ -26,15 +26,17 @@ class Modal extends Component {
                         ></motion.div>
                         <motion.div
                             className="Modal-windowbox"
-                            initial={{ scale: 0 }}
+                            initial={{ scale: 0, opacity: 0 }}
                             animate={{
                                 scale: 1,
+                                opacity: 1,
                                 transition: {
-                                    duration: 0.3,
+                                    duration: 0.35,
                                 },
                             }}
                             exit={{
                                 scale: 0,
+                                opacity: 0,
                             }}
                         >
                             <div className="Modal-window">

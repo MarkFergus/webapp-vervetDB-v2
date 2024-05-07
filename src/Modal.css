@@ -35,14 +35,28 @@
 }
 
 .Modal-close {
-    position: absolute;
-    right: 16px;
-    top: 8px;
-    cursor: pointer;
+    position: sticky;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
     color: rgb(192, 191, 191);
+    z-index: 2;
 }
 
-.Modal-close:hover {
+.Modal-close svg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 8px 16px 0 16px;
+    order: 1;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.Modal-close svg:hover {
     color: white;
 }
 
