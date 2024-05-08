@@ -18,9 +18,14 @@ class Nav extends Component {
                 </div>
                 <p className="Nav-title">vervetDB</p>
                 <div className="Nav-buttons">
-                    {/* <button disabled>Link1</button>
-                    <button disabled>Link2</button> */}
-                    <button onClick={this.handleClick}>Create PDF</button>
+                    <button
+                        onClick={this.handleClick}
+                        disabled={this.props.isGeneratingPDF}
+                    >
+                        {this.props.isGeneratingPDF
+                            ? "Downloading..."
+                            : "Create Profile Book"}
+                    </button>
                 </div>
             </nav>
         );

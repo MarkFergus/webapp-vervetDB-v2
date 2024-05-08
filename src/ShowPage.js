@@ -19,6 +19,7 @@ class ShowPage extends Component {
             sortYearAscending: false,
             isModalOpen: false,
             selectedMonkey: null,
+            isGeneratingPDF: false,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
@@ -93,6 +94,7 @@ class ShowPage extends Component {
     }
     //PDF function from react-pdf
     createPDF = async () => {
+        this.setState({ isGeneratingPDF: true });
         const { monkeys } = this.state;
         const blob = await pdf(<MonkeyPDF monkeys={monkeys} />).toBlob();
         const url = URL.createObjectURL(blob);
@@ -101,9 +103,11 @@ class ShowPage extends Component {
         const newTab = window.open(url, "_blank");
         //filename currently not applying
         newTab.window.document.title = filename;
+        this.setState({ isGeneratingPDF: false });
     };
     render() {
         let monkeys = this.state.monkeys;
+
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
@@ -114,7 +118,10 @@ class ShowPage extends Component {
                     />
                 </div>
                 <div className="ShowPage-nav">
-                    <Nav createPDF={this.createPDF} />
+                    <Nav
+                        createPDF={this.createPDF}
+                        isGeneratingPDF={this.state.isGeneratingPDF}
+                    />
                 </div>
                 <div className="ShowPage-sort">
                     <h4>Sort by:</h4>
