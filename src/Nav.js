@@ -24,7 +24,7 @@ class Nav extends Component {
                     >
                         {this.props.isGeneratingPDF
                             ? "Downloading..."
-                            : "Create Profile Book"}
+                            : "Create PDF"}
                     </button>
                 </div>
             </nav>

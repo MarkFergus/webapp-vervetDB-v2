@@ -22,13 +22,27 @@ class ShowPage extends Component {
             isModalOpen: false,
             selectedMonkey: null,
             isGeneratingPDF: false,
-            currentFilter: "All Monkeys",
+            currentGroupFilter: "All Troops",
+            currentAgeFilter: "All Years",
+            yearsArr: [],
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         this.createPDF = this.createPDF.bind(this);
+        this.filterGroups = this.filterGroups.bind(this);
+    }
+    updateYearsArr() {
+        const currYear = new Date().getFullYear();
+        const yearsArr = [];
+        for (let i = currYear; i >= currYear - 30; i--) {
+            yearsArr.push(i);
+        }
+        this.setState({
+            yearsArr: yearsArr,
+        });
+        console.log(yearsArr);
     }
     sortByName() {
         if (!this.state.sortNameAscending) {
@@ -89,11 +103,11 @@ class ShowPage extends Component {
             });
         }
     }
-    filterMonkeys = (event) => {
+    filterGroups = (event) => {
         const selectedFilter = event.target.value;
         let filteredMonkeys;
 
-        if (selectedFilter === "All Monkeys") {
+        if (selectedFilter === "All Troops") {
             filteredMonkeys = monkeysArr.sort((a, b) =>
                 a.name.localeCompare(b.name)
             );
@@ -104,10 +118,29 @@ class ShowPage extends Component {
                     .includes(selectedFilter.toLowerCase())
             );
         }
-        console.log(filteredMonkeys); // Log here
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
-            currentFilter: selectedFilter,
+            currentGroupFilter: selectedFilter,
+            currentAgeFilter: "All Years",
+        }));
+    };
+    filterAge = (event) => {
+        const selectedFilter = event.target.value;
+        let filteredMonkeys;
+
+        if (selectedFilter === "All Years") {
+            filteredMonkeys = monkeysArr.sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+        } else {
+            filteredMonkeys = monkeysArr.filter(
+                (monkey) => monkey.year === Number(selectedFilter)
+            );
+        }
+        this.setState((prevState) => ({
+            monkeys: filteredMonkeys,
+            currentAgeFilter: selectedFilter,
+            currentGroupFilter: "All Troops",
         }));
     };
     toggleModal(m) {
@@ -129,6 +162,9 @@ class ShowPage extends Component {
         newTab.window.document.title = filename;
         this.setState({ isGeneratingPDF: false });
     };
+    componentDidMount() {
+        this.updateYearsArr();
+    }
     render() {
         let monkeys = this.state.monkeys;
 
@@ -151,31 +187,41 @@ class ShowPage extends Component {
                     <div className="ShowPage-sort">
                         <h4>Sort by:</h4>
                         <button onClick={this.sortByName}>
-                            <span>name </span>
+                            <span>Name </span>
                             <IconArrowsDownUp />
                         </button>
                         <button onClick={this.sortByTroop}>
-                            <span>troop </span>
+                            <span>Troop </span>
                             <IconArrowsDownUp />{" "}
                         </button>
                         <button onClick={this.sortByYear}>
-                            <span>year </span>
+                            <span>Year </span>
                             <IconArrowsDownUp />{" "}
                         </button>
                     </div>
                     <div className="ShowPage-filter">
-                        <label>
-                            <h4>Filter by:</h4>
-                        </label>
+                        <h4>Filter by:</h4>
                         <select
                             className="ShowPage-filter-select"
                             name="groups"
                             id="groups"
-                            value={this.state.currentFilter}
-                            onChange={this.filterMonkeys}
+                            value={this.state.currentGroupFilter}
+                            onChange={this.filterGroups}
                         >
                             {groupsArr.map((g) => (
                                 <option value={g}>{g}</option>
+                            ))}
+                        </select>
+                        <select
+                            className="ShowPage-filter-select"
+                            name="age"
+                            id="age"
+                            value={this.state.currentAgeFilter}
+                            onChange={this.filterAge}
+                        >
+                            <option value="All Years">All Years</option>
+                            {this.state.yearsArr.map((y) => (
+                                <option value={y}>{y}</option>
                             ))}
                         </select>
                     </div>

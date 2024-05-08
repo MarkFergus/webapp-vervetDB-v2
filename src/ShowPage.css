@@ -3,19 +3,11 @@
     margin: 0 8px;
 }
 
-.ShowPage-monkeys {
-    margin: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-
 .ShowPage-sortfilter {
+    font-size: 15px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: start;
     align-items: center;
 }
 
@@ -32,7 +24,7 @@
 .ShowPage-sort h4,
 .ShowPage-filter h4 {
     margin: 0;
-    padding-right: 8px;
+    padding-right: 4px;
 }
 
 .ShowPage-sort button {
@@ -40,7 +32,6 @@
     justify-content: center;
     align-items: end;
     padding-bottom: 8px;
-    font-size: 1rem;
     height: 32px;
     border: none;
     border-radius: 5px;
@@ -53,11 +44,12 @@
 .ShowPage-sort button svg {
     padding-left: 2px;
     padding-bottom: 2px;
-    height: 14px;
-    width: 14px;
+    height: 12px;
+    width: 12px;
 }
 
-.ShowPage-sort button:hover {
+.ShowPage-sort button:hover,
+.ShowPage-sort select:hover {
     color: white;
     background-color: #3e3e3e;
 }
@@ -72,17 +64,43 @@
 }
 
 #groups,
-#groups option {
+#age {
+    font-family: "Nunito Sans", sans-serif;
+    text-align: right;
+    border: none;
+    border-radius: 2px;
+    color: rgb(192, 191, 191);
+    background-color: #242424;
+    padding: 4px 4px 2px 4px;
+}
+
+#groups option,
+#age option {
     font-family: "Nunito Sans", sans-serif;
     border: none;
     border-radius: 2px;
-    font-size: 1rem;
     color: rgb(192, 191, 191);
     background-color: #242424;
     padding: 4px 4px;
 }
 
+.ShowPage-monkeys {
+    margin: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
 @media (min-width: 600px) {
+    .ShowPage-sortfilter {
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        align-items: center;
+    }
+
     .ShowPage-sort {
         margin: 0 24px;
     }

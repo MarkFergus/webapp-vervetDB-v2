@@ -1,5 +1,5 @@
 const groupsArr = [
-    "All Monkeys",
+    "All Troops",
     "Goliath",
     "Gismo",
     "D&D",
