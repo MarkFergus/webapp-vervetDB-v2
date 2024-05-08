@@ -64,7 +64,7 @@
 }
 
 #groups,
-#age {
+#year {
     font-family: "Nunito Sans", sans-serif;
     text-align: right;
     border: none;
@@ -75,7 +75,7 @@
 }
 
 #groups option,
-#age option {
+#year option {
     font-family: "Nunito Sans", sans-serif;
     border: none;
     border-radius: 2px;

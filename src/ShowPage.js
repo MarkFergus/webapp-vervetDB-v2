@@ -23,7 +23,7 @@ class ShowPage extends Component {
             selectedMonkey: null,
             isGeneratingPDF: false,
             currentGroupFilter: "All Troops",
-            currentAgeFilter: "All Years",
+            currentYearFilter: "All Years",
             yearsArr: [],
         };
         this.sortByName = this.sortByName.bind(this);
@@ -121,10 +121,10 @@ class ShowPage extends Component {
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
             currentGroupFilter: selectedFilter,
-            currentAgeFilter: "All Years",
+            currentYearFilter: "All Years",
         }));
     };
-    filterAge = (event) => {
+    filterYear = (event) => {
         const selectedFilter = event.target.value;
         let filteredMonkeys;
 
@@ -139,7 +139,7 @@ class ShowPage extends Component {
         }
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
-            currentAgeFilter: selectedFilter,
+            currentYearFilter: selectedFilter,
             currentGroupFilter: "All Troops",
         }));
     };
@@ -214,10 +214,10 @@ class ShowPage extends Component {
                         </select>
                         <select
                             className="ShowPage-filter-select"
-                            name="age"
-                            id="age"
-                            value={this.state.currentAgeFilter}
-                            onChange={this.filterAge}
+                            name="year"
+                            id="year"
+                            value={this.state.currentYearFilter}
+                            onChange={this.filterYear}
                         >
                             <option value="All Years">All Years</option>
                             {this.state.yearsArr.map((y) => (
