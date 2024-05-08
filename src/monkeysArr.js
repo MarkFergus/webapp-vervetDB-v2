@@ -278,6 +278,33 @@ const monkeysArr = [
         img: "https://i.ibb.co/rtKmkfc/harris-saav-apr2024.jpg",
         bio: "Arrived as an orphan in Mar 2024. History unknown, but was kept as a pet for at least 2 months. Fostered by Acorn.",
     },
+    {
+        name: "Zoro",
+        troop: "Goliath",
+        sex: "male",
+        year: 2016,
+        chip: 21468,
+        img: "https://i.ibb.co/LrPbPKj/Zoro-Goliath-Feb-2024-min.jpg",
+        bio: "Arrived as an orphan. Fostered by Mrs Gold.",
+    },
+    {
+        name: "Foxy",
+        troop: "Goliath",
+        sex: "female",
+        year: 2018,
+        chip: 21575,
+        img: "https://i.ibb.co/1qHd37p/Foxy-Goliath-Mar-2023-2-min.jpg",
+        bio: "",
+    },
+    {
+        name: "Grover",
+        troop: "Goliath",
+        sex: "male",
+        year: 2022,
+        chip: 26627,
+        img: "https://i.ibb.co/tD3yJvn/Grover-Golith-21-02-2024-1-min.jpg",
+        bio: "Arrived as an orphan from Johannesburg wildlife vet along with Sophie. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop. ",
+    },
 ];
 
 export default monkeysArr;
