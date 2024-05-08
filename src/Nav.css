@@ -21,18 +21,21 @@
 }
 
 .Nav-buttons {
+    display: flex;
+    align-items: center;
     margin-left: auto;
+    margin-bottom: 6px;
 }
 
 .Nav button {
     font-size: 16px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     border: none;
     border-radius: 5px;
-    background-color: #242424;
+    background-color: #3e3e3e;
     cursor: pointer;
 }
 
 .Nav button:hover {
-    background-color: #3e3e3e;
+    background-color: #545454;
 }
