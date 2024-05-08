@@ -92,3 +92,7 @@
 .Modal-details span {
     font-weight: 300;
 }
+
+.Modal-details-description {
+    display: block;
+}

@@ -70,9 +70,10 @@ class Modal extends Component {
                                             Bio: <span>{monkey.bio}</span>
                                         </h3>
                                         <h3>
-                                            Description:{" "}
-                                            <span>
-                                                "Descrption will go here."
+                                            Distinctive features/behaviours:{" "}
+                                            <span className="Modal-details-description">
+                                                Descriptive features and
+                                                behaviours will go here.
                                             </span>
                                         </h3>
                                     </div>
