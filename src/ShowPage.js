@@ -142,7 +142,7 @@ class ShowPage extends Component {
                     {monkeys.map((m) => (
                         <div onClick={() => this.toggleModal(m)}>
                             <MonkeyCard
-                                key={m.name}
+                                key={`${m.name}-${m.troop}`}
                                 name={m.name}
                                 sex={m.sex}
                                 year={m.year}
