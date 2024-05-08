@@ -12,16 +12,25 @@
     gap: 16px;
 }
 
-.ShowPage-sort {
+.ShowPage-sortfilter {
     display: flex;
     flex-direction: row;
-    justify-content: start;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ShowPage-sort,
+.ShowPage-filter {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
     font-weight: 300;
     margin: 0 8px;
 }
 
-.ShowPage-sort h4 {
+.ShowPage-sort h4,
+.ShowPage-filter h4 {
     margin: 0;
     padding-right: 8px;
 }
@@ -51,6 +60,26 @@
 .ShowPage-sort button:hover {
     color: white;
     background-color: #3e3e3e;
+}
+
+.ShowPage-filter {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    font-weight: 300;
+    margin: 0 8px;
+}
+
+#groups,
+#groups option {
+    font-family: "Nunito Sans", sans-serif;
+    border: none;
+    border-radius: 2px;
+    font-size: 1rem;
+    color: rgb(192, 191, 191);
+    background-color: #242424;
+    padding: 4px 4px;
 }
 
 @media (min-width: 600px) {

@@ -3,6 +3,7 @@ import { IconArrowsDownUp } from "@tabler/icons-react";
 import { pdf } from "@react-pdf/renderer";
 import { v4 as uuidv4 } from "uuid";
 import monkeysArr from "./monkeysArr";
+import groupsArr from "./groupsArr";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyPDF from "./MonkeyPDF";
 import Modal from "./Modal";
@@ -21,6 +22,7 @@ class ShowPage extends Component {
             isModalOpen: false,
             selectedMonkey: null,
             isGeneratingPDF: false,
+            currentFilter: "All Monkeys",
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
@@ -87,6 +89,27 @@ class ShowPage extends Component {
             });
         }
     }
+    filterMonkeys = (event) => {
+        const selectedFilter = event.target.value;
+        let filteredMonkeys;
+
+        if (selectedFilter === "All Monkeys") {
+            filteredMonkeys = monkeysArr.sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+        } else {
+            filteredMonkeys = monkeysArr.filter((monkey) =>
+                monkey.troop
+                    .toLowerCase()
+                    .includes(selectedFilter.toLowerCase())
+            );
+        }
+        console.log(filteredMonkeys); // Log here
+        this.setState((prevState) => ({
+            monkeys: filteredMonkeys,
+            currentFilter: selectedFilter,
+        }));
+    };
     toggleModal(m) {
         this.setState((st) => ({
             selectedMonkey: m,
@@ -124,20 +147,38 @@ class ShowPage extends Component {
                         isGeneratingPDF={this.state.isGeneratingPDF}
                     />
                 </div>
-                <div className="ShowPage-sort">
-                    <h4>Sort by:</h4>
-                    <button onClick={this.sortByName}>
-                        <span>name </span>
-                        <IconArrowsDownUp />
-                    </button>
-                    <button onClick={this.sortByTroop}>
-                        <span>troop </span>
-                        <IconArrowsDownUp />{" "}
-                    </button>
-                    <button onClick={this.sortByYear}>
-                        <span>year </span>
-                        <IconArrowsDownUp />{" "}
-                    </button>
+                <div className="ShowPage-sortfilter">
+                    <div className="ShowPage-sort">
+                        <h4>Sort by:</h4>
+                        <button onClick={this.sortByName}>
+                            <span>name </span>
+                            <IconArrowsDownUp />
+                        </button>
+                        <button onClick={this.sortByTroop}>
+                            <span>troop </span>
+                            <IconArrowsDownUp />{" "}
+                        </button>
+                        <button onClick={this.sortByYear}>
+                            <span>year </span>
+                            <IconArrowsDownUp />{" "}
+                        </button>
+                    </div>
+                    <div className="ShowPage-filter">
+                        <label>
+                            <h4>Filter by:</h4>
+                        </label>
+                        <select
+                            className="ShowPage-filter-select"
+                            name="groups"
+                            id="groups"
+                            value={this.state.currentFilter}
+                            onChange={this.filterMonkeys}
+                        >
+                            {groupsArr.map((g) => (
+                                <option value={g}>{g}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="ShowPage-monkeys">
                     {monkeys.map((m) => (
