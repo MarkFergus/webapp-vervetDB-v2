@@ -3,6 +3,13 @@ import monkeyIcon from "./monkey-icon.png";
 import "./Nav.css";
 
 class Nav extends Component {
+    constructor(props) {
+        super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
+    handleClick() {
+        this.props.createPDF();
+    }
     render() {
         return (
             <nav className="Nav">
@@ -13,7 +20,7 @@ class Nav extends Component {
                 <div className="Nav-buttons">
                     {/* <button disabled>Link1</button>
                     <button disabled>Link2</button> */}
-                    <button disabled>Sign In</button>
+                    <button onClick={this.handleClick}>Create PDF</button>
                 </div>
             </nav>
         );

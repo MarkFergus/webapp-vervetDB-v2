@@ -1,7 +1,9 @@
 import { Component } from "react";
 import { IconArrowsDownUp } from "@tabler/icons-react";
+import { pdf } from "@react-pdf/renderer";
 import monkeysArr from "./monkeysArr";
 import MonkeyCard from "./MonkeyCard";
+import MonkeyPDF from "./MonkeyPDF";
 import Modal from "./Modal";
 import Nav from "./Nav";
 import "./ShowPage.css";
@@ -22,6 +24,7 @@ class ShowPage extends Component {
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
+        this.createPDF = this.createPDF.bind(this);
     }
     sortByName() {
         if (!this.state.sortNameAscending) {
@@ -88,7 +91,17 @@ class ShowPage extends Component {
             isModalOpen: !st.isModalOpen,
         }));
     }
+    //PDF function from react-pdf
+    createPDF = async () => {
+        const { monkeys } = this.state;
+        const blob = await pdf(<MonkeyPDF monkeys={monkeys} />).toBlob();
+        const url = URL.createObjectURL(blob);
 
+        const filename = "profile_book";
+        const newTab = window.open(url, "_blank");
+        //filename currently not applying
+        newTab.window.document.title = filename;
+    };
     render() {
         let monkeys = this.state.monkeys;
         return (
@@ -101,7 +114,7 @@ class ShowPage extends Component {
                     />
                 </div>
                 <div className="ShowPage-nav">
-                    <Nav />
+                    <Nav createPDF={this.createPDF} />
                 </div>
                 <div className="ShowPage-sort">
                     <h4>Sort by:</h4>
