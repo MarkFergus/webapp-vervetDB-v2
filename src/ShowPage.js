@@ -1,6 +1,7 @@
 import { Component } from "react";
 import { IconArrowsDownUp } from "@tabler/icons-react";
 import { pdf } from "@react-pdf/renderer";
+import { v4 as uuidv4 } from "uuid";
 import monkeysArr from "./monkeysArr";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyPDF from "./MonkeyPDF";
@@ -140,9 +141,8 @@ class ShowPage extends Component {
                 </div>
                 <div className="ShowPage-monkeys">
                     {monkeys.map((m) => (
-                        <div onClick={() => this.toggleModal(m)}>
+                        <div key={uuidv4()} onClick={() => this.toggleModal(m)}>
                             <MonkeyCard
-                                key={`${m.name}-${m.troop}`}
                                 name={m.name}
                                 sex={m.sex}
                                 year={m.year}

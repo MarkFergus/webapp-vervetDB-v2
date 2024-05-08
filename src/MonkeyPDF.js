@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 15,
-        fontWeight: 500,
+        fontWeight: 600,
     },
     chip: {
         fontSize: 8,
@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     },
     descTitle: {
         fontSize: 9,
+        fontWeight: 700,
         fontStyle: "italic",
     },
     descInfo: {
@@ -161,10 +162,8 @@ class MonkeyPDF extends Component {
                                                 Distinctive features/behaviours:
                                             </Text>
                                             <Text style={styles.descInfo}>
-                                                Has four legs
-                                            </Text>
-                                            <Text style={styles.descInfo}>
-                                                Coat does indeed contain hair
+                                                Description information will go
+                                                here...
                                             </Text>
                                         </View>
                                     </View>
