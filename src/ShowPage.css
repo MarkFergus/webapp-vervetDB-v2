@@ -6,9 +6,9 @@
 .ShowPage-sortfilter {
     font-size: 15px;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: start;
-    align-items: center;
+    align-items: start;
 }
 
 .ShowPage-sort,
