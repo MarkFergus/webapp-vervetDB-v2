@@ -5,7 +5,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41192,
-        img: "https://i.ibb.co/s1zM2FL/yoda-koko-feb2024-2.jpg",
+        img: ["https://i.ibb.co/s1zM2FL/yoda-koko-feb2024-2.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Found in the slurry river of a mine in Phalaboraw. Handed over to CARE who brought to us. Fostered by Karla.",
     },
     {
@@ -14,7 +14,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41197,
-        img: "https://i.ibb.co/k3q8XXr/timmy-gismo-mar2024.jpg",
+        img: ["https://i.ibb.co/k3q8XXr/timmy-gismo-mar2024.jpg"],
         bio: "Arrived as an orphan in Dec 2023 at approx 3 months old. Was kept as a pet for at least 2 months and came wearing a nappy. Bought from a seller on the side of the road and kept in the family home. Very attached to people and his bottle. Fed cows milk. Fostered by Uh-Oh.",
     },
     {
@@ -23,7 +23,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 26665,
-        img: "https://i.ibb.co/hX8Zs3c/riccardo-koko-mar2024.jpg",
+        img: ["https://i.ibb.co/hX8Zs3c/riccardo-koko-mar2024.jpg"],
         bio: "Arrived as an orphan in Oct 2023. History unknown, was handed in to a vet in Polokwane and then brought to us by Whelmi. Fostered by Panacur.",
     },
     {
@@ -32,7 +32,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 26609,
-        img: "https://i.ibb.co/xD4brFX/atlas-koko-feb2024.jpg",
+        img: ["https://i.ibb.co/xD4brFX/atlas-koko-feb2024.jpg"],
         bio: "Arrived as an orphan in Oct 2023. Mother was shot by a farmer. Fostered by Yllena.",
     },
     {
@@ -41,7 +41,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41179,
-        img: "https://i.ibb.co/jJCSQdx/tk-skunkey-mar2024.jpg",
+        img: ["https://i.ibb.co/jJCSQdx/tk-skunkey-mar2024.jpg"],
         bio: "Arrived as an orphan in Oct 2023. Was confiscated by the SPCA in The Free State, no further history known. Very scabby on face, head and neck on arrival. Fostered by Martha.",
     },
     {
@@ -50,7 +50,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41181,
-        img: "https://i.ibb.co/Xy8Pn6y/samber-koko-mar2024.jpg",
+        img: ["https://i.ibb.co/Xy8Pn6y/samber-koko-mar2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. History unknown, was at Chimp Eden for a week before arrival at VMF. Arrived with suspected case of ringworm. Fostered by Kara.",
     },
     {
@@ -59,7 +59,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41192,
-        img: "https://i.ibb.co/d26Jdcb/paulie-hb-mar2024-2.jpg",
+        img: ["https://i.ibb.co/d26Jdcb/paulie-hb-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Was found alone, wet and shivering, at a storage shed at Magoesbaskloof Adventures. History unknown. Arrived with 5-6 ticks, crusty/muddy face and bruised left eye. Very close bond with Mikey. Fostered by Millie.",
     },
     {
@@ -68,7 +68,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41186,
-        img: "https://i.ibb.co/vzbDSLK/nugget-goliath-mar2024-2.jpg",
+        img: ["https://i.ibb.co/vzbDSLK/nugget-goliath-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Dec 2023. Was confiscated by SPCA after being kept as a pet for at least 5 days and handed over to Beyond Borders Sanctuary in Tzaneen. History unknown. Fostered by Ellie.",
     },
     {
@@ -77,7 +77,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41220,
-        img: "https://i.ibb.co/m0tjhzm/wiz-goliath-apr2024.jpg",
+        img: ["https://i.ibb.co/m0tjhzm/wiz-goliath-apr2024.jpg"],
         bio: "Mother was Fluffy Witch, an elderly member of the Bandits, who passed away in Apr 2024 when Wiz was only 4 months old. Due to lack of bond with the other bandits, she was taken in as an orphan. Fostered by Mrs Gold.",
     },
     {
@@ -86,7 +86,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 0,
-        img: "https://i.ibb.co/1bkzt5L/marysunshine-goliath-feb2024.jpg",
+        img: ["https://i.ibb.co/1bkzt5L/marysunshine-goliath-feb2024.jpg"],
         bio: "Born in troop in Nov 2023 to Maggie Mae.",
     },
     {
@@ -95,7 +95,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 0,
-        img: "https://i.ibb.co/jLS22sC/lochlan-royal-apr2024.jpg",
+        img: ["https://i.ibb.co/jLS22sC/lochlan-royal-apr2024.jpg"],
         bio: "Born in troop in Oct 2023 to Butter.",
     },
     {
@@ -104,7 +104,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41183,
-        img: "https://i.ibb.co/XZXhgdQ/kathleen-hb-mar2024-2.jpg",
+        img: ["https://i.ibb.co/XZXhgdQ/kathleen-hb-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Was found alone in a tree following a troop fight in a nature reserve near Gravelot. Said to have been there all day screaming, troop did not return so was taken in and handed over. Fostered by Percy.",
     },
     {
@@ -113,7 +113,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41196,
-        img: "https://i.ibb.co/7jcS8Fp/june-global-mar2024-2.jpg",
+        img: ["https://i.ibb.co/7jcS8Fp/june-global-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Was being sold to a vet in Louis Trichardt who then called us. Fostered by Meghan.",
     },
     {
@@ -122,7 +122,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41222,
-        img: "https://i.ibb.co/PrqtB6n/harold-dd-apr2024.jpg",
+        img: ["https://i.ibb.co/PrqtB6n/harold-dd-apr2024.jpg"],
         bio: "Arrived as an orphan in Feb 2024. Found alone on a farm in the Free State. Fostered by Chane.",
     },
     {
@@ -131,7 +131,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41221,
-        img: "https://i.ibb.co/hyRQNQ2/fritzi-engeltjie-mar204-2.jpg",
+        img: ["https://i.ibb.co/hyRQNQ2/fritzi-engeltjie-mar204-2.jpg"],
         bio: "Arrived as an orphan in Dec 2023. Was found on a veranda alone in Tzaneen and handed in to Serala Animal Clinic. Was covered in blood and severely dehydrated, so was immediately put on a drip. Fostered by Aer.",
     },
     {
@@ -140,7 +140,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41180,
-        img: "https://i.ibb.co/C130wG9/elora-skunkey-mar2024-2.jpg",
+        img: ["https://i.ibb.co/C130wG9/elora-skunkey-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Oct 2023. Mother was killed by a car. Took longer to release her than the others, but eventually went out with Jambi.",
     },
     {
@@ -149,7 +149,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41200,
-        img: "https://i.ibb.co/JCCYGjL/darby-james-feb2024-2.jpg",
+        img: ["https://i.ibb.co/JCCYGjL/darby-james-feb2024-2.jpg"],
         bio: "Arrived as an orphan in Oct 2023. Was found in some municipality offices in Nelspurit, spent the weekend there with no food or water, quite dehyrdated on arrival. Had a healing break or dislocation on right elbow which delayed his move to foster-mums. Fostered by Litchie.",
     },
     {
@@ -158,7 +158,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41185,
-        img: "https://i.ibb.co/JFD3PyW/anita-skunkey-mar2024-2.jpg",
+        img: ["https://i.ibb.co/JFD3PyW/anita-skunkey-mar2024-2.jpg"],
         bio: "Arrived as an orphan in Oct 2023. Mother was shot in Lepahale a day before being picked up. Fostered by Pan.",
     },
     {
@@ -167,7 +167,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41184,
-        img: "https://i.ibb.co/Sn78j7j/rowan-goliath-mar2024.jpg",
+        img: ["https://i.ibb.co/Sn78j7j/rowan-goliath-mar2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Fostered by Mrs Gold.",
     },
     {
@@ -176,7 +176,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41182,
-        img: "https://i.ibb.co/8s9GpbG/tufyt-hb-feb2024.jpg",
+        img: ["https://i.ibb.co/8s9GpbG/tufyt-hb-feb2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Fostered by Millie.",
     },
     {
@@ -185,7 +185,11 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41188,
-        img: "https://i.ibb.co/hKkLRhs/wanda-hb-mar2024.jpg",
+        img: [
+            "https://i.ibb.co/hKkLRhs/wanda-hb-mar2024.jpg",
+            "https://i.ibb.co/kcB1qG5/wanda-hb-apr2024.jpg",
+            "https://i.ibb.co/CJ25F3s/wanda-hb-apr2024-2.jpg",
+        ],
         bio: "Arrived as an orphan in Dec 2023. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Bluebell. Fostered by Skylar.",
     },
     {
@@ -194,7 +198,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41187,
-        img: "https://i.ibb.co/dQn22jN/bluebell-hb-mar2024.jpg",
+        img: ["https://i.ibb.co/dQn22jN/bluebell-hb-mar2024.jpg"],
         bio: "Arrived as an orphan in Dec 2023 at approx 10 weeks old. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Wanda. Fostered by Skylar.",
     },
     {
@@ -203,7 +207,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41193,
-        img: "https://i.ibb.co/rQ9mJN7/mikey-hb-feb2024.jpg",
+        img: ["https://i.ibb.co/rQ9mJN7/mikey-hb-feb2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Was inseparably from Paulie before release. Fostered by Millie.",
     },
     {
@@ -212,7 +216,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41211,
-        img: "https://i.ibb.co/ZBw3DfT/mia-dd-mar2024.jpg",
+        img: ["https://i.ibb.co/ZBw3DfT/mia-dd-mar2024.jpg"],
         bio: "Arrived as an orphan in Jan 2024. History unknown but was kept as a pet for at least a month before handing over. Fostered by Hazel.",
     },
     {
@@ -221,7 +225,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41217,
-        img: "https://i.ibb.co/jw7bC76/ildiko-dd-apr2024.jpg",
+        img: ["https://i.ibb.co/jw7bC76/ildiko-dd-apr2024.jpg"],
         bio: "Arrived as an orphan in Feb 2024. Mother was killed by a car and Ildiko was brought to Moholoholo Widlife Centre. Fostered by Hazel.",
     },
     {
@@ -230,7 +234,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41195,
-        img: "https://i.ibb.co/Q90b47c/remy-engeltjie-may2024.jpg",
+        img: ["https://i.ibb.co/Q90b47c/remy-engeltjie-may2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. History unknown, was with Samber at Chimp Eden for a few days before coming to VMF. Arrived with broken left arm which delayed his move to foster-mums. Integrated with Duimpie as a soft-release due to lack of bond to foster-mums, although often looked after by Gladys.",
     },
     {
@@ -239,7 +243,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41225,
-        img: "https://i.ibb.co/chtSfPC/duimpie-engeltjie-apr2024-temp.jpg",
+        img: ["https://i.ibb.co/chtSfPC/duimpie-engeltjie-apr2024-temp.jpg"],
         bio: "Arrived as an orphan in Dec 2023. Mother was killed by dogs and Duimpie was then kept as a pet for 3 months. Integrated with Remy as a soft-release due to lack of bond to foster-mums, although often looked after by Gladys",
     },
     {
@@ -248,7 +252,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41178,
-        img: "https://i.ibb.co/J35734k/lyyti-global-feb2024.jpg",
+        img: ["https://i.ibb.co/J35734k/lyyti-global-feb2024.jpg"],
         bio: "Arrived as an orphan in Nov 2024. Was found on a veranda in Haenertsburg alone and crying for at least 12 hours. Scabby face on arrival. Fostered by Meghan.",
     },
     {
@@ -257,7 +261,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41190,
-        img: "https://i.ibb.co/RzMJ63S/bugaloo-bandits-mar2024.jpg",
+        img: ["https://i.ibb.co/RzMJ63S/bugaloo-bandits-mar2024.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Mother was electrocuted in Hoedspruit. Was integrated into Skunkey troop but went missing after a week, was then found several days later being carried by adult female Eyebrows in the bandit troop. They seemed to have established a close bond",
     },
     {
@@ -266,7 +270,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41218,
-        img: "https://i.ibb.co/t4B6Brv/trixi-saav-apr2024.jpg",
+        img: ["https://i.ibb.co/t4B6Brv/trixi-saav-apr2024.jpg"],
         bio: "Arrived as an orphan in Mar 2024.Was found on deceased mother's body by workers on a farm, cold and dehydrated. Kept my owners wife for four days prior to arrival at VMF. Fostered by Acorn, but mostly with Dabney in troop.",
     },
     {
@@ -275,7 +279,7 @@ const monkeysArr = [
         sex: "male",
         year: 2023,
         chip: 41219,
-        img: "https://i.ibb.co/rtKmkfc/harris-saav-apr2024.jpg",
+        img: ["https://i.ibb.co/rtKmkfc/harris-saav-apr2024.jpg"],
         bio: "Arrived as an orphan in Mar 2024. History unknown, but was kept as a pet for at least 2 months. Fostered by Acorn.",
     },
     {
@@ -284,7 +288,7 @@ const monkeysArr = [
         sex: "male",
         year: 2016,
         chip: 21468,
-        img: "https://i.ibb.co/LrPbPKj/Zoro-Goliath-Feb-2024-min.jpg",
+        img: ["https://i.ibb.co/LrPbPKj/Zoro-Goliath-Feb-2024-min.jpg"],
         bio: "Arrived as an orphan. Fostered by Mrs Gold.",
     },
     {
@@ -293,7 +297,7 @@ const monkeysArr = [
         sex: "female",
         year: 2018,
         chip: 21575,
-        img: "https://i.ibb.co/1qHd37p/Foxy-Goliath-Mar-2023-2-min.jpg",
+        img: ["https://i.ibb.co/1qHd37p/Foxy-Goliath-Mar-2023-2-min.jpg"],
         bio: "",
     },
     {
@@ -302,7 +306,7 @@ const monkeysArr = [
         sex: "male",
         year: 2022,
         chip: 26627,
-        img: "https://i.ibb.co/tD3yJvn/Grover-Golith-21-02-2024-1-min.jpg",
+        img: ["https://i.ibb.co/tD3yJvn/Grover-Golith-21-02-2024-1-min.jpg"],
         bio: "Arrived as an orphan from Johannesburg wildlife vet along with Sophie. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop. ",
     },
 ];

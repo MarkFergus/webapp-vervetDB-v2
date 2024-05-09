@@ -235,7 +235,7 @@ class ShowPage extends Component {
                                 year={m.year}
                                 troop={m.troop}
                                 chip={m.chip}
-                                img={m.img}
+                                img={m.img[0]}
                                 bio={m.bio}
                             />
                         </div>
