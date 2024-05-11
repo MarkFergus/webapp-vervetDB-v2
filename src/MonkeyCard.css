@@ -29,8 +29,8 @@
     font-size: 0.9rem;
     margin: 2px 0 0 0;
     display: flex;
-    justify-content: start;
-    align-items: start;
+    justify-content: end;
+    align-items: center;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -45,20 +45,31 @@
     margin: 0;
 }
 
+.MonkeyCard-info-name {
+    margin-right: auto;
+    padding-left: 4px;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .MonkeyCard-info-sex {
     height: 22px;
     width: 22px;
-    justify-self: start;
     padding-top: 1px;
 }
 
 .MonkeyCard-info-year {
     font-weight: 300;
-    margin-right: 1px;
 }
 
 .MonkeyCard-info-troop {
-    margin-left: auto;
+    margin-left: 4px;
+    padding-right: 4px;
     font-weight: 300;
-    margin-left: auto;
+}
+
+@media (mmax-width: 50%) {
+    .MonkeyCard-info-name {
+    }
 }

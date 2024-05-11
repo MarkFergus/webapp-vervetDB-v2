@@ -4,10 +4,12 @@ import "./MonkeyCard.css";
 
 class MonkeyCard extends Component {
     displaySexIcon(sex) {
+        const iconSize = 19;
+        const strokeSize = 1;
         if (sex === "male") {
-            return <IconMars stroke={1} />;
+            return <IconMars size={iconSize} stroke={strokeSize} />;
         } else if (sex === "female") {
-            return <IconVenus stroke={1} />;
+            return <IconVenus size={iconSize} stroke={strokeSize} />;
         } else {
             return "";
         }
