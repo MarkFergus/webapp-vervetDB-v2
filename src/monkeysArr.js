@@ -1,5 +1,18 @@
 const monkeysArr = [
     {
+        name: "Wanda",
+        troop: "H&B",
+        sex: "female",
+        year: 2023,
+        chip: 41188,
+        img: [
+            "https://i.ibb.co/hKkLRhs/wanda-hb-mar2024.jpg",
+            "https://i.ibb.co/kcB1qG5/wanda-hb-apr2024.jpg",
+            "https://i.ibb.co/CJ25F3s/wanda-hb-apr2024-2.jpg",
+        ],
+        bio: "Arrived as an orphan in Dec 2023. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Bluebell. Fostered by Skylar.",
+    },
+    {
         name: "Yoda",
         troop: "Koko",
         sex: "male",
@@ -176,21 +189,8 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41182,
-        img: ["https://i.ibb.co/8s9GpbG/tufyt-hb-feb2024.jpg"],
+        img: ["https://i.ibb.co/8Dnpp0Y/tufty-hb-apr2024-2.jpg"],
         bio: "Arrived as an orphan in Nov 2023. Fostered by Millie.",
-    },
-    {
-        name: "Wanda",
-        troop: "H&B",
-        sex: "female",
-        year: 2023,
-        chip: 41188,
-        img: [
-            "https://i.ibb.co/hKkLRhs/wanda-hb-mar2024.jpg",
-            "https://i.ibb.co/kcB1qG5/wanda-hb-apr2024.jpg",
-            "https://i.ibb.co/CJ25F3s/wanda-hb-apr2024-2.jpg",
-        ],
-        bio: "Arrived as an orphan in Dec 2023. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Bluebell. Fostered by Skylar.",
     },
     {
         name: "Bluebell",
@@ -198,7 +198,7 @@ const monkeysArr = [
         sex: "female",
         year: 2023,
         chip: 41187,
-        img: ["https://i.ibb.co/dQn22jN/bluebell-hb-mar2024.jpg"],
+        img: ["https://i.ibb.co/j43tkx7/bluebell-hb-apr2024.jpg"],
         bio: "Arrived as an orphan in Dec 2023 at approx 10 weeks old. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Wanda. Fostered by Skylar.",
     },
     {

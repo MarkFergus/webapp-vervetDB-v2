@@ -49,7 +49,7 @@ class Modal extends Component {
                                     </h1>
                                     <div className="Modal-img">
                                         <img
-                                            src={monkey.img}
+                                            src={monkey.img[0]}
                                             alt={monkey.name}
                                         ></img>
                                     </div>
