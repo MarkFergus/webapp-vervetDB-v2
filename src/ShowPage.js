@@ -22,7 +22,7 @@ class ShowPage extends Component {
             isModalOpen: false,
             selectedMonkey: null,
             isGeneratingPDF: false,
-            currentGroupFilter: "All Troops",
+            currentTroopFilter: "All Troops",
             currentYearFilter: "All Years",
             yearsArr: [],
         };
@@ -31,7 +31,6 @@ class ShowPage extends Component {
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         this.createPDF = this.createPDF.bind(this);
-        this.filterGroups = this.filterGroups.bind(this);
     }
     updateYearsArr() {
         const currYear = new Date().getFullYear();
@@ -103,11 +102,12 @@ class ShowPage extends Component {
             });
         }
     }
-    filterGroups = (event) => {
-        const selectedFilter = event.target.value;
+    filterTroops = (event) => {
+        const selectedTroopFilter = event.target.value;
         let filteredMonkeys;
 
-        if (selectedFilter === "All Troops") {
+        // run new troop filter
+        if (selectedTroopFilter === "All Troops") {
             filteredMonkeys = monkeysArr.sort((a, b) =>
                 a.name.localeCompare(b.name)
             );
@@ -115,32 +115,57 @@ class ShowPage extends Component {
             filteredMonkeys = monkeysArr.filter((monkey) =>
                 monkey.troop
                     .toLowerCase()
-                    .includes(selectedFilter.toLowerCase())
+                    .includes(selectedTroopFilter.toLowerCase())
             );
         }
+
+        // check current year filter
+        if (this.state.currentYearFilter === "All Years") {
+            filteredMonkeys = filteredMonkeys.sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+        } else {
+            filteredMonkeys = filteredMonkeys.filter(
+                (monkey) => monkey.year === Number(this.state.currentYearFilter)
+            );
+        }
+
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
-            currentGroupFilter: selectedFilter,
-            currentYearFilter: "All Years",
+            currentTroopFilter: selectedTroopFilter,
         }));
     };
     filterYear = (event) => {
-        const selectedFilter = event.target.value;
+        const selectedYearFilter = event.target.value;
         let filteredMonkeys;
 
-        if (selectedFilter === "All Years") {
+        // run new year filter
+        if (selectedYearFilter === "All Years") {
             filteredMonkeys = monkeysArr.sort((a, b) =>
                 a.name.localeCompare(b.name)
             );
         } else {
             filteredMonkeys = monkeysArr.filter(
-                (monkey) => monkey.year === Number(selectedFilter)
+                (monkey) => monkey.year === Number(selectedYearFilter)
             );
         }
+
+        // check for troop filter
+        if (this.state.currentTroopFilter === "All Troops") {
+            filteredMonkeys = filteredMonkeys.sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+        } else {
+            filteredMonkeys = filteredMonkeys.filter((monkey) =>
+                monkey.troop
+                    .toLowerCase()
+                    .includes(this.state.currentTroopFilter.toLowerCase())
+            );
+        }
+
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
-            currentYearFilter: selectedFilter,
-            currentGroupFilter: "All Troops",
+            currentYearFilter: selectedYearFilter,
         }));
     };
     toggleModal(m) {
@@ -203,10 +228,10 @@ class ShowPage extends Component {
                         <h4>Filter by:</h4>
                         <select
                             className="ShowPage-filter-select"
-                            name="groups"
-                            id="groups"
-                            value={this.state.currentGroupFilter}
-                            onChange={this.filterGroups}
+                            name="troops"
+                            id="troops"
+                            value={this.state.currentTroopFilter}
+                            onChange={this.filterTroops}
                         >
                             {groupsArr.map((g) => (
                                 <option value={g}>{g}</option>
