@@ -72,8 +72,9 @@ class Modal extends Component {
                                         <h3>
                                             Distinctive features/behaviours:{" "}
                                             <span className="Modal-details-description">
-                                                Descriptive features and
-                                                behaviours will go here.
+                                                {monkey.desc
+                                                    ? monkey.desc
+                                                    : "Nothing. Nada. Zilch."}
                                             </span>
                                         </h3>
                                     </div>

@@ -42,15 +42,21 @@
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    color: rgb(192, 191, 191);
+    color: rgb(146, 145, 145);
     z-index: 2;
 }
 
 .Modal-close svg {
     position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     top: 0;
     right: 0;
-    padding: 8px 16px 0 16px;
+    margin-top: 2px;
+    margin-right: 4px;
+    padding: 8px;
+    background-color: rgba(36, 36, 36, 0.6);
     order: 1;
     cursor: pointer;
     z-index: 3;
@@ -62,7 +68,7 @@
 
 .Modal-title {
     text-align: center;
-    margin: 8px 0;
+    margin: 4px 0;
 }
 
 .Modal-img {
@@ -81,7 +87,7 @@
     flex-direction: column;
     justify-content: start;
     align-items: start;
-    margin: 16px;
+    margin: 8px 20px;
 }
 
 .Modal-details h3 {
