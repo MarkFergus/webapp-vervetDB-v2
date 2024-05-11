@@ -39,3 +39,40 @@
 .Nav button:hover {
     background-color: #545454;
 }
+
+.Nav-searchbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: #323232;
+    border-radius: 16px;
+    margin: 0 0 4px 0;
+}
+
+.Nav-searchbar input {
+    flex: 1;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+}
+
+.Nav-searchbar input:focus {
+    outline: none;
+    color: white;
+}
+
+.Nav-searchbar button {
+    border: none;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.87);
+    cursor: pointer;
+    padding: 8px 16px;
+}
+
+.Nav-searchbar button:hover {
+    color: white;
+}
