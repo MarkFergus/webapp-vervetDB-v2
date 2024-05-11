@@ -210,7 +210,7 @@ class ShowPage extends Component {
                 </div>
                 <div className="ShowPage-sortfilter">
                     <div className="ShowPage-sort">
-                        <h4>Sort by:</h4>
+                        <h4>Sort:</h4>
                         <button onClick={this.sortByName}>
                             <span>Name </span>
                             <IconArrowsDownUp />
@@ -225,7 +225,7 @@ class ShowPage extends Component {
                         </button>
                     </div>
                     <div className="ShowPage-filter">
-                        <h4>Filter by:</h4>
+                        <h4>Filter:</h4>
                         <select
                             className="ShowPage-filter-select"
                             name="troops"

@@ -30,7 +30,7 @@ class Nav extends Component {
                         </button>
                     </div>
                 </nav>
-                <form className="Nav-searchbar">
+                <div className="Nav-searchbar">
                     <input
                         type="text"
                         placeholder="Search for a name or chip number"
@@ -39,7 +39,7 @@ class Nav extends Component {
                     <button>
                         <IconSearch stroke={2} />
                     </button>
-                </form>
+                </div>
             </>
         );
     }

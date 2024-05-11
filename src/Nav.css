@@ -44,15 +44,15 @@
     width: 100%;
     display: flex;
     align-items: center;
-    background-color: #323232;
-    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 32px;
     margin: 0 0 4px 0;
 }
 
 .Nav-searchbar input {
     flex: 1;
     background-color: transparent;
-    color: rgba(255, 255, 255, 0.4);
+    color: #3e3e3e;
     font-family: "Nunito Sans", sans-serif;
     font-size: 16px;
     border: none;
@@ -62,17 +62,25 @@
 
 .Nav-searchbar input:focus {
     outline: none;
-    color: white;
+    color: #323232;
 }
 
 .Nav-searchbar button {
     border: none;
     background-color: transparent;
-    color: rgba(255, 255, 255, 0.87);
+    color: #3e3e3e;
     cursor: pointer;
     padding: 8px 16px;
 }
 
 .Nav-searchbar button:hover {
-    color: white;
+    color: #3e3e3e;
+}
+
+@media (min-width: 920px) {
+    .Nav-searchbar {
+        width: 50%;
+        max-width: 500px;
+        margin: 0 auto 4px auto;
+    }
 }
