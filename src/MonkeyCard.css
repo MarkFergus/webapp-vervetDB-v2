@@ -19,18 +19,20 @@
     transition: transform 0.5s ease-out;
 }
 
-.MonkeyCard:hover img {
+.MonkeyCard:remhover img {
     transform: scale(1.1);
 }
 
 .MonkeyCard-info {
     color: rgb(192, 191, 191);
     width: 100%;
-    font-size: 1rem;
-    margin: 4px 0 0 0;
+    font-size: 0.9rem;
+    margin: 2px 0 0 0;
     display: flex;
     justify-content: start;
     align-items: start;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .MonkeyCard:hover .MonkeyCard-info {
@@ -44,16 +46,19 @@
 }
 
 .MonkeyCard-info-sex {
+    height: 22px;
+    width: 22px;
     justify-self: start;
     padding-top: 1px;
-    margin-left: 4px;
 }
 
 .MonkeyCard-info-year {
     font-weight: 300;
+    margin-right: 1px;
 }
 
 .MonkeyCard-info-troop {
     margin-left: auto;
     font-weight: 300;
+    margin-left: auto;
 }

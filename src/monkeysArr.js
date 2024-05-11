@@ -323,7 +323,7 @@ const monkeysArr = [
         desc: "Grumpy expression, M-shaped brow with peak on the middle",
     },
     {
-        Name: "Amy",
+        name: "Amy",
         troop: "Goliath",
         sex: "female",
         year: 2013,
@@ -333,7 +333,7 @@ const monkeysArr = [
         desc: "Quite small, very pointy face",
     },
     {
-        Name: "Angelica",
+        name: "Angelica",
         troop: "Goliath",
         sex: "female",
         year: 2008,
@@ -343,7 +343,7 @@ const monkeysArr = [
         desc: "Distinctive misaligned jaw, short tail missing black tip, very light-grey scruffy coat",
     },
     {
-        Name: "Aurora",
+        name: "Aurora",
         troop: "Goliath",
         sex: "female",
         year: 2020,
@@ -352,7 +352,7 @@ const monkeysArr = [
         bio: "Arrived as an orphan. Was found being sold on the side of the road for R100. ",
     },
     {
-        Name: "Bliss",
+        name: "Bliss",
         troop: "Goliath",
         sex: "female",
         year: 2010,
@@ -362,7 +362,7 @@ const monkeysArr = [
         desc: "Grumpy face, tail bent is various parts, missing black tip, looks quite similar to her sister Dad.",
     },
     {
-        Name: "Boetie ",
+        name: "Boetie ",
         troop: "Goliath",
         sex: "male",
         year: 2013,
@@ -372,7 +372,7 @@ const monkeysArr = [
         desc: "Smaller adult male, light golden coat",
     },
     {
-        Name: "Claudette Marie",
+        name: "Claudette Marie",
         troop: "Goliath",
         sex: "female",
         year: 2021,
@@ -383,7 +383,7 @@ const monkeysArr = [
         bio: "Arrived as an orphan. Mother was shot and she she arrived with a wound on her arm. Fostered by Mrs Gold, also spent some time with Maggie Mae.",
     },
     {
-        Name: "Dad",
+        name: "Dad",
         troop: "Goliath",
         sex: "female",
         year: 2009,
@@ -393,7 +393,7 @@ const monkeysArr = [
         desc: "Damaged tail tip due to injury, big fluffy head, scar on bottom lip, looks like her sister Bliss",
     },
     {
-        Name: "Dana",
+        name: "Dana",
         troop: "Goliath",
         sex: "female",
         year: 2016,
@@ -403,7 +403,7 @@ const monkeysArr = [
         desc: "Borad flat nose, straight brow, can be difficult to find",
     },
     {
-        Name: "DD",
+        name: "DD",
         troop: "Goliath",
         sex: "female",
         year: 2017,
@@ -413,7 +413,7 @@ const monkeysArr = [
         desc: "Very cute square face, round eyes, distinctive peak in middle of brow, usually with the alpha-group",
     },
     {
-        Name: "Digit ",
+        name: "Digit ",
         troop: "Goliath",
         sex: "female",
         year: 2014,
@@ -423,7 +423,7 @@ const monkeysArr = [
         desc: "Long gently curved brow, very stocky, blad patch left side of head to due arrival injury",
     },
     {
-        Name: "Earl",
+        name: "Earl",
         troop: "Goliath",
         sex: "male",
         year: 2015,
@@ -433,7 +433,7 @@ const monkeysArr = [
         desc: "Distinctive split across nose due to injury, dark grey coat",
     },
     {
-        Name: "Edson",
+        name: "Edson",
         troop: "Goliath",
         sex: "male",
         year: 2021,
@@ -443,7 +443,7 @@ const monkeysArr = [
         desc: "",
     },
     {
-        Name: "Elio",
+        name: "Elio",
         troop: "Goliath",
         sex: "male",
         year: 2020,
@@ -453,7 +453,7 @@ const monkeysArr = [
         desc: "Slight silhouettes with lines under eyes, flared nostrils, looks simialr to Fritz but smaller and not as golden.",
     },
     {
-        Name: "Ellie",
+        name: "Ellie",
         troop: "Goliath",
         sex: "female",
         year: 2019,
@@ -463,7 +463,7 @@ const monkeysArr = [
         desc: "Distinctive big sticky-out ears, quite slender, light-grey scruffy coat",
     },
     {
-        Name: "Fritz",
+        name: "Fritz",
         troop: "Goliath",
         sex: "male",
         year: 2020,
@@ -473,7 +473,7 @@ const monkeysArr = [
         desc: "Wavy brow, nervous of people and will eyebrow when stared at",
     },
     {
-        Name: "Gandalf",
+        name: "Gandalf",
         troop: "Goliath",
         sex: "male",
         year: 2014,
@@ -483,7 +483,7 @@ const monkeysArr = [
         desc: "Narrow triangular-shaped dark face, parting on head, tail tip damaged due to injury",
     },
     {
-        Name: "Gavan",
+        name: "Gavan",
         troop: "Goliath",
         sex: "male",
         year: 2015,
@@ -493,7 +493,7 @@ const monkeysArr = [
         desc: "Very distinctive large silhouettes around eyes, golden caot",
     },
     {
-        Name: "Jerusalem",
+        name: "Jerusalem",
         troop: "Goliath",
         sex: "female",
         year: 2017,
@@ -503,7 +503,7 @@ const monkeysArr = [
         desc: "Flat nose, small peak in middle of brow, quite fluffy",
     },
     {
-        Name: "Keegie",
+        name: "Keegie",
         troop: "Goliath",
         sex: "female",
         year: 2014,
@@ -513,7 +513,7 @@ const monkeysArr = [
         desc: "Floppy left ear due to Waffles sucking on it when babies, high-ranked, usually with alpha-group",
     },
     {
-        Name: "Kimbo",
+        name: "Kimbo",
         troop: "Goliath",
         sex: "male",
         year: 2009,
@@ -523,7 +523,7 @@ const monkeysArr = [
         desc: "Stocky fluffy adult, white lines under eyes, curved uneven brow, kink on tail",
     },
     {
-        Name: "Korigan",
+        name: "Korigan",
         troop: "Goliath",
         sex: "male",
         year: 2015,
@@ -533,7 +533,7 @@ const monkeysArr = [
         desc: "Big, pointy ears, strong broad muzzle, slightly golden coat",
     },
     {
-        Name: "Lottie",
+        name: "Lottie",
         troop: "Goliath",
         sex: "female",
         year: 2021,
@@ -543,7 +543,7 @@ const monkeysArr = [
         desc: "Distinctive patchy silhouettes around eyes, quite nervous of people",
     },
     {
-        Name: "Maddox",
+        name: "Maddox",
         troop: "Goliath",
         sex: "male",
         year: 2019,
@@ -553,7 +553,7 @@ const monkeysArr = [
         desc: "Slight white lines under eyes.",
     },
     {
-        Name: "Maggie Mae",
+        name: "Maggie Mae",
         troop: "Goliath",
         sex: "female",
         year: 2016,
@@ -562,7 +562,7 @@ const monkeysArr = [
         bio: "Arrived as an orphan, collected from SPCA. Fostered by Mrs Gold, but was quite independent. Had a venereal tumour removed in early 2022. Fostered Elio, and mother of Mary Sunshine who was born in troop.",
     },
     {
-        Name: "Mandy",
+        name: "Mandy",
         troop: "Goliath",
         sex: "female",
         year: 2007,
@@ -572,7 +572,7 @@ const monkeysArr = [
         desc: "Back arches down when walking, dark grey coat, tear on right ear",
     },
     {
-        Name: "Marja-Liisa",
+        name: "Marja-Liisa",
         troop: "Goliath",
         sex: "female",
         year: 2020,
@@ -582,7 +582,7 @@ const monkeysArr = [
         desc: "No strong distinguishing features, quite slender and similar looking to Ellie.",
     },
     {
-        Name: "Max",
+        name: "Max",
         troop: "Goliath",
         sex: "male",
         year: 2004,
@@ -592,7 +592,7 @@ const monkeysArr = [
         desc: "Very fluffy head, will readily headbob and eyebrow if looked at, small lump on base of scrotum",
     },
     {
-        Name: "Maysie",
+        name: "Maysie",
         troop: "Goliath",
         sex: "female",
         year: 2018,
@@ -602,7 +602,7 @@ const monkeysArr = [
         desc: "Small and slender, small peak in brow, often with the babies",
     },
     {
-        Name: "Mirabelle",
+        name: "Mirabelle",
         troop: "Goliath",
         sex: "female",
         year: 2015,
@@ -612,7 +612,7 @@ const monkeysArr = [
         desc: "Light-grey scruffy coat, distinctive patchy silhouettes around eyes, low ranked",
     },
     {
-        Name: "Mrs Gold",
+        name: "Mrs Gold",
         troop: "Goliath",
         sex: "female",
         year: 2005,
@@ -622,7 +622,7 @@ const monkeysArr = [
         desc: "Golden often-wet hair on upper arms as she sucks on it a lot",
     },
     {
-        Name: "Mum",
+        name: "Mum",
         troop: "Goliath",
         sex: "female",
         year: 2009,
@@ -632,7 +632,7 @@ const monkeysArr = [
         desc: "Very fluffy around the face, grumpy expression",
     },
     {
-        Name: "Nollie",
+        name: "Nollie",
         troop: "Goliath",
         sex: "male",
         year: 2014,
@@ -642,7 +642,7 @@ const monkeysArr = [
         desc: "Large male, low curved brow, dark, face, slight overbite and often holds lips slightly open.",
     },
     {
-        Name: "Pepsi",
+        name: "Pepsi",
         troop: "Goliath",
         sex: "female",
         year: 2007,
@@ -652,7 +652,7 @@ const monkeysArr = [
         desc: "Left wrist bends to the side due to old break, confident with people and will follow along at fence line,",
     },
     {
-        Name: "Piglet",
+        name: "Piglet",
         troop: "Goliath",
         sex: "female",
         year: 2014,
@@ -662,7 +662,7 @@ const monkeysArr = [
         desc: "Fluffy flat head, square ears, very cute looking",
     },
     {
-        Name: "Pippin",
+        name: "Pippin",
         troop: "Goliath",
         sex: "male",
         year: 2014,
@@ -672,7 +672,7 @@ const monkeysArr = [
         desc: "Large adult, very broad flat face",
     },
     {
-        Name: "Schlinkey",
+        name: "Schlinkey",
         troop: "Goliath",
         sex: "female",
         year: 2004,
@@ -682,7 +682,7 @@ const monkeysArr = [
         desc: "Large stocky adult, small tear top of right ear, thick tail which is missing the black tip",
     },
     {
-        Name: "Smoky",
+        name: "Smoky",
         troop: "Goliath",
         sex: "male",
         year: 2014,
@@ -692,7 +692,7 @@ const monkeysArr = [
         desc: "Long, dark face with light silhouettes underneath, missing tip of tail due to injury, golden caot",
     },
     {
-        Name: "Tarzan",
+        name: "Tarzan",
         troop: "Goliath",
         sex: "male",
         year: 2013,
@@ -702,7 +702,7 @@ const monkeysArr = [
         desc: "One of the smaller adult males, light-grey coat, small scar/dent of left side of upper lip, broad mouth",
     },
     {
-        Name: "Tumbles",
+        name: "Tumbles",
         troop: "Goliath",
         sex: "female",
         year: 2013,
@@ -712,7 +712,7 @@ const monkeysArr = [
         desc: "Triangular and pointy ears, thin silhouettes around eyes, slender, golden coat, will eyebrow is stared at.",
     },
     {
-        Name: "Vader",
+        name: "Vader",
         troop: "Goliath",
         sex: "male",
         year: 2018,
@@ -722,7 +722,7 @@ const monkeysArr = [
         desc: "Tall slender sub-adult, dark face with wavy brow",
     },
     {
-        Name: "Vincent ",
+        name: "Vincent ",
         troop: "Goliath",
         sex: "male",
         year: 2009,
@@ -732,7 +732,7 @@ const monkeysArr = [
         desc: "Wavy brow, triangular cut  on bottom of left ear.",
     },
     {
-        Name: "Waffles",
+        name: "Waffles",
         troop: "Goliath",
         sex: "female",
         year: 2014,
@@ -742,7 +742,7 @@ const monkeysArr = [
         desc: "Quite a large adult, long nose, small tear on top of right ear, golden coat, kink near end of tail",
     },
     {
-        Name: "Yma",
+        name: "Yma",
         troop: "Goliath",
         sex: "female",
         year: 2010,
