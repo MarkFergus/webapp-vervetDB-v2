@@ -180,6 +180,11 @@ class ShowPage extends Component {
                 const { searchValue } = this.state;
                 if (searchValue === "") {
                     this.setState({ monkeys: monkeysArr });
+                } else if (!isNaN(searchValue)) {
+                    const results = monkeysArr.filter((monkey) =>
+                        monkey.chip.toString().includes(searchValue.toString())
+                    );
+                    this.setState({ monkeys: results });
                 } else {
                     const results = monkeysArr.filter((monkey) =>
                         monkey.name
