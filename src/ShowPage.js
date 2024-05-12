@@ -253,8 +253,10 @@ class ShowPage extends Component {
                             value={this.state.currentTroopFilter}
                             onChange={this.filterTroops}
                         >
-                            {groupsArr.map((g) => (
-                                <option value={g}>{g}</option>
+                            {groupsArr.map((g, index) => (
+                                <option key={`group-${index}`} value={g}>
+                                    {g}
+                                </option>
                             ))}
                         </select>
                         <select
@@ -265,8 +267,10 @@ class ShowPage extends Component {
                             onChange={this.filterYear}
                         >
                             <option value="All Years">All Years</option>
-                            {this.state.yearsArr.map((y) => (
-                                <option value={y}>{y}</option>
+                            {this.state.yearsArr.map((y, index) => (
+                                <option key={`year-${index}`} value={y}>
+                                    {y}
+                                </option>
                             ))}
                         </select>
                     </div>

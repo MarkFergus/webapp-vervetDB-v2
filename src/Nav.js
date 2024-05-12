@@ -21,7 +21,7 @@ class Nav extends Component {
                     </div>
                     <p className="Nav-title">vervetDB</p>
                     <div className="Nav-searchbar">
-                        <div class="Nav-iconSearch">
+                        <div className="Nav-iconSearch">
                             <IconSearch stroke={2} />
                         </div>
                         <input
