@@ -37,7 +37,7 @@ class Nav extends Component {
                         placeholder="Search for a name or chip number"
                         name="search"
                         value={this.props.searchValue}
-                        onChange={this.props.handleSearchInputChange}
+                        onChange={this.props.handleSearch}
                     ></input>
                     <button onClick={this.props.handleSearch}>
                         <IconSearch stroke={2} />

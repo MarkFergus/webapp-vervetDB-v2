@@ -32,7 +32,7 @@ class ShowPage extends Component {
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         // this.createPDF = this.createPDF.bind(this);
-        this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
+        // this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
     }
     updateYearsArr() {
@@ -171,13 +171,21 @@ class ShowPage extends Component {
         }));
     };
 
-    handleSearchInputChange(event) {
-        this.setState({ searchValue: event.target.value });
-    }
+    // handleSearchInputChange(event) {
+    //     this.setState({ searchValue: event.target.value });
+    // }
 
-    handleSearch() {
-        console.log(this.state.searchValue);
-        //enter search function here
+    handleSearch(event) {
+        this.setState({ searchValue: event.target.value.toLowerCase() });
+
+        const { searchValue } = this.state;
+        console.log(searchValue);
+
+        const results = monkeysArr.filter((monkey) =>
+            monkey.name.toLowerCase().includes(searchValue.toLocaleLowerCase())
+        );
+        console.log(results);
+        this.setState({ monkeys: results });
     }
 
     toggleModal(m) {
@@ -219,7 +227,7 @@ class ShowPage extends Component {
                         createPDF={this.createPDF}
                         isGeneratingPDF={this.state.isGeneratingPDF}
                         searchValue={this.state.searchValue}
-                        handleSearchInputChange={this.handleSearchInputChange}
+                        // handleSearchInputChange={this.handleSearchInputChange}
                         handleSearch={this.handleSearch}
                     />
                 </div>
