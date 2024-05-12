@@ -28,9 +28,8 @@
 .ShowPage-sort button {
     display: flex;
     justify-content: center;
-    align-items: end;
+    align-items: center;
     margin-left: 0;
-    padding-bottom: 8px;
     height: 32px;
     border: none;
     border-radius: 5px;
@@ -41,7 +40,6 @@
 
 .ShowPage-sort button svg {
     padding-left: 2px;
-    padding-bottom: 2px;
     height: 12px;
     width: 12px;
 }

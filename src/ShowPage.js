@@ -170,14 +170,11 @@ class ShowPage extends Component {
         }));
     };
     handleSearch(event) {
-        console.log(event.target.value);
         const searchValue = event.target.value.toLowerCase();
-
         this.setState(
             () => ({ searchValue }),
             () => {
                 const { searchValue } = this.state;
-                console.log(searchValue);
                 if (searchValue === "") {
                     this.setState({ monkeys: monkeysArr });
                 } else {
