@@ -89,6 +89,28 @@
     gap: 16px;
 }
 
+.ShowPage-showMore {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.ShowPage-showMoreBtn {
+    background-color: #323232;
+    color: rgb(192, 191, 191);
+    font-size: 1rem;
+    padding: 8px 16px;
+    border: 1px solid rgb(192, 191, 191);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.ShowPage-showMoreBtn:hover {
+    background-color: #464646;
+    color: white;
+}
+
 @media (min-width: 500px) {
     .ShowPage-sortfilter {
         display: flex;

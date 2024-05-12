@@ -25,12 +25,15 @@ class ShowPage extends Component {
             searchValue: "",
             isModalOpen: false,
             isGeneratingPDF: false,
+            currentPage: 1,
+            monkeysPerPage: 100,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
+        this.handleShowMore = this.handleShowMore.bind(this);
     }
     updateYearsArr() {
         const currYear = new Date().getFullYear();
@@ -210,7 +213,17 @@ class ShowPage extends Component {
     componentDidMount() {
         this.updateYearsArr();
     }
+    handleShowMore() {
+        this.setState((prevState) => ({
+            currentPage: prevState.currentPage + 1,
+        }));
+    }
     render() {
+        const { currentPage, monkeysPerPage } = this.state;
+        const indexOfLastMonkey = currentPage * monkeysPerPage;
+        // const indexOfFirstMonkey = indexOfLastMonkey - monkeysPerPage;
+        const currentMonkeys = this.state.monkeys.slice(0, indexOfLastMonkey);
+
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
@@ -276,7 +289,7 @@ class ShowPage extends Component {
                     </div>
                 </div>
                 <div className="ShowPage-monkeys">
-                    {this.state.monkeys.map((m) => (
+                    {currentMonkeys.map((m) => (
                         <div key={uuidv4()} onClick={() => this.toggleModal(m)}>
                             <MonkeyCard
                                 name={m.name}
@@ -287,6 +300,16 @@ class ShowPage extends Component {
                             />
                         </div>
                     ))}
+                    {indexOfLastMonkey < this.state.monkeys.length && (
+                        <div className="ShowPage-showMore">
+                            <button
+                                className="ShowPage-showMoreBtn"
+                                onClick={this.handleShowMore}
+                            >
+                                Show More
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         );
