@@ -4,7 +4,7 @@
 }
 
 .ShowPage-sortfilter {
-    font-size: 15px;
+    font-size: 16px;
     display: flex;
     flex-direction: column;
     justify-content: start;
@@ -94,7 +94,7 @@
     gap: 16px;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 500px) {
     .ShowPage-sortfilter {
         display: flex;
         flex-direction: row;
@@ -109,7 +109,7 @@
     .ShowPage-monkeys {
         margin: 8px 24px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 2fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
 
     .ShowPage-nav {

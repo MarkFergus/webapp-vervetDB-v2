@@ -68,8 +68,3 @@
     padding-right: 4px;
     font-weight: 300;
 }
-
-@media (mmax-width: 50%) {
-    .MonkeyCard-info-name {
-    }
-}
