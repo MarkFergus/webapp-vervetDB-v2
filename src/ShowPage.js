@@ -135,6 +135,7 @@ class ShowPage extends Component {
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
             currentTroopFilter: selectedTroopFilter,
+            searchValue: "",
         }));
     };
     filterYear = (event) => {
@@ -168,12 +169,9 @@ class ShowPage extends Component {
         this.setState((prevState) => ({
             monkeys: filteredMonkeys,
             currentYearFilter: selectedYearFilter,
+            searchValue: "",
         }));
     };
-
-    // handleSearchInputChange(event) {
-    //     this.setState({ searchValue: event.target.value });
-    // }
 
     handleSearch(event) {
         this.setState({ searchValue: event.target.value.toLowerCase() });
