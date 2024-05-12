@@ -84,6 +84,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: 700,
         fontStyle: "italic",
+        textDecoration: "underline",
     },
     descInfo: {
         fontSize: 9,
@@ -144,7 +145,7 @@ class MonkeyPDF extends Component {
                                         ]}
                                     >
                                         <Image
-                                            src={monkey.img}
+                                            src={monkey.img[0]}
                                             style={styles.image}
                                         />
                                         <View style={styles.detailsContainer}>
@@ -162,8 +163,9 @@ class MonkeyPDF extends Component {
                                                 Distinctive features/behaviours:
                                             </Text>
                                             <Text style={styles.descInfo}>
-                                                Description information will go
-                                                here...
+                                                {monkey.desc
+                                                    ? monkey.desc
+                                                    : "Nothing. Nada. Zilch."}
                                             </Text>
                                         </View>
                                     </View>

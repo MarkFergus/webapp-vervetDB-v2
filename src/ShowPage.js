@@ -31,7 +31,7 @@ class ShowPage extends Component {
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
-        this.createPDF = this.createPDF.bind(this);
+        // this.createPDF = this.createPDF.bind(this);
         this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
     }
@@ -44,7 +44,6 @@ class ShowPage extends Component {
         this.setState({
             yearsArr: yearsArr,
         });
-        console.log(yearsArr);
     }
     sortByName() {
         if (!this.state.sortNameAscending) {
