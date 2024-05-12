@@ -20,6 +20,18 @@ class Nav extends Component {
                         <img src={monkeyIcon} alt="monkey icon" />
                     </div>
                     <p className="Nav-title">vervetDB</p>
+                    <div className="Nav-searchbar">
+                        <div class="Nav-iconSearch">
+                            <IconSearch stroke={2} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search name or chip number"
+                            name="search"
+                            value={this.props.searchValue}
+                            onChange={this.props.handleSearch}
+                        ></input>
+                    </div>
                     <div className="Nav-buttons">
                         <button
                             onClick={this.handleClick}
@@ -31,18 +43,6 @@ class Nav extends Component {
                         </button>
                     </div>
                 </nav>
-                <div className="Nav-searchbar">
-                    <div class="Nav-iconSearch">
-                        <IconSearch stroke={2} />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder="Search for name or chip number"
-                        name="search"
-                        value={this.props.searchValue}
-                        onChange={this.props.handleSearch}
-                    ></input>
-                </div>
             </>
         );
     }

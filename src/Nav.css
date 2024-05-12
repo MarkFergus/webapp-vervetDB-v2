@@ -16,38 +16,19 @@
 
 .Nav-title {
     font-family: "Russo One", sans-serif;
-    margin: 0;
+    margin: 0 8px 0 0;
     padding-bottom: 4px;
-}
-
-.Nav-buttons {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    margin-bottom: 6px;
-}
-
-.Nav button {
-    font-size: 15px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3e3e3e;
-    cursor: pointer;
-}
-
-.Nav button:hover {
-    background-color: #545454;
 }
 
 .Nav-searchbar {
     width: 100%;
+    max-width: 565px;
+    height: 42px;
     display: flex;
     align-items: center;
-    background-color: #3e3e3e;
     border: 1px solid white;
     border-radius: 8px;
-    margin: 0 0 8px 0;
+    margin: 0 auto 6px auto;
 }
 
 .Nav-searchbar input {
@@ -57,7 +38,7 @@
     font-size: 16px;
     border: none;
     outline: none;
-    padding: 8px 8px 8px 0;
+    padding: 4px 8px 4px 0;
 }
 
 .Nav-searchbar input:focus {
@@ -77,10 +58,36 @@
     color: white;
 }
 
-@media (min-width: 920px) {
-    .Nav-searchbar {
-        width: 50%;
-        max-width: 500px;
-        margin: 0 auto 4px auto;
+.Nav-buttons {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    margin-bottom: 6px;
+}
+
+.Nav button {
+    font-size: 15px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3e3e3e;
+    cursor: pointer;
+    text-wrap: nowrap;
+}
+
+.Nav button:hover {
+    background-color: #545454;
+}
+
+@media (max-width: 624px) {
+    .Nav-title {
+        display: none;
+    }
+}
+
+@media (max-width: 420px) {
+    .Nav button {
+        text-wrap: wrap;
+        padding: 4px;
     }
 }

@@ -6,9 +6,10 @@
 .ShowPage-sortfilter {
     font-size: 16px;
     display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 8px 0 8px;
 }
 
 .ShowPage-sort,
@@ -17,21 +18,18 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    font-weight: 300;
-    margin: 0 8px;
 }
 
 .ShowPage-sort h4,
 .ShowPage-filter h4 {
-    font-size: inherit;
-    margin: 0;
-    padding-right: 4px;
+    display: none;
 }
 
 .ShowPage-sort button {
     display: flex;
     justify-content: center;
     align-items: end;
+    margin-left: 2px;
     padding-bottom: 8px;
     height: 32px;
     border: none;
@@ -104,6 +102,14 @@
 
     .ShowPage-sort {
         margin: 0 24px;
+    }
+
+    .ShowPage-sort h4,
+    .ShowPage-filter h4 {
+        display: flex;
+        font-size: inherit;
+        margin: 0;
+        padding-right: 4px;
     }
 
     .ShowPage-monkeys {
