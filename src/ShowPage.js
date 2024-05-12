@@ -175,14 +175,10 @@ class ShowPage extends Component {
 
     handleSearch(event) {
         this.setState({ searchValue: event.target.value.toLowerCase() });
-
         const { searchValue } = this.state;
-        console.log(searchValue);
-
         const results = monkeysArr.filter((monkey) =>
             monkey.name.toLowerCase().includes(searchValue.toLocaleLowerCase())
         );
-        console.log(results);
         this.setState({ monkeys: results });
     }
 
