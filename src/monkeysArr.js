@@ -6,9 +6,9 @@ const monkeysArr = [
         year: 2023,
         chip: 41188,
         img: [
+            "https://i.ibb.co/CJ25F3s/wanda-hb-apr2024-2.jpg",
             "https://i.ibb.co/hKkLRhs/wanda-hb-mar2024.jpg",
             "https://i.ibb.co/kcB1qG5/wanda-hb-apr2024.jpg",
-            "https://i.ibb.co/CJ25F3s/wanda-hb-apr2024-2.jpg",
         ],
         bio: "Arrived as an orphan in Dec 2023. Started foster-mum integration at Goliath but didn't bond with mums and was moved to H&B with Bluebell. Fostered by Skylar.",
     },
