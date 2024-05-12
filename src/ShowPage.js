@@ -15,24 +15,21 @@ class ShowPage extends Component {
         super(props);
         this.state = {
             monkeys: monkeysArr.sort((a, b) => a.name.localeCompare(b.name)),
-            //track sorting state to toggle on next click
+            selectedMonkey: null,
+            yearsArr: [],
             sortNameAscending: true,
             sortTroopAscending: false,
             sortYearAscending: false,
-            isModalOpen: false,
-            selectedMonkey: null,
-            isGeneratingPDF: false,
             currentTroopFilter: "All Troops",
             currentYearFilter: "All Years",
-            yearsArr: [],
             searchValue: "",
+            isModalOpen: false,
+            isGeneratingPDF: false,
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
-        // this.createPDF = this.createPDF.bind(this);
-        // this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
     }
     updateYearsArr() {
@@ -172,16 +169,28 @@ class ShowPage extends Component {
             searchValue: "",
         }));
     };
-
     handleSearch(event) {
-        this.setState({ searchValue: event.target.value.toLowerCase() });
-        const { searchValue } = this.state;
-        const results = monkeysArr.filter((monkey) =>
-            monkey.name.toLowerCase().includes(searchValue.toLocaleLowerCase())
-        );
-        this.setState({ monkeys: results });
-    }
+        console.log(event.target.value);
+        const searchValue = event.target.value.toLowerCase();
 
+        this.setState(
+            () => ({ searchValue }),
+            () => {
+                const { searchValue } = this.state;
+                console.log(searchValue);
+                if (searchValue === "") {
+                    this.setState({ monkeys: monkeysArr });
+                } else {
+                    const results = monkeysArr.filter((monkey) =>
+                        monkey.name
+                            .toLowerCase()
+                            .includes(searchValue.trim().toLowerCase())
+                    );
+                    this.setState({ monkeys: results });
+                }
+            }
+        );
+    }
     toggleModal(m) {
         this.setState((st) => ({
             selectedMonkey: m,
@@ -205,8 +214,6 @@ class ShowPage extends Component {
         this.updateYearsArr();
     }
     render() {
-        let monkeys = this.state.monkeys;
-
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
@@ -221,7 +228,6 @@ class ShowPage extends Component {
                         createPDF={this.createPDF}
                         isGeneratingPDF={this.state.isGeneratingPDF}
                         searchValue={this.state.searchValue}
-                        // handleSearchInputChange={this.handleSearchInputChange}
                         handleSearch={this.handleSearch}
                     />
                 </div>
@@ -269,7 +275,7 @@ class ShowPage extends Component {
                     </div>
                 </div>
                 <div className="ShowPage-monkeys">
-                    {monkeys.map((m) => (
+                    {this.state.monkeys.map((m) => (
                         <div key={uuidv4()} onClick={() => this.toggleModal(m)}>
                             <MonkeyCard
                                 name={m.name}
