@@ -25,12 +25,15 @@ class ShowPage extends Component {
             currentTroopFilter: "All Troops",
             currentYearFilter: "All Years",
             yearsArr: [],
+            searchValue: "",
         };
         this.sortByName = this.sortByName.bind(this);
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         this.createPDF = this.createPDF.bind(this);
+        this.handleSearchInputChange = this.handleSearchInputChange.bind(this);
+        this.handleSearch = this.handleSearch.bind(this);
     }
     updateYearsArr() {
         const currYear = new Date().getFullYear();
@@ -168,6 +171,16 @@ class ShowPage extends Component {
             currentYearFilter: selectedYearFilter,
         }));
     };
+
+    handleSearchInputChange(event) {
+        this.setState({ searchValue: event.target.value });
+    }
+
+    handleSearch() {
+        console.log(this.state.searchValue);
+        //enter search function here
+    }
+
     toggleModal(m) {
         this.setState((st) => ({
             selectedMonkey: m,
@@ -206,6 +219,9 @@ class ShowPage extends Component {
                     <Nav
                         createPDF={this.createPDF}
                         isGeneratingPDF={this.state.isGeneratingPDF}
+                        searchValue={this.state.searchValue}
+                        handleSearchInputChange={this.handleSearchInputChange}
+                        handleSearch={this.handleSearch}
                     />
                 </div>
                 <div className="ShowPage-sortfilter">

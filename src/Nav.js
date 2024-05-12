@@ -11,6 +11,7 @@ class Nav extends Component {
     handleClick() {
         this.props.createPDF();
     }
+
     render() {
         return (
             <>
@@ -35,8 +36,10 @@ class Nav extends Component {
                         type="text"
                         placeholder="Search for a name or chip number"
                         name="search"
+                        value={this.props.searchValue}
+                        onChange={this.props.handleSearchInputChange}
                     ></input>
-                    <button>
+                    <button onClick={this.props.handleSearch}>
                         <IconSearch stroke={2} />
                     </button>
                 </div>
