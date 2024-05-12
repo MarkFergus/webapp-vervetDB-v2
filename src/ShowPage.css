@@ -29,7 +29,7 @@
     display: flex;
     justify-content: center;
     align-items: end;
-    margin-left: 2px;
+    margin-left: 0;
     padding-bottom: 8px;
     height: 32px;
     border: none;
@@ -37,7 +37,6 @@
     background-color: #242424;
     color: rgb(192, 191, 191);
     cursor: pointer;
-    transition: border-bottom 0.5s ease-out;
 }
 
 .ShowPage-sort button svg {
@@ -98,10 +97,11 @@
         flex-direction: row;
         justify-content: start;
         align-items: center;
+        margin: 0 24px;
     }
 
     .ShowPage-sort {
-        margin: 0 24px;
+        margin-right: 24px;
     }
 
     .ShowPage-sort h4,

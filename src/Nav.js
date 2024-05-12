@@ -26,7 +26,7 @@ class Nav extends Component {
                         </div>
                         <input
                             type="text"
-                            placeholder="Search name or chip number"
+                            placeholder="Name or chip number"
                             name="search"
                             value={this.props.searchValue}
                             onChange={this.props.handleSearch}
