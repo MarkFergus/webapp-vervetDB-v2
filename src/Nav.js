@@ -32,16 +32,16 @@ class Nav extends Component {
                     </div>
                 </nav>
                 <div className="Nav-searchbar">
+                    <div class="Nav-iconSearch">
+                        <IconSearch stroke={2} />
+                    </div>
                     <input
                         type="text"
-                        placeholder="Search for a name or chip number"
+                        placeholder="Search for name or chip number"
                         name="search"
                         value={this.props.searchValue}
                         onChange={this.props.handleSearch}
                     ></input>
-                    <button onClick={this.props.handleSearch}>
-                        <IconSearch stroke={2} />
-                    </button>
                 </div>
             </>
         );

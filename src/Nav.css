@@ -47,7 +47,7 @@
     background-color: #3e3e3e;
     border: 1px solid white;
     border-radius: 8px;
-    margin: 0 0 6px 0;
+    margin: 0 0 8px 0;
 }
 
 .Nav-searchbar input {
@@ -57,7 +57,7 @@
     font-size: 16px;
     border: none;
     outline: none;
-    padding: 12px 16px;
+    padding: 8px 8px 8px 0;
 }
 
 .Nav-searchbar input:focus {
@@ -65,15 +65,15 @@
     color: white;
 }
 
-.Nav-searchbar button {
+.Nav-iconSearch {
     border: none;
     background-color: transparent;
     cursor: pointer;
     margin-right: 8px;
-    padding: 8px 8px;
+    padding: 8px 0 6px 8px;
 }
 
-.Nav-searchbar button:hover {
+.Nav-iconSearch:hover {
     color: white;
 }
 
