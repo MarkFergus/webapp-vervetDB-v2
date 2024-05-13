@@ -56,18 +56,19 @@ class ModalPDF extends Component {
                                 </div>
                                 <motion.div className="ModalPDF-content">
                                     <h1 className="ModalPDF-title">
-                                        Create Profile Book
+                                        Profile Book PDF
                                     </h1>
                                     <div className="ModalPDF-details">
                                         <h3>
-                                            This will generate a profile book
-                                            PDF for the monkeys currently
-                                            displayed in the main view. The
-                                            order
+                                            This will create a profile book
+                                            styled PDF for the monkeys that are
+                                            currently displayed in the main
+                                            view, and in the same order as
+                                            shown.
                                         </h3>
                                         <h3>
                                             More styling options will be added
-                                            later.
+                                            here later.
                                         </h3>
                                     </div>
                                     <div className="ModalPDF-Btns">
