@@ -75,6 +75,11 @@
     color: white;
 }
 
+.hourglass {
+    color: rgb(205, 205, 205);
+    cursor: auto;
+}
+
 @media (max-width: 624px) {
     .Nav-title {
         display: none;

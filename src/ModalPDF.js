@@ -25,7 +25,7 @@ class ModalPDF extends Component {
                             animate={{
                                 opacity: 1,
                                 transition: {
-                                    duration: 0.3,
+                                    duration: 0.2,
                                 },
                             }}
                             exit={{
@@ -39,7 +39,7 @@ class ModalPDF extends Component {
                                 scale: 1,
                                 opacity: 1,
                                 transition: {
-                                    duration: 0.3,
+                                    duration: 0.2,
                                 },
                             }}
                             exit={{
@@ -60,9 +60,14 @@ class ModalPDF extends Component {
                                     </h1>
                                     <div className="ModalPDF-details">
                                         <h3>
-                                            This will create a create a profile
-                                            book PDF for the monkeys currently
-                                            displayed.
+                                            This will generate a profile book
+                                            PDF for the monkeys currently
+                                            displayed in the main view. The
+                                            order
+                                        </h3>
+                                        <h3>
+                                            More styling options will be added
+                                            later.
                                         </h3>
                                     </div>
                                     <div className="ModalPDF-Btns">

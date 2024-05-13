@@ -25,9 +25,9 @@
     position: relative;
     z-index: 1;
     width: 96%;
-    max-width: 550px;
+    max-width: 400px;
     height: auto;
-    background-color: #242424;
+    background-color: #202020;
     border-radius: 10px;
     display: block;
 }
@@ -64,20 +64,27 @@
     color: white;
 }
 
+.ModalPDF-content {
+    margin: 16px;
+}
+
 .ModalPDF-title {
+    font-size: 24px;
     text-align: center;
-    margin: 40px 0;
+    margin: 50px 0 32px 0;
 }
 
 .ModalPDF-details {
+    font-size: 16px;
     display: flex;
     flex-direction: column;
     justify-content: start;
     align-items: start;
-    margin: 8px 32px;
+    margin: 8px 0;
 }
 
 .ModalPDF-details h3 {
+    font-weight: 300;
     margin: 4px 0 32px 0;
 }
 
@@ -90,7 +97,19 @@
 }
 
 .ModalPDF-createBtn {
-    background-color: rgb(192, 191, 191);
+    background-color: #758f41;
+    color: #1f1f1f;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.ModalPDF-createBtn:hover {
+    background-color: #90af50;
     color: #242424;
     font-family: "Nunito Sans", sans-serif;
     font-size: 1rem;

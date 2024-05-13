@@ -43,7 +43,11 @@ class Nav extends Component {
                             disabled={this.props.isGeneratingPDF}
                         >
                             {this.props.isGeneratingPDF ? (
-                                <IconHourglassLow stroke="2" size="36" />
+                                <IconHourglassLow
+                                    className="hourglass"
+                                    stroke="2"
+                                    size="32"
+                                />
                             ) : (
                                 <IconFileTypePdf stroke="2" size="36" />
                             )}
