@@ -964,7 +964,7 @@ const monkeysArr = [
         chip: 1891,
         troop: "SAAV",
         year: 2006,
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/bzBxV30/Acorn-Feb-2021-2-min.jpg"],
         bio: "Arrived as an orphan. Hand-raised and therefore quite humanised. Former alpha-female. Fostered Phoebe, Utku, Harris, and Trixi.",
         desc: "There’s no two ways about it, she’s a very chunky monkey! Pale silhouettes around eyes.",
     },
@@ -975,7 +975,7 @@ const monkeysArr = [
         troop: "SAAV",
         year: 2008,
         bio: "Nothing. Nada. Zilch.",
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/ggTNFSh/Berlioz-SAAV-May-2023-min.jpg"],
         desc: "Lower left canine sticks out, curved brow.",
     },
     {
