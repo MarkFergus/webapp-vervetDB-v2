@@ -305,17 +305,17 @@ class ShowPage extends Component {
                             />
                         </div>
                     ))}
-                    {indexOfLastMonkey < this.state.monkeys.length && (
-                        <div className="ShowPage-showMore">
-                            <button
-                                className="ShowPage-showMoreBtn"
-                                onClick={this.handleShowMore}
-                            >
-                                Show More
-                            </button>
-                        </div>
-                    )}
                 </div>
+                {indexOfLastMonkey < this.state.monkeys.length && (
+                    <div className="ShowPage-showMore">
+                        <button
+                            className="ShowPage-showMoreBtn"
+                            onClick={this.handleShowMore}
+                        >
+                            Show More
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }
