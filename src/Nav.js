@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { IconSearch } from "@tabler/icons-react";
+import ModalPDF from "./ModalPDF";
 import monkeyIcon from "./monkey-icon.png";
 import "./Nav.css";
 
@@ -34,7 +35,7 @@ class Nav extends Component {
                     </div>
                     <div className="Nav-buttons">
                         <button
-                            onClick={this.handleClick}
+                            onClick={this.props.togglePDFModal}
                             disabled={this.props.isGeneratingPDF}
                         >
                             {this.props.isGeneratingPDF
@@ -43,6 +44,13 @@ class Nav extends Component {
                         </button>
                     </div>
                 </nav>
+                <div className="Nav-pdfmodal">
+                    <ModalPDF
+                        closePDFModal={this.props.togglePDFModal}
+                        isPDFModalOpen={this.props.isPDFModalOpen}
+                        createPDF={this.props.createPDF}
+                    />
+                </div>
             </>
         );
     }

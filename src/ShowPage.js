@@ -24,6 +24,7 @@ class ShowPage extends Component {
             currentYearFilter: "All Years",
             searchValue: "",
             isModalOpen: false,
+            isPDFModalOpen: false,
             isGeneratingPDF: false,
             currentPage: 1,
             monkeysPerPage: 100,
@@ -32,6 +33,7 @@ class ShowPage extends Component {
         this.sortByTroop = this.sortByTroop.bind(this);
         this.sortByYear = this.sortByYear.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
+        this.togglePDFModal = this.togglePDFModal.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
         this.handleShowMore = this.handleShowMore.bind(this);
     }
@@ -202,6 +204,12 @@ class ShowPage extends Component {
             isModalOpen: !st.isModalOpen,
         }));
     }
+    togglePDFModal(m) {
+        console.log("pdf modal requested");
+        this.setState((st) => ({
+            isPDFModalOpen: !st.isPDFModalOpen,
+        }));
+    }
     //PDF function from react-pdf
     createPDF = async () => {
         this.setState({ isGeneratingPDF: true });
@@ -244,6 +252,8 @@ class ShowPage extends Component {
                         isGeneratingPDF={this.state.isGeneratingPDF}
                         searchValue={this.state.searchValue}
                         handleSearch={this.handleSearch}
+                        isPDFModalOpen={this.state.isPDFModalOpen}
+                        togglePDFModal={this.togglePDFModal}
                     />
                 </div>
                 <div className="ShowPage-sortfilter">
