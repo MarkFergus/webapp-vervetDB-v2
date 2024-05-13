@@ -9,27 +9,24 @@
 .Nav-icon img {
     height: 40px;
     width: 40px;
-    margin-right: 4px;
-    padding-bottom: 8px;
-    filter: invert(100%);
+    padding-bottom: 4px;
+    filter: invert(90%);
 }
 
 .Nav-title {
     font-family: "Russo One", sans-serif;
     margin: 0 8px 0 0;
-    padding-bottom: 4px;
 }
 
 .Nav-searchbar {
     width: 100%;
     max-width: 500px;
-    max-height: 42px;
-    min-height: 30px;
+    height: 38px;
     display: flex;
     align-items: center;
     border: 1px solid white;
     border-radius: 8px;
-    margin: 0 auto 6px auto;
+    margin: 0 auto;
 }
 
 .Nav-searchbar input {
@@ -53,45 +50,33 @@
 .Nav-iconSearch {
     border: none;
     background-color: transparent;
+    margin-left: 8px;
     margin-right: 8px;
-    padding: 8px 0 6px 8px;
-}
-
-.Nav-iconSearch:hover {
-    color: white;
+    padding-top: 4px;
 }
 
 .Nav-buttons {
     display: flex;
     align-items: center;
-    margin-left: 8px;
-    margin-bottom: 6px;
-    text-wrap: nowrap;
+    justify-content: center;
 }
 
-.Nav button {
-    font-size: 15px;
-    padding: 6px 12px;
+.Nav-buttons button {
+    color: rgb(205, 205, 205);
+    margin-left: 4px;
+    padding: 6px 0 2px 0;
     border: none;
     border-radius: 5px;
-    background-color: #3e3e3e;
+    background-color: transparent;
     cursor: pointer;
-    text-wrap: nowrap;
 }
 
 .Nav button:hover {
-    background-color: #545454;
+    color: white;
 }
 
 @media (max-width: 624px) {
     .Nav-title {
         display: none;
-    }
-}
-
-@media (max-width: 420px) {
-    .Nav button {
-        text-wrap: wrap;
-        padding: 4px;
     }
 }

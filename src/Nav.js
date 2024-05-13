@@ -1,5 +1,9 @@
 import { Component } from "react";
-import { IconSearch } from "@tabler/icons-react";
+import {
+    IconSearch,
+    IconFileTypePdf,
+    IconHourglassLow,
+} from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import monkeyIcon from "./monkey-icon.png";
 import "./Nav.css";
@@ -38,9 +42,11 @@ class Nav extends Component {
                             onClick={this.props.togglePDFModal}
                             disabled={this.props.isGeneratingPDF}
                         >
-                            {this.props.isGeneratingPDF
-                                ? "Downloading..."
-                                : "Create PDF"}
+                            {this.props.isGeneratingPDF ? (
+                                <IconHourglassLow stroke="2" size="36" />
+                            ) : (
+                                <IconFileTypePdf stroke="2" size="36" />
+                            )}
                         </button>
                     </div>
                 </nav>
