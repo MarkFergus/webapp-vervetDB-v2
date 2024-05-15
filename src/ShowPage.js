@@ -257,6 +257,21 @@ class ShowPage extends Component {
                     />
                 </div>
                 <div className="ShowPage-sortfilter">
+                    <div className="ShowPage-sort">
+                        <h4>Sort:</h4>
+                        <button onClick={this.sortByName}>
+                            <span>Name </span>
+                            <IconArrowsDownUp />
+                        </button>
+                        <button onClick={this.sortByTroop}>
+                            <span>Troop </span>
+                            <IconArrowsDownUp />{" "}
+                        </button>
+                        <button onClick={this.sortByYear}>
+                            <span>Year </span>
+                            <IconArrowsDownUp />{" "}
+                        </button>
+                    </div>
                     <div className="ShowPage-filter">
                         <h4>Filter:</h4>
                         <select
@@ -286,21 +301,6 @@ class ShowPage extends Component {
                                 </option>
                             ))}
                         </select>
-                    </div>
-                    <div className="ShowPage-sort">
-                        <h4>Sort:</h4>
-                        <button onClick={this.sortByName}>
-                            <span>Name </span>
-                            <IconArrowsDownUp />
-                        </button>
-                        <button onClick={this.sortByTroop}>
-                            <span>Troop </span>
-                            <IconArrowsDownUp />{" "}
-                        </button>
-                        <button onClick={this.sortByYear}>
-                            <span>Year </span>
-                            <IconArrowsDownUp />{" "}
-                        </button>
                     </div>
                 </div>
                 <div className="ShowPage-monkeys">
