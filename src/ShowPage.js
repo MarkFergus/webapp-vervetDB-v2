@@ -35,6 +35,7 @@ class ShowPage extends Component {
         this.toggleModal = this.toggleModal.bind(this);
         this.togglePDFModal = this.togglePDFModal.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
         this.handleShowMore = this.handleShowMore.bind(this);
     }
     updateYearsArr() {
@@ -198,6 +199,11 @@ class ShowPage extends Component {
             }
         );
     }
+    handleDelete() {
+        this.setState({
+            searchValue: "",
+        });
+    }
     toggleModal(m) {
         this.setState((st) => ({
             selectedMonkey: m,
@@ -252,6 +258,7 @@ class ShowPage extends Component {
                         isGeneratingPDF={this.state.isGeneratingPDF}
                         searchValue={this.state.searchValue}
                         handleSearch={this.handleSearch}
+                        handleDelete={this.handleDelete}
                         isPDFModalOpen={this.state.isPDFModalOpen}
                         togglePDFModal={this.togglePDFModal}
                     />

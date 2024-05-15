@@ -50,9 +50,17 @@
 .Nav-iconSearch {
     border: none;
     background-color: transparent;
-    margin-left: 8px;
-    margin-right: 8px;
-    padding-top: 4px;
+    padding: 2px 8px 0 8px;
+}
+
+.Nav-iconX {
+    border: none;
+    background-color: transparent;
+    padding: 2px 8px 0 4px;
+}
+
+.Nav-iconX:hover {
+    color: white;
 }
 
 .Nav-buttons {

@@ -1,6 +1,7 @@
 import { Component } from "react";
 import {
     IconSearch,
+    IconX,
     IconFileTypePdf,
     IconHourglassLow,
 } from "@tabler/icons-react";
@@ -36,6 +37,12 @@ class Nav extends Component {
                             value={this.props.searchValue}
                             onChange={this.props.handleSearch}
                         ></input>
+                        <div
+                            className="Nav-iconX"
+                            onClick={this.props.handleDelete}
+                        >
+                            <IconX stroke={2} />
+                        </div>
                     </div>
                     <div className="Nav-buttons">
                         <button
