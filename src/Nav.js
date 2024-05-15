@@ -28,7 +28,7 @@ class Nav extends Component {
                     <p className="Nav-title">vervetDB</p>
                     <div className="Nav-searchbar">
                         <div className="Nav-iconSearch">
-                            <IconSearch stroke={3} />
+                            <IconSearch stroke={2} />
                         </div>
                         <input
                             type="text"
@@ -42,7 +42,7 @@ class Nav extends Component {
                                 className="Nav-iconX"
                                 onClick={this.props.handleDelete}
                             >
-                                <IconX stroke={3} />
+                                <IconX stroke={2} />
                             </div>
                         )}
                     </div>

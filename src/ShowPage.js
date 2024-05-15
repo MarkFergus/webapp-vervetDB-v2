@@ -202,6 +202,7 @@ class ShowPage extends Component {
     handleDelete() {
         this.setState({
             searchValue: "",
+            monkeys: monkeysArr,
         });
     }
     toggleModal(m) {
