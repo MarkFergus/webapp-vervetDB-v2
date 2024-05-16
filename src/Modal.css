@@ -66,9 +66,44 @@
     color: white;
 }
 
+.Modal-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 8px 0;
+}
+
 .Modal-title {
     text-align: center;
-    margin: 4px 0;
+    margin: 0 64px;
+}
+
+.Modal-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #303030;
+    padding: 4px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.arrowleft,
+.arrowright {
+    color: rgb(180, 180, 180);
+}
+
+.arrowleft {
+    padding-right: 2px;
+}
+
+.arrowright {
+    padding-left: 2px;
+}
+
+.arrowleft:hover,
+.arrowright:hover {
+    color: white;
 }
 
 .Modal-img {

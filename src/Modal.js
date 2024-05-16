@@ -1,5 +1,9 @@
 import React, { Component } from "react";
-import { IconSquareRoundedX } from "@tabler/icons-react";
+import {
+    IconSquareRoundedX,
+    IconChevronLeft,
+    IconChevronRight,
+} from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Modal.css";
 
@@ -44,9 +48,17 @@ class Modal extends Component {
                                     <IconSquareRoundedX />
                                 </div>
                                 <motion.div className="Modal-content">
-                                    <h1 className="Modal-title">
-                                        {monkey.name}
-                                    </h1>
+                                    <div className="Modal-header">
+                                        <div className="Modal-arrow">
+                                            <IconChevronLeft className="arrowleft" />
+                                        </div>
+                                        <h1 className="Modal-title">
+                                            {monkey.name}
+                                        </h1>
+                                        <div className="Modal-arrow">
+                                            <IconChevronRight className="arrowright" />
+                                        </div>
+                                    </div>
                                     <div className="Modal-img">
                                         <img
                                             src={monkey.img[0]}
