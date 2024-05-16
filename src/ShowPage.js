@@ -16,6 +16,8 @@ class ShowPage extends Component {
         this.state = {
             monkeys: monkeysArr.sort((a, b) => a.name.localeCompare(b.name)),
             selectedMonkey: null,
+            prevMonkey: null,
+            nextMOnkey: null,
             yearsArr: [],
             sortNameAscending: true,
             sortTroopAscending: false,
@@ -37,6 +39,7 @@ class ShowPage extends Component {
         this.handleSearch = this.handleSearch.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleShowMore = this.handleShowMore.bind(this);
+        this.handlePrevNext = this.handlePrevNext.bind(this);
     }
     updateYearsArr() {
         const currYear = new Date().getFullYear();
@@ -205,11 +208,44 @@ class ShowPage extends Component {
             monkeys: monkeysArr,
         });
     }
-    toggleModal(m) {
+    updatePrevNextMonkeys() {
+        const { monkeys, selectedMonkey } = this.state;
+        const selectedIndex = monkeys.findIndex(
+            (monkey) => monkey === selectedMonkey
+        );
+        console.log(`selectedIndex is ${selectedIndex}`);
+        const prevMonkey = monkeys[selectedIndex - 1] || null;
+        const nextMonkey = monkeys[selectedIndex + 1] || null;
+        // console.log(
+        //     `prevMonkey is ${prevMonkey.name}, nextMonkey is ${nextMonkey.name}`
+        // );
         this.setState((st) => ({
-            selectedMonkey: m,
+            prevMonkey: prevMonkey,
+            nextMonkey: nextMonkey,
+        }));
+    }
+    setIndexes(m) {
+        this.setState({ selectedMonkey: m }, this.updatePrevNextMonkeys);
+    }
+    toggleModal(m) {
+        this.setIndexes(m);
+        this.setState((st) => ({
             isModalOpen: !st.isModalOpen,
         }));
+    }
+    handlePrevNext(direction) {
+        const { prevMonkey, nextMonkey } = this.state;
+        if (direction === "prev" && prevMonkey) {
+            this.setState(
+                { selectedMonkey: prevMonkey },
+                this.updatePrevNextMonkeys
+            );
+        } else if (direction === "next" && nextMonkey) {
+            this.setState(
+                { selectedMonkey: nextMonkey },
+                this.updatePrevNextMonkeys
+            );
+        }
     }
     togglePDFModal(m) {
         console.log("pdf modal requested");
@@ -241,7 +277,6 @@ class ShowPage extends Component {
     render() {
         const { currentPage, monkeysPerPage } = this.state;
         const indexOfLastMonkey = currentPage * monkeysPerPage;
-        // const indexOfFirstMonkey = indexOfLastMonkey - monkeysPerPage;
         const currentMonkeys = this.state.monkeys.slice(0, indexOfLastMonkey);
 
         return (
@@ -251,6 +286,9 @@ class ShowPage extends Component {
                         onClose={this.toggleModal}
                         isModalOpen={this.state.isModalOpen}
                         monkey={this.state.selectedMonkey}
+                        handlePrevNext={this.handlePrevNext}
+                        prevMonkey={this.state.prevMonkey}
+                        nextMonkey={this.state.nextMonkey}
                     />
                 </div>
                 <div className="ShowPage-nav">
@@ -312,8 +350,11 @@ class ShowPage extends Component {
                     </div>
                 </div>
                 <div className="ShowPage-monkeys">
-                    {currentMonkeys.map((m) => (
-                        <div key={uuidv4()} onClick={() => this.toggleModal(m)}>
+                    {currentMonkeys.map((m, index) => (
+                        <div
+                            key={uuidv4()}
+                            onClick={() => this.toggleModal(m, index)}
+                        >
                             <MonkeyCard
                                 name={m.name}
                                 sex={m.sex}

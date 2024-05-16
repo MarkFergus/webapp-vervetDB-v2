@@ -8,8 +8,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import "./Modal.css";
 
 class Modal extends Component {
+    constructor(props) {
+        super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
+    handleClick(direction) {
+        this.props.handlePrevNext(direction);
+    }
     render() {
-        const { isModalOpen, monkey, onClose } = this.props;
+        const { isModalOpen, monkey, onClose, prevMonkey, nextMonkey } =
+            this.props;
         return (
             <AnimatePresence>
                 {isModalOpen && (
@@ -49,13 +57,33 @@ class Modal extends Component {
                                 </div>
                                 <motion.div className="Modal-content">
                                     <div className="Modal-header">
-                                        <div className="Modal-arrow">
+                                        <div
+                                            className={
+                                                prevMonkey
+                                                    ? "Modal-arrowleft"
+                                                    : "Modal-arrowleft-hidden"
+                                            }
+                                            onClick={() =>
+                                                this.handleClick("prev")
+                                            }
+                                        >
                                             <IconChevronLeft className="arrowleft" />
                                         </div>
+
                                         <h1 className="Modal-title">
                                             {monkey.name}
                                         </h1>
-                                        <div className="Modal-arrow">
+
+                                        <div
+                                            className={
+                                                nextMonkey
+                                                    ? "Modal-arrowright"
+                                                    : "Modal-arrowright-hidden"
+                                            }
+                                            onClick={() =>
+                                                this.handleClick("next")
+                                            }
+                                        >
                                             <IconChevronRight className="arrowright" />
                                         </div>
                                     </div>
