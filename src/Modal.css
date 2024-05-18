@@ -28,10 +28,15 @@
     max-width: 550px;
     height: 96%;
     max-height: 850px;
+    margin-bottom: 1rem;
     background-color: #2a282a;
     overflow: auto;
     border-radius: 10px;
     display: block;
+}
+
+.Modal-content {
+    padding-bottom: 16px;
 }
 
 .Modal-close {
@@ -48,8 +53,8 @@
 
 .Modal-close svg {
     position: absolute;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 8px;
     top: 0;
     right: 0;
@@ -70,14 +75,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 72px;
-    margin: 0.5rem 1rem 0.5rem 1rem;
+    /* min-height: 72px; */
+    margin: 28px 0 16px 0;
 }
 
 .Modal-title {
-    min-width: 120px;
+    min-width: 160px;
     text-align: center;
     margin: 0 15px;
+    font-size: 30px;
     line-height: 36px;
 }
 
@@ -137,7 +143,7 @@
 }
 
 .Modal-img {
-    margin: 0 16px;
+    margin: 0 8px;
     text-align: center;
 }
 
@@ -152,11 +158,11 @@
     flex-direction: column;
     justify-content: start;
     align-items: start;
-    margin: 8px 20px;
+    margin: 8px 12px;
 }
 
 .Modal-details h3 {
-    margin: 4px 0;
+    margin: 2px 0;
     font-weight: 700;
 }
 
