@@ -1,3 +1,13 @@
+/* Colors (1 is darkest)
+Dark1 = #1F1F1F
+Dark2 = #2a282a
+Dark3 = #343234
+
+Text dark = #B6B2A5
+Text normal = #D1CFC7
+Text bright = white
+*/
+
 .ShowPage-nav {
     padding: 8px 0 0 0;
     margin: 0 8px;
@@ -34,7 +44,7 @@
     height: 32px;
     border: none;
     border-radius: 5px;
-    background-color: #242424;
+    background-color: transparent;
     color: rgb(192, 191, 191);
     cursor: pointer;
 }
@@ -48,7 +58,7 @@
 .ShowPage-sort button:hover,
 .ShowPage-sort select:hover {
     color: white;
-    background-color: #3e3e3e;
+    background-color: #343234;
 }
 
 .ShowPage-filter {
@@ -66,8 +76,8 @@
     text-align: right;
     border: none;
     border-radius: 2px;
-    color: rgb(192, 191, 191);
-    background-color: #242424;
+    color: #d1cfc7;
+    background-color: transparent;
     padding: 4px 2px 2px 0;
 }
 
@@ -75,10 +85,9 @@
 #year option {
     font-family: "Nunito Sans", sans-serif;
     border: none;
-    border-radius: 2px;
-    color: rgb(192, 191, 191);
-    background-color: #242424;
-    padding: 4px 0;
+    color: #d1cfc7;
+    background-color: #1f1f1f;
+    padding: 2px 0;
 }
 
 .ShowPage-monkeys {
@@ -98,18 +107,18 @@
 }
 
 .ShowPage-showMoreBtn {
-    background-color: #323232;
-    color: rgb(192, 191, 191);
+    background-color: transparent;
+    color: #d1cfc7;
     font-size: 1rem;
     margin: 32px;
     padding: 8px 16px;
-    border: 1px solid rgb(192, 191, 191);
+    border: 1px solid #d1cfc7;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .ShowPage-showMoreBtn:hover {
-    background-color: #464646;
+    background-color: #343234;
     color: white;
 }
 

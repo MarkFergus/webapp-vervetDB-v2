@@ -24,7 +24,7 @@
 }
 
 .MonkeyCard-info {
-    color: rgb(192, 191, 191);
+    color: #d1cfc7;
     width: 100%;
     font-size: 0.9rem;
     margin: 2px 0 0 0;
@@ -36,7 +36,7 @@
 }
 
 .MonkeyCard:hover .MonkeyCard-info {
-    color: rgb(255, 255, 255);
+    color: white;
 }
 
 .MonkeyCard-info-name,
