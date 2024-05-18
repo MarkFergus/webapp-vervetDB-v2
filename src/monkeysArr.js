@@ -1094,7 +1094,7 @@ const monkeysArr = [
         chip: 26719,
         troop: "SAAV",
         year: 2022,
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/QXywkxW/phoebe-saav-mar2024-min.jpg"],
         bio: "Arrived as an orphan. Reason is unclear, apparently walked into a man’s house all by herself and started hugging him, which is likely not the entire story. Fostered by Acorn.",
         desc: "",
     },
