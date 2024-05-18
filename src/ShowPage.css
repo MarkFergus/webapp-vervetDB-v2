@@ -6,6 +6,9 @@ Dark3 = #343234
 Text dark = #B6B2A5
 Text normal = #D1CFC7
 Text bright = white
+
+neonpink = #fe39a4
+neonblue = #25c4f8
 */
 
 .ShowPage-nav {
@@ -85,6 +88,7 @@ Text bright = white
 #year option {
     font-family: "Nunito Sans", sans-serif;
     border: none;
+    border-radius: 0;
     color: #d1cfc7;
     background-color: #1f1f1f;
     padding: 2px 0;
