@@ -7,8 +7,9 @@ Text dark = #B6B2A5
 Text normal = #D1CFC7
 Text bright = white
 
-neonpink = #fe39a4
-neonblue = #25c4f8
+neonpink = #fe39a4 - neonlightpink #ff92ce
+neonblue = #25c4f8 - neonlightblue #86e1ff
+
 */
 
 .ShowPage-nav {
@@ -18,7 +19,7 @@ neonblue = #25c4f8
 
 .ShowPage-sortfilter {
     height: 24px;
-    font-size: 16px;
+    font-size: 14px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -37,13 +38,16 @@ neonblue = #25c4f8
 .ShowPage-sort h4,
 .ShowPage-filter h4 {
     display: none;
+    font-size: 14px;
 }
 
 .ShowPage-sort button {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 14px;
     margin-left: 0;
+    padding-bottom: 2px;
     height: 32px;
     border: none;
     border-radius: 5px;
@@ -54,6 +58,7 @@ neonblue = #25c4f8
 
 .ShowPage-sort button svg {
     padding-left: 2px;
+    padding-top: 2px;
     height: 12px;
     width: 12px;
 }
@@ -61,10 +66,11 @@ neonblue = #25c4f8
 .ShowPage-sort button:hover,
 .ShowPage-sort select:hover {
     color: white;
-    background-color: #343234;
+    background-color: #2a282a;
 }
 
 .ShowPage-filter {
+    font-size: 14px;
     display: flex;
     flex-direction: row;
     justify-content: start;
@@ -81,7 +87,7 @@ neonblue = #25c4f8
     border-radius: 2px;
     color: #d1cfc7;
     background-color: transparent;
-    padding: 4px 2px 2px 0;
+    padding: 4px 2px 4px 0;
 }
 
 #troops option,
@@ -92,6 +98,12 @@ neonblue = #25c4f8
     color: #d1cfc7;
     background-color: #1f1f1f;
     padding: 2px 0;
+}
+
+#troops option:hover,
+#year option:hover {
+    color: white;
+    background-color: #2a282a;
 }
 
 .ShowPage-monkeys {
@@ -112,18 +124,18 @@ neonblue = #25c4f8
 
 .ShowPage-showMoreBtn {
     background-color: transparent;
-    color: #d1cfc7;
+    color: #25c4f8;
+    border: 1px solid #25c4f8;
     font-size: 1rem;
     margin: 32px;
     padding: 8px 16px;
-    border: 1px solid #d1cfc7;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .ShowPage-showMoreBtn:hover {
-    background-color: #343234;
-    color: white;
+    color: #86e1ff;
+    border: 1px solid #86e1ff;
 }
 
 @media (min-width: 500px) {

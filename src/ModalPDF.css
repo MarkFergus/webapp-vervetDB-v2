@@ -1,3 +1,16 @@
+/* Colors (1 is darkest)
+Dark1 = #1F1F1F
+Dark2 = #2a282a
+Dark3 = #343234
+
+Text dark = #B6B2A5
+Text normal = #D1CFC7
+Text bright = white
+
+neonpink = #fe39a4 - beonlightpink #ff92ce
+neonblue = #25c4f8 - neonlightblue #86e1ff
+*/
+
 .ModalPDF-overlay {
     position: fixed;
     z-index: 1;
@@ -46,8 +59,8 @@
 
 .ModalPDF-close svg {
     position: absolute;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     border-radius: 8px;
     top: 0;
     right: 0;
@@ -97,23 +110,18 @@
 }
 
 .ModalPDF-createBtn {
-    background-color: #758f41;
-    color: #1f1f1f;
+    background-color: transparent;
+    color: #fe39a4;
+    border: 1px solid #fe39a4;
     font-family: "Nunito Sans", sans-serif;
     font-size: 1rem;
     font-weight: 700;
     padding: 8px 16px;
-    border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .ModalPDF-createBtn:hover {
-    background-color: #90af50;
-    color: #242424;
-    font-family: "Nunito Sans", sans-serif;
-    font-size: 1rem;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
+    color: #ff92ce;
+    border: 1px solid #ff92ce;
 }

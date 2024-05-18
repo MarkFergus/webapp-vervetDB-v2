@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { IconArrowsDownUp } from "@tabler/icons-react";
+import { IconArrowsSort } from "@tabler/icons-react";
 import { pdf } from "@react-pdf/renderer";
 import { v4 as uuidv4 } from "uuid";
 import monkeysArr from "./monkeysArr";
@@ -307,15 +307,15 @@ class ShowPage extends Component {
                         <h4>Sort:</h4>
                         <button onClick={this.sortByName}>
                             <span>Name </span>
-                            <IconArrowsDownUp />
+                            <IconArrowsSort />
                         </button>
                         <button onClick={this.sortByTroop}>
                             <span>Troop </span>
-                            <IconArrowsDownUp />{" "}
+                            <IconArrowsSort />{" "}
                         </button>
                         <button onClick={this.sortByYear}>
                             <span>Year </span>
-                            <IconArrowsDownUp />{" "}
+                            <IconArrowsSort />{" "}
                         </button>
                     </div>
                     <div className="ShowPage-filter">

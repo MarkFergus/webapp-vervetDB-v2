@@ -23,7 +23,7 @@
 
 .Modal-window {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     width: 96%;
     max-width: 550px;
     height: 96%;
@@ -48,7 +48,7 @@
     justify-content: flex-end;
     align-items: center;
     color: #b6b2a5;
-    z-index: 2;
+    z-index: 3;
 }
 
 .Modal-close svg {
@@ -126,7 +126,7 @@
 
 .arrowleft,
 .arrowright {
-    color: #d1cfc7;
+    color: #25c4f8;
 }
 
 .arrowleft {
@@ -139,7 +139,7 @@
 
 .arrowleft:hover,
 .arrowright:hover {
-    color: white;
+    color: #86e1ff;
 }
 
 .Modal-img {

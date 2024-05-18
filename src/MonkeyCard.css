@@ -1,3 +1,17 @@
+/* Colors (1 is darkest)
+Dark1 = #1F1F1F
+Dark2 = #2a282a
+Dark3 = #343234
+
+Text dark = #B6B2A5
+Text normal = #D1CFC7
+Text bright = white
+
+neonpink = #fe39a4 - neonlightpink #ff92ce
+neonblue = #25c4f8 - neonlightblue #86e1ff
+
+*/
+
 .MonkeyCard {
     display: flex;
     flex-grow: 1;
