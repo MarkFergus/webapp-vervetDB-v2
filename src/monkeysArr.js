@@ -870,7 +870,7 @@ const monkeysArr = [
         chip: 26794,
         troop: "H&B",
         year: 2022,
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/tPSg7Wd/fudge-hb-may2024-min.jpg"],
         bio: "Arrived as an orphan, reason unknown. Fostered by Percy as the first ever orphan introduced to H&B troop!",
         desc: "Thin and scruffy, small traiangular face, light golden coat.",
     },

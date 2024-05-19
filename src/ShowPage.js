@@ -216,9 +216,6 @@ class ShowPage extends Component {
         console.log(`selectedIndex is ${selectedIndex}`);
         const prevMonkey = monkeys[selectedIndex - 1] || null;
         const nextMonkey = monkeys[selectedIndex + 1] || null;
-        // console.log(
-        //     `prevMonkey is ${prevMonkey.name}, nextMonkey is ${nextMonkey.name}`
-        // );
         this.setState((st) => ({
             prevMonkey: prevMonkey,
             nextMonkey: nextMonkey,
