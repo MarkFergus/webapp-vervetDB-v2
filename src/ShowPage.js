@@ -213,7 +213,6 @@ class ShowPage extends Component {
         const selectedIndex = monkeys.findIndex(
             (monkey) => monkey === selectedMonkey
         );
-        console.log(`selectedIndex is ${selectedIndex}`);
         const prevMonkey = monkeys[selectedIndex - 1] || null;
         const nextMonkey = monkeys[selectedIndex + 1] || null;
         this.setState((st) => ({

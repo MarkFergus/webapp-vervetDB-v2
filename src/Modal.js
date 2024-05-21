@@ -3,6 +3,8 @@ import {
     IconSquareRoundedX,
     IconChevronLeft,
     IconChevronRight,
+    IconCaretLeftFilled,
+    IconCaretRightFilled,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Modal.css";
@@ -10,10 +12,31 @@ import "./Modal.css";
 class Modal extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            currentIndex: 0,
+        };
         this.handleClick = this.handleClick.bind(this);
+        this.handleImgClick = this.handleImgClick.bind(this);
     }
     handleClick(direction) {
         this.props.handlePrevNext(direction);
+    }
+    handleImgClick(direction) {
+        if (direction === "prev") {
+            this.setState({
+                currentIndex:
+                    (this.state.currentIndex -
+                        1 +
+                        this.props.monkey.img.length) %
+                    this.props.monkey.img.length,
+            });
+        } else if (direction === "next") {
+            this.setState({
+                currentIndex:
+                    (this.state.currentIndex + 1) %
+                    this.props.monkey.img.length,
+            });
+        }
     }
     render() {
         const { isModalOpen, monkey, onClose, prevMonkey, nextMonkey } =
@@ -67,7 +90,10 @@ class Modal extends Component {
                                                 this.handleClick("prev")
                                             }
                                         >
-                                            <IconChevronLeft className="arrowleft" />
+                                            <IconChevronLeft
+                                                className="arrowleft"
+                                                stroke="3"
+                                            />
                                         </div>
 
                                         <h1 className="Modal-title">
@@ -84,15 +110,47 @@ class Modal extends Component {
                                                 this.handleClick("next")
                                             }
                                         >
-                                            <IconChevronRight className="arrowright" />
+                                            <IconChevronRight
+                                                className="arrowright"
+                                                stroke="3"
+                                            />
                                         </div>
                                     </div>
                                     <div className="Modal-img">
                                         <img
-                                            src={monkey.img[0]}
+                                            src={
+                                                monkey.img[
+                                                    this.state.currentIndex
+                                                ]
+                                            }
                                             alt={monkey.name}
                                         ></img>
+                                        {monkey.img.length > 1 && (
+                                            <div className="Modal-imageButtonBox">
+                                                <button
+                                                    className="Modal-imageButton"
+                                                    onClick={() =>
+                                                        this.handleImgClick(
+                                                            "prev"
+                                                        )
+                                                    }
+                                                >
+                                                    <IconCaretLeftFilled />
+                                                </button>
+                                                <button
+                                                    className="Modal-imageButton"
+                                                    onClick={() =>
+                                                        this.handleImgClick(
+                                                            "next"
+                                                        )
+                                                    }
+                                                >
+                                                    <IconCaretRightFilled />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
+
                                     <div className="Modal-details">
                                         <h3>
                                             Troop: <span>{monkey.troop}</span>
