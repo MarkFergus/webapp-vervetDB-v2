@@ -20,6 +20,9 @@ class Modal extends Component {
     }
     handleClick(direction) {
         this.props.handlePrevNext(direction);
+        this.setState({
+            currentIndex: 0,
+        });
     }
     handleImgClick(direction) {
         if (direction === "prev") {
