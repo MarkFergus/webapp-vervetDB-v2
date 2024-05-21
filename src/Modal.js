@@ -5,6 +5,7 @@ import {
     IconChevronRight,
     IconCaretLeftFilled,
     IconCaretRightFilled,
+    IconCamera,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Modal.css";
@@ -155,6 +156,12 @@ class Modal extends Component {
                                     </div>
 
                                     <div className="Modal-details">
+                                        <div className="Modal-icons">
+                                            <div className="iconCamera">
+                                                <IconCamera />
+                                                <span>{monkey.img.length}</span>
+                                            </div>
+                                        </div>
                                         <h3>
                                             Troop: <span>{monkey.troop}</span>
                                         </h3>

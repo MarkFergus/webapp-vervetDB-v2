@@ -204,11 +204,32 @@
 }
 
 .Modal-details {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: start;
     align-items: start;
-    margin: 0.5rem 12px;
+    margin: 0.4rem 12px;
+}
+
+.Modal-icons {
+    position: absolute;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    color: #47b028;
+}
+
+.iconCamera {
+    display: flex;
+    justify-items: center;
+    align-items: end;
+    padding: 2px;
+}
+
+.iconCamera span {
+    padding-left: 4px;
 }
 
 .Modal-details h3 {
@@ -232,6 +253,6 @@
         margin: 0 16px;
     }
     .Modal-details {
-        margin: 0.5rem 20px;
+        margin: 0.4rem 20px;
     }
 }
