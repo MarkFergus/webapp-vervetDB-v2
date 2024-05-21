@@ -16,14 +16,22 @@ class Modal extends Component {
         this.state = {
             currentIndex: 0,
         };
+        this.handleClose = this.handleClose.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleImgClick = this.handleImgClick.bind(this);
     }
-    handleClick(direction) {
-        this.props.handlePrevNext(direction);
+    resetIndex() {
         this.setState({
             currentIndex: 0,
         });
+    }
+    handleClose() {
+        this.props.onClose();
+        this.resetIndex();
+    }
+    handleClick(direction) {
+        this.props.handlePrevNext(direction);
+        this.resetIndex();
     }
     handleImgClick(direction) {
         if (direction === "prev") {
@@ -79,7 +87,10 @@ class Modal extends Component {
                             }}
                         >
                             <div className="Modal-window">
-                                <div className="Modal-close" onClick={onClose}>
+                                <div
+                                    className="Modal-close"
+                                    onClick={this.handleClose}
+                                >
                                     <IconSquareRoundedX />
                                 </div>
                                 <motion.div className="Modal-content">
