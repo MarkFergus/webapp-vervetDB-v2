@@ -25,7 +25,7 @@ class Nav extends Component {
                     <div className="Nav-icon">
                         <img src={monkeyIcon} alt="monkey icon" />
                     </div>
-                    <p className="Nav-title">vervetDB</p>
+                    <div className="Nav-title">vervetDB</div>
                     <div className="Nav-searchbar">
                         <div className="Nav-iconSearch">
                             <IconSearch stroke={2} />

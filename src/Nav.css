@@ -1,20 +1,28 @@
 .Nav {
     display: flex;
-    justify-content: start;
-    align-items: center;
+    justify-content: centre;
+    align-items: centre;
     font-size: 32px;
 }
 
+.Nav-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .Nav-icon img {
-    height: 40px;
-    width: 40px;
-    padding-bottom: 4px;
-    filter: invert(90%);
+    height: 34px;
+    width: 38px;
+    padding-top: 3px;
+    padding-right: 4px;
+    padding-bottom: 10px;
 }
 
 .Nav-title {
+    height: 38px;
     font-family: "Russo One", sans-serif;
-    margin: 0 8px 0 0;
+    margin: 3px 8px 0 0;
 }
 
 .Nav-searchbar {
@@ -70,6 +78,7 @@
 }
 
 .Nav-buttons {
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
