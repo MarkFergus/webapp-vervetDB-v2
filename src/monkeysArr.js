@@ -1232,7 +1232,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2021,
         bio: "Arrived as an orphan. Was found clinging to dead mother by roadside close of Haenertsburg. Fostered by Zea.",
-        img: ["https://i.ibb.co/KNpDjKc/lili-jalamango-may2024.jpg"],
+        img: ["https://i.ibb.co/5x0tXBh/lili-jalamango-may2024.webp"],
         desc: "Very dark coat with black arms (similar colouration to Zea), curved brow giving her a cute sad expression, much more fluffy than Nino and smaller than the others.",
     },
     {
@@ -1252,7 +1252,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2020,
         bio: "Arrived as an orphan. Was found being sold on the side of a road and confiscated by a game ranger.",
-        img: ["https://i.ibb.co/S6nrjbk/nini-jalamango-may2024.jpg"],
+        img: ["https://i.ibb.co/Cmp05WZ/nini-jalamango-may2024.webp"],
         desc: "Smallest in the troop despite being older than Lili, will head-bob and twist head when stared at, good-natured and playful.",
     },
     {
@@ -1262,7 +1262,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2019,
         bio: "Arrived as an orphan Jan 2020. Collected from Chimp Eden after being found alone and handed in. Integrated in April 2020.",
-        img: ["https://i.ibb.co/3vmRy2z/satchmo-jalamango-mar2024.jpg"],
+        img: ["https://i.ibb.co/NtKFqv1/satchmo-jalamango-mar2024.webp"],
         desc: "Orange colouration on lower back, otherwise looks very similar to Zayda, very playful and good-natured, slight hypertropia (misaligned) left eye",
     },
     {
@@ -1272,7 +1272,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2019,
         bio: "Arrived as a juvenile Jan 2022. Was found as a baby alone by roadside in Lake Sabaya, suffering from possible concussion. Kept by a vet for a year due to health issues – vomiting, due to thickened gall bladder wall. Integrated Aug 2022. Has escaped enclosure multiple times.",
-        img: ["https://i.ibb.co/4M4Rq17/zayda-jalamango-aug2023.jpg"],
+        img: ["https://i.ibb.co/Dzfvp31/zayda-jalamango-aug2023.webp"],
         desc: "Very similar looking to Satchmo, orange colouration on back not as pronounced.",
     },
     {
@@ -1282,7 +1282,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2022,
         bio: "Arrived as a juvenile ex-pet, who had a broken arm. Was integrated with Mango and Jesse (deceased) in the old samango enclosure in sickbay section, before they were moved to the new Jalamango enclosure in 2018. Humanised and can be aggressive.",
-        img: ["https://i.ibb.co/Wxrk282/zea-jalamango-mar2024.jpg"],
+        img: ["https://i.ibb.co/P4BnDtr/zea-jalamango-mar2024.webp"],
         desc: "Only adult female, very dark coat, very straight brow which gives her a serious expression, humanised and will approach the fence.",
     },
     {
