@@ -8,7 +8,6 @@ const groupsArr = [
     "SAAV",
     "Koko",
     "Camelot",
-    "Koko",
     "Skrow",
     "Robert",
     "Skunkey",
