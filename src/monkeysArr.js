@@ -1370,7 +1370,7 @@ const monkeysArr = [
         troop: "Jalamango",
         year: 2022,
         bio: "Arrived as a juvenile ex-pet, who had a broken arm. Was integrated with Mango and Jesse (deceased) in the old samango enclosure in sickbay section, before they were moved to the new Jalamango enclosure in 2018. Humanised and can be aggressive.",
-        img: ["https://i.ibb.co/P4BnDtr/zea-jalamango-mar2024.webp"],
+        img: ["https://i.ibb.co/XSL2YxH/zea-jalamango-sep2023.webp"],
         desc: "Only adult female, very dark coat, very straight brow which gives her a serious expression, humanised and will approach the fence.",
     },
     {
