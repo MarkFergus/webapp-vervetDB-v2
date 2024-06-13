@@ -101,6 +101,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     margin: 4px 0 32px 0;
 }
 
+.ModalPDF-subdetails {
+    text-align: center;
+}
+
 .ModalPDF-Btns {
     display: flex;
     flex-direction: row;
@@ -118,7 +122,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     font-weight: 700;
     padding: 8px 16px;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: not-allowed;
 }
 
 .ModalPDF-createBtn:hover {

@@ -58,21 +58,21 @@ class ModalPDF extends Component {
                                     <h1 className="ModalPDF-title">
                                         Profile Book PDF
                                     </h1>
-                                    <div className="ModalPDF-details">
-                                        <h3>
+                                    <div>
+                                        <h3 className="ModalPDF-details">
                                             This will create a profile book
                                             styled PDF for the monkeys that are
                                             currently displayed in the main
                                             view, and in the same order as
                                             shown.
                                         </h3>
-                                        <h3>
-                                            More styling options will be added
-                                            here later.
+                                        <h3 className="ModalPDF-subdetails">
+                                            <b>Currently disabled!</b>
                                         </h3>
                                     </div>
                                     <div className="ModalPDF-Btns">
                                         <button
+                                            disabled="true"
                                             className="ModalPDF-createBtn"
                                             onClick={this.handleClick}
                                         >
