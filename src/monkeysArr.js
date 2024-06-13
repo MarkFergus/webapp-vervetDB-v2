@@ -1473,7 +1473,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2010,
         img: ["https://i.ibb.co/b7xtMct/jacob-koko-nov2023-min.webp"],
-        bio: "Born in troop ",
+        bio: "Born in troop.",
         desc: "Dark face with flat nose, goofy expression, protruding muzzle, nervous of people ",
     },
     {
@@ -1577,13 +1577,23 @@ const monkeysArr = [
         desc: "Pale silhouettes around eyes, similar to Kara but has more marks / lines above eyes, very patchy groomed parts of brow ",
     },
     {
-        name: "Peggy ",
+        name: "Panacur",
+        sex: "female",
+        chip: 1112,
+        troop: "Koko",
+        year: "",
+        img: ["https://i.ibb.co/F4r3X3V/panacur-koko-may2022-min.webp"],
+        bio: "DOB unknown. Very good foster-mum. Fostered Peggy, Dobby, Dirkules, and Riccardo",
+        desc: "Tear on bottom of left ear, pale silhouettes around eyes with dots/marks on eyelids (more obvious above her right eye)",
+    },
+    {
+        name: "Peggy",
         sex: "female",
         chip: 20050,
         troop: "Koko",
         year: 2017,
         img: ["https://i.ibb.co/pQKGwqq/peggy-koko-nov2023-min.webp"],
-        bio: " Arrived as an orphan, mother died after being caught on a fence. Fostered by Panacur.",
+        bio: "Arrived as an orphan, mother died after being caught on a fence. Fostered by Panacur.",
         desc: "White lines under eyes, very cute face, brow is bright and bushy",
     },
     {
@@ -1613,7 +1623,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2018,
         img: ["https://i.ibb.co/2vKKvNT/yllena-koko-may2023-min.webp"],
-        bio: "Arrived as an orphan, found alone in Tzaneen. Fostered by Kara. Fostered Taro.",
+        bio: "Arrived as an orphan, found alone in Tzaneen. Fostered by Kara. Fostered Taro and Atlas.",
         desc: "Golden-brown coat, white tears / lines under eyes ",
     },
     {
