@@ -53,7 +53,10 @@ const monkeysArr = [
         chip: 41200,
         troop: "James",
         year: 2023,
-        img: ["https://i.ibb.co/LYrrTNc/darby-james-feb2024-min.webp"],
+        img: [
+            "https://i.ibb.co/gyWCTvJ/darby-james-may2024-2-min.webp",
+            "https://i.ibb.co/TcByhLx/darby-james-may2024-min.webp",
+        ],
         bio: "Arrived Oct 2023, found in an office building in Nelspurit after a long weekend. Arrived with a badly broken right arm, a Salter Harris fracture. Does not have full function (extension) of right arm as a result.  Integrated into troop Feb 2024 with foster-mum Litchie.",
     },
     {
