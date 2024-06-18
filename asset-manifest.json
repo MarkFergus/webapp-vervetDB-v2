@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/webapp-vervetDB-v2/static/css/main.ed258677.css",
-    "main.js": "/webapp-vervetDB-v2/static/js/main.b60b63f8.js",
+    "main.js": "/webapp-vervetDB-v2/static/js/main.c69a27bc.js",
     "static/js/453.8627220f.chunk.js": "/webapp-vervetDB-v2/static/js/453.8627220f.chunk.js",
     "static/media/OpenSans-Italic.ttf": "/webapp-vervetDB-v2/static/media/OpenSans-Italic.582284c873c3f85ba4f8.ttf",
     "static/media/OpenSans-Regular.ttf": "/webapp-vervetDB-v2/static/media/OpenSans-Regular.19ba637387f1d6142f55.ttf",
     "index.html": "/webapp-vervetDB-v2/index.html",
     "main.ed258677.css.map": "/webapp-vervetDB-v2/static/css/main.ed258677.css.map",
-    "main.b60b63f8.js.map": "/webapp-vervetDB-v2/static/js/main.b60b63f8.js.map",
+    "main.c69a27bc.js.map": "/webapp-vervetDB-v2/static/js/main.c69a27bc.js.map",
     "453.8627220f.chunk.js.map": "/webapp-vervetDB-v2/static/js/453.8627220f.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ed258677.css",
-    "static/js/main.b60b63f8.js"
+    "static/js/main.c69a27bc.js"
   ]
 }
