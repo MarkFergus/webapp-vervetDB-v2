@@ -1,3 +1,5 @@
+// cSpell:disable
+
 const monkeysArr = [
     {
         name: "Aroha",
@@ -5156,3 +5158,5 @@ const monkeysArr = [
 ];
 
 export default monkeysArr;
+
+/* cSpell:enable */
