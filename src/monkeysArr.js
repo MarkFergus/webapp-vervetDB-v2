@@ -684,6 +684,16 @@ const monkeysArr = [
         desc: "Large and stocky, serious expression, usually with Millie and juveniles",
     },
     {
+        name: "Jaintjie",
+        sex: "female",
+        chip: "",
+        troop: "H&B",
+        year: 2003,
+        img: ["https://i.ibb.co/CbdGvSp/jaintjie-hb-jul2024-min.webp"],
+        bio: "Arrived as an orphan, mother was hit & killed by a car. Lived for a long time in Skunkey introcages with Count and Harmony. Moved to H&B in 2022 and integrated into troop July 2024.",
+        desc: "Humanised and very talkative, flashes above eyes.",
+    },
+    {
         name: "Jinx",
         sex: "male",
         chip: 1593,
