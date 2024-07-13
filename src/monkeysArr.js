@@ -849,7 +849,7 @@ const monkeysArr = [
         chip: 1948,
         troop: "H&B",
         year: 2005,
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/tY8Fk2D/pedro-hb-jun2024-min.webp"],
         bio: "Arrived as a newborn orphan. Used to live in a Skunkey introcage with Jasmine and Jezabel before being moved to H&B. Integrated in Sept 2019.",
         desc: "Thin and often scruffy, large tear on left ear, broken middle finger on left hand, often follows people and cars along the fence.",
     },
@@ -4217,7 +4217,7 @@ const monkeysArr = [
         chip: 1591,
         troop: "Skrow",
         year: 2016,
-        img: ["https://i.ibb.co/2YvYtBJ/blank-image-min.jpg"],
+        img: ["https://i.ibb.co/p2X6f4n/leonard-skrow-jun2024-min.webp"],
         bio: "Arrived as an orphan. Was hit by a car and suffered a broken arm, handed in via Moholoholo.",
     },
     {
