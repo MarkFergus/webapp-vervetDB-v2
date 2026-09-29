@@ -2,10 +2,28 @@ import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ModalPDF.css";
 
-function ModalPDF({ isPDFModalOpen, closePDFModal, createPDF }) {
-    function handleClick() {
-        createPDF();
-        closePDFModal();
+// Largest troop is ~55, so anything over this is probably "All Troops"
+const LARGE_PDF_THRESHOLD = 60;
+
+function ModalPDF({
+    isPDFModalOpen,
+    closePDFModal,
+    createPDF,
+    isGeneratingPDF,
+    progress,
+    error,
+    monkeyCount,
+    troopFilter,
+}) {
+    const plural = monkeyCount === 1 ? "monkey" : "monkeys";
+    const troopNote =
+        troopFilter === "All Troops" ? "from all troops" : `from ${troopFilter}`;
+
+    let status = null;
+    if (progress && progress.done < progress.total) {
+        status = `Preparing photos ${progress.done} of ${progress.total}…`;
+    } else if (progress) {
+        status = "Building PDF…";
     }
 
     return (
@@ -54,22 +72,58 @@ function ModalPDF({ isPDFModalOpen, closePDFModal, createPDF }) {
                                 </h1>
                                 <div>
                                     <h3 className="ModalPDF-details">
-                                        This will create a profile book styled
-                                        PDF for the monkeys that are currently
-                                        displayed in the main view, and in the
-                                        same order as shown.
+                                        Creates a profile book PDF of the
+                                        monkeys currently shown, in the same
+                                        order.
                                     </h3>
                                     <h3 className="ModalPDF-subdetails">
-                                        <b>Currently disabled!</b>
+                                        {monkeyCount === 0 ? (
+                                            "No monkeys match the current filters."
+                                        ) : (
+                                            <>
+                                                This PDF will include{" "}
+                                                <b>
+                                                    {monkeyCount} {plural}
+                                                </b>{" "}
+                                                {troopNote}.
+                                            </>
+                                        )}
                                     </h3>
+                                    {monkeyCount > LARGE_PDF_THRESHOLD && (
+                                        <p className="ModalPDF-warning">
+                                            Large PDFs can take several minutes
+                                            to create. Tip: pick a troop in the
+                                            filter first.
+                                        </p>
+                                    )}
+                                    {status && (
+                                        <p
+                                            className="ModalPDF-status"
+                                            role="status"
+                                        >
+                                            {status}
+                                        </p>
+                                    )}
+                                    {error && (
+                                        <p
+                                            className="ModalPDF-error"
+                                            role="alert"
+                                        >
+                                            {error}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="ModalPDF-Btns">
                                     <button
-                                        disabled
+                                        disabled={
+                                            isGeneratingPDF || monkeyCount === 0
+                                        }
                                         className="ModalPDF-createBtn"
-                                        onClick={handleClick}
+                                        onClick={createPDF}
                                     >
-                                        Create PDF
+                                        {isGeneratingPDF
+                                            ? "Creating…"
+                                            : "Create PDF"}
                                     </button>
                                 </div>
                             </motion.div>

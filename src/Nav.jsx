@@ -5,7 +5,7 @@ import {
     IconHourglassLow,
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
-import monkeyIcon from "./monkey-icon.png";
+import MonkeyIcon from "./MonkeyIcon";
 import "./Nav.css";
 
 function Nav({
@@ -16,12 +16,16 @@ function Nav({
     isPDFModalOpen,
     togglePDFModal,
     createPDF,
+    pdfProgress,
+    pdfError,
+    pdfMonkeyCount,
+    troopFilter,
 }) {
     return (
         <>
             <nav className="Nav">
                 <div className="Nav-icon">
-                    <img src={monkeyIcon} alt="monkey icon" />
+                    <MonkeyIcon />
                 </div>
                 <div className="Nav-title">vervetDB</div>
                 <div className="Nav-searchbar">
@@ -63,6 +67,11 @@ function Nav({
                     closePDFModal={togglePDFModal}
                     isPDFModalOpen={isPDFModalOpen}
                     createPDF={createPDF}
+                    isGeneratingPDF={isGeneratingPDF}
+                    progress={pdfProgress}
+                    error={pdfError}
+                    monkeyCount={pdfMonkeyCount}
+                    troopFilter={troopFilter}
                 />
             </div>
         </>

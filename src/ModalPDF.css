@@ -89,10 +89,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
 .ModalPDF-details {
     font-size: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
+    text-align: center;
     margin: 8px 0;
 }
 
@@ -122,10 +119,35 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     font-weight: 700;
     padding: 8px 16px;
     border-radius: 4px;
+    cursor: pointer;
+}
+
+.ModalPDF-createBtn:hover:not(:disabled) {
+    color: #ff92ce;
+    border: 1px solid #ff92ce;
+}
+
+.ModalPDF-createBtn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.ModalPDF-createBtn:hover {
+.ModalPDF-warning,
+.ModalPDF-status,
+.ModalPDF-error {
+    font-size: 14px;
+    text-align: center;
+    margin: 0 0 24px 0;
+}
+
+.ModalPDF-warning {
+    color: #B6B2A5;
+}
+
+.ModalPDF-status {
+    color: #86e1ff;
+}
+
+.ModalPDF-error {
     color: #ff92ce;
-    border: 1px solid #ff92ce;
 }

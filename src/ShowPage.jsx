@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import { IconArrowsSort } from "@tabler/icons-react";
-import { pdf } from "@react-pdf/renderer";
 import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
 import MonkeyCard from "./MonkeyCard";
-import MonkeyPDF from "./MonkeyPDF";
+import { preparePhotosForPdf } from "./pdfPhotos";
 import Modal from "./Modal";
 import Nav from "./Nav";
 import "./ShowPage.css";
@@ -53,6 +52,24 @@ function getVisibleMonkeys({ searchValue, troopFilter, yearFilter, sort }) {
     );
 }
 
+// e.g. profile_book_Goliath_2026-09-30.pdf
+function pdfFilename(troopFilter) {
+    const troop = troopFilter === "All Troops" ? "all_troops" : troopFilter;
+    const date = new Date().toISOString().slice(0, 10);
+    return `profile_book_${troop.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf`;
+}
+
+function downloadFile(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function ShowPage() {
     const [searchValue, setSearchValue] = useState("");
     const [troopFilter, setTroopFilter] = useState("All Troops");
@@ -63,6 +80,8 @@ function ShowPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
+    const [pdfError, setPdfError] = useState(null);
 
     // Only recalculated when the search, a filter or the sort changes
     const visibleMonkeys = useMemo(
@@ -120,18 +139,35 @@ function ShowPage() {
     }
     function togglePDFModal() {
         setIsPDFModalOpen((open) => !open);
+        setPdfError(null);
     }
-    //PDF function from react-pdf
+    // Builds a profile book of the monkeys currently shown and downloads it
     async function createPDF() {
+        const monkeys = visibleMonkeys;
         setIsGeneratingPDF(true);
-        const blob = await pdf(<MonkeyPDF monkeys={visibleMonkeys} />).toBlob();
-        const url = URL.createObjectURL(blob);
-
-        const filename = "profile_book";
-        const newTab = window.open(url, "_blank");
-        //filename currently not applying
-        newTab.window.document.title = filename;
-        setIsGeneratingPDF(false);
+        setPdfError(null);
+        setPdfProgress({ done: 0, total: monkeys.length });
+        try {
+            // The PDF library is large, so it's only loaded when needed
+            const [{ pdf }, { default: MonkeyPDF }] = await Promise.all([
+                import("@react-pdf/renderer"),
+                import("./MonkeyPDF"),
+            ]);
+            const prepared = await preparePhotosForPdf(monkeys, (done, total) =>
+                setPdfProgress({ done, total })
+            );
+            const blob = await pdf(
+                <MonkeyPDF monkeys={prepared} troop={troopFilter} />
+            ).toBlob();
+            downloadFile(blob, pdfFilename(troopFilter));
+            setIsPDFModalOpen(false);
+        } catch (err) {
+            console.error(err);
+            setPdfError("Something went wrong creating the PDF. Please try again.");
+        } finally {
+            setIsGeneratingPDF(false);
+            setPdfProgress(null);
+        }
     }
     function handleShowMore() {
         setCurrentPage((page) => page + 1);
@@ -153,6 +189,10 @@ function ShowPage() {
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
+                    pdfProgress={pdfProgress}
+                    pdfError={pdfError}
+                    pdfMonkeyCount={visibleMonkeys.length}
+                    troopFilter={troopFilter}
                     searchValue={searchValue}
                     handleSearch={handleSearch}
                     handleDelete={handleDelete}
