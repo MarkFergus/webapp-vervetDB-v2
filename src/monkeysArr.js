@@ -143,15 +143,6 @@ const monkeysArr = [
         bio: "Arrived Mar 2021 after his mum was killed and he was kept as a pet for a few months. Integrated into troop Mar 2021 with foster-mum Litchie.",
     },
     {
-        name: "Bugaloo",
-        troop: "Bandits",
-        sex: "male",
-        year: 2023,
-        chip: 41190,
-        img: ["https://i.ibb.co/RzMJ63S/bugaloo-bandits-mar2024.jpg"],
-        bio: "Arrived as an orphan in Nov 2023. Mother was electrocuted in Hoedspruit. Was integrated into Skunkey troop but went missing after a week, was then found several days later being carried by adult female Eyebrows in the bandit troop. They seemed to have established a close bond",
-    },
-    {
         name: "Zoro",
         troop: "Goliath",
         sex: "male",
