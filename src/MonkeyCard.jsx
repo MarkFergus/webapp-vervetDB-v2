@@ -12,21 +12,34 @@ function SexIcon({ sex }) {
     return null;
 }
 
-function MonkeyCard({ name, sex, year, troop, img }) {
+// A button, so it can be reached with Tab and opened with Enter or Space.
+// Buttons may only contain inline elements, hence spans rather than divs/h3s.
+function MonkeyCard({ name, sex, year, troop, img, onClick }) {
+    // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
+    const label = [name, sex, year ? `born ${year}` : null, `${troop} troop`]
+        .filter(Boolean)
+        .join(", ");
+
     return (
-        <div className="MonkeyCard">
-            <div className="MonkeyCard-image">
-                <img src={img} alt=""></img>
-            </div>
-            <div className="MonkeyCard-info">
-                <h3 className="MonkeyCard-info-name">{name}</h3>
-                <div className="MonkeyCard-info-sex">
+        <button
+            type="button"
+            className="MonkeyCard"
+            onClick={onClick}
+            aria-label={label}
+        >
+            <span className="MonkeyCard-image">
+                {/* alt="" because the name is right below the photo */}
+                <img src={img} alt="" loading="lazy"></img>
+            </span>
+            <span className="MonkeyCard-info">
+                <span className="MonkeyCard-info-name">{name}</span>
+                <span className="MonkeyCard-info-sex">
                     <SexIcon sex={sex} />
-                </div>
-                <h3 className="MonkeyCard-info-year">{year}</h3>
-                <h3 className="MonkeyCard-info-troop">{troop}</h3>
-            </div>
-        </div>
+                </span>
+                <span className="MonkeyCard-info-year">{year}</span>
+                <span className="MonkeyCard-info-troop">{troop}</span>
+            </span>
+        </button>
     );
 }
 

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
     IconSearch,
     IconX,
@@ -21,34 +22,57 @@ function Nav({
     pdfMonkeyCount,
     troopFilter,
 }) {
+    const searchInputRef = useRef(null);
+
+    // The clear button disappears once clicked, so put focus back in the box
+    function clearSearch() {
+        handleDelete();
+        searchInputRef.current?.focus();
+    }
+
     return (
         <>
-            <nav className="Nav">
+            {/* inert: while the PDF modal is open, the nav behind it can't be tabbed to */}
+            <nav className="Nav" inert={isPDFModalOpen}>
                 <div className="Nav-icon">
                     <MonkeyIcon />
                 </div>
                 <div className="Nav-title">vervetDB</div>
                 <div className="Nav-searchbar">
-                    <div className="Nav-iconSearch">
+                    <div className="Nav-iconSearch" aria-hidden="true">
                         <IconSearch stroke={2} />
                     </div>
                     <input
                         type="text"
                         placeholder="Name or chip number"
+                        aria-label="Search by name or chip number"
                         name="search"
+                        ref={searchInputRef}
                         value={searchValue}
                         onChange={handleSearch}
                     ></input>
                     {searchValue.length > 0 && (
-                        <div className="Nav-iconX" onClick={handleDelete}>
+                        <button
+                            type="button"
+                            className="Nav-iconX"
+                            onClick={clearSearch}
+                            aria-label="Clear search"
+                        >
                             <IconX stroke={2} />
-                        </div>
+                        </button>
                     )}
                 </div>
                 <div className="Nav-buttons">
                     <button
+                        type="button"
                         onClick={togglePDFModal}
                         disabled={isGeneratingPDF}
+                        aria-label={
+                            isGeneratingPDF
+                                ? "Creating profile book PDF"
+                                : "Profile book PDF"
+                        }
+                        title="Profile book PDF"
                     >
                         {isGeneratingPDF ? (
                             <IconHourglassLow

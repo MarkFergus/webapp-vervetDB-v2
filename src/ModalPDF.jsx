@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
+import useDialog from "./useDialog";
 import "./ModalPDF.css";
 
 // Largest troop is ~55, so anything over this is probably "All Troops"
@@ -26,10 +28,19 @@ function ModalPDF({
         status = "Building PDF…";
     }
 
+    // Escape closes; focus starts on the close button
+    const closeButtonRef = useRef(null);
+    useDialog(isPDFModalOpen, closeButtonRef, { onClose: closePDFModal });
+
     return (
         <AnimatePresence>
             {isPDFModalOpen && (
-                <div className="ModalPDF">
+                <div
+                    className="ModalPDF"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="ModalPDF-title"
+                >
                     <motion.div
                         className="ModalPDF-overlay"
                         onClick={closePDFModal}
@@ -60,14 +71,21 @@ function ModalPDF({
                         }}
                     >
                         <div className="ModalPDF-window">
-                            <div
-                                className="ModalPDF-close"
-                                onClick={closePDFModal}
-                            >
-                                <IconSquareRoundedX />
+                            <div className="ModalPDF-close">
+                                <button
+                                    type="button"
+                                    ref={closeButtonRef}
+                                    onClick={closePDFModal}
+                                    aria-label="Close"
+                                >
+                                    <IconSquareRoundedX />
+                                </button>
                             </div>
                             <motion.div className="ModalPDF-content">
-                                <h1 className="ModalPDF-title">
+                                <h1
+                                    className="ModalPDF-title"
+                                    id="ModalPDF-title"
+                                >
                                     Profile Book PDF
                                 </h1>
                                 <div>

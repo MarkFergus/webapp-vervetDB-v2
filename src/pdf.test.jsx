@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -54,7 +54,7 @@ test("shows how many monkeys a troop's PDF will include, without a warning", asy
 
     const count = monkeysArr.filter((m) => m.troop === "Goliath").length;
     expect(
-        screen.getByText(`${count} monkeys`, { exact: false })
+        within(screen.getByRole("dialog")).getByText(`${count} monkeys`, { exact: false })
     ).toBeInTheDocument();
     expect(screen.getByText(/from Goliath/)).toBeInTheDocument();
     expect(screen.queryByText(/can take several minutes/)).toBeNull();
@@ -65,7 +65,7 @@ test("warns before creating a PDF of all troops", async () => {
     await openPdfModal();
 
     expect(
-        screen.getByText(`${monkeysArr.length} monkeys`, { exact: false })
+        within(screen.getByRole("dialog")).getByText(`${monkeysArr.length} monkeys`, { exact: false })
     ).toBeInTheDocument();
     expect(screen.getByText(/can take several minutes/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create PDF" })).toBeEnabled();

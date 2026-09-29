@@ -19,9 +19,19 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     justify-content: start;
     align-items: center;
     cursor: pointer;
+    /* It's a button: remove the browser's default button look */
+    width: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
 }
 
 .MonkeyCard-image {
+    display: block;
     overflow: hidden;
     padding-bottom: 0;
     border-radius: 8px;
@@ -33,7 +43,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     transition: transform 0.5s ease-out;
 }
 
-.MonkeyCard:hover img {
+.MonkeyCard:hover img,
+.MonkeyCard:focus-visible img {
     transform: scale(1.1);
 }
 
@@ -49,14 +60,18 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     overflow: hidden;
 }
 
-.MonkeyCard:hover .MonkeyCard-info {
+.MonkeyCard:hover .MonkeyCard-info,
+.MonkeyCard:focus-visible .MonkeyCard-info {
     color: white;
 }
 
+/* Same size and weight as the h3 headings these used to be */
 .MonkeyCard-info-name,
 .MonkeyCard-info-troop,
 .MonkeyCard-info-year {
     margin: 0;
+    font-size: 1.17em;
+    font-weight: bold;
 }
 
 .MonkeyCard-info-name {
@@ -68,6 +83,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .MonkeyCard-info-sex {
+    display: block;
     height: 22px;
     width: 22px;
     padding-top: 1px;

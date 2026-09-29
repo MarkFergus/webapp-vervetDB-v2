@@ -69,8 +69,8 @@ test("year filter shows only monkeys born that year", async () => {
 test("sorting doesn't reorder the original monkey data", async () => {
     const before = monkeysArr.map((m) => m.name);
     const { user } = setup();
-    await user.click(screen.getByRole("button", { name: /year/i }));
-    await user.click(screen.getByRole("button", { name: /troop/i }));
+    await user.click(screen.getByRole("button", { name: /^Year/ }));
+    await user.click(screen.getByRole("button", { name: /^Troop/ }));
 
     expect(monkeysArr.map((m) => m.name)).toEqual(before);
 });
@@ -78,7 +78,7 @@ test("sorting doesn't reorder the original monkey data", async () => {
 test("clicking a sort button twice reverses the order", async () => {
     const { user, cardNames } = setup();
     const ascending = cardNames();
-    await user.click(screen.getByRole("button", { name: /name/i }));
+    await user.click(screen.getByRole("button", { name: /^Name/ }));
 
     expect(cardNames()[0]).not.toBe(ascending[0]);
     expect(

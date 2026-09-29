@@ -11,6 +11,6 @@ test("renders the vervetDB title and logo", () => {
 
 test("shows the first page of monkey cards", () => {
     render(<App />);
-    const names = screen.getAllByRole("heading", { level: 3 });
-    expect(names.length).toBeGreaterThan(0);
+    expect(screen.getByRole("status")).toHaveTextContent(/Showing \d+ monkeys/);
+    expect(screen.getByRole("button", { name: /^Aroha/ })).toBeInTheDocument();
 });

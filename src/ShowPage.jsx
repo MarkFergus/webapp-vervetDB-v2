@@ -173,6 +173,29 @@ function ShowPage() {
         setCurrentPage((page) => page + 1);
     }
 
+    // While a modal is open, the page behind it can't be tabbed to or clicked
+    // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
+    const isAnyModalOpen = isModalOpen || isPDFModalOpen;
+
+    function sortButton(key, label) {
+        const isActive = sort.key === key;
+        return (
+            <button
+                type="button"
+                onClick={() => sortBy(key)}
+                aria-pressed={isActive}
+            >
+                <span>{label} </span>
+                {isActive && (
+                    <span className="visually-hidden">
+                        {sort.ascending ? ", ascending" : ", descending"}
+                    </span>
+                )}
+                <IconArrowsSort aria-hidden="true" />
+            </button>
+        );
+    }
+
     return (
         <div className="ShowPage">
             <div className="ShowPage-modal">
@@ -185,7 +208,7 @@ function ShowPage() {
                     nextMonkey={nextMonkey}
                 />
             </div>
-            <div className="ShowPage-nav">
+            <div className="ShowPage-nav" inert={isModalOpen}>
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
@@ -200,21 +223,12 @@ function ShowPage() {
                     togglePDFModal={togglePDFModal}
                 />
             </div>
-            <div className="ShowPage-sortfilter">
+            <div className="ShowPage-sortfilter" inert={isAnyModalOpen}>
                 <div className="ShowPage-sort">
                     <h4>Sort:</h4>
-                    <button onClick={() => sortBy("name")}>
-                        <span>Name </span>
-                        <IconArrowsSort />
-                    </button>
-                    <button onClick={() => sortBy("troop")}>
-                        <span>Troop </span>
-                        <IconArrowsSort />{" "}
-                    </button>
-                    <button onClick={() => sortBy("year")}>
-                        <span>Year </span>
-                        <IconArrowsSort />{" "}
-                    </button>
+                    {sortButton("name", "Name")}
+                    {sortButton("troop", "Troop")}
+                    {sortButton("year", "Year")}
                 </div>
                 <div className="ShowPage-filter">
                     <h4>Filter:</h4>
@@ -222,6 +236,7 @@ function ShowPage() {
                         className="ShowPage-filter-select"
                         name="troops"
                         id="troops"
+                        aria-label="Filter by troop"
                         value={troopFilter}
                         onChange={filterTroops}
                     >
@@ -235,6 +250,7 @@ function ShowPage() {
                         className="ShowPage-filter-select"
                         name="year"
                         id="year"
+                        aria-label="Filter by year"
                         value={yearFilter}
                         onChange={filterYear}
                     >
@@ -247,25 +263,28 @@ function ShowPage() {
                     </select>
                 </div>
             </div>
-            <div className="ShowPage-monkeys">
+            {/* Read out by screen readers when the results change */}
+            <p className="visually-hidden" role="status">
+                Showing {visibleMonkeys.length}{" "}
+                {visibleMonkeys.length === 1 ? "monkey" : "monkeys"}
+            </p>
+            <div className="ShowPage-monkeys" inert={isAnyModalOpen}>
                 {currentMonkeys.map((m) => (
-                    <div
+                    <MonkeyCard
                         key={`${m.name}-${m.chip}-${m.troop}`}
                         onClick={() => openModal(m)}
-                    >
-                        <MonkeyCard
-                            name={m.name}
-                            sex={m.sex}
-                            year={m.year}
-                            troop={m.troop}
-                            img={m.img[0]}
-                        />
-                    </div>
+                        name={m.name}
+                        sex={m.sex}
+                        year={m.year}
+                        troop={m.troop}
+                        img={m.img[0]}
+                    />
                 ))}
             </div>
             {indexOfLastMonkey < visibleMonkeys.length && (
-                <div className="ShowPage-showMore">
+                <div className="ShowPage-showMore" inert={isAnyModalOpen}>
                     <button
+                        type="button"
                         className="ShowPage-showMoreBtn"
                         onClick={handleShowMore}
                     >

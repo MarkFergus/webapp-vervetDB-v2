@@ -57,23 +57,28 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     z-index: 2;
 }
 
-.ModalPDF-close svg {
+.ModalPDF-close button {
     position: absolute;
-    width: 24px;
-    height: 24px;
-    border-radius: 8px;
     top: 0;
     right: 0;
     margin-top: 2px;
     margin-right: 4px;
     padding: 8px;
+    border: none;
+    border-radius: 8px;
     background-color: rgba(36, 36, 36, 0.6);
-    order: 1;
+    color: inherit;
     cursor: pointer;
     z-index: 3;
 }
 
-.ModalPDF-close svg:hover {
+.ModalPDF-close svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.ModalPDF-close button:hover {
     color: white;
 }
 
