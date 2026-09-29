@@ -74,7 +74,7 @@ class ShowPage extends Component {
                     .includes(currentTroopFilter.toLowerCase());
             const matchesYear =
                 currentYearFilter === "All Years" ||
-                // Number() because some years are stored as text, e.g. "2010"
+                // Number() on both sides in case a year is entered as text
                 Number(monkey.year) === Number(currentYearFilter);
             const matchesSearch =
                 query === "" ||

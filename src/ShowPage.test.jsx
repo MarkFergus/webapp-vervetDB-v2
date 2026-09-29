@@ -57,12 +57,13 @@ test("searching by chip number finds that monkey", async () => {
     expect(cardNames()).toEqual(["Aroha"]);
 });
 
-test("year filter includes monkeys whose year is stored as text", async () => {
+test("year filter shows only monkeys born that year", async () => {
     const { user, cardNames, yearSelect } = setup();
     await user.selectOptions(yearSelect(), "2010");
 
-    // Gremlin's year is "2010" (a string) in monkeysArr
+    const expected = monkeysArr.filter((m) => m.year === 2010).length;
     expect(cardNames()).toContain("Gremlin");
+    expect(cardNames()).toHaveLength(expected);
 });
 
 test("sorting doesn't reorder the original monkey data", async () => {
