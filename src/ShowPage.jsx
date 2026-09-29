@@ -1,7 +1,6 @@
 import { Component } from "react";
 import { IconArrowsSort } from "@tabler/icons-react";
 import { pdf } from "@react-pdf/renderer";
-import { v4 as uuidv4 } from "uuid";
 import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
 import MonkeyCard from "./MonkeyCard";
@@ -348,7 +347,7 @@ class ShowPage extends Component {
                 <div className="ShowPage-monkeys">
                     {currentMonkeys.map((m, index) => (
                         <div
-                            key={uuidv4()}
+                            key={`${m.name}-${m.chip}-${m.troop}`}
                             onClick={() => this.toggleModal(m, index)}
                         >
                             <MonkeyCard
