@@ -9,18 +9,23 @@ import Modal from "./Modal";
 import Nav from "./Nav";
 import "./ShowPage.css";
 
+const byName = (a, b) => a.name.localeCompare(b.name);
+
+// Ties (same troop or year) fall back to alphabetical by name
+const compareBy = {
+    name: byName,
+    troop: (a, b) => a.troop.localeCompare(b.troop) || byName(a, b),
+    year: (a, b) => a.year - b.year || byName(a, b),
+};
+
 class ShowPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            monkeys: monkeysArr.sort((a, b) => a.name.localeCompare(b.name)),
             selectedMonkey: null,
-            prevMonkey: null,
-            nextMOnkey: null,
             yearsArr: [],
-            sortNameAscending: true,
-            sortTroopAscending: false,
-            sortYearAscending: false,
+            sortKey: "name",
+            sortAscending: true,
             currentTroopFilter: "All Troops",
             currentYearFilter: "All Years",
             searchValue: "",
@@ -30,10 +35,8 @@ class ShowPage extends Component {
             currentPage: 1,
             monkeysPerPage: 100,
         };
-        this.sortByName = this.sortByName.bind(this);
-        this.sortByTroop = this.sortByTroop.bind(this);
-        this.sortByYear = this.sortByYear.bind(this);
-        this.toggleModal = this.toggleModal.bind(this);
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
         this.togglePDFModal = this.togglePDFModal.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
@@ -50,200 +53,102 @@ class ShowPage extends Component {
             yearsArr: yearsArr,
         });
     }
-    sortByName() {
-        if (!this.state.sortNameAscending) {
-            this.setState({
-                monkeys: this.state.monkeys.sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                ),
-                sortNameAscending: true,
-                sortTroopAscending: false,
-                sortYearAscending: false,
-            });
-        } else {
-            this.setState({
-                monkeys: this.state.monkeys.sort((b, a) =>
-                    a.name.localeCompare(b.name)
-                ),
-                sortNameAscending: false,
-                sortTroopAscending: false,
-                sortYearAscending: false,
-            });
-        }
+    // The list on screen is worked out from the search, filters and sort
+    // every time, so they always agree with each other.
+    getVisibleMonkeys() {
+        const {
+            searchValue,
+            currentTroopFilter,
+            currentYearFilter,
+            sortKey,
+            sortAscending,
+        } = this.state;
+        const query = searchValue.trim().toLowerCase();
+        const isChipSearch = /^\d+$/.test(query);
+
+        const results = monkeysArr.filter((monkey) => {
+            const matchesTroop =
+                currentTroopFilter === "All Troops" ||
+                monkey.troop
+                    .toLowerCase()
+                    .includes(currentTroopFilter.toLowerCase());
+            const matchesYear =
+                currentYearFilter === "All Years" ||
+                // Number() because some years are stored as text, e.g. "2010"
+                Number(monkey.year) === Number(currentYearFilter);
+            const matchesSearch =
+                query === "" ||
+                (isChipSearch
+                    ? monkey.chip.toString().includes(query)
+                    : monkey.name.toLowerCase().includes(query));
+            return matchesTroop && matchesYear && matchesSearch;
+        });
+
+        // filter() returns a new array, so sorting it leaves monkeysArr alone
+        const compare = compareBy[sortKey];
+        return results.sort((a, b) =>
+            sortAscending ? compare(a, b) : compare(b, a)
+        );
     }
-    sortByTroop() {
-        if (!this.state.sortTroopAscending) {
-            this.setState({
-                monkeys: this.state.monkeys.sort((a, b) =>
-                    a.troop.localeCompare(b.troop)
-                ),
-                sortTroopAscending: true,
-                sortNameAscending: false,
-                sortYearAscending: false,
-            });
-        } else {
-            this.setState({
-                monkeys: this.state.monkeys.sort((b, a) =>
-                    a.troop.localeCompare(b.troop)
-                ),
-                sortTroopAscending: false,
-                sortNameAscending: false,
-                sortYearAscending: false,
-            });
-        }
-    }
-    sortByYear() {
-        if (!this.state.sortYearAscending) {
-            this.setState({
-                monkeys: this.state.monkeys.sort((a, b) => a.year - b.year),
-                sortYearAscending: true,
-                sortTroopAscending: false,
-                sortNameAscending: false,
-            });
-        } else {
-            this.setState({
-                monkeys: this.state.monkeys.sort((b, a) => a.year - b.year),
-                sortYearAscending: false,
-                sortTroopAscending: false,
-                sortNameAscending: false,
-            });
-        }
+    // Clicking the current sort flips its direction; a new sort starts ascending
+    sortBy(key) {
+        this.setState((st) => ({
+            sortKey: key,
+            sortAscending: st.sortKey === key ? !st.sortAscending : true,
+            currentPage: 1,
+        }));
     }
     filterTroops = (event) => {
-        const selectedTroopFilter = event.target.value;
-        let filteredMonkeys;
-
-        // run new troop filter
-        if (selectedTroopFilter === "All Troops") {
-            filteredMonkeys = monkeysArr.sort((a, b) =>
-                a.name.localeCompare(b.name)
-            );
-        } else {
-            filteredMonkeys = monkeysArr.filter((monkey) =>
-                monkey.troop
-                    .toLowerCase()
-                    .includes(selectedTroopFilter.toLowerCase())
-            );
-        }
-
-        // check current year filter
-        if (this.state.currentYearFilter === "All Years") {
-            filteredMonkeys = filteredMonkeys.sort((a, b) =>
-                a.name.localeCompare(b.name)
-            );
-        } else {
-            filteredMonkeys = filteredMonkeys.filter(
-                (monkey) => monkey.year === Number(this.state.currentYearFilter)
-            );
-        }
-
-        this.setState((prevState) => ({
-            monkeys: filteredMonkeys,
-            currentTroopFilter: selectedTroopFilter,
-            searchValue: "",
-        }));
+        this.setState({
+            currentTroopFilter: event.target.value,
+            currentPage: 1,
+        });
     };
     filterYear = (event) => {
-        const selectedYearFilter = event.target.value;
-        let filteredMonkeys;
-
-        // run new year filter
-        if (selectedYearFilter === "All Years") {
-            filteredMonkeys = monkeysArr.sort((a, b) =>
-                a.name.localeCompare(b.name)
-            );
-        } else {
-            filteredMonkeys = monkeysArr.filter(
-                (monkey) => monkey.year === Number(selectedYearFilter)
-            );
-        }
-
-        // check for troop filter
-        if (this.state.currentTroopFilter === "All Troops") {
-            filteredMonkeys = filteredMonkeys.sort((a, b) =>
-                a.name.localeCompare(b.name)
-            );
-        } else {
-            filteredMonkeys = filteredMonkeys.filter((monkey) =>
-                monkey.troop
-                    .toLowerCase()
-                    .includes(this.state.currentTroopFilter.toLowerCase())
-            );
-        }
-
-        this.setState((prevState) => ({
-            monkeys: filteredMonkeys,
-            currentYearFilter: selectedYearFilter,
-            searchValue: "",
-        }));
+        this.setState({
+            currentYearFilter: event.target.value,
+            currentPage: 1,
+        });
     };
     handleSearch(event) {
-        const searchValue = event.target.value.toLowerCase();
-        this.setState(
-            () => ({ searchValue }),
-            () => {
-                const { searchValue } = this.state;
-                if (searchValue === "") {
-                    this.setState({ monkeys: monkeysArr });
-                } else if (!isNaN(searchValue)) {
-                    const results = monkeysArr.filter((monkey) =>
-                        monkey.chip.toString().includes(searchValue.toString())
-                    );
-                    this.setState({ monkeys: results });
-                } else {
-                    const results = monkeysArr.filter((monkey) =>
-                        monkey.name
-                            .toLowerCase()
-                            .includes(searchValue.trim().toLowerCase())
-                    );
-                    this.setState({ monkeys: results });
-                }
-            }
-        );
+        this.setState({
+            searchValue: event.target.value,
+            currentPage: 1,
+        });
     }
     handleDelete() {
         this.setState({
             searchValue: "",
-            monkeys: monkeysArr,
+            currentPage: 1,
         });
     }
-    updatePrevNextMonkeys() {
-        const { monkeys, selectedMonkey } = this.state;
-        const selectedIndex = monkeys.findIndex(
-            (monkey) => monkey === selectedMonkey
-        );
-        const prevMonkey = monkeys[selectedIndex - 1] || null;
-        const nextMonkey = monkeys[selectedIndex + 1] || null;
-        this.setState((st) => ({
-            prevMonkey: prevMonkey,
-            nextMonkey: nextMonkey,
-        }));
+    getPrevNextMonkeys(visibleMonkeys) {
+        const selectedIndex = visibleMonkeys.indexOf(this.state.selectedMonkey);
+        if (selectedIndex === -1) {
+            return { prevMonkey: null, nextMonkey: null };
+        }
+        return {
+            prevMonkey: visibleMonkeys[selectedIndex - 1] || null,
+            nextMonkey: visibleMonkeys[selectedIndex + 1] || null,
+        };
     }
-    setIndexes(m) {
-        this.setState({ selectedMonkey: m }, this.updatePrevNextMonkeys);
+    openModal(m) {
+        this.setState({ selectedMonkey: m, isModalOpen: true });
     }
-    toggleModal(m) {
-        this.setIndexes(m);
-        this.setState((st) => ({
-            isModalOpen: !st.isModalOpen,
-        }));
+    closeModal() {
+        this.setState({ isModalOpen: false });
     }
     handlePrevNext(direction) {
-        const { prevMonkey, nextMonkey } = this.state;
+        const { prevMonkey, nextMonkey } = this.getPrevNextMonkeys(
+            this.getVisibleMonkeys()
+        );
         if (direction === "prev" && prevMonkey) {
-            this.setState(
-                { selectedMonkey: prevMonkey },
-                this.updatePrevNextMonkeys
-            );
+            this.setState({ selectedMonkey: prevMonkey });
         } else if (direction === "next" && nextMonkey) {
-            this.setState(
-                { selectedMonkey: nextMonkey },
-                this.updatePrevNextMonkeys
-            );
+            this.setState({ selectedMonkey: nextMonkey });
         }
     }
-    togglePDFModal(m) {
-        console.log("pdf modal requested");
+    togglePDFModal() {
         this.setState((st) => ({
             isPDFModalOpen: !st.isPDFModalOpen,
         }));
@@ -251,7 +156,7 @@ class ShowPage extends Component {
     //PDF function from react-pdf
     createPDF = async () => {
         this.setState({ isGeneratingPDF: true });
-        const { monkeys } = this.state;
+        const monkeys = this.getVisibleMonkeys();
         const blob = await pdf(<MonkeyPDF monkeys={monkeys} />).toBlob();
         const url = URL.createObjectURL(blob);
 
@@ -271,19 +176,22 @@ class ShowPage extends Component {
     }
     render() {
         const { currentPage, monkeysPerPage } = this.state;
+        const visibleMonkeys = this.getVisibleMonkeys();
+        const { prevMonkey, nextMonkey } =
+            this.getPrevNextMonkeys(visibleMonkeys);
         const indexOfLastMonkey = currentPage * monkeysPerPage;
-        const currentMonkeys = this.state.monkeys.slice(0, indexOfLastMonkey);
+        const currentMonkeys = visibleMonkeys.slice(0, indexOfLastMonkey);
 
         return (
             <div className="ShowPage">
                 <div className="ShowPage-modal">
                     <Modal
-                        onClose={this.toggleModal}
+                        onClose={this.closeModal}
                         isModalOpen={this.state.isModalOpen}
                         monkey={this.state.selectedMonkey}
                         handlePrevNext={this.handlePrevNext}
-                        prevMonkey={this.state.prevMonkey}
-                        nextMonkey={this.state.nextMonkey}
+                        prevMonkey={prevMonkey}
+                        nextMonkey={nextMonkey}
                     />
                 </div>
                 <div className="ShowPage-nav">
@@ -300,15 +208,15 @@ class ShowPage extends Component {
                 <div className="ShowPage-sortfilter">
                     <div className="ShowPage-sort">
                         <h4>Sort:</h4>
-                        <button onClick={this.sortByName}>
+                        <button onClick={() => this.sortBy("name")}>
                             <span>Name </span>
                             <IconArrowsSort />
                         </button>
-                        <button onClick={this.sortByTroop}>
+                        <button onClick={() => this.sortBy("troop")}>
                             <span>Troop </span>
                             <IconArrowsSort />{" "}
                         </button>
-                        <button onClick={this.sortByYear}>
+                        <button onClick={() => this.sortBy("year")}>
                             <span>Year </span>
                             <IconArrowsSort />{" "}
                         </button>
@@ -345,10 +253,10 @@ class ShowPage extends Component {
                     </div>
                 </div>
                 <div className="ShowPage-monkeys">
-                    {currentMonkeys.map((m, index) => (
+                    {currentMonkeys.map((m) => (
                         <div
                             key={`${m.name}-${m.chip}-${m.troop}`}
-                            onClick={() => this.toggleModal(m, index)}
+                            onClick={() => this.openModal(m)}
                         >
                             <MonkeyCard
                                 name={m.name}
@@ -360,7 +268,7 @@ class ShowPage extends Component {
                         </div>
                     ))}
                 </div>
-                {indexOfLastMonkey < this.state.monkeys.length && (
+                {indexOfLastMonkey < visibleMonkeys.length && (
                     <div className="ShowPage-showMore">
                         <button
                             className="ShowPage-showMoreBtn"
