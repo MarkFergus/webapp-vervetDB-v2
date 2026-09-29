@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -105,4 +105,49 @@ test("modal next arrow follows the filtered list", async () => {
 
     await user.click(container.querySelector(".Modal-arrowright"));
     expect(container.querySelector(".Modal-title")).toHaveTextContent(second);
+});
+
+async function openCard(user, container, name) {
+    await user.type(screen.getByPlaceholderText("Name or chip number"), name);
+    await user.click(
+        within(container.querySelector(".ShowPage-monkeys")).getByText(name)
+    );
+}
+
+test("modal shows 'No Chip' when a monkey has no chip number", async () => {
+    const { user, container } = setup();
+    await openCard(user, container, "Bloem");
+
+    expect(container.querySelector(".Modal-details")).toHaveTextContent(
+        "Chip: No Chip"
+    );
+});
+
+test("closing the modal by clicking outside resets the photo", async () => {
+    const { user, container } = setup();
+    const aroha = monkeysArr.find((m) => m.name === "Aroha");
+
+    // Beau has 2 photos: move to the second one, then close via the backdrop
+    await openCard(user, container, "Beau");
+    await user.click(container.querySelectorAll(".Modal-imageButton")[1]);
+    await user.click(container.querySelector(".Modal-overlay"));
+    await waitFor(() =>
+        expect(container.querySelector(".Modal-title")).toBeNull()
+    );
+
+    // Aroha has only 1 photo, so it must show photo 1, not photo 2
+    await user.clear(screen.getByPlaceholderText("Name or chip number"));
+    await openCard(user, container, "Aroha");
+    expect(screen.getByAltText("Aroha")).toHaveAttribute("src", aroha.img[0]);
+});
+
+test("clicking outside the PDF modal closes it", async () => {
+    const { user, container } = setup();
+    await user.click(container.querySelector(".Nav-buttons button"));
+    expect(screen.getByText("Profile Book PDF")).toBeInTheDocument();
+
+    await user.click(container.querySelector(".ModalPDF-overlay"));
+    await waitFor(() =>
+        expect(screen.queryByText("Profile Book PDF")).toBeNull()
+    );
 });

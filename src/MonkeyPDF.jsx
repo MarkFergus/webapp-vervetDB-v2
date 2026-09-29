@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import {
     Document,
     Page,
@@ -94,92 +93,89 @@ const styles = StyleSheet.create({
 
 const ROWS_PER_PAGE = 4;
 
-class MonkeyPDF extends Component {
-    render() {
-        const { monkeys } = this.props;
-        const currentDate = new Date();
-        const formattedDate = `${currentDate.getDate()} ${currentDate.toLocaleString(
-            "default",
-            {
-                month: "long",
-            }
-        )} ${currentDate.getFullYear()}`;
+function MonkeyPDF({ monkeys }) {
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getDate()} ${currentDate.toLocaleString(
+        "default",
+        {
+            month: "long",
+        }
+    )} ${currentDate.getFullYear()}`;
 
-        const pages = [];
-        let currentPage = [];
+    const pages = [];
+    let currentPage = [];
 
-        monkeys.forEach((monkey, index) => {
-            currentPage.push(monkey);
-            //create array of pages from monkeys with specified number per page
-            if (
-                (index + 1) % ROWS_PER_PAGE === 0 ||
-                index === monkeys.length - 1
-            ) {
-                pages.push(currentPage);
-                currentPage = [];
-            }
-        });
-        const totalPages = pages.length;
+    monkeys.forEach((monkey, index) => {
+        currentPage.push(monkey);
+        //create array of pages from monkeys with specified number per page
+        if (
+            (index + 1) % ROWS_PER_PAGE === 0 ||
+            index === monkeys.length - 1
+        ) {
+            pages.push(currentPage);
+            currentPage = [];
+        }
+    });
+    const totalPages = pages.length;
 
-        return (
-            <Document style={styles.document}>
-                {pages.map((pageMonkeys, pageIndex) => (
-                    <Page style={styles.page} key={pageIndex}>
-                        <View style={{ flexGrow: 1, marginRight: 35 }}>
-                            <Text style={styles.pageDate}>
-                                Created {formattedDate}
-                            </Text>
-                            {pageMonkeys.map((monkey, index) => {
-                                const isMultipleOfFour = index % 4 === 0;
+    return (
+        <Document style={styles.document}>
+            {pages.map((pageMonkeys, pageIndex) => (
+                <Page style={styles.page} key={pageIndex}>
+                    <View style={{ flexGrow: 1, marginRight: 35 }}>
+                        <Text style={styles.pageDate}>
+                            Created {formattedDate}
+                        </Text>
+                        {pageMonkeys.map((monkey, index) => {
+                            const isMultipleOfFour = index % 4 === 0;
 
-                                return (
-                                    <View
-                                        key={index}
-                                        style={[
-                                            styles.row,
-                                            //create top border on first row of each page
-                                            isMultipleOfFour && {
-                                                borderTop: "1px solid #ccc",
-                                                marginTop: 27,
-                                            },
-                                        ]}
-                                    >
-                                        <Image
-                                            src={monkey.img[0]}
-                                            style={styles.image}
-                                        />
-                                        <View style={styles.detailsContainer}>
-                                            <Text style={styles.name}>
-                                                {monkey.name}
-                                            </Text>
-                                            <Text style={styles.chip}>
-                                                Chip: {monkey.chip}
-                                            </Text>
-                                            <Text style={styles.bio}>
-                                                {monkey.year} {monkey.sex}.{" "}
-                                                {monkey.bio}
-                                            </Text>
-                                            <Text style={styles.descTitle}>
-                                                Distinctive features/behaviours:
-                                            </Text>
-                                            <Text style={styles.descInfo}>
-                                                {monkey.desc
-                                                    ? monkey.desc
-                                                    : "Nothing. Nada. Zilch."}
-                                            </Text>
-                                        </View>
+                            return (
+                                <View
+                                    key={index}
+                                    style={[
+                                        styles.row,
+                                        //create top border on first row of each page
+                                        isMultipleOfFour && {
+                                            borderTop: "1px solid #ccc",
+                                            marginTop: 27,
+                                        },
+                                    ]}
+                                >
+                                    <Image
+                                        src={monkey.img[0]}
+                                        style={styles.image}
+                                    />
+                                    <View style={styles.detailsContainer}>
+                                        <Text style={styles.name}>
+                                            {monkey.name}
+                                        </Text>
+                                        <Text style={styles.chip}>
+                                            Chip: {monkey.chip}
+                                        </Text>
+                                        <Text style={styles.bio}>
+                                            {monkey.year} {monkey.sex}.{" "}
+                                            {monkey.bio}
+                                        </Text>
+                                        <Text style={styles.descTitle}>
+                                            Distinctive features/behaviours:
+                                        </Text>
+                                        <Text style={styles.descInfo}>
+                                            {monkey.desc
+                                                ? monkey.desc
+                                                : "Nothing. Nada. Zilch."}
+                                        </Text>
                                     </View>
-                                );
-                            })}
-                            <Text style={styles.pageNumber}>
-                                Page {pageIndex + 1} of {totalPages}
-                            </Text>
-                        </View>
-                    </Page>
-                ))}
-            </Document>
-        );
-    }
+                                </View>
+                            );
+                        })}
+                        <Text style={styles.pageNumber}>
+                            Page {pageIndex + 1} of {totalPages}
+                        </Text>
+                    </View>
+                </Page>
+            ))}
+        </Document>
+    );
 }
 
 export default MonkeyPDF;
