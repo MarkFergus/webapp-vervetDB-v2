@@ -7,7 +7,7 @@ import {
     IconCaretRightFilled,
     IconCamera,
 } from "@tabler/icons-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import "./Modal.css";
 
 function Modal({

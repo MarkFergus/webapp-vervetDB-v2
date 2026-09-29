@@ -1,5 +1,5 @@
 import { IconSquareRoundedX } from "@tabler/icons-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import "./ModalPDF.css";
 
 // Largest troop is ~55, so anything over this is probably "All Troops"
