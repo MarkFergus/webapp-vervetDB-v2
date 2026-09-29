@@ -16,9 +16,12 @@ function SexIcon({ sex }) {
 // Buttons may only contain inline elements, hence spans rather than divs/h3s.
 function MonkeyCard({ name, sex, year, troop, img, onClick }) {
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
-    const label = [name, sex, year ? `born ${year}` : null, `${troop} troop`]
-        .filter(Boolean)
-        .join(", ");
+    const label = [
+        name,
+        sex || "sex unknown",
+        year ? `born ${year}` : "birth year unknown",
+        `${troop} troop`,
+    ].join(", ");
 
     return (
         <button
@@ -36,7 +39,7 @@ function MonkeyCard({ name, sex, year, troop, img, onClick }) {
                 <span className="MonkeyCard-info-sex">
                     <SexIcon sex={sex} />
                 </span>
-                <span className="MonkeyCard-info-year">{year}</span>
+                <span className="MonkeyCard-info-year">{year || "?"}</span>
                 <span className="MonkeyCard-info-troop">{troop}</span>
             </span>
         </button>

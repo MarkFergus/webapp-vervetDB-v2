@@ -151,3 +151,46 @@ test("clicking outside the PDF modal closes it", async () => {
         expect(screen.queryByText("Profile Book PDF")).toBeNull()
     );
 });
+
+test("unknown birth years go last in both year sort directions", async () => {
+    const { user, container } = setup();
+    const years = () =>
+        [...container.querySelectorAll(".MonkeyCard-info-year")].map(
+            (el) => el.textContent
+        );
+    const yearButton = () => screen.getByRole("button", { name: /^Year/ });
+    // Sorting resets to page 1, so expand to every monkey after each sort
+    const showAll = async () => {
+        let more;
+        while ((more = screen.queryByRole("button", { name: "Show More" }))) {
+            await user.click(more);
+        }
+    };
+    const unknown = monkeysArr.filter((m) => m.year === "").length;
+
+    await user.click(yearButton());
+    await showAll();
+    expect(years()).toHaveLength(monkeysArr.length);
+    expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
+    expect(years()[0]).not.toBe("?");
+
+    await user.click(yearButton());
+    await showAll();
+    expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
+    expect(Number(years()[0])).toBeGreaterThan(Number(years()[1]) - 1);
+});
+
+test("modal shows Unknown and 'No bio yet.' for missing details", async () => {
+    const { user, container } = setup();
+    // Caryl has no birth year and no bio; Fuzz has no sex recorded
+    await openCard(user, container, "Caryl");
+    const details = () => container.querySelector(".Modal-details");
+    expect(details()).toHaveTextContent("Born: Unknown");
+    expect(details()).toHaveTextContent("Bio: No bio yet.");
+
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await user.clear(screen.getByPlaceholderText("Name or chip number"));
+    await openCard(user, container, "Fuzz");
+    expect(details()).toHaveTextContent("Sex: Unknown");
+});

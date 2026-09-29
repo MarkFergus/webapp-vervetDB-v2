@@ -193,10 +193,10 @@ function Modal({
                                         Troop: <span>{monkey.troop}</span>
                                     </h3>
                                     <h3>
-                                        Sex: <span>{monkey.sex}</span>
+                                        Sex: <span>{monkey.sex || "Unknown"}</span>
                                     </h3>
                                     <h3>
-                                        Born: <span>{monkey.year}</span>
+                                        Born: <span>{monkey.year || "Unknown"}</span>
                                     </h3>
                                     <h3>
                                         Chip:{" "}
@@ -205,7 +205,7 @@ function Modal({
                                         </span>
                                     </h3>
                                     <h3>
-                                        Bio: <span>{monkey.bio}</span>
+                                        Bio: <span>{monkey.bio || "No bio yet."}</span>
                                     </h3>
                                     <h3>
                                         Distinctive features/behaviours:{" "}

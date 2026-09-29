@@ -59,7 +59,7 @@ const monkeysArr = [
             "https://i.ibb.co/gyWCTvJ/darby-james-may2024-2-min.webp",
             "https://i.ibb.co/TcByhLx/darby-james-may2024-min.webp",
         ],
-        bio: "Arrived Oct 2023, found in an office building in Nelspurit after a long weekend. Arrived with a badly broken right arm, a Salter Harris fracture. Does not have full function (extension) of right arm as a result.  Integrated into troop Feb 2024 with foster-mum Litchie.",
+        bio: "Arrived Oct 2023, found in an office building in Nelspurit after a long weekend. Arrived with a badly broken right arm, a Salter Harris fracture. Does not have full function (extension) of right arm as a result. Integrated into troop Feb 2024 with foster-mum Litchie.",
     },
     {
         name: "Eliza",
@@ -68,7 +68,7 @@ const monkeysArr = [
         troop: "James",
         year: 2017,
         img: ["https://i.ibb.co/G5Js3C0/eliza-james-may2024-min.webp"],
-        bio: "Born 2017. Arrived as an orphan, was kept as a pet for 6 months, very humanised. Started foster-mum integrations at D&D but due was very scared of the monkeys and wasn’t doing well so moved to James.  Integrated in Aug 2018. ",
+        bio: "Born 2017. Arrived as an orphan, was kept as a pet for 6 months, very humanised. Started foster-mum integrations at D&D but due was very scared of the monkeys and wasn’t doing well so moved to James. Integrated in Aug 2018.",
     },
     {
         name: "Emblem",
@@ -95,7 +95,7 @@ const monkeysArr = [
         troop: "James",
         year: 2007,
         img: ["https://i.ibb.co/NWt5mMr/juno-james-apr2024-min.webp"],
-        bio: "Born 2007. Originally from Sickbay troop (now known as Global) but used to jump in & out of James and then eventually stayed there in 2010. ",
+        bio: "Born 2007. Originally from Sickbay troop (now known as Global) but used to jump in & out of James and then eventually stayed there in 2010.",
     },
     {
         name: "Litchie",
@@ -169,7 +169,7 @@ const monkeysArr = [
         year: 2022,
         chip: 26627,
         img: ["https://i.ibb.co/nzWnzQX/Grover-Golith-21-02-2024-1-min.webp"],
-        bio: "Arrived as an orphan from Johannesburg wildlife vet along with Sophie. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop. ",
+        bio: "Arrived as an orphan from Johannesburg wildlife vet along with Sophie. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop.",
         desc: "Round head, straight brow",
     },
     {
@@ -183,7 +183,7 @@ const monkeysArr = [
             "https://i.ibb.co/GHdz2CK/Sophie-Goliath-April-24-min.webp",
             "https://i.ibb.co/nDMdkPp/Sophie-Goliath-Aug-23-5-min.webp",
         ],
-        bio: "Arrived as an orphan from Johannesburg wildlife vet along with Grover. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop. ",
+        bio: "Arrived as an orphan from Johannesburg wildlife vet along with Grover. Mother was shot. Fostered by Mrs Gold and then by Dad & Bliss once in troop.",
         desc: "Grumpy expression, M-shaped brow with peak on the middle, pale silhouettes around eyes",
     },
     {
@@ -213,7 +213,7 @@ const monkeysArr = [
         year: 2020,
         chip: 26789,
         img: ["https://i.ibb.co/sHK226G/Aurora-Goliath-Apr-2023-2-min.webp"],
-        bio: "Arrived as an orphan. Was found being sold on the side of the road for R100. ",
+        bio: "Arrived as an orphan. Was found being sold on the side of the road for R100.",
     },
     {
         name: "Bliss",
@@ -226,13 +226,13 @@ const monkeysArr = [
         desc: "Grumpy face, tail bent is various parts, missing black tip, looks quite similar to her sister Dad.",
     },
     {
-        name: "Boetie ",
+        name: "Boetie",
         troop: "Goliath",
         sex: "male",
         year: 2013,
         chip: 1013,
         img: ["https://i.ibb.co/qM5XdHp/boetie-goliath-mar2023-min.webp"],
-        bio: "Arrived as an adult. Found along and kept as a pet for month before handing in. ",
+        bio: "Arrived as an adult. Found along and kept as a pet for month before handing in.",
         desc: "Smaller adult male, light golden coat",
     },
     {
@@ -278,7 +278,7 @@ const monkeysArr = [
         desc: "Very cute square face, round eyes, distinctive peak in middle of brow, usually with the alpha-group",
     },
     {
-        name: "Digit ",
+        name: "Digit",
         troop: "Goliath",
         sex: "female",
         year: 2014,
@@ -436,7 +436,7 @@ const monkeysArr = [
         year: 2007,
         chip: 1905,
         img: ["https://i.ibb.co/gmBV025/Mandy-Goliath-Apr-2023-min.webp"],
-        bio: "Born in troop to Sophia (deceased). Used to escape by climbing through the fence, but not recently. ",
+        bio: "Born in troop to Sophia (deceased). Used to escape by climbing through the fence, but not recently.",
         desc: "Back arches down when walking, dark grey coat, tear on right ear",
     },
     {
@@ -456,7 +456,7 @@ const monkeysArr = [
         year: 2004,
         chip: 1674,
         img: ["https://i.ibb.co/J5njyPQ/max-goliath-may2024-min.webp"],
-        bio: "Arrived in group at 8 months old and lived in enclosure since it was first built. ",
+        bio: "Arrived in group at 8 months old and lived in enclosure since it was first built.",
         desc: "Very fluffy head, will readily headbob and eyebrow if looked at, small lump on base of scrotum",
     },
     {
@@ -546,7 +546,7 @@ const monkeysArr = [
         year: 2004,
         chip: 1906,
         img: ["https://i.ibb.co/vs48X1r/schlinkey-goliath-setp2021-min.webp"],
-        bio: "Arrived in a group at 8 months old, was abused.  Mother of Pepsi, Dad, Bliss. Fostered Pippin.",
+        bio: "Arrived in a group at 8 months old, was abused. Mother of Pepsi, Dad, Bliss. Fostered Pippin.",
         desc: "Large stocky adult, small tear top of right ear, thick tail which is missing the black tip",
     },
     {
@@ -590,14 +590,14 @@ const monkeysArr = [
         desc: "Tall slender sub-adult, dark face with wavy brow",
     },
     {
-        name: "Vincent ",
+        name: "Vincent",
         troop: "Goliath",
         sex: "male",
         year: 2009,
         chip: 1431,
         img: ["https://i.ibb.co/sw1YBKC/Vincent-Goliath-May-2023-min.webp"],
         bio: "Born in troop to Mrs Gold. High-ranked.",
-        desc: "Wavy brow, triangular cut  on bottom of left ear.",
+        desc: "Wavy brow, triangular cut on bottom of left ear.",
     },
     {
         name: "Waffles",
@@ -735,7 +735,7 @@ const monkeysArr = [
         desc: "Smallish adult but stocky, white lines and spots below eyes, curved brow, end of tail very thin.",
     },
     {
-        name: "Millie ",
+        name: "Millie",
         sex: "female",
         chip: 1240,
         troop: "H&B",
@@ -781,7 +781,7 @@ const monkeysArr = [
         troop: "H&B",
         year: 2003,
         img: ["https://i.ibb.co/GtWbM0g/harmony-hb-may2022-min.webp"],
-        bio: "Arrived as an orphan, mother was shot by a farmer. Previously lived in a Skunkey introcage with Bill, Jaintjie and Count. Integrated Oct 2019. Very good natured, loves the babies. Fostered Thigpen. ",
+        bio: "Arrived as an orphan, mother was shot by a farmer. Previously lived in a Skunkey introcage with Bill, Jaintjie and Count. Integrated Oct 2019. Very good natured, loves the babies. Fostered Thigpen.",
         desc: "Very distinctive golden-brown coat, round head with ears sticking out, curved brow with 'sad' expression, pale wrinkly silhouettes around eyes, hands point out while walking/standing.",
     },
     {
@@ -801,7 +801,7 @@ const monkeysArr = [
         troop: "H&B",
         year: 2006,
         img: ["https://i.ibb.co/zXZ9Zw0/yoshi-hb-may2022-min.webp"],
-        bio: "Alpha-male. Born 2006 on site to Priscilla.  Used to live in a Skunkey introcage with Hocus, Millie, Luxi (deceased), Priscilla, Percy, and Apollo, who all became the starting group of H&B in 2015.",
+        bio: "Alpha-male. Born 2006 on site to Priscilla. Used to live in a Skunkey introcage with Hocus, Millie, Luxi (deceased), Priscilla, Percy, and Apollo, who all became the starting group of H&B in 2015.",
         desc: "Large adult, very long bushy tail with tick black tip, low bushy brow.",
     },
     {
@@ -869,7 +869,7 @@ const monkeysArr = [
         troop: "H&B",
         sex: "male",
         year: 2023,
-        chip: 41192,
+        chip: 41189,
         img: [
             "https://i.ibb.co/s3644St/paulie-hb-mar2024-2.webp",
             "https://i.ibb.co/CtH3Gjt/paulie-hb-mar2024.webp",
@@ -967,7 +967,7 @@ const monkeysArr = [
         chip: 1266,
         troop: "SAAV",
         year: 2010,
-        bio: "Alpha-female. Born in troop to Survivor (deceased). ",
+        bio: "Alpha-female. Born in troop to Survivor (deceased).",
         img: ["https://i.ibb.co/HdrQZwM/deliliah-saav-apr2024-min.webp"],
         desc: "Distinctive white moustache, flashes above eyes,, light silhouettes underneath, nervous of people, will eyebrow if looked at.",
     },
@@ -1047,7 +1047,7 @@ const monkeysArr = [
         chip: 26675,
         troop: "SAAV",
         year: 2021,
-        bio: "Arrived as an orphan. Was found alone here at the staff village crying & vocalling for 24 hours with no mother or other bandits there. Didn’t seem to be one of the bandits so story is a bit of a mystery. Fostered by Hollie who passed away a few weeks after  he was released into troop.",
+        bio: "Arrived as an orphan. Was found alone here at the staff village crying & vocalling for 24 hours with no mother or other bandits there. Didn’t seem to be one of the bandits so story is a bit of a mystery. Fostered by Hollie who passed away a few weeks after he was released into troop.",
         img: ["https://i.ibb.co/8sBjSmv/soca-saav-apr2024-min.webp"],
         desc: "",
     },
@@ -1077,7 +1077,7 @@ const monkeysArr = [
         chip: 1792,
         troop: "Global",
         year: 2005,
-        bio: "Arrived as a young adult in 2008 (min 3 years old). Had a baby in troop in 2009 (Mischief, escaped 2021). Great foster-mum, has fostered Red, Django, Meghan, Tosty, and Terri. ",
+        bio: "Arrived as a young adult in 2008 (min 3 years old). Had a baby in troop in 2009 (Mischief, escaped 2021). Great foster-mum, has fostered Red, Django, Meghan, Tosty, and Terri.",
         img: ["https://i.ibb.co/vd6Lxck/missie-global-feb2020-min.jpg"],
         desc: "Older female, speckled pale silhouettes below eyes, low bushy brow, slightly arched back, small kink near end of tail.",
     },
@@ -1157,7 +1157,7 @@ const monkeysArr = [
         chip: 21507,
         troop: "Global",
         year: 2017,
-        bio: "Arrived as an orphan May 2018. Fostered by Missie. Foster-mum of  Eamon.",
+        bio: "Arrived as an orphan May 2018. Fostered by Missie. Foster-mum of Eamon.",
         img: ["https://i.ibb.co/94cJYvb/meghan-global-may2022-min.jpg"],
         desc: "Tear on top of left ear, often with Abby, eyebrows a lot.",
     },
@@ -1177,7 +1177,7 @@ const monkeysArr = [
         chip: 21513,
         troop: "Global",
         year: 2018,
-        bio: "Arrived as an orphan Jan 2019. Was found alone on a farm. ",
+        bio: "Arrived as an orphan Jan 2019. Was found alone on a farm.",
         img: ["https://i.ibb.co/VQbGM34/abby-global-sept2023-min.jpg"],
         desc: "Eyes are very round and close together, rounded brow, fluffy head",
     },
@@ -1197,7 +1197,7 @@ const monkeysArr = [
         chip: 98189,
         troop: "Global",
         year: 2018,
-        bio: "Arrived as an orphan Jan 2019 with a broken clavicle.  Fostered by Missie.",
+        bio: "Arrived as an orphan Jan 2019 with a broken clavicle. Fostered by Missie.",
         img: ["https://i.ibb.co/NT9wtDF/red-global-may2024-min.jpg"],
         desc: "Light-grey coat, very fluffy especially around the face, curved bushy brow, sad expression, often holds left hand/wrist up.",
     },
@@ -1277,7 +1277,7 @@ const monkeysArr = [
         chip: 26643,
         troop: "Global",
         year: 2021,
-        bio: "Arrived as an orphan Nov 2021. Was found being sold at the side of a road in Mozambique. Initially integrated into Koko but was pulled out almost immediately due to weakness in legs. Suffered from compressed spine most likely caused by an unknown fall.  Reintegrated into Global after recovering due to lack of bonding at Koko. Fostered by Missie. Still has some weakness so walks and sits weirdly. ",
+        bio: "Arrived as an orphan Nov 2021. Was found being sold at the side of a road in Mozambique. Initially integrated into Koko but was pulled out almost immediately due to weakness in legs. Suffered from compressed spine most likely caused by an unknown fall. Reintegrated into Global after recovering due to lack of bonding at Koko. Fostered by Missie. Still has some weakness so walks and sits weirdly.",
         img: ["https://i.ibb.co/YkkJnYm/terri-global-may2024-min.jpg"],
         desc: "Light-grey coat, patchy pink chin, trim coat, feet point inwards.",
     },
@@ -1352,7 +1352,7 @@ const monkeysArr = [
     {
         name: "Satchmo",
         sex: "male",
-        chip: 26633,
+        chip: 26711,
         troop: "Jalamango",
         year: 2019,
         bio: "Arrived as an orphan Jan 2020. Collected from Chimp Eden after being found alone and handed in. Integrated in April 2020.",
@@ -1372,7 +1372,7 @@ const monkeysArr = [
     {
         name: "Zea",
         sex: "female",
-        chip: 26743,
+        chip: 21521,
         troop: "Jalamango",
         year: 2022,
         bio: "Arrived as a juvenile ex-pet, who had a broken arm. Was integrated with Mango and Jesse (deceased) in the old samango enclosure in sickbay section, before they were moved to the new Jalamango enclosure in 2018. Humanised and can be aggressive.",
@@ -1397,7 +1397,7 @@ const monkeysArr = [
         year: 2008,
         img: ["https://i.ibb.co/KKS3t4d/long-arms-koko-feb2022-min.webp"],
         bio: "Mother of Elena-Ann",
-        desc: "White moustache, more prominent on sides of mouth, right nipple pink, left nipple longer and black, looks similar to Jacob and somewhat similar to Mystery ",
+        desc: "White moustache, more prominent on sides of mouth, right nipple pink, left nipple longer and black, looks similar to Jacob and somewhat similar to Mystery",
     },
     {
         name: "Schnitzel",
@@ -1406,8 +1406,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2008,
         img: ["https://i.ibb.co/MPwj1zJ/schnitzel-koko-feb2023-min.webp"],
-        bio: "Born in troop to Brownie ",
-        desc: "Distinctive golden coat, thick straight brow, pale rings around eyes, eyes close together ",
+        bio: "Born in troop to Brownie",
+        desc: "Distinctive golden coat, thick straight brow, pale rings around eyes, eyes close together",
     },
     {
         name: "Toby",
@@ -1417,7 +1417,7 @@ const monkeysArr = [
         year: 2008,
         img: ["https://i.ibb.co/X4mTnYv/toby-koko-nov2023-min.webp"],
         bio: "Born in troop to Zebedee.",
-        desc: "Golden-brown coat, very white and fluffy around the face / neck, like a lion’s mane, long and pristine coat on sides, can be aggressive with babies in introcages ",
+        desc: "Golden-brown coat, very white and fluffy around the face / neck, like a lion’s mane, long and pristine coat on sides, can be aggressive with babies in introcages",
     },
     {
         name: "CJ",
@@ -1426,8 +1426,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2009,
         img: ["https://i.ibb.co/XWdGqDS/cj-koko-apr2022-min.webp"],
-        bio: "Born in troop   ",
-        desc: "Walks with a very obvious limp on right leg due to old injury, very dark face ",
+        bio: "Born in troop",
+        desc: "Walks with a very obvious limp on right leg due to old injury, very dark face",
     },
     {
         name: "Helmet",
@@ -1446,8 +1446,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2009,
         img: ["https://i.ibb.co/VMZT2BN/mystery-koko-may2023-min.webp"],
-        bio: "Born in troop to Other ",
-        desc: "Thin white and straight moustache on upper lip, kink / bend in middle of tail, straight brow ",
+        bio: "Born in troop to Other",
+        desc: "Thin white and straight moustache on upper lip, kink / bend in middle of tail, straight brow",
     },
     {
         name: "Capie",
@@ -1470,7 +1470,7 @@ const monkeysArr = [
             "https://i.ibb.co/KzyqT2R/irene-koko-nov2023-min.webp",
         ],
         bio: "Arrived as an orphan. Integrated in 2012 as a group along with Grace, Alec (both now in IC), Luka, TJ, and Laux. 2nd chip 31157.",
-        desc: "Very low bushy flat brow, quite a flat head, nervous of people and rarely comes to the fence ",
+        desc: "Very low bushy flat brow, quite a flat head, nervous of people and rarely comes to the fence",
     },
     {
         name: "Jacob",
@@ -1480,7 +1480,7 @@ const monkeysArr = [
         year: 2010,
         img: ["https://i.ibb.co/b7xtMct/jacob-koko-nov2023-min.webp"],
         bio: "Born in troop.",
-        desc: "Dark face with flat nose, goofy expression, protruding muzzle, nervous of people ",
+        desc: "Dark face with flat nose, goofy expression, protruding muzzle, nervous of people",
     },
     {
         name: "Luka",
@@ -1509,7 +1509,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2013,
         img: ["https://i.ibb.co/VBJc35H/elena-ann-koko-nov2023-min.webp"],
-        bio: "Born in troop to Long Arms ",
+        bio: "Born in troop to Long Arms",
         desc: "Flat nose, white / grey fingers and toes, brow groomed / plucked in middle and slightly to the right, looks like her mum Long Arms but without the moustache, quiet and gentle female",
     },
     {
@@ -1520,7 +1520,7 @@ const monkeysArr = [
         year: 2013,
         img: ["https://i.ibb.co/TckKRk3/kara-koko-apr2023-min.webp"],
         bio: "Arrived as an orphan. Mother was killed by dogs on a farm in Agatha. Fostered by Curtis (jumped out and is now in Robert troop).",
-        desc: "Very patchy hard white silhouettes around eyes, quite similar to Joli, flat face, often has an asymmetrical look in her eyes ",
+        desc: "Very patchy hard white silhouettes around eyes, quite similar to Joli, flat face, often has an asymmetrical look in her eyes",
     },
     {
         name: "Patrick-Felis",
@@ -1530,7 +1530,7 @@ const monkeysArr = [
         year: 2013,
         img: ["https://i.ibb.co/QHTXbBB/patrick-felis-koko-dec2023-min.webp"],
         bio: "Arrived as an orphan, mum was killed for bushmeat in Mozambique. Fostered by Koko (deceased).",
-        desc: "Pink silhouettes around eyes, slight pink dots / tears under eyes, long black area on tail, tear on right ear, short coat ",
+        desc: "Pink silhouettes around eyes, slight pink dots / tears under eyes, long black area on tail, tear on right ear, short coat",
     },
     {
         name: "Smith",
@@ -1539,7 +1539,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2013,
         img: ["https://i.ibb.co/Dz2Xdn0/smith-koko-apr2023-min.webp"],
-        bio: "Born in troop to Other ",
+        bio: "Born in troop to Other",
         desc: "Very dark face with broad muzzle, low brow (angry look), similar looking to his mother Other, no black patches on scrotum, scar on left thigh",
     },
     {
@@ -1560,7 +1560,7 @@ const monkeysArr = [
         year: 2014,
         img: ["https://i.ibb.co/jb5MPxv/vainilla-koko-feb2023-min.webp"],
         bio: "Born in troop to Zebedee.",
-        desc: "Eyebrow plucked/groomed all the way across (thicker in the middle), dark face ",
+        desc: "Eyebrow plucked/groomed all the way across (thicker in the middle), dark face",
     },
     {
         name: "Mokey",
@@ -1569,7 +1569,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2015,
         img: ["https://i.ibb.co/PcNyrrj/mokey-koko-apr2024-min.webp"],
-        bio: " Arrived as an orphan, was found at a game reserve with possible mother deceased nearby. Fostered by Zebedee.",
+        bio: "Arrived as an orphan, was found at a game reserve with possible mother deceased nearby. Fostered by Zebedee.",
         desc: "White dot/mark on bridge of nose, distinctive pink around both eyes, light-grey scruffy coat",
     },
     {
@@ -1580,7 +1580,7 @@ const monkeysArr = [
         year: 2017,
         img: ["https://i.ibb.co/McdpP5G/joli-koko-may2023-min.webp"],
         bio: "Newly established alpha-female. Arrived as an orphan, found at the side of the road. Fostered by Luka.",
-        desc: "Pale silhouettes around eyes, similar to Kara but has more marks / lines above eyes, very patchy groomed parts of brow ",
+        desc: "Pale silhouettes around eyes, similar to Kara but has more marks / lines above eyes, very patchy groomed parts of brow",
     },
     {
         name: "Panacur",
@@ -1609,8 +1609,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2018,
         img: ["https://i.ibb.co/ypD4R2V/loustic-koko-dec2023-min.webp"],
-        bio: " Arrived as an orphan, mother was hit & killed by a car. Fostered by Luka.",
-        desc: "Golden-brown coat, shiny part on bridge of nose, pale silhouettes around eyes ",
+        bio: "Arrived as an orphan, mother was hit & killed by a car. Fostered by Luka.",
+        desc: "Golden-brown coat, shiny part on bridge of nose, pale silhouettes around eyes",
     },
     {
         name: "Paloma",
@@ -1620,7 +1620,7 @@ const monkeysArr = [
         year: 2018,
         img: ["https://i.ibb.co/sgvGbB6/paloma-koko-oct2023-min.webp"],
         bio: "Arrived as an orphan, was bitten by dogs. Fostered by Luka.",
-        desc: "Grumpy expression, looks a little bit like Karla except larger and wider face, almond shaped silhouettes around eyes ",
+        desc: "Grumpy expression, looks a little bit like Karla except larger and wider face, almond shaped silhouettes around eyes",
     },
     {
         name: "Yllena",
@@ -1630,7 +1630,7 @@ const monkeysArr = [
         year: 2018,
         img: ["https://i.ibb.co/2vKKvNT/yllena-koko-may2023-min.webp"],
         bio: "Arrived as an orphan, found alone in Tzaneen. Fostered by Kara. Fostered Taro and Atlas.",
-        desc: "Golden-brown coat, white tears / lines under eyes ",
+        desc: "Golden-brown coat, white tears / lines under eyes",
     },
     {
         name: "Dobby",
@@ -1640,7 +1640,7 @@ const monkeysArr = [
         year: 2019,
         img: ["https://i.ibb.co/dDZK5nF/dobby-koko-dec2023-min.webp"],
         bio: "Arrived 2020 as an orphan, was found at a farm and handed in to a kid's day-care center. Fostered by Panacur.",
-        desc: "Golden-brown coat, slightly curved bushy brow, white lines under eyes and some pale marks under middle of brow ",
+        desc: "Golden-brown coat, slightly curved bushy brow, white lines under eyes and some pale marks under middle of brow",
     },
     {
         name: "Karla",
@@ -1650,7 +1650,7 @@ const monkeysArr = [
         year: 2019,
         img: ["https://i.ibb.co/hXrk5kV/karla-koko-nov2023-min.webp"],
         bio: "Arrived 2020 as an orphan. Fostered by Luka.",
-        desc: "Dark face with broad mouth, confident and high ranked ",
+        desc: "Dark face with broad mouth, confident and high ranked",
     },
     {
         name: "Dirkules",
@@ -1659,8 +1659,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2020,
         img: ["https://i.ibb.co/VxzhWtq/dirkules-koko-dec2023-min.webp"],
-        bio: " Arrived as an orphan, was found alone. Fostered by Panacur.",
-        desc: "Tear on right earlobe (see photo), slightly golden coat, has a little pink patch on bottom of chin ",
+        bio: "Arrived as an orphan, was found alone. Fostered by Panacur.",
+        desc: "Tear on right earlobe (see photo), slightly golden coat, has a little pink patch on bottom of chin",
     },
     {
         name: "Ducat",
@@ -1679,8 +1679,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2020,
         img: ["https://i.ibb.co/GCkWTNC/yeliz-koko-nov2023-min.webp"],
-        bio: " Arrived as an orphan, mother was shot and fell from a tree, Yeliz suffered minor head wounds. Fostered by Luka.",
-        desc: "Big ‘sticky-out’ tears, distinctive tear on top of left ear, light-grey coat, white lines under eyes ",
+        bio: "Arrived as an orphan, mother was shot and fell from a tree, Yeliz suffered minor head wounds. Fostered by Luka.",
+        desc: "Big ‘sticky-out’ tears, distinctive tear on top of left ear, light-grey coat, white lines under eyes",
     },
     {
         name: "Oswald",
@@ -1709,8 +1709,8 @@ const monkeysArr = [
         troop: "Koko",
         year: 2022,
         img: ["https://i.ibb.co/r2dMLXT/taro-koko-nov2023-min.webp"],
-        bio: "Fostered by Yllena ",
-        desc: "Only baby this year, eyebrow round on both sides ",
+        bio: "Fostered by Yllena",
+        desc: "Only baby this year, eyebrow round on both sides",
     },
     {
         name: "Other Sub",
@@ -1719,7 +1719,7 @@ const monkeysArr = [
         troop: "Koko",
         year: 2008,
         img: ["https://i.ibb.co/cJhsf3f/other-sub-koko-mar2021-min.webp"],
-        bio: "Born 2008 in troop to other. ",
+        bio: "Born 2008 in troop to other.",
         desc: "Curved nose profile (‘snub-nosed’), tall helmet-head with parting, two tears in middle of left ear, looks like Other but is much larger, has more distinctive parting on head and tail looks better",
     },
     {
@@ -1793,7 +1793,7 @@ const monkeysArr = [
         year: 2016,
         img: ["https://i.ibb.co/23q5wTb/aer-engeltjie-sept2023-min.webp"],
         bio: "Arrived as an orphan, mother was hit & killed by a car in Hoedspruit. Fostered by Bisou",
-        desc: "Ears stick out, wavy brow, pale silhouettes under eyes ",
+        desc: "Ears stick out, wavy brow, pale silhouettes under eyes",
     },
     {
         name: "April",
@@ -1893,7 +1893,7 @@ const monkeysArr = [
         year: 2020,
         img: ["https://i.ibb.co/HBHG3d1/chibi-engeltjie-mar2024-min.webp"],
         bio: "Arrived as an orphan. His mother was killed by dogs and he was kept by a family for ~8 months before being handed over. He somehow escaped his introcage and got into the troop. He was doing really well so we decided to let him stay and treated it as a release. Easiest integration ever!",
-        desc: "Light grey coat, narrow dark face with wispy hair on sides, humanised so will approach and sit by fence ",
+        desc: "Light grey coat, narrow dark face with wispy hair on sides, humanised so will approach and sit by fence",
     },
     {
         name: "Cleo",
@@ -1923,7 +1923,7 @@ const monkeysArr = [
         year: 2020,
         img: ["https://i.ibb.co/hYjwr1m/dani-engeltjie-feb2024-min.webp"],
         bio: "Arrived as an orphan from Johannesburg Widlife Vet along with Howey, was confiscated from people. Fostered by Bisou in the introcage and then by Gremlin in troop.",
-        desc: "Sruffy coat, light golden on lower sides, very playful and will approach fence ",
+        desc: "Sruffy coat, light golden on lower sides, very playful and will approach fence",
     },
     {
         name: "Elliot",
@@ -1963,7 +1963,7 @@ const monkeysArr = [
         year: 2018,
         img: ["https://i.ibb.co/qgw2PtX/freya-engeltjie-feb2024-min.webp"],
         bio: "Arrived as an orphan, mother was shot by a farmer",
-        desc: "Wispy hair on sides of face, dark face ",
+        desc: "Wispy hair on sides of face, dark face",
     },
     {
         name: "Gladys",
@@ -1973,7 +1973,7 @@ const monkeysArr = [
         year: 2005,
         img: ["https://i.ibb.co/t3Tgy0w/gladys-engeltjie-feb2024-min.webp"],
         bio: "Born approx 2010, history unknow. Mother of Kaz. Not usually a foster-mum but helped look after Remy & Duimpie during their release.",
-        desc: "Tear in right ear, lots of kinks near end of tail, low straight brow, small and stocky ",
+        desc: "Tear in right ear, lots of kinks near end of tail, low straight brow, small and stocky",
     },
     {
         name: "Gordon",
@@ -1983,7 +1983,7 @@ const monkeysArr = [
         year: 2012,
         img: ["https://i.ibb.co/8j4xPfx/gordon-engeltjie-feb2023-min.webp"],
         bio: "Arrived as an orphan, found in Botswana. Fostered by Aurora (deceased)",
-        desc: "Thin but hard silhouettes around eyes (not as pronounced as Jommy), low straight and bushy brow, very light-grey coat, scar underside of jaw, some red colour by his eyes ",
+        desc: "Thin but hard silhouettes around eyes (not as pronounced as Jommy), low straight and bushy brow, very light-grey coat, scar underside of jaw, some red colour by his eyes",
     },
     {
         name: "Gremlin",
@@ -1992,7 +1992,7 @@ const monkeysArr = [
         troop: "Engeltjie",
         year: 2010,
         img: ["https://i.ibb.co/xzBmfkp/gremlin-engeltjie-mar2024-min.webp"],
-        bio: "Born approx 2010 on site to Jessie ",
+        bio: "Born approx 2010 on site to Jessie",
         desc: "One eye looks a little off, very similar to Jessie with similar slight hunchback but a little smaller and has a thinner face, will eyebrow people if looked at, light silhouettes / flashes above eyes that are visible when she eyebrows",
     },
     {
@@ -2013,7 +2013,7 @@ const monkeysArr = [
         year: 2010,
         img: ["https://i.ibb.co/VxJxn2V/harry-engeltjie-sep2023-min.webp"],
         bio: "Born approx 2010, history unknown",
-        desc: "Dot under right eye, golden coat with light-coloured front, very distinctive contrast between head and brow, break in tail, overlapping toes on his left foot, light mark on bridge of nose ",
+        desc: "Dot under right eye, golden coat with light-coloured front, very distinctive contrast between head and brow, break in tail, overlapping toes on his left foot, light mark on bridge of nose",
     },
     {
         name: "Hawaii",
@@ -2023,7 +2023,7 @@ const monkeysArr = [
         year: 2010,
         img: ["https://i.ibb.co/58MgG2t/hawaii-engeltjie-sep2023-min.webp"],
         bio: "Born approx 2010, history unknown. Very high ranked",
-        desc: "Medium-sized, slightly short and very thin tail, broken pinky finger, small black patch on scrotum, curved brow, flat face ",
+        desc: "Medium-sized, slightly short and very thin tail, broken pinky finger, small black patch on scrotum, curved brow, flat face",
     },
     {
         name: "Howey",
@@ -2053,7 +2053,7 @@ const monkeysArr = [
         year: 2005,
         img: ["https://i.ibb.co/dJkHvK4/jessie-engeltjie-mar2023-min.webp"],
         bio: "Born approx 2005, history unknown. Excellent foster-mum and very good-natured. Mother of Gremlin and Bisou. Fostered Theo, Maggie, Mr Miyagi",
-        desc: "Scruffy coat, hunchback very obvious when walking (Gremlin also similar), broken middle finger on left hand, bald strip on tail, kinks in tail ",
+        desc: "Scruffy coat, hunchback very obvious when walking (Gremlin also similar), broken middle finger on left hand, bald strip on tail, kinks in tail",
     },
     {
         name: "Joey",
@@ -2083,7 +2083,7 @@ const monkeysArr = [
         year: 2009,
         img: ["https://i.ibb.co/Z1XSqvg/kaz-engeltjie-feb2024-min.webp"],
         bio: "Born on site to Gladys.",
-        desc: "Large tear in middle of left ear, 90° kink at the very end of the tail, small and slender, square flashes above eyes that are visible when she eyebrows ",
+        desc: "Large tear in middle of left ear, 90° kink at the very end of the tail, small and slender, square flashes above eyes that are visible when she eyebrows",
     },
     {
         name: "Kendyll",
@@ -2103,7 +2103,7 @@ const monkeysArr = [
         year: 2019,
         img: ["https://i.ibb.co/C0DhM2S/leo-engeltjie-mar2024-min.webp"],
         bio: "Arrived as an orphan",
-        desc: "Curved wispy overhanging brow, looks like Elliot but darker coat, not ;any distinguish features ",
+        desc: "Curved wispy overhanging brow, looks like Elliot but darker coat, not ;any distinguish features",
     },
     {
         name: "Lexie",
@@ -2123,7 +2123,7 @@ const monkeysArr = [
         year: 2021,
         img: ["https://i.ibb.co/ynf2JZt/luigi-engeltjie-sep2023-min.webp"],
         bio: "Arrived as an orphan, was found alone on a farm at only a few days old. Fostered by Oprah.",
-        desc: "Very round and dark face, chimpanzee shaped black part above eyes ",
+        desc: "Very round and dark face, chimpanzee shaped black part above eyes",
     },
     {
         name: "Maggie",
@@ -2133,7 +2133,7 @@ const monkeysArr = [
         year: 2018,
         img: ["https://i.ibb.co/m64q6Nz/maggie-engeltjie-apr2024-min.webp"],
         bio: "Arrived as an orphan after being kept as a pet for 10 months. Fostered by Jessie. High-ranked.",
-        desc: "Large fluffy and round head, tear on left ear, big forehead ",
+        desc: "Large fluffy and round head, tear on left ear, big forehead",
     },
     {
         name: "Mariella",
@@ -2173,7 +2173,7 @@ const monkeysArr = [
         year: 2021,
         img: ["https://i.ibb.co/ysydBym/momo-engeltjie-feb2024-min.webp"],
         bio: "Arrived as an orphan. Fostered by Bisou in introcage, but then by Lexie in troop.",
-        desc: "Very similar to Sky King but has a darker coat and more wavy brow, thin pink silhouettes mostly below eyes ",
+        desc: "Very similar to Sky King but has a darker coat and more wavy brow, thin pink silhouettes mostly below eyes",
     },
     {
         name: "Mr. Miyagi",
@@ -2193,7 +2193,7 @@ const monkeysArr = [
         year: 2018,
         img: ["https://i.ibb.co/xsTHm57/nala-engeltjie-feb2024-min.webp"],
         bio: "Arrived as an orphan, mother was shot by farmers in Malelane",
-        desc: "Grumpy face, looks similar to Hannah but has a sharp peak in her brow and is more light grey, little moustache ",
+        desc: "Grumpy face, looks similar to Hannah but has a sharp peak in her brow and is more light grey, little moustache",
     },
     {
         name: "Natsuki",
@@ -2213,7 +2213,7 @@ const monkeysArr = [
         year: 2007,
         img: ["https://i.ibb.co/v16Gb01/oprah-engeltjie-jan2022-min.webp"],
         bio: "Born on site to Aurora (deceased). Fostered Zebulon.",
-        desc: "Stocky body, missing black tip of tail due to injury,curved brow, shiny part on bridge of nose ",
+        desc: "Stocky body, missing black tip of tail due to injury,curved brow, shiny part on bridge of nose",
     },
     {
         name: "Paddy",
@@ -2265,7 +2265,7 @@ const monkeysArr = [
         year: 2017,
         img: ["https://i.ibb.co/dQtsk5m/stick-engeltjie-may2023-min.webp"],
         bio: "Arrived as an orphan after being bitten by a dog. Tail amputated and leg pinned due to injuries. Fostered by Bisou.",
-        desc: "Half of tail amputated due to injury, curved brow, long nose ",
+        desc: "Half of tail amputated due to injury, curved brow, long nose",
     },
     {
         name: "Temper",
@@ -2276,16 +2276,6 @@ const monkeysArr = [
         img: ["https://i.ibb.co/VY6T0qz/temper-engeltjie-feb2024-min.webp"],
         bio: "Born approx 2010, history unknown. Very high ranked",
         desc: "Right eye looks watery, scar on top lip, broad nose, swept back hair sides and top of face, parting on head",
-    },
-    {
-        name: "Theo",
-        sex: "male",
-        chip: 1594,
-        troop: "Engeltjie",
-        year: 2016,
-        img: ["https://i.ibb.co/LR9S0rd/theo-engeltjie-feb2024-min.webp"],
-        bio: "Arrived as an orphan. Fostered by Jessie. Removed from foster-mum integrations & troop on several occasions due to ill-health which stunted his growth.",
-        desc: "Smallest adult male, thin white lines under eyes, dark and slightly golden coat",
     },
     {
         name: "Whisper",
@@ -2305,7 +2295,7 @@ const monkeysArr = [
         year: 2021,
         img: ["https://i.ibb.co/bFTSLbQ/zebulon-engeltjie-mar2024-min.webp"],
         bio: "Orphan, was found alone on a farm at only a few days old. Fostered by Oprah.",
-        desc: "The smallest of the 2021 orphans, still almost baby sized, small pink pale moustache, usually with Finland, especially when throwing food, often screams and likes to show people he’s the alpha ",
+        desc: "The smallest of the 2021 orphans, still almost baby sized, small pink pale moustache, usually with Finland, especially when throwing food, often screams and likes to show people he’s the alpha",
     },
     {
         name: "Chaunguito",
@@ -2334,7 +2324,7 @@ const monkeysArr = [
         troop: "Skunkey",
         year: 2013,
         img: ["https://i.ibb.co/JryL9Jp/greg-skunkey-nov2022-min.webp"],
-        bio: "Born in troop to Pom.  ",
+        bio: "Born in troop to Pom.",
         desc: "Very large male, grey coat, low burved brow with white silhouettes underneath eyes, always one of the first to appear, usually found at top/Robert-side of enclosure, sits with legs open always watching around.",
     },
     {
@@ -2438,7 +2428,7 @@ const monkeysArr = [
         desc: "Similar looking to her mother Paradise, very disinctive plucked brow in middle, less confident approaching people.",
     },
     {
-        name: "Reggae ",
+        name: "Reggae",
         sex: "female",
         chip: 1864,
         troop: "Skunkey",
@@ -2464,7 +2454,7 @@ const monkeysArr = [
         troop: "Skunkey",
         year: 2009,
         img: ["https://i.ibb.co/vDgGFry/rockie-skunkey-apr2023-min.webp"],
-        bio: "Born in troop to Paradise. ",
+        bio: "Born in troop to Paradise.",
         desc: "Large fluffy stock male, only one testicle due to old injury, often walks with tail held up, big fluffy head with curved brow, tick tail tip, usually found bottom of enclosure.",
     },
     {
@@ -2494,11 +2484,11 @@ const monkeysArr = [
         troop: "Skunkey",
         year: 2013,
         img: ["https://i.ibb.co/QPXXN1C/wahoo-skunkey-jul2023-min.webp"],
-        bio: "Born in troop. Not much else is known about her.  Can be very difficult to deworm due to shy nature.",
+        bio: "Born in troop. Not much else is known about her. Can be very difficult to deworm due to shy nature.",
         desc: "Very shy, stocky body, baggy eyes and long nose, quite similar to Jambi except much paler silhouettes around eyes.",
     },
     {
-        name: "Rene ",
+        name: "Rene",
         sex: "female",
         chip: 26668,
         troop: "Skunkey",
@@ -2534,8 +2524,8 @@ const monkeysArr = [
         troop: "Skunkey",
         year: 2020,
         img: ["https://i.ibb.co/51q5zXC/punim-skunkey-mar2024-min.webp"],
-        bio: "Born 2020. Arrived as an orphan, found alone in a leopard trap. ",
-        desc: "Arrived as an orphan, found alone in a leopard trap. ",
+        bio: "Born 2020. Arrived as an orphan, found alone in a leopard trap.",
+        desc: "Arrived as an orphan, found alone in a leopard trap.",
     },
     {
         name: "Bru",
@@ -2544,7 +2534,7 @@ const monkeysArr = [
         troop: "Skunkey",
         year: 2020,
         img: ["https://i.ibb.co/Yf87V3m/bru-skunkey-may2024-min.webp"],
-        bio: "Arrived as an orphan, found alone and handed over to VMF. ",
+        bio: "Arrived as an orphan, found alone and handed over to VMF.",
         desc: "Distinctive white patchy silhouettes around eyes, a lot of white hair around face that grows from middle of cheeks.",
     },
     {
@@ -2637,7 +2627,7 @@ const monkeysArr = [
             "https://i.ibb.co/qxGDR6M/shaney-skunkey-may2024-2-min.webp",
             "https://i.ibb.co/m01bg1T/shaney-skunkey-may2024-min.webp",
         ],
-        bio: "Arrived as an orphan, farmer in Mapumalanga shot the whole troop.  Stayed in introcage with Josephine, Winona, Martha and Pan. Went out with Pan.",
+        bio: "Arrived as an orphan, farmer in Mapumalanga shot the whole troop. Stayed in introcage with Josephine, Winona, Martha and Pan. Went out with Pan.",
         desc: "Thin white lines under eyes, a lot of white hair around face, doesn’t approach people and usually twists head when stared at.",
     },
     {
@@ -2687,7 +2677,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2009,
         img: ["https://i.ibb.co/mB2TrSQ/ash-dd-may2024-min.webp"],
-        bio: "Arrived as an orphan, premature and with jaundice. Had left inguinal hernia. ",
+        bio: "Arrived as an orphan, premature and with jaundice. Had left inguinal hernia.",
     },
     {
         name: "Barney",
@@ -2722,7 +2712,7 @@ const monkeysArr = [
     {
         name: "Candi",
         sex: "female",
-        chip: "26816 26682",
+        chip: "26816 & 26682",
         troop: "D&D",
         year: 2021,
         img: ["https://i.ibb.co/TL5KC1k/candi-dd-may2023-min.webp"],
@@ -2738,7 +2728,7 @@ const monkeysArr = [
             "https://i.ibb.co/qms5vwY/chane-dd-apr2024-min.webp",
             "https://i.ibb.co/F0gtkNr/chane-dd-jan2023-min.webp",
         ],
-        bio: "Arrived with Jessie. Very humanized, knows how to unlock door pins and likes to steal things. ",
+        bio: "Arrived with Jessie. Very humanized, knows how to unlock door pins and likes to steal things.",
     },
     {
         name: "Chester",
@@ -2795,7 +2785,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2018,
         img: ["https://i.ibb.co/gMfPwLK/edgar-dd-mar2023-min.webp"],
-        bio: "Arrived as an orphan. Was found being bitten by a dog and kept for 2 months. ",
+        bio: "Arrived as an orphan. Was found being bitten by a dog and kept for 2 months.",
     },
     {
         name: "Emmy",
@@ -2822,7 +2812,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2010,
         img: ["https://i.ibb.co/P9ZrHVV/francis-dd-mar2023-min.webp"],
-        bio: "Arrived as an orphan. People claim to have found him in a box. Suffered trauma and used to put his foot over his head when scared.  Suspected abuse. Part of the orignal D&D group.",
+        bio: "Arrived as an orphan. People claim to have found him in a box. Suffered trauma and used to put his foot over his head when scared. Suspected abuse. Part of the orignal D&D group.",
     },
     {
         name: "Frankie",
@@ -2872,7 +2862,7 @@ const monkeysArr = [
     {
         name: "Honeybear",
         sex: "female",
-        chip: "1091 1643",
+        chip: "1091 & 1643",
         troop: "D&D",
         year: 2006,
         img: ["https://i.ibb.co/Q89JWYV/honeybear-dd-nov2023-min.webp"],
@@ -2921,7 +2911,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2016,
         img: ["https://i.ibb.co/MCd0s6X/kikinette-dd-mar2023-min.webp"],
-        bio: "Arrived as an orphan. Fostered by Phylis. ",
+        bio: "Arrived as an orphan. Fostered by Phylis.",
     },
     {
         name: "Kobe",
@@ -2975,13 +2965,13 @@ const monkeysArr = [
         bio: "Arrived as an orphan, was found alone at a nature reserve. Fostered by Phylis.",
     },
     {
-        name: "Merlin ",
+        name: "Merlin",
         sex: "male",
         chip: 21579,
         troop: "D&D",
         year: 2017,
         img: ["https://i.ibb.co/RD4HFhm/merlin-dd-nov2023-min.webp"],
-        bio: "Arrived as an orphan via Moholoholo and was extremely underweight and dehydrated. Fostered by Phylis. ",
+        bio: "Arrived as an orphan via Moholoholo and was extremely underweight and dehydrated. Fostered by Phylis.",
     },
     {
         name: "Mia",
@@ -3035,12 +3025,12 @@ const monkeysArr = [
         troop: "D&D",
         year: 2020,
         img: ["https://i.ibb.co/7RcGMH6/okoye-dd-nov2023-min.webp"],
-        bio: "Arrived as an orphan, in a group from JWV along with Helea & Isa-Maria (D&D). Was found being thrown around by two large males. Fostered by Cheyenne. ",
+        bio: "Arrived as an orphan, in a group from JWV along with Helea & Isa-Maria (D&D). Was found being thrown around by two large males. Fostered by Cheyenne.",
     },
     {
         name: "Phylis",
         sex: "female",
-        chip: "1228 1115",
+        chip: "1228 & 1115",
         troop: "D&D",
         year: 2010,
         img: ["https://i.ibb.co/cb5mcYf/phylis-dd-jul2023-min.webp"],
@@ -3053,7 +3043,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2010,
         img: ["https://i.ibb.co/GQwQ5tv/precious-dd-feb2023-min.webp"],
-        bio: "Arrived as an orphan. Found by neighbour, dehydrated with umbilical cord still attached. Current long-term alpha-female. ",
+        bio: "Arrived as an orphan. Found by neighbour, dehydrated with umbilical cord still attached. Current long-term alpha-female.",
     },
     {
         name: "Scritch",
@@ -3068,7 +3058,7 @@ const monkeysArr = [
         bio: "Arrived as an injured juvenile in 2010 after being found unconscious on the road with head trauma. Part of the original D&D group. Was alpha-male for a long time until Bowie took over. Very high-ranked although very calm-natured.",
     },
     {
-        name: "Silver ",
+        name: "Silver",
         sex: "male",
         chip: 98224,
         troop: "D&D",
@@ -3083,7 +3073,7 @@ const monkeysArr = [
         troop: "D&D",
         year: 2009,
         img: ["https://i.ibb.co/dtLPxqz/skollie-dd-apr2024-min.webp"],
-        bio: "Arrived as an orphan, was kept as a pet for some time. Part of the original D&D group. Can be very aggressive towards people, must be trapped before anyone enters the enclosure. ",
+        bio: "Arrived as an orphan, was kept as a pet for some time. Part of the original D&D group. Can be very aggressive towards people, must be trapped before anyone enters the enclosure.",
     },
     {
         name: "Stitch",
@@ -3215,7 +3205,7 @@ const monkeysArr = [
         troop: "Gismo",
         year: 2018,
         img: ["https://i.ibb.co/6HW857Z/marcy-gismo-apr2024-min.webp"],
-        bio: "Born on site to bandit Claire (now deceased). Joined troop after they both jumped in, but Claire later left again. ",
+        bio: "Born on site to bandit Claire (now deceased). Joined troop after they both jumped in, but Claire later left again.",
     },
     {
         name: "Matilda",
@@ -3287,7 +3277,7 @@ const monkeysArr = [
         troop: "Gismo",
         year: 2010,
         img: ["https://i.ibb.co/7Sm9MMy/ricky-gismo-jul2023-min.webp"],
-        bio: "Arrived as a 1 year old  from another rescue centre, together with Jamba (Goliath IC). Was very humanised and scared of monkeys. Good natured but will steal things if given a chance! Fostered Merlin (no longer in troop), and temporarily Scooby, Pumpkin, Lancelot, and Mila (now deceased).",
+        bio: "Arrived as a 1 year old from another rescue centre, together with Jamba (Goliath IC). Was very humanised and scared of monkeys. Good natured but will steal things if given a chance! Fostered Merlin (no longer in troop), and temporarily Scooby, Pumpkin, Lancelot, and Mila (now deceased).",
     },
     {
         name: "Schnapps",
@@ -3299,7 +3289,7 @@ const monkeysArr = [
         bio: "Born in troop to Tink (deceased).",
     },
     {
-        name: "Trisha ",
+        name: "Trisha",
         sex: "female",
         chip: 21557,
         troop: "Gismo",
@@ -3430,7 +3420,7 @@ const monkeysArr = [
     },
     {
         name: "Josh",
-        female: "male",
+        sex: "male",
         chip: 26798,
         troop: "Gismo",
         year: 2021,
@@ -3558,7 +3548,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2018,
         img: ["https://i.ibb.co/XLscxqC/adam-royal-feb2023-min.webp"],
-        bio: "Born 2018 in troop to Jordan (no longer in troop – disappeared). ",
+        bio: "Born 2018 in troop to Jordan (no longer in troop – disappeared).",
     },
     {
         name: "Amahle",
@@ -3567,7 +3557,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2017,
         img: ["https://i.ibb.co/p0x1TtQ/amahle-royal-may2024-min.webp"],
-        bio: "Born 2017 in troop to Construction. ",
+        bio: "Born 2017 in troop to Construction.",
     },
     {
         name: "Angus",
@@ -3576,7 +3566,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2007,
         img: ["https://i.ibb.co/LddbXTv/angus-royal-nov2022-min.webp"],
-        bio: "Long-time alpha-male. Born 2007 in troop. Was blind in right eye but had it removed in 2023 due to injury. Additional chip 1689. ",
+        bio: "Long-time alpha-male. Born 2007 in troop. Was blind in right eye but had it removed in 2023 due to injury. Additional chip 1689.",
     },
     {
         name: "Annie-Bob",
@@ -3669,7 +3659,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2017,
         img: ["https://i.ibb.co/pKj9PBw/devlin-royal-may2024-min.webp"],
-        bio: "Born 2017 in troop to Cecilia. ",
+        bio: "Born 2017 in troop to Cecilia.",
     },
     {
         name: "Echo",
@@ -3678,7 +3668,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2014,
         img: ["https://i.ibb.co/T0QfQYH/echo-royal-may2024-min.webp"],
-        bio: "Born 2014 in troop to Rude (deceased). ",
+        bio: "Born 2014 in troop to Rude (deceased).",
     },
     {
         name: "Elliot",
@@ -3705,7 +3695,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2016,
         img: ["https://i.ibb.co/wMCXfRh/ezra-royal-jan2022-min.webp"],
-        bio: "Born 2016 in troop to Cecilia.  ",
+        bio: "Born 2016 in troop to Cecilia.",
     },
     {
         name: "Fergus Jr.",
@@ -3723,7 +3713,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2014,
         img: ["https://i.ibb.co/Q6bnf26/franiel-royal-may2023-min.webp"],
-        bio: "Born 2014 in troop to Construction. ",
+        bio: "Born 2014 in troop to Construction.",
     },
     {
         name: "Frankles",
@@ -3762,7 +3752,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2017,
         img: ["https://i.ibb.co/smCqbL7/hope-royal-may2024-min.webp"],
-        bio: "Born in troop to Bobo (no longer in troop – jumped out & formed bandit group). ",
+        bio: "Born in troop to Bobo (no longer in troop – jumped out & formed bandit group).",
     },
     {
         name: "House",
@@ -3780,7 +3770,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2005,
         img: ["https://i.ibb.co/kQTr9WJ/hypnotic-royal-may2024-min.webp"],
-        bio: "DOB and history unknown, approx 2005. ",
+        bio: "DOB and history unknown, approx 2005.",
     },
     {
         name: "Jo",
@@ -3789,7 +3779,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2014,
         img: ["https://i.ibb.co/f2yhzWb/jo-royal-may2024-min.webp"],
-        bio: "Born 2014 in troop to Bobo  (no longer in troop – jumped out & formed bandit group). ",
+        bio: "Born 2014 in troop to Bobo (no longer in troop – jumped out & formed bandit group).",
     },
     {
         name: "Lisa",
@@ -3798,7 +3788,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2022,
         img: ["https://i.ibb.co/QvDC787/lisa-royal-may2024-min.webp"],
-        bio: "Born 2022 in troop to Butter. ",
+        bio: "Born 2022 in troop to Butter.",
     },
     {
         name: "Lochlan",
@@ -3810,7 +3800,7 @@ const monkeysArr = [
             "https://i.ibb.co/sg2Y2sb/lochlan-royal-apr2024-min.webp",
             "https://i.ibb.co/54bqLFQ/lochlan-royal-may2024-min.webp",
         ],
-        bio: "Born 2023 in troop to Butter. ",
+        bio: "Born 2023 in troop to Butter.",
     },
     {
         name: "Marmalade",
@@ -3819,7 +3809,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2021,
         img: ["https://i.ibb.co/KD26pFK/marmalade-royal-apr2024-min.webp"],
-        bio: "Born 2021 in troop to Butter. ",
+        bio: "Born 2021 in troop to Butter.",
     },
     {
         name: "Marmite",
@@ -3828,7 +3818,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2019,
         img: ["https://i.ibb.co/DDmqgHz/marmite-royal-apr2024-min.webp"],
-        bio: "Born 2019 in troop to Butter. ",
+        bio: "Born 2019 in troop to Butter.",
     },
     {
         name: "Noam",
@@ -3837,7 +3827,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2020,
         img: ["https://i.ibb.co/rdHgDQm/noam-royal-apr2024-min.webp"],
-        bio: "Born 2020 in troop to Cecilia. ",
+        bio: "Born 2020 in troop to Cecilia.",
     },
     {
         name: "Notch",
@@ -3846,7 +3836,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2013,
         img: ["https://i.ibb.co/GJR8tbW/notch-royal-feb2024-min.webp"],
-        bio: "DOB and history unknown, approx 2013. ",
+        bio: "DOB and history unknown, approx 2013.",
     },
     {
         name: "Onoda",
@@ -3855,7 +3845,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2019,
         img: ["https://i.ibb.co/PcqtN7N/onoda-royal-apr2024-min.webp"],
-        bio: "Born 2019 in troop to Cecilia. ",
+        bio: "Born 2019 in troop to Cecilia.",
     },
     {
         name: "Patch-Adams",
@@ -3864,7 +3854,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2015,
         img: ["https://i.ibb.co/7SSyqFQ/patch-adams-royal-mar2023-min.webp"],
-        bio: "Born 2015 in troop to Butter. ",
+        bio: "Born 2015 in troop to Butter.",
     },
     {
         name: "Peary",
@@ -3900,7 +3890,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2013,
         img: ["https://i.ibb.co/7WVtT3K/rory-royal-may2024-min.webp"],
-        bio: "Born 2013 in troop to Michaela Jackson (deceased). ",
+        bio: "Born 2013 in troop to Michaela Jackson (deceased).",
     },
     {
         name: "Sanchez",
@@ -3909,7 +3899,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2021,
         img: ["https://i.ibb.co/9Z3xF0m/sanchez-royal-may2023-min.webp"],
-        bio: "Born 2021 in troop to Cecilia. ",
+        bio: "Born 2021 in troop to Cecilia.",
     },
     {
         name: "Sassie",
@@ -3921,13 +3911,13 @@ const monkeysArr = [
         bio: "Born 2022 in troop to Cecilia.",
     },
     {
-        name: "Simba ",
+        name: "Simba",
         sex: "female",
         chip: 20012,
         troop: "Royal",
         year: 2016,
         img: ["https://i.ibb.co/0CZSR8W/simba-royal-may2024-min.webp"],
-        bio: "Born 2016 in troop to Jordan (no longer in troop – disappeared). Spent some time in sickbay due to walking sideways and a head tilt from possible ear infection. All symptoms gone now. ",
+        bio: "Born 2016 in troop to Jordan (no longer in troop – disappeared). Spent some time in sickbay due to walking sideways and a head tilt from possible ear infection. All symptoms gone now.",
     },
     {
         name: "Sollie",
@@ -3936,7 +3926,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2016,
         img: ["https://i.ibb.co/cN2TJ7d/sollie-royal-jan2022-min.webp"],
-        bio: "Born 2016 in troop to Rude (deceased). ",
+        bio: "Born 2016 in troop to Rude (deceased).",
     },
     {
         name: "Truman",
@@ -3963,7 +3953,7 @@ const monkeysArr = [
         troop: "Royal",
         year: 2016,
         img: ["https://i.ibb.co/t3BPk9B/twinky-royal-may2024-min.webp"],
-        bio: "Born 2016 in troop to Racey. ",
+        bio: "Born 2016 in troop to Racey.",
     },
     {
         name: "Winston",
@@ -4173,7 +4163,7 @@ const monkeysArr = [
         troop: "Skrow",
         year: 2015,
         img: ["https://i.ibb.co/BjCS6TY/jake-skrow-oct2023-min.webp"],
-        bio: "Arrived as an orphan, was found alone in a bush. Additional chip 19802. ",
+        bio: "Arrived as an orphan, was found alone in a bush. Additional chip 19802.",
     },
     {
         name: "Judi Bee",
@@ -4335,7 +4325,7 @@ const monkeysArr = [
         troop: "Skrow",
         year: 2018,
         img: ["https://i.ibb.co/VqXBbWt/riley-skrow-may2024-min.webp"],
-        bio: "Arrived as an orphan, was kept as a pet for several months and had abnormal behaviours. ",
+        bio: "Arrived as an orphan, was kept as a pet for several months and had abnormal behaviours.",
     },
     {
         name: "Rush",
@@ -4497,7 +4487,7 @@ const monkeysArr = [
         troop: "Robert",
         year: "",
         img: ["https://i.ibb.co/LYjhqKY/babysitter-robert-apr2023-min.webp"],
-        bio: "DOB and history unknown. Mother of twins Bounty and Twix (bandit) ",
+        bio: "DOB and history unknown. Mother of twins Bounty and Twix (bandit)",
     },
     {
         name: "Blue Nips",
@@ -4524,7 +4514,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2007,
         img: ["https://i.ibb.co/WGg4Hgv/bowser-robert-may2023-min.webp"],
-        bio: "Born in troop, DOB unknown, was approx 3 years old in 2010.  Additional chip 1024.",
+        bio: "Born in troop, DOB unknown, was approx 3 years old in 2010. Additional chip 1024.",
     },
     {
         name: "Brutis",
@@ -4569,7 +4559,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2004,
         img: ["https://i.ibb.co/4FSg771/croco-robert-aug2020-min.webp"],
-        bio: "DOB and history unknown, min 2004.  Additional chip 1895.",
+        bio: "DOB and history unknown, min 2004. Additional chip 1895.",
     },
     {
         name: "Curtis",
@@ -4587,7 +4577,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2009,
         img: ["https://i.ibb.co/KwcdFg4/danno-robert-may2024-min.webp"],
-        bio: "Alpha-male. Born in troop.  Additional chip 1343.",
+        bio: "Alpha-male. Born in troop. Additional chip 1343.",
     },
     {
         name: "Darcy",
@@ -4641,7 +4631,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2007,
         img: ["https://i.ibb.co/gMM9DNz/habibsi-robert-oct2021-min.webp"],
-        bio: "Born in troop, DOB unknown, was approx 3 years old in 2010.  Additional chip 1065.",
+        bio: "Born in troop, DOB unknown, was approx 3 years old in 2010. Additional chip 1065.",
     },
     {
         name: "JD",
@@ -4650,7 +4640,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2009,
         img: ["https://i.ibb.co/QfxBBx8/jd-robert-oct2021-min.webp"],
-        bio: "Born in troop. High-ranked.  Additional chip 1347.",
+        bio: "Born in troop. High-ranked. Additional chip 1347.",
     },
     {
         name: "Je",
@@ -4677,7 +4667,7 @@ const monkeysArr = [
         troop: "Robert",
         year: 2007,
         img: ["https://i.ibb.co/s3sjgt1/leakey-robert-aug2020-min.webp"],
-        bio: "Born in troop to Lily (deceased).  Additional chip 1004.",
+        bio: "Born in troop to Lily (deceased). Additional chip 1004.",
     },
     {
         name: "Mac",
@@ -5137,7 +5127,7 @@ const monkeysArr = [
         desc: "",
     },
     {
-        name: "Winky ",
+        name: "Winky",
         sex: "female",
         chip: "",
         troop: "Camelot",

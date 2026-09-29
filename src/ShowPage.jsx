@@ -47,9 +47,13 @@ function getVisibleMonkeys({ searchValue, troopFilter, yearFilter, sort }) {
 
     // filter() returns a new array, so sorting it leaves monkeysArr alone
     const compare = compareBy[sort.key];
-    return results.sort((a, b) =>
-        sort.ascending ? compare(a, b) : compare(b, a)
-    );
+    return results.sort((a, b) => {
+        // Unknown birth years go last, whichever direction the year sort is
+        if (sort.key === "year" && !a.year !== !b.year) {
+            return a.year ? -1 : 1;
+        }
+        return sort.ascending ? compare(a, b) : compare(b, a);
+    });
 }
 
 // e.g. profile_book_Goliath_2026-09-30.pdf

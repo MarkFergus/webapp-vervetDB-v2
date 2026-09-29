@@ -178,6 +178,12 @@ const styles = StyleSheet.create({
     },
 });
 
+// Start of the bio line, e.g. "2005 female." or "Unknown birth year, female."
+function bioIntro({ year, sex }) {
+    const sexText = sex || "sex unknown";
+    return year ? `${year} ${sexText}.` : `Unknown birth year, ${sexText}.`;
+}
+
 function formatDate(date) {
     const month = date.toLocaleString("default", { month: "long" });
     return `${date.getDate()} ${month} ${date.getFullYear()}`;
@@ -246,7 +252,8 @@ function MonkeyPDF({ monkeys, troop }) {
                                     Chip: {monkey.chip ? monkey.chip : "No chip"}
                                 </Text>
                                 <Text style={styles.bio}>
-                                    {monkey.year} {monkey.sex}. {monkey.bio}
+                                    {bioIntro(monkey)}{" "}
+                                    {monkey.bio || "No bio yet."}
                                 </Text>
                                 <Text style={styles.descTitle}>
                                     Distinctive features/behaviours:
