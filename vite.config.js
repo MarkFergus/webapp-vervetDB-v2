@@ -9,4 +9,11 @@ export default defineConfig({
         port: 3000,
         open: true,
     },
+    test: {
+        // Simulated browser, so components can render in tests
+        environment: "jsdom",
+        // Allows describe/test/expect without importing them (like Jest)
+        globals: true,
+        setupFiles: "./src/setupTests.js",
+    },
 });
