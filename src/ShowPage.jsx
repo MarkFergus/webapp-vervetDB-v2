@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowDown,
     IconArrowUp,
@@ -13,6 +13,7 @@ import Modal from "./Modal";
 import MonkeyForm from "./MonkeyForm";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
+import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
@@ -154,22 +155,74 @@ function ShowPage({
         setSearchValue("");
         setCurrentPage(1);
     }
+    // The address shows the open monkey (e.g. #monkey/aroha-james), so it can
+    // be shared, and Back (e.g. on a phone) closes the pop-up.
+    // pushedAddress: we added the monkey's address to the history (so Back
+    // takes it off again) rather than arriving from a link
+    const pushedAddress = useRef(false);
+    const pageAddress = () => window.location.pathname + window.location.search;
+
+    function showInAddress(m) {
+        const hash = monkeyHash(m);
+        if (window.location.hash === hash) return;
+        if (isMonkeyHash(window.location.hash)) {
+            // Already showing a monkey (previous / next): swap it
+            window.history.replaceState(null, "", hash);
+        } else {
+            window.history.pushState(null, "", hash);
+            pushedAddress.current = true;
+        }
+    }
+    function leaveAddress() {
+        if (!isMonkeyHash(window.location.hash)) return;
+        if (pushedAddress.current) {
+            pushedAddress.current = false;
+            window.history.back();
+        } else {
+            window.history.replaceState(null, "", pageAddress());
+        }
+    }
+
+    // Arriving from a monkey's link, or Back / Forward: show what the address says
+    useEffect(() => {
+        function showFromAddress() {
+            const hash = window.location.hash;
+            const m = monkeyFromHash(hash, monkeys);
+            if (m) {
+                setSelectedMonkey(m);
+                setIsModalOpen(true);
+            } else if (isMonkeyHash(hash)) {
+                // A link to a monkey that's since been renamed or deleted
+                window.history.replaceState(null, "", pageAddress());
+                setIsModalOpen(false);
+            } else {
+                pushedAddress.current = false;
+                setIsModalOpen(false);
+            }
+        }
+        showFromAddress();
+        window.addEventListener("hashchange", showFromAddress);
+        return () => window.removeEventListener("hashchange", showFromAddress);
+    }, [monkeys]);
+
     function openModal(m) {
+        showInAddress(m);
         setSelectedMonkey(m);
         setIsModalOpen(true);
     }
     function closeModal() {
         setIsModalOpen(false);
+        leaveAddress();
     }
     function handlePrevNext(direction) {
-        if (direction === "prev" && prevMonkey) {
-            setSelectedMonkey(prevMonkey);
-        } else if (direction === "next" && nextMonkey) {
-            setSelectedMonkey(nextMonkey);
-        }
+        const m = direction === "prev" ? prevMonkey : nextMonkey;
+        if (!m) return;
+        showInAddress(m);
+        setSelectedMonkey(m);
     }
     function startEdit(monkey) {
         setIsModalOpen(false);
+        leaveAddress();
         setEditing({ monkey });
     }
     function startAdd() {
@@ -179,8 +232,7 @@ function ShowPage({
     function handleSaved(saved) {
         onMonkeySaved(saved);
         setEditing(null);
-        setSelectedMonkey(saved);
-        setIsModalOpen(true);
+        openModal(saved);
     }
     function handleDeleted(id) {
         onMonkeyDeleted(id);

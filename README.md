@@ -50,7 +50,9 @@ Monkeys are edited on the website itself. Changes go straight into the database 
 
 **Photos:** click **Upload photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match. You can also paste a link to a photo hosted elsewhere with **Add photo link**. Deleting a photo (**⋮ → Delete photo**) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
 
-Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows as "No bio yet."
+Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows as "No bio yet." The pop-up shows each monkey's age from its birth year.
+
+**Sharing a monkey:** every monkey has its own link, e.g. `vervetdb.com/#monkey/zea-jalamango` (name and troop), which opens straight to its pop-up. In the pop-up, **Share** opens the phone's share menu (e.g. WhatsApp) with that link, or copies it on a computer, and **Save image** downloads a picture of the profile. On phones, Back closes the pop-up.
 
 If the database can't be reached, the site shows a built-in copy of the data (from [`src/monkeysArr.js`](src/monkeysArr.js)) with a notice, and editing is switched off. That copy is a snapshot from before the database and isn't updated by edits.
 
@@ -132,7 +134,8 @@ git push                         # publishes the site
 | `src/App.jsx` | Loads the data, shows the main page or the game |
 | `src/ShowPage.jsx` | The main page: search, filters, sorting, the card grid, and PDF creation |
 | `src/MonkeyCard.jsx` | One card in the grid |
-| `src/Modal.jsx` | The monkey detail pop-up (photos, details, previous/next, Edit) |
+| `src/Modal.jsx` | The monkey detail pop-up (photos, details, previous/next, Edit, Share, Save image) |
+| `src/monkeyLink.js`, `src/monkeyImage.js` | Each monkey's link, and the profile picture for Save image |
 | `src/Nav.jsx` | Top bar: logo, search box, game / PDF / add / sign-in buttons (☰ menu on phones) |
 | `src/MonkeyForm.jsx`, `src/monkeyFormChecks.js` | The add / edit form, and its checks |
 | `src/PhotoCropper.jsx`, `src/photoUpload.js` | Cropping photos and uploading them to storage |

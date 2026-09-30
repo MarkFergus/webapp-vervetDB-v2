@@ -10,3 +10,9 @@ vi.mock("./monkeyData", async (importOriginal) => {
         loadMonkeyData: vi.fn(async () => original.BUILT_IN_DATA),
     };
 });
+
+// Each test starts at the plain page address: an open monkey's link
+// (#monkey/…) left by one test would otherwise open its pop-up in the next
+beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+});

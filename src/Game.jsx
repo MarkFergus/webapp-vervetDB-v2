@@ -10,6 +10,7 @@ import {
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyIcon from "./MonkeyIcon";
 import { drawResultImage } from "./resultImage";
+import { downloadBlob } from "./canvasHelpers";
 import {
     averageSeconds,
     checkTypedAnswer,
@@ -267,15 +268,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
 
     // Downloads the results picture
     function saveImage() {
-        if (!resultImage) return;
-        const url = URL.createObjectURL(resultImage);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = resultImage.name;
-        document.body.append(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        if (resultImage) downloadBlob(resultImage, resultImage.name);
     }
 
     function finishQuestion(result) {

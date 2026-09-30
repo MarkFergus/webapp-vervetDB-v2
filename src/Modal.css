@@ -69,8 +69,29 @@
 /* Editors only: Edit, bottom-left under the details */
 .Modal-footer {
     display: flex;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
     margin: 12px 12px 0;
+}
+
+.Modal-footer-spacer {
+    flex: 1;
+}
+
+.Modal-edit:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.Modal-shareStatus {
+    margin: 6px 12px 0;
+    font-size: 13px;
+    text-align: right;
+    color: #b6b2a5;
+}
+
+.Modal-shareStatus:empty {
+    display: none;
 }
 
 .Modal-edit {
@@ -96,6 +117,10 @@
 @media (min-width: 500px) {
     .Modal-footer {
         margin: 12px 20px 0;
+    }
+
+    .Modal-shareStatus {
+        margin: 6px 20px 0;
     }
 }
 

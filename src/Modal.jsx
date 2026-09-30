@@ -6,10 +6,15 @@ import {
     IconCaretLeftFilled,
     IconCaretRightFilled,
     IconCamera,
+    IconDownload,
     IconPencil,
+    IconShare,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
+import { ageText, drawMonkeyImage } from "./monkeyImage";
+import { monkeyHash, monkeyUrl } from "./monkeyLink";
+import { downloadBlob } from "./canvasHelpers";
 import "./Modal.css";
 
 function Modal({
@@ -23,15 +28,57 @@ function Modal({
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
+    // After Share on a computer: "copied" or "failed"; Save image: "saving"
+    // or "imageFailed"
+    const [shareStatus, setShareStatus] = useState(null);
     const closeButtonRef = useRef(null);
+
+    // Phones open their share menu (e.g. WhatsApp) with a link to this
+    // monkey; computers copy the link
+    async function shareMonkey() {
+        const url = monkeyUrl(monkey);
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${monkey.name} · vervetDB`,
+                    text: `${monkey.name} (${monkey.troop} troop) on vervetDB`,
+                    url,
+                });
+                return;
+            } catch (err) {
+                if (err.name === "AbortError") return; // closed the share menu
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(url);
+            setShareStatus("copied");
+        } catch {
+            setShareStatus("failed");
+        }
+    }
+
+    // Downloads a picture of this monkey's profile (with the photo showing)
+    async function saveImage() {
+        setShareStatus("saving");
+        try {
+            const blob = await drawMonkeyImage(monkey, { photo: monkey.img[currentIndex] });
+            downloadBlob(blob, `vervetdb-${monkeyHash(monkey).split("/")[1]}.png`);
+            setShareStatus(null);
+        } catch (err) {
+            console.error("Couldn't make the picture:", err);
+            setShareStatus("imageFailed");
+        }
+    }
 
     function handleClose() {
         onClose();
         setCurrentIndex(0);
+        setShareStatus(null);
     }
     function handleClick(direction) {
         handlePrevNext(direction);
         setCurrentIndex(0);
+        setShareStatus(null);
     }
     function handleImgClick(direction) {
         const count = monkey.img.length;
@@ -198,7 +245,12 @@ function Modal({
                                         Sex: <span>{monkey.sex || "Unknown"}</span>
                                     </h3>
                                     <h3>
-                                        Born: <span>{monkey.year || "Unknown"}</span>
+                                        Born:{" "}
+                                        <span>
+                                            {monkey.year
+                                                ? `${monkey.year} ${ageText(monkey.year)}`
+                                                : "Unknown"}
+                                        </span>
                                     </h3>
                                     <h3>
                                         Chip:{" "}
@@ -218,9 +270,10 @@ function Modal({
                                         </span>
                                     </h3>
                                 </div>
-                                {/* Editors only: Edit, bottom-left under the details */}
-                                {onEdit && (
-                                    <div className="Modal-footer">
+                                {/* Edit (editors only) on the left; Share and
+                                    Save image on the right */}
+                                <div className="Modal-footer">
+                                    {onEdit && (
                                         <button
                                             type="button"
                                             className="Modal-edit"
@@ -232,8 +285,30 @@ function Modal({
                                             <IconPencil size={18} aria-hidden="true" />
                                             Edit
                                         </button>
-                                    </div>
-                                )}
+                                    )}
+                                    <span className="Modal-footer-spacer" />
+                                    <button type="button" className="Modal-edit" onClick={shareMonkey}>
+                                        <IconShare size={18} aria-hidden="true" />
+                                        {shareStatus === "copied" ? "Link copied!" : "Share"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="Modal-edit"
+                                        onClick={saveImage}
+                                        disabled={shareStatus === "saving"}
+                                    >
+                                        <IconDownload size={18} aria-hidden="true" />
+                                        {shareStatus === "saving" ? "Saving…" : "Save image"}
+                                    </button>
+                                </div>
+                                <p className="Modal-shareStatus" role="status">
+                                    {shareStatus === "copied" &&
+                                        "Link copied. Paste it into a message to share this monkey."}
+                                    {shareStatus === "failed" &&
+                                        "Sorry, your browser wouldn't let us copy the link."}
+                                    {shareStatus === "imageFailed" &&
+                                        "Sorry, the picture couldn't be made. Please try again."}
+                                </p>
                             </motion.div>
                         </div>
                     </motion.div>

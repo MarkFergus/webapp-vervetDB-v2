@@ -1,4 +1,5 @@
 import { MONKEY_ICON_PATH } from "./monkeyIconPath";
+import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
 
 // The results screen as a square picture (1080 × 1080 PNG) for sharing:
 // logo, mode, headline, big score, average time, a tile per photo
@@ -8,39 +9,6 @@ import { MONKEY_ICON_PATH } from "./monkeyIconPath";
 const SIZE = 1080;
 const LEVEL_COLOURS = { normal: "#25c4f8", hard: "#ffb454", expert: "#ff6b1a" };
 const TILE_COLOURS = { right: "#47b028", wrong: "#ff4d4f", timeout: "#ff9f1a" };
-
-// The page's fonts, so the picture matches the site (quietly skipped if they
-// can't load: the canvas then uses similar standard fonts)
-async function loadFonts() {
-    try {
-        await Promise.all([
-            document.fonts.load('80px "Russo One"'),
-            document.fonts.load('700 40px "Nunito Sans"'),
-            document.fonts.load('400 40px "Nunito Sans"'),
-        ]);
-    } catch {
-        // fonts unavailable
-    }
-}
-
-const TITLE_FONT = '"Russo One", Impact, sans-serif';
-const TEXT_FONT = '"Nunito Sans", Arial, sans-serif';
-
-function roundedRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-}
-
-// Largest font size (up to `size`) at which the text fits `maxWidth`
-function fitFont(ctx, text, { size, weight = "", family, maxWidth }) {
-    let s = size;
-    do {
-        ctx.font = `${weight} ${s}px ${family}`.trim();
-        if (ctx.measureText(text).width <= maxWidth) break;
-        s -= 2;
-    } while (s > 12);
-    return s;
-}
 
 // The tiles: one per photo, as big as fits the area (a row for 10 photos,
 // a grid for "All photos")
@@ -201,7 +169,5 @@ export async function drawResultImage({
     ctx.fillStyle = "#25c4f8";
     ctx.fillText(siteText, lineLeft + challengeWidth, 968);
 
-    return new Promise((resolve, reject) =>
-        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("No image"))), "image/png")
-    );
+    return canvasToPng(canvas);
 }
