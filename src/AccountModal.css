@@ -1,0 +1,147 @@
+/* Sign-in pop-up. Same look as the PDF pop-up (dark window, neon blue). */
+
+.AccountModal-overlay {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.AccountModal-windowbox {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.AccountModal-window {
+    position: relative;
+    width: 96%;
+    max-width: 380px;
+    background-color: #202020;
+    border-radius: 10px;
+    pointer-events: auto;
+}
+
+.AccountModal-close button {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(36, 36, 36, 0.6);
+    color: rgb(146, 145, 145);
+    cursor: pointer;
+}
+
+.AccountModal-close button:hover {
+    color: white;
+}
+
+.AccountModal-close svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.AccountModal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 48px 24px 32px;
+}
+
+.AccountModal-title {
+    margin: 0;
+    font-size: 24px;
+    text-align: center;
+}
+
+.AccountModal-note,
+.AccountModal-email,
+.AccountModal-role {
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.AccountModal-email {
+    font-size: 16px;
+    color: white;
+    word-break: break-all;
+}
+
+.AccountModal-role.is-editor {
+    color: #47b028;
+    font-weight: 700;
+}
+
+.AccountModal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.AccountModal-field input {
+    padding: 10px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px; /* 16px stops phones zooming in on the box */
+    color: white;
+    background-color: #2a282a;
+    border: 2px solid #434343;
+    border-radius: 8px;
+    outline: none;
+}
+
+.AccountModal-field input:focus {
+    border-color: #25c4f8;
+}
+
+.AccountModal-error {
+    min-height: 20px;
+    margin: 0;
+    font-size: 14px;
+    color: #ff4d4f;
+    text-align: center;
+}
+
+.AccountModal-button {
+    padding: 10px 16px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: 1px solid #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Sign out: the site's neon pink, outlined */
+.AccountModal-button.is-signOut {
+    color: #fe39a4;
+    background: none;
+    border-color: #fe39a4;
+}
+
+.AccountModal-button.is-signOut:hover:not(:disabled) {
+    color: #ff92ce;
+    border-color: #ff92ce;
+    filter: none;
+}
+
+.AccountModal-button:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.AccountModal-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}

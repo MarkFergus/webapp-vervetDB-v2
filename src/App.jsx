@@ -1,6 +1,7 @@
 import ShowPage from "./ShowPage";
 import Game from "./Game";
 import MonkeyIcon from "./MonkeyIcon";
+import { AuthProvider } from "./auth";
 import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
 import "./App.css";
@@ -19,19 +20,22 @@ function App() {
     }
 
     return (
-        <div className="App">
-            {status === "built-in" && (
-                <p className="App-notice" role="alert">
-                    Couldn't reach the database, so this is a saved copy of the
-                    monkeys and may be out of date.
-                </p>
-            )}
-            {route === "game" ? (
-                <Game monkeys={monkeys} troops={troops} />
-            ) : (
-                <ShowPage monkeys={monkeys} troops={troops} />
-            )}
-        </div>
+        // AuthProvider: lets any page know who's signed in
+        <AuthProvider>
+            <div className="App">
+                {status === "built-in" && (
+                    <p className="App-notice" role="alert">
+                        Couldn't reach the database, so this is a saved copy of
+                        the monkeys and may be out of date.
+                    </p>
+                )}
+                {route === "game" ? (
+                    <Game monkeys={monkeys} troops={troops} />
+                ) : (
+                    <ShowPage monkeys={monkeys} troops={troops} />
+                )}
+            </div>
+        </AuthProvider>
     );
 }
 

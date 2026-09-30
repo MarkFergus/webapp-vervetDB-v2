@@ -84,6 +84,7 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
     const [selectedMonkey, setSelectedMonkey] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+    const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
@@ -180,7 +181,7 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
 
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
-    const isAnyModalOpen = isModalOpen || isPDFModalOpen;
+    const isAnyModalOpen = isModalOpen || isPDFModalOpen || isAccountOpen;
 
     function sortButton(key, label) {
         const isActive = sort.key === key;
@@ -225,6 +226,8 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
                     handleSearch={handleSearch}
                     handleDelete={handleDelete}
                     isPDFModalOpen={isPDFModalOpen}
+                    isAccountOpen={isAccountOpen}
+                    toggleAccount={() => setIsAccountOpen((open) => !open)}
                     togglePDFModal={togglePDFModal}
                 />
             </div>

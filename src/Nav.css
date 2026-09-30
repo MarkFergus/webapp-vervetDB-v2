@@ -108,6 +108,15 @@
     border-radius: 5px;
 }
 
+/* Sign in / account button: green when signed in */
+.Nav-buttons .Nav-account {
+    padding: 4px 0 0 0;
+}
+
+.Nav-buttons .Nav-account.is-signed-in {
+    color: #47b028;
+}
+
 .hourglass {
     color: white;
     cursor: auto;

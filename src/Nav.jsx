@@ -5,8 +5,12 @@ import {
     IconFileTypePdf,
     IconHourglassLow,
     IconDeviceGamepad2,
+    IconUser,
+    IconUserCheck,
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
+import AccountModal from "./AccountModal";
+import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
 import "./Nav.css";
 
@@ -22,8 +26,11 @@ function Nav({
     pdfError,
     pdfMonkeyCount,
     troopFilter,
+    isAccountOpen,
+    toggleAccount,
 }) {
     const searchInputRef = useRef(null);
+    const { user } = useAuth();
 
     // The clear button disappears once clicked, so put focus back in the box
     function clearSearch() {
@@ -33,8 +40,8 @@ function Nav({
 
     return (
         <>
-            {/* inert: while the PDF modal is open, the nav behind it can't be tabbed to */}
-            <nav className="Nav" inert={isPDFModalOpen}>
+            {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
+            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen}>
                 <div className="Nav-icon">
                     <MonkeyIcon />
                 </div>
@@ -93,6 +100,20 @@ function Nav({
                             <IconFileTypePdf stroke="2" size="36" />
                         )}
                     </button>
+                    {/* Sign in / account: green tick-person when signed in */}
+                    <button
+                        type="button"
+                        className={user ? "Nav-account is-signed-in" : "Nav-account"}
+                        onClick={toggleAccount}
+                        aria-label={user ? "Account (signed in)" : "Sign in"}
+                        title={user ? `Signed in as ${user.email}` : "Sign in"}
+                    >
+                        {user ? (
+                            <IconUserCheck stroke="2" size="32" />
+                        ) : (
+                            <IconUser stroke="2" size="32" />
+                        )}
+                    </button>
                 </div>
             </nav>
             <div className="Nav-pdfmodal">
@@ -107,6 +128,7 @@ function Nav({
                     troopFilter={troopFilter}
                 />
             </div>
+            <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />
         </>
     );
 }
