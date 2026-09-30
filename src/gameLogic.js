@@ -61,6 +61,29 @@ export function resultMessage(score, outOf, difficulty) {
     return RESULT_MESSAGES[difficulty].find((m) => share >= m.atLeast).text;
 }
 
+// The text shared from the results screen, e.g.
+//   🐒 vervetDB · Guess the Monkey
+//   Expert mode · Goliath
+//   10/10 GODLIKE! ⏱ 3.2s average
+//   ✅✅❌⏰✅…
+//   Can you beat it? https://…/#game
+// outcomes: "right" | "wrong" | "timeout" for each photo, in order
+// (shown as emoji, so nothing gives away which monkeys they were)
+const OUTCOME_EMOJI = { right: "✅", wrong: "❌", timeout: "⏰" };
+
+export function shareText({ score, outOf, difficulty, troop, averageSeconds, outcomes, url }) {
+    const level = difficultyById(difficulty);
+    const mode = troop === "All Troops" ? `${level.label} mode` : `${level.label} mode · ${troop}`;
+    const time = averageSeconds ? ` ⏱ ${averageSeconds}s average` : "";
+    return [
+        "🐒 vervetDB · Guess the Monkey",
+        mode,
+        `${score}/${outOf} ${resultMessage(score, outOf, difficulty)}${time}`,
+        outcomes.map((o) => OUTCOME_EMOJI[o]).join(""),
+        `Can you beat it? ${url}`,
+    ].join("\n");
+}
+
 // Average of the answer times, in seconds to one decimal place, e.g. "3.2"
 export function averageSeconds(times) {
     if (!times.length) return null;

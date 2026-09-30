@@ -3,6 +3,7 @@ import {
     IconCheck,
     IconCircleCheckFilled,
     IconCircleXFilled,
+    IconShare,
     IconX,
 } from "@tabler/icons-react";
 import monkeysArr from "./monkeysArr";
@@ -17,6 +18,7 @@ import {
     playableMonkeys,
     QUESTIONS_PER_ROUND,
     resultMessage,
+    shareText,
 } from "./gameLogic";
 import "./Game.css";
 
@@ -98,6 +100,8 @@ function Game() {
     // Paused because the page was hidden (another app, tab or a phone call)
     const [paused, setPaused] = useState(false);
     const pausedAt = useRef(null);
+    // After pressing Share on a computer: "copied" or "failed"
+    const [shareStatus, setShareStatus] = useState(null);
     // Countdown for each photo; it only starts once the photo has loaded
     const [secondsLeft, setSecondsLeft] = useState(
         () => difficultyById(settings.difficulty).seconds ?? 0
@@ -110,6 +114,7 @@ function Game() {
     const firstOptionRef = useRef(null);
     const typedInputRef = useRef(null);
     const startButtonRef = useRef(null);
+    const scoreboardRef = useRef(null);
     // When the current photo appeared, for timing answers
     const photoShownAt = useRef(Date.now());
 
@@ -132,6 +137,8 @@ function Game() {
             score: 0,
             // Seconds taken on each photo answered
             times: [],
+            // "right" | "wrong" | "timeout" for each photo, for sharing
+            outcomes: [],
             // Set when the round ends, if it beat the previous best
             newBest: false,
             asked: question ? [question.answer] : [],
@@ -178,7 +185,37 @@ function Game() {
         setRound(newRound(s));
         setBest(loadBest(s));
         setPaused(false);
+        setShareStatus(null);
         resetForNewPhoto(s.difficulty);
+    }
+
+    // Phones (and some computers) open their share menu; otherwise the
+    // text is copied, ready to paste into a message
+    async function shareResult() {
+        const text = shareText({
+            score: round.score,
+            outOf: round.length,
+            difficulty,
+            troop: settings.troop,
+            averageSeconds: averageSeconds(round.times),
+            outcomes: round.outcomes,
+            url: `${window.location.origin}${window.location.pathname}#game`,
+        });
+        if (navigator.share) {
+            try {
+                await navigator.share({ text });
+                return;
+            } catch (err) {
+                if (err.name === "AbortError") return; // closed the share menu
+                // Share menu unavailable: fall back to copying
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            setShareStatus("copied");
+        } catch {
+            setShareStatus("failed");
+        }
     }
 
     function finishQuestion(result) {
@@ -205,6 +242,10 @@ function Game() {
             result,
             score: round.score + (scored ? 1 : 0),
             times: [...round.times, timeTaken],
+            outcomes: [
+                ...round.outcomes,
+                scored ? "right" : result.kind === "timeout" ? "timeout" : "wrong",
+            ],
             upcoming,
         });
     }
@@ -245,6 +286,9 @@ function Game() {
 
     // A photo is being answered right now (started, not answered yet)
     const inPlay = round.started && !round.result && !round.finished;
+    // Answers can be given: in play, not paused, and the photo has loaded (so
+    // nobody answers while still looking at the previous photo)
+    const answerable = inPlay && !paused && photoReady;
 
     // Leaving the page (switching app or tab, a phone call) pauses the photo
     useEffect(() => {
@@ -286,7 +330,7 @@ function Game() {
             }
             const index = Number(event.key) - 1;
             if (
-                !round.result &&
+                answerable &&
                 difficulty !== "expert" &&
                 round.question.options[index]
             ) {
@@ -300,17 +344,38 @@ function Game() {
         return () => document.removeEventListener("keydown", handleKeyDown);
     });
 
-    // Move focus to what you'll want next (for keyboard users)
+    // Move focus to what you'll want next (for keyboard users).
+    // preventScroll: moving focus mustn't scroll the photo out of view on phones
+    const focusOn = (ref) => ref.current?.focus({ preventScroll: true });
     useEffect(() => {
-        if (round.result) nextButtonRef.current?.focus();
+        if (!round.result) return;
+        focusOn(nextButtonRef);
+        // Safety net for very short windows: if Next is below the bottom
+        // edge, scroll just enough to show it
+        const button = nextButtonRef.current;
+        if (button && button.getBoundingClientRect().bottom > window.innerHeight) {
+            button.scrollIntoView?.({ block: "nearest" });
+        }
     }, [round.result]);
     useEffect(() => {
         if (round.result || round.finished) return;
         // The Start / Resume button over the photo
-        if (!round.started || paused) startButtonRef.current?.focus();
-        else if (difficulty === "expert") typedInputRef.current?.focus();
-        else firstOptionRef.current?.focus();
-    }, [round.id, round.number, round.started, round.result, round.finished, difficulty, paused]);
+        if (!round.started || paused) focusOn(startButtonRef);
+        else if (!photoReady) return; // answers are locked until the photo shows
+        else if (difficulty === "expert") focusOn(typedInputRef);
+        else focusOn(firstOptionRef);
+    }, [round.id, round.number, round.started, round.result, round.finished, difficulty, paused, photoReady]);
+
+    // New photo: if the top of the game has scrolled out of view (on a phone
+    // the browser bar can cover it), bring it back so the whole photo shows
+    useEffect(() => {
+        const board = scoreboardRef.current;
+        if (!board || round.number === 1) return;
+        if (board.getBoundingClientRect().top < 0) {
+            const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+            board.scrollIntoView?.({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+        }
+    }, [round.number]);
 
     const { question, result } = round;
     const answer = question?.answer;
@@ -334,6 +399,8 @@ function Game() {
         (waiting ? ". Starts when you press New round." : "");
     // Photo blurred with a button over it: before Start, or when paused
     const photoCovered = !round.started || paused;
+    // Started but the photo is still downloading: show "Loading photo…"
+    const photoLoading = round.started && !paused && !photoReady && !result;
 
     function optionClass(name) {
         if (!result) return "Game-option";
@@ -449,18 +516,34 @@ function Game() {
                             </dd>
                         </div>
                     </dl>
-                    <button
-                        type="button"
-                        className="Game-next"
-                        onClick={() => changeSettings({})}
-                        autoFocus
-                    >
-                        Play again
-                    </button>
+                    <div className="Game-end-actions">
+                        <button
+                            type="button"
+                            className="Game-next"
+                            onClick={() => changeSettings({})}
+                            autoFocus
+                        >
+                            Play again
+                        </button>
+                        <button
+                            type="button"
+                            className="Game-share"
+                            onClick={shareResult}
+                        >
+                            <IconShare aria-hidden="true" />
+                            {shareStatus === "copied" ? "Copied!" : "Share"}
+                        </button>
+                    </div>
+                    <p className="Game-share-status" role="status">
+                        {shareStatus === "copied" &&
+                            "Copied! Paste it into a message to challenge your friends."}
+                        {shareStatus === "failed" &&
+                            "Sorry, your browser wouldn't let us copy it."}
+                    </p>
                 </div>
             ) : (
                 <>
-                    <div className="Game-scoreboard">
+                    <div className="Game-scoreboard" ref={scoreboardRef}>
                         <p className="Game-progress">
                             Photo {round.number} of {round.length}
                         </p>
@@ -521,10 +604,14 @@ function Game() {
                     <div
                         className={`Game-photo ${outcomeClass} ${
                             photoCovered ? "is-waiting" : ""
-                        }`}
+                        } ${photoLoading ? "is-loading" : ""}`}
                     >
-                        {/* Alt text mustn't give away the name */}
+                        {/* Alt text mustn't give away the name.
+                            key: a fresh <img> for each photo, so the previous
+                            photo disappears straight away instead of lingering
+                            while the next one downloads */}
                         <img
+                            key={question.photo}
                             src={question.photo}
                             alt="Mystery monkey"
                             onLoad={handlePhotoShown}
@@ -539,6 +626,11 @@ function Game() {
                             >
                                 {paused ? "Resume" : "Start"}
                             </button>
+                        )}
+                        {photoLoading && (
+                            <p className="Game-loading" aria-live="polite">
+                                Loading photo…
+                            </p>
                         )}
                     </div>
 
@@ -555,7 +647,7 @@ function Game() {
                                 }
                                 value={typed}
                                 onChange={(e) => setTyped(e.target.value)}
-                                disabled={!round.started || paused || Boolean(result)}
+                                disabled={!answerable}
                                 className={outcomeClass}
                                 autoComplete="off"
                                 autoCorrect="off"
@@ -564,7 +656,7 @@ function Game() {
                             />
                             <button
                                 type="submit"
-                                disabled={paused || Boolean(result) || !typed.trim()}
+                                disabled={!answerable || !typed.trim()}
                             >
                                 Guess
                             </button>
@@ -578,13 +670,14 @@ function Game() {
                                     type="button"
                                     className={optionClass(name)}
                                     onClick={() => choose(name)}
-                                    disabled={!round.started || paused || Boolean(result)}
+                                    disabled={!answerable}
                                 >
                                     <span className="Game-key" aria-hidden="true">
                                         {i + 1}
                                     </span>
-                                    {/* Names stay hidden until Start, so no head start */}
-                                    {round.started ? name : "?"}
+                                    {/* Names stay hidden until the photo is showing
+                                        (after Start, once loaded): no head start */}
+                                    {answerable || result ? name : "?"}
                                     {result && name === answer.name && (
                                         <IconCheck
                                             className="Game-option-icon"

@@ -2,6 +2,7 @@ import monkeysArr from "./monkeysArr";
 import {
     averageSeconds,
     resultMessage,
+    shareText,
     checkTypedAnswer,
     DIFFICULTIES,
     makeQuestion,
@@ -155,5 +156,38 @@ describe("same-sex choices (Hard)", () => {
             ["hard", true],
             ["expert", true],
         ]);
+    });
+});
+
+describe("share text", () => {
+    const base = {
+        score: 8,
+        outOf: 10,
+        averageSeconds: "3.2",
+        outcomes: ["right", "right", "wrong", "right", "timeout", "right", "right", "right", "right", "right"],
+        url: "https://markfergus.github.io/webapp-vervetDB-v2/#game",
+    };
+
+    test("Wordle-style summary with mode, score, message, time and a row of results", () => {
+        expect(shareText({ ...base, difficulty: "expert", troop: "Goliath" })).toBe(
+            [
+                "🐒 vervetDB · Guess the Monkey",
+                "Expert mode · Goliath",
+                "8/10 LEGENDARY! ⏱ 3.2s average",
+                "✅✅❌✅⏰✅✅✅✅✅",
+                "Can you beat it? https://markfergus.github.io/webapp-vervetDB-v2/#game",
+            ].join("\n")
+        );
+    });
+
+    test("All Troops just shows the mode", () => {
+        const text = shareText({ ...base, difficulty: "normal", troop: "All Troops" });
+        expect(text.split("\n")[1]).toBe("Normal mode");
+    });
+
+    test("never includes monkey names", () => {
+        const text = shareText({ ...base, difficulty: "hard", troop: "All Troops" });
+        const names = monkeysArr.map((m) => m.name).filter((n) => n.length > 3);
+        expect(names.filter((n) => text.includes(n))).toEqual([]);
     });
 });

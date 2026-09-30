@@ -7,6 +7,12 @@
     --level-normal: #25c4f8; /* blue */
     --level-hard: #ffb454; /* light orange */
     --level-expert: #ff6b1a; /* deep orange (kept clear of the red for wrong) */
+
+    /* Tallest the photo may be, so the whole game fits the window:
+       everything else (heading, controls, answers, answer line, Next button)
+       takes about 540px, and the photo gets the rest, but never less than
+       240px. svh = the window height with any browser bars showing. */
+    --photo-height: max(240px, calc(100svh - 540px));
 }
 
 [data-level="normal"] {
@@ -67,7 +73,7 @@
     font-weight: normal;
     text-align: center;
     font-size: 28px;
-    margin: 24px 0 16px;
+    margin: 16px 0 12px;
 }
 
 .Game-settings {
@@ -309,6 +315,11 @@
     .Game-start {
         animation: none;
     }
+
+    .Game-loading {
+        animation: none;
+        opacity: 1;
+    }
 }
 
 /* Expert: type the name */
@@ -371,6 +382,29 @@
     /* Coloured border once answered (see is-correct / is-wrong) */
     box-shadow: 0 0 0 4px transparent;
     transition: box-shadow 0.2s;
+}
+
+/* Still downloading the next photo. The notice fades in after a short
+   delay, so a quick load doesn't flash it up. */
+.Game-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 15px;
+    color: #d1cfc7;
+    background-color: rgba(31, 31, 31, 0.85);
+    border-radius: 999px;
+    opacity: 0;
+    animation: Game-loading-in 0.2s ease-out 0.4s forwards;
+}
+
+@keyframes Game-loading-in {
+    to {
+        opacity: 1;
+    }
 }
 
 /* Before Start: photo blurred, Start button in the middle */
@@ -524,10 +558,10 @@
     justify-content: center;
     align-items: center;
     gap: 12px;
-    min-height: 48px;
+    min-height: 44px;
     text-align: center;
     font-size: 17px;
-    margin: 16px 0 12px;
+    margin: 10px 0 8px;
 }
 
 .Game-feedback.is-correct,
@@ -673,15 +707,77 @@
     color: white;
 }
 
-.Game-end .Game-next {
+.Game-end-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-top: 28px;
+}
+
+.Game-end .Game-next {
+    margin: 0;
     color: var(--level);
     border-color: var(--level);
+}
+
+/* Share: filled in the level's colour */
+.Game-share {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: var(--level);
+    border: 1px solid var(--level);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.Game-share:hover {
+    filter: brightness(1.15);
+}
+
+.Game-share svg {
+    width: 20px;
+    height: 20px;
+}
+
+.Game-share-status {
+    min-height: 20px;
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: #b6b2a5;
 }
 
 .Game-end .Game-next:hover {
     color: #1f1f1f;
     background-color: var(--level);
+}
+
+/* Room above the scoreboard when the page scrolls back to it */
+.Game-scoreboard {
+    scroll-margin-top: 8px;
+}
+
+/* The photo and the scoreboard above it share one width, centred, so the
+   photo count and score line up with the photo's edges. The width is the
+   5:4 photo's width at --photo-height (or the full page width if smaller). */
+.Game-scoreboard,
+.Game-photo {
+    max-width: calc(var(--photo-height) * 5 / 4);
+    margin-inline: auto;
+}
+
+/* Phones: a smaller photo, so the photo and the answers fit on screen
+   together */
+@media (max-width: 600px) {
+    .Game {
+        --photo-height: 42svh;
+    }
 }
 
 @media (max-width: 420px) {

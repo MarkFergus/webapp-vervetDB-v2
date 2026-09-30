@@ -4,10 +4,27 @@ import App from "./App";
 import Game from "./Game";
 import monkeysArr from "./monkeysArr";
 
+// The simulated browser never downloads images, and the game locks the
+// answers until the photo has loaded. So each game photo "finishes loading"
+// as soon as it appears. Tests using fake timers are left alone: they load
+// photos by hand (fireEvent.load) to control exactly when it happens.
+let photoLoader;
 beforeEach(() => {
     localStorage.clear();
     window.location.hash = "";
+    photoLoader = new MutationObserver((changes) => {
+        if (vi.isFakeTimers()) return;
+        for (const change of changes) {
+            for (const node of change.addedNodes) {
+                const imgs = node.querySelectorAll?.("img[alt='Mystery monkey']") ?? [];
+                const all = node.matches?.("img[alt='Mystery monkey']") ? [node] : [...imgs];
+                all.forEach((img) => act(() => img.dispatchEvent(new Event("load"))));
+            }
+        }
+    });
+    photoLoader.observe(document.body, { childList: true, subtree: true });
 });
+afterEach(() => photoLoader.disconnect());
 
 // The right answer is the monkey whose photos include the one on screen
 function rightAnswer() {
@@ -664,5 +681,131 @@ describe("quality of life", () => {
         await user.click(optionButtons().find((b) => !b.textContent.endsWith(name)));
         expect(vibrate).toHaveBeenCalledTimes(1);
         delete navigator.vibrate;
+    });
+});
+
+describe("sharing results", () => {
+    afterEach(() => {
+        delete navigator.share;
+        delete navigator.clipboard;
+    });
+
+    // Plays a Normal round, getting everything right except photo 3
+    async function finishRound(user) {
+        render(<Game />);
+        await user.click(startButton());
+        for (let i = 0; i < 10; i++) {
+            const name = rightAnswer();
+            const pick = i === 2
+                ? optionButtons().find((b) => !b.textContent.endsWith(name))
+                : optionFor(name);
+            await user.click(pick);
+            await user.keyboard("{Enter}");
+        }
+    }
+
+    test("on phones, Share opens the share menu with the result text", async () => {
+        const share = vi.fn().mockResolvedValue();
+        Object.defineProperty(navigator, "share", { configurable: true, value: share });
+        const user = userEvent.setup();
+        await finishRound(user);
+
+        await user.click(screen.getByRole("button", { name: "Share" }));
+        expect(share).toHaveBeenCalledTimes(1);
+        const { text } = share.mock.calls[0][0];
+        expect(text).toContain("Normal mode");
+        expect(text).toContain("9/10 Great work!");
+        expect(text).toContain("✅✅❌✅✅✅✅✅✅✅");
+        expect(text).toMatch(/Can you beat it\? http.*#game$/);
+    });
+
+    test("without a share menu, the text is copied instead", async () => {
+        // After userEvent.setup(), which installs its own pretend clipboard
+        const user = userEvent.setup();
+        const writeText = vi.fn().mockResolvedValue();
+        Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+        await finishRound(user);
+
+        await user.click(screen.getByRole("button", { name: "Share" }));
+        expect(writeText).toHaveBeenCalledWith(expect.stringContaining("9/10 Great work!"));
+        expect(await screen.findByRole("button", { name: "Copied!" })).toBeInTheDocument();
+        expect(screen.getByText(/Paste it into a message/)).toBeInTheDocument();
+    });
+
+    test("closing the share menu without sharing does nothing else", async () => {
+        const user = userEvent.setup();
+        const share = vi.fn().mockRejectedValue(Object.assign(new Error(), { name: "AbortError" }));
+        const writeText = vi.fn().mockResolvedValue();
+        Object.defineProperty(navigator, "share", { configurable: true, value: share });
+        Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+        await finishRound(user);
+
+        await user.click(screen.getByRole("button", { name: "Share" }));
+        expect(writeText).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
+    });
+});
+
+describe("waiting for each photo to load", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    // Fake timers: photos only "load" when the test says so
+    function answerFirstPhoto() {
+        vi.useFakeTimers();
+        render(<Game />);
+        fireEvent.load(screen.getByAltText("Mystery monkey"));
+        fireEvent.click(startButton());
+        fireEvent.click(optionFor(rightAnswer()));
+        const oldPhoto = screen.getByAltText("Mystery monkey");
+        fireEvent.click(screen.getByRole("button", { name: "Next photo" }));
+        return oldPhoto;
+    }
+
+    test("the previous photo is removed straight away, and answers wait for the new one", () => {
+        const oldPhoto = answerFirstPhoto();
+        const newPhoto = screen.getByAltText("Mystery monkey");
+        expect(newPhoto).not.toBe(oldPhoto); // a fresh image, not the old one lingering
+        expect(oldPhoto).not.toBeInTheDocument();
+
+        // Still loading: names hidden, answers and number keys locked
+        expect(document.querySelector(".Game-photo")).toHaveClass("is-loading");
+        expect(screen.getByText("Loading photo…")).toBeInTheDocument();
+        expect(optionButtons().map((b) => b.textContent)).toEqual(["1?", "2?", "3?", "4?"]);
+        expect(optionButtons().every((b) => b.disabled)).toBe(true);
+        fireEvent.keyDown(document, { key: "1" });
+        expect(screen.getByRole("status")).toHaveTextContent("");
+
+        fireEvent.load(newPhoto);
+        expect(screen.queryByText("Loading photo…")).toBeNull();
+        expect(optionFor(rightAnswer())).not.toBeDisabled();
+        expect(optionButtons()[0]).toHaveFocus();
+    });
+
+    test("Expert: the text box waits for the photo too", () => {
+        vi.useFakeTimers();
+        render(<Game />);
+        fireEvent.click(screen.getByRole("radio", { name: "Expert" }));
+        fireEvent.click(newRoundButton());
+        fireEvent.click(startButton()); // started before the photo arrived
+        const input = screen.getByRole("textbox", { name: "Monkey's name" });
+        expect(input).toBeDisabled();
+        expect(screen.getByText("Loading photo…")).toBeInTheDocument();
+
+        fireEvent.load(screen.getByAltText("Mystery monkey"));
+        expect(input).not.toBeDisabled();
+        expect(input).toHaveFocus();
+    });
+
+    test("moving focus never scrolls the page (keeps the photo in view on phones)", () => {
+        const focus = vi.spyOn(HTMLElement.prototype, "focus");
+        answerFirstPhoto();
+        fireEvent.load(screen.getByAltText("Mystery monkey"));
+        expect(focus).toHaveBeenCalled();
+        for (const [options] of focus.mock.calls) {
+            expect(options).toEqual({ preventScroll: true });
+        }
     });
 });
