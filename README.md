@@ -54,16 +54,26 @@ Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows a
 
 If the database can't be reached, the site shows a built-in copy of the data (from [`src/monkeysArr.js`](src/monkeysArr.js)) with a notice, and editing is switched off. That copy is a snapshot from before the database and isn't updated by edits.
 
-### Adding a troop or an editor
+### Adding an editor
 
-There's no screen for these yet: run them in **Supabase → SQL Editor → New query**.
+People without an account can click **Request access** on the sign-in screen, which asks them to email mark@vervet.za.org (set in `ACCESS_EMAIL` in [`src/AccountModal.jsx`](src/AccountModal.jsx)). To add them:
 
-- **Add a troop** (the number sets its place in the troop list):
-  `insert into public.troops (name, sort_order) values ('New Troop', 16);`
-- **Add an editor:** first create their account in **Authentication → Users → Add user**, then:
-  `insert into public.editors (user_id) select id from auth.users where email = 'them@example.com';`
+In Supabase, go to **Authentication → Users → Add user**, then either:
 
-New sign-ups are switched off, so only accounts you create can sign in.
+- **Send invitation**: they get an email, click the link, and choose a password on the site; or
+- **Create new user**: enter their email and any long random password, tick **Auto Confirm User**, then tell them to go to the site, click **Sign in → Forgot password?** and choose their own password.
+
+Every account added this way is an editor automatically ([`supabase/new-editors.sql`](supabase/new-editors.sql)). New sign-ups are switched off, so only accounts you add can sign in. Anyone signed in can change their password from the account pop-up (**Change password**).
+
+- **Remove someone:** Authentication → Users → **…** → **Delete user**.
+- **Make someone view-only** (they can sign in but not edit):
+  `delete from public.editors where user_id = (select id from auth.users where email = 'them@example.com');`
+- Supabase's built-in email sender only sends a few emails an hour (invites and password resets together). That's plenty for occasional use; connecting it to Resend with a verified domain removes the limit.
+
+### Adding a troop
+
+There's no screen for this yet: in **Supabase → SQL Editor → New query** (the number sets its place in the troop list):
+`insert into public.troops (name, sort_order) values ('New Troop', 16);`
 
 ## Daily change emails
 
@@ -121,7 +131,7 @@ git push                         # publishes the site
 | `src/Nav.jsx` | Top bar: logo, search box, game / PDF / add / sign-in buttons (☰ menu on phones) |
 | `src/MonkeyForm.jsx`, `src/monkeyFormChecks.js` | The add / edit form, and its checks |
 | `src/PhotoCropper.jsx`, `src/photoUpload.js` | Cropping photos and uploading them to storage |
-| `src/AccountModal.jsx`, `src/auth.jsx` | Sign-in pop-up, and who's signed in / whether they're an editor |
+| `src/AccountModal.jsx`, `src/auth.jsx` | Account pop-up (sign in, forgot / change password), and who's signed in / whether they're an editor |
 | `src/supabase.js` | The connection to Supabase |
 | `src/monkeyData.js`, `src/useMonkeyData.js` | Reading and saving monkeys (with the built-in copy as a fallback) |
 | `src/Game.jsx`, `src/gameLogic.js` | Guess The Monkey |
@@ -136,6 +146,7 @@ git push                         # publishes the site
 | `supabase/seed.sql` | The original data loaded into the database (made by `make-seed.mjs`) |
 | `supabase/storage.sql` | Photo storage and its access rules |
 | `supabase/change-history.sql` | Change history and daily summary emails |
+| `supabase/new-editors.sql` | Makes every account added in Supabase an editor |
 | `.github/workflows/deploy.yml` | Tests, builds and publishes the site on every push to `master` |
 | `.github/workflows/keep-awake.yml` | Pings the database every 3 days so the free Supabase project isn't paused |
 

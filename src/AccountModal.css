@@ -145,3 +145,48 @@
     opacity: 0.6;
     cursor: default;
 }
+
+/* Quiet text buttons: Forgot password?, Change password, Back, Cancel */
+.AccountModal-link {
+    align-self: center;
+    padding: 4px 8px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    color: #25c4f8;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.AccountModal-link:hover {
+    color: #86e1ff;
+    text-decoration: underline;
+}
+
+.AccountModal-hint {
+    margin: -8px 0 0;
+    font-size: 13px;
+    color: #b6b2a5;
+}
+
+/* Good news, e.g. "Password saved." or "a link is on its way" */
+.AccountModal-notice {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #47b028;
+    text-align: center;
+}
+
+/* "Request access": who to email */
+.AccountModal-access {
+    margin: -6px 0 0;
+    font-size: 14px;
+    color: #d1cfc7;
+    text-align: center;
+}
+
+.AccountModal-access a {
+    color: #25c4f8;
+    font-weight: 700;
+}

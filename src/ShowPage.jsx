@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     IconArrowDown,
     IconArrowUp,
@@ -93,7 +93,7 @@ function ShowPage({
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
-    const { isEditor } = useAuth();
+    const { isEditor, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
     const [searchValue, setSearchValue] = useState("");
     const [troopFilter, setTroopFilter] = useState("All Troops");
@@ -104,6 +104,10 @@ function ShowPage({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
+    // Arrived from a password email link: open the account pop-up by itself
+    useEffect(() => {
+        if (passwordSetup) setIsAccountOpen(true);
+    }, [passwordSetup]);
     // The edit / add form: null when closed, else { monkey } (null = adding)
     const [editing, setEditing] = useState(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
