@@ -433,7 +433,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         <div className="Game" data-level={difficulty}>
             <header className="Game-header">
                 <a href="#" className="Game-home">
-                    <MonkeyIcon />
+                    <MonkeyIcon color="currentColor" />
                     <span className="Game-home-title">vervetDB</span>
                 </a>
                 <a href="#" className="Game-back">

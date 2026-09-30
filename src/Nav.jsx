@@ -101,7 +101,8 @@ function Nav({
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
             <nav className="Nav" inert={isPDFModalOpen || isAccountOpen}>
                 <div className="Nav-icon">
-                    <MonkeyIcon />
+                    {/* Same colour as the "vervetDB" text beside it */}
+                    <MonkeyIcon color="currentColor" />
                 </div>
                 <div className="Nav-title">vervetDB</div>
 
