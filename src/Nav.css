@@ -95,8 +95,17 @@
     cursor: pointer;
 }
 
-.Nav button:hover {
+.Nav button:hover,
+.Nav-gameLink:hover {
     color: white;
+}
+
+.Nav-gameLink {
+    display: flex;
+    color: #d1cfc7;
+    margin-left: 4px;
+    padding: 4px 0 0 0;
+    border-radius: 5px;
 }
 
 .hourglass {

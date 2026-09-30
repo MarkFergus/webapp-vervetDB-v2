@@ -4,6 +4,7 @@ import {
     IconX,
     IconFileTypePdf,
     IconHourglassLow,
+    IconDeviceGamepad2,
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import MonkeyIcon from "./MonkeyIcon";
@@ -63,6 +64,14 @@ function Nav({
                     )}
                 </div>
                 <div className="Nav-buttons">
+                    <a
+                        href="#game"
+                        className="Nav-gameLink"
+                        aria-label="Guess the monkey game"
+                        title="Guess the monkey game"
+                    >
+                        <IconDeviceGamepad2 stroke="2" size="36" />
+                    </a>
                     <button
                         type="button"
                         onClick={togglePDFModal}
