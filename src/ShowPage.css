@@ -17,93 +17,114 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     margin: 0 8px;
 }
 
-.ShowPage-sortfilter {
-    height: 24px;
-    font-size: 14px;
+/* ---- Toolbar: filters, sort, Add monkey ---- */
+.ShowPage-toolbar {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     align-items: center;
-    margin: 8px 8px 0 8px;
+    gap: 10px;
+    margin: 12px 8px 4px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
 }
 
-.ShowPage-sort,
-.ShowPage-filter {
+.ShowPage-filters {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+    gap: 8px;
 }
 
-.ShowPage-sort h4,
-.ShowPage-filter h4 {
-    display: none;
-    font-size: 14px;
+/* A filter "pill": icon, dropdown, little arrow. The native dropdown is
+   stretched over the whole pill so the entire pill is tappable. */
+.ShowPage-pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    gap: 6px;
+    color: #b6b2a5;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.ShowPage-pill:hover {
+    color: white;
+    border-color: #6b6862;
+}
+
+.ShowPage-pill:focus-within {
+    border-color: #25c4f8;
+}
+
+.ShowPage-pill select {
+    appearance: none;
+    font: inherit;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0 16px 0 0;
+    cursor: pointer;
+}
+
+.ShowPage-pill select option {
+    color: #d1cfc7;
+    background-color: #1f1f1f;
+}
+
+.ShowPage-pill-arrow {
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+}
+
+/* A filter in use: blue, so it's clear what's narrowing the list */
+.ShowPage-pill.is-active {
+    color: #25c4f8;
+    border-color: #25c4f8;
+    background-color: rgba(37, 196, 248, 0.1);
+}
+
+.ShowPage-pill.is-active select {
+    color: #25c4f8;
+    font-weight: 700;
+}
+
+/* Sort: segmented control, the active segment raised with an arrow */
+.ShowPage-sort {
+    display: flex;
+    padding: 2px;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
 }
 
 .ShowPage-sort button {
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    margin-left: 0;
-    padding-bottom: 2px;
-    height: 32px;
+    gap: 3px;
+    height: 22px;
+    padding: 0 12px;
+    font: inherit;
+    color: #b6b2a5;
+    background: none;
     border: none;
-    border-radius: 5px;
-    background-color: transparent;
-    color: rgb(192, 191, 191);
+    border-radius: 999px;
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
 }
 
-.ShowPage-sort button svg {
-    padding-left: 2px;
-    padding-top: 2px;
-    height: 12px;
-    width: 12px;
-}
-
-.ShowPage-sort button:hover,
-.ShowPage-sort select:hover {
+.ShowPage-sort button:hover {
     color: white;
-    background-color: #2a282a;
 }
 
-.ShowPage-filter {
-    font-size: 14px;
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-items: center;
-    font-weight: 300;
-    margin-right: 8px;
-}
-
-#troops,
-#year {
-    font-family: "Nunito Sans", sans-serif;
-    text-align: right;
-    border: none;
-    border-radius: 2px;
-    color: #d1cfc7;
-    background-color: transparent;
-    padding: 4px 2px 4px 0;
-}
-
-#troops option,
-#year option {
-    font-family: "Nunito Sans", sans-serif;
-    border: none;
-    border-radius: 0;
-    color: #d1cfc7;
-    background-color: #1f1f1f;
-    padding: 2px 0;
-}
-
-#troops option:hover,
-#year option:hover {
+.ShowPage-sort button[aria-pressed="true"] {
     color: white;
-    background-color: #2a282a;
+    font-weight: 700;
+    background-color: #3f3d3f;
 }
 
 .ShowPage-monkeys {
@@ -120,15 +141,16 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-left: auto;
-    padding: 4px 10px;
+    margin-left: auto; /* right-hand end of the row */
+    height: 28px;
+    padding: 0 12px;
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
     font-weight: 700;
     color: #25c4f8;
     background: none;
     border: 1px solid #25c4f8;
-    border-radius: 6px;
+    border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
 }
@@ -136,6 +158,45 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 .ShowPage-add:hover {
     color: #1f1f1f;
     background-color: #25c4f8;
+}
+
+/* Phones: filters share one line, sort fills the next with three equal,
+   easy-to-tap segments. "Add monkey" lives
+   in the ☰ menu instead (see Nav). */
+@media (max-width: 624px) {
+    .ShowPage-toolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ShowPage-filters {
+        flex: 1 1 100%;
+    }
+
+    .ShowPage-pill {
+        flex: 1;
+        min-width: 0;
+        height: 32px;
+    }
+
+    .ShowPage-pill select {
+        flex: 1;
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
+
+    .ShowPage-sort {
+        flex: 1 1 100%;
+    }
+
+    .ShowPage-sort button {
+        flex: 1;
+        height: 26px;
+    }
+
+    .ShowPage-add {
+        display: none;
+    }
 }
 
 .ShowPage-showMore {
@@ -162,24 +223,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 @media (min-width: 500px) {
-    .ShowPage-sortfilter {
-        display: flex;
-        flex-direction: row;
-        justify-content: start;
-        align-items: center;
-        margin: 8px 24px 0 24px;
-    }
-
-    .ShowPage-sort {
-        margin-right: 24px;
-    }
-
-    .ShowPage-sort h4,
-    .ShowPage-filter h4 {
-        display: flex;
-        font-size: inherit;
-        margin: 0;
-        padding-right: 4px;
+    .ShowPage-toolbar {
+        margin: 14px 24px 6px;
     }
 
     .ShowPage-monkeys {

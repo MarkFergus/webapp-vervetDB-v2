@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { IconArrowsSort, IconPlus } from "@tabler/icons-react";
+import {
+    IconArrowDown,
+    IconArrowUp,
+    IconCalendar,
+    IconChevronDown,
+    IconPlus,
+    IconUsersGroup,
+} from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -218,21 +225,26 @@ function ShowPage({
     const isAnyModalOpen =
         isModalOpen || isPDFModalOpen || isAccountOpen || Boolean(editing);
 
+    // One segment of the Name | Troop | Year sort control. The active one is
+    // highlighted with an arrow showing the direction.
     function sortButton(key, label) {
         const isActive = sort.key === key;
+        const Arrow = sort.ascending ? IconArrowUp : IconArrowDown;
         return (
             <button
                 type="button"
                 onClick={() => sortBy(key)}
                 aria-pressed={isActive}
             >
-                <span>{label} </span>
+                {label}
                 {isActive && (
-                    <span className="visually-hidden">
-                        {sort.ascending ? ", ascending" : ", descending"}
-                    </span>
+                    <>
+                        <Arrow size={14} stroke={2.5} aria-hidden="true" />
+                        <span className="visually-hidden">
+                            {sort.ascending ? ", ascending" : ", descending"}
+                        </span>
+                    </>
                 )}
-                <IconArrowsSort aria-hidden="true" />
             </button>
         );
     }
@@ -264,47 +276,66 @@ function ShowPage({
                     isPDFModalOpen={isPDFModalOpen}
                     isAccountOpen={isAccountOpen}
                     toggleAccount={() => setIsAccountOpen((open) => !open)}
+                    onAddMonkey={canEdit ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                 />
             </div>
-            <div className="ShowPage-sortfilter" inert={isAnyModalOpen}>
-                <div className="ShowPage-sort">
-                    <h4>Sort:</h4>
+            {/* Filters (pills, blue when active), sort (segmented control)
+                and, for editors, Add monkey */}
+            <div className="ShowPage-toolbar" inert={isAnyModalOpen}>
+                <div className="ShowPage-filters">
+                    <label
+                        className={
+                            troopFilter === "All Troops"
+                                ? "ShowPage-pill"
+                                : "ShowPage-pill is-active"
+                        }
+                    >
+                        <IconUsersGroup size={16} aria-hidden="true" />
+                        <select
+                            name="troops"
+                            id="troops"
+                            aria-label="Filter by troop"
+                            value={troopFilter}
+                            onChange={filterTroops}
+                        >
+                            {troops.map((g) => (
+                                <option key={g} value={g}>
+                                    {g}
+                                </option>
+                            ))}
+                        </select>
+                        <IconChevronDown size={14} className="ShowPage-pill-arrow" aria-hidden="true" />
+                    </label>
+                    <label
+                        className={
+                            yearFilter === "All Years"
+                                ? "ShowPage-pill"
+                                : "ShowPage-pill is-active"
+                        }
+                    >
+                        <IconCalendar size={16} aria-hidden="true" />
+                        <select
+                            name="year"
+                            id="year"
+                            aria-label="Filter by year"
+                            value={yearFilter}
+                            onChange={filterYear}
+                        >
+                            <option value="All Years">All Years</option>
+                            {yearsArr.map((y) => (
+                                <option key={y} value={y}>
+                                    {y}
+                                </option>
+                            ))}
+                        </select>
+                        <IconChevronDown size={14} className="ShowPage-pill-arrow" aria-hidden="true" />
+                    </label>
+                </div>
+                <div className="ShowPage-sort" role="group" aria-label="Sort by">
                     {sortButton("name", "Name")}
                     {sortButton("troop", "Troop")}
                     {sortButton("year", "Year")}
-                </div>
-                <div className="ShowPage-filter">
-                    <h4>Filter:</h4>
-                    <select
-                        className="ShowPage-filter-select"
-                        name="troops"
-                        id="troops"
-                        aria-label="Filter by troop"
-                        value={troopFilter}
-                        onChange={filterTroops}
-                    >
-                        {troops.map((g) => (
-                            <option key={g} value={g}>
-                                {g}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        className="ShowPage-filter-select"
-                        name="year"
-                        id="year"
-                        aria-label="Filter by year"
-                        value={yearFilter}
-                        onChange={filterYear}
-                    >
-                        <option value="All Years">All Years</option>
-                        {yearsArr.map((y) => (
-                            <option key={y} value={y}>
-                                {y}
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 {canEdit && (
                     <button type="button" className="ShowPage-add" onClick={startAdd}>

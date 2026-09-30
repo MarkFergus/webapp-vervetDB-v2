@@ -248,3 +248,13 @@ test("closing with unsaved changes asks first", async () => {
     expect(confirm).toHaveBeenCalledWith("Discard your changes?");
     expect(form()).toBeInTheDocument();
 });
+
+test("phones: editors also find Add monkey in the ☰ menu", async () => {
+    const { user } = setup();
+    // Signed in as an editor: wait for the desktop button, then use the menu
+    await screen.findByRole("button", { name: /^Add monkey$/ });
+    await user.click(screen.getByRole("button", { name: /^Menu/ }));
+    const menu = document.getElementById("Nav-menu");
+    await user.click(within(menu).getByRole("button", { name: "Add Monkey" }));
+    expect(form()).toHaveAccessibleName("Add a monkey");
+});

@@ -122,8 +122,105 @@
     cursor: auto;
 }
 
+/* ---- Phone-only parts (shown by the media query below) ---- */
+.Nav-menuWrap {
+    display: none;
+}
+
+.Nav-menuButton {
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Nav-menuWrap {
+    position: relative;
+}
+
+.Nav-menuButton {
+    position: relative;
+    display: flex;
+}
+
+/* Small green dot on ☰ while signed in */
+.Nav-menuDot {
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: #47b028;
+    box-shadow: 0 0 0 2px #1f1f1f;
+}
+
+/* The ☰ menu: drops down from the right-hand edge */
+.Nav-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 10;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    font-size: 16px;
+    background-color: #2a282a;
+    border: 1px solid #434343;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.Nav-menu a,
+.Nav-menu button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px;
+    text-align: left;
+    color: #d1cfc7;
+    text-decoration: none;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Nav-menu a:hover,
+.Nav-menu button:hover:not(:disabled) {
+    color: white;
+    background-color: #343234;
+}
+
+.Nav-menu button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
 @media (max-width: 624px) {
-    .Nav-title {
+    .Nav {
+        align-items: center;
+    }
+
+    /* Logo, search box filling the middle, ☰ on the right */
+    .Nav-title,
+    .Nav-buttons {
         display: none;
+    }
+
+    .Nav-searchbar {
+        flex: 1;
+        margin: 0 6px 0 4px;
+    }
+
+    .Nav-menuWrap {
+        display: block;
     }
 }
