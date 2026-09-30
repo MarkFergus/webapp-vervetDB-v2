@@ -58,6 +58,26 @@ Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows a
 
 Add the troop's name to [`src/groupsArr.js`](src/groupsArr.js) so it appears in the troop filter. Monkeys in that troop must use exactly the same spelling.
 
+## Daily change emails
+
+Every add, edit and delete of a monkey is recorded in the database (who, when, and what changed). Each day at **18:00 South African time** (16:00 UTC) a summary of the changes since the last one is emailed via [Resend](https://resend.com). Days with no changes send nothing. Set up by [`supabase/change-history.sql`](supabase/change-history.sql).
+
+Run these in **Supabase → SQL Editor → New query**:
+
+| To… | Run |
+|---|---|
+| Send a review email now (last 7 days; doesn't affect the daily one) | `select private.send_daily_summary(test => true);` |
+| Send the real summary now (changes since the last one) | `select private.send_daily_summary();` |
+| Check whether emails went (200 = sent; otherwise `content` says why) | `select created, status_code, content from net._http_response order by created desc limit 5;` |
+| See the change history | `select changed_at, action, changed_by_email, coalesce(new_row ->> 'name', old_row ->> 'name') as monkey from private.monkey_changes order by changed_at desc limit 50;` |
+| Change who gets it | `update private.summary_settings set send_to = array['you@example.com'];` |
+| Change the time (UTC, `'minute hour * * *'`) | `select cron.schedule('vervetdb-daily-summary', '0 16 * * *', $$select private.send_daily_summary()$$);` |
+| Replace the Resend API key | `select vault.update_secret((select id from vault.secrets where name = 'resend_api_key'), 're_new_key');` |
+
+- Emails come from `onboarding@resend.dev` and can only go to the Resend account's own address (currently `github@accounts.markfergus.com`). To send to anyone else, verify the domain at [resend.com/domains](https://resend.com/domains) and change the sender: `update private.summary_settings set send_from = 'vervetDB <vervetdb@markfergus.com>';`
+- Only changes made after the script was run are recorded.
+- The history and settings are in a `private` schema that the website can't reach.
+
 ## Deploying
 
 The live site updates automatically: **push to `master` and GitHub does the rest.** The workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) installs, runs all the tests, builds, and publishes to GitHub Pages. If any test fails, nothing is published.
