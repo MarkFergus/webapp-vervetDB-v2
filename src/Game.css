@@ -786,19 +786,65 @@
     margin-inline: auto;
 }
 
-/* Phones: a smaller photo, so the photo and the answers fit on screen
-   together */
+/* Phones: the photo fills the page width (sized by width, not screen
+   height, so it doesn't change when the keyboard opens), and the space
+   around it is tightened so the photo and answers fit on screen together */
 @media (max-width: 600px) {
-    .Game {
-        --photo-height: 42svh;
+    .Game-scoreboard,
+    .Game-photo {
+        max-width: none;
+    }
+
+    .Game-title {
+        font-size: 24px;
+        margin: 10px 0 8px;
+    }
+
+    .Game-settings {
+        margin-bottom: 14px;
+    }
+
+    .Game-hint {
+        margin: -6px 0 10px;
+    }
+
+    .Game-scoreboard {
+        margin-bottom: 8px;
+    }
+
+    .Game-timer {
+        width: 44px;
+        height: 44px;
+    }
+
+    .Game-timer-value {
+        font-size: 24px;
+    }
+
+    .Game-score-value {
+        font-size: 30px;
+    }
+
+    /* Answers: still two per row; long names wrap onto a second line */
+    .Game-options,
+    .Game-typed {
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .Game-option {
+        gap: 8px;
+        padding: 10px;
+        font-size: 15px;
+        line-height: 1.2;
+    }
+
+    .Game-feedback {
+        margin: 6px 0;
     }
 }
 
 @media (max-width: 420px) {
-    .Game-options {
-        grid-template-columns: 1fr;
-    }
-
     /* Keep the troop / difficulty / Apply row on one line */
     .Game-settings {
         gap: 6px;
