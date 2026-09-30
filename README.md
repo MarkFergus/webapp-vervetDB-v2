@@ -1,10 +1,10 @@
 # vervetDB
 
-A visual interface for the Vervet Monkey Foundation monkey database: search, filter and browse every monkey, view their photos and details, and create printable profile books (PDF) for a troop.
+A visual interface for the Vervet Monkey Foundation monkey database: search, filter and browse every monkey, view their photos and details, create printable profile books (PDF) for a troop, and play **Guess The Monkey** to learn their faces. Signed-in editors can add, edit and delete monkeys and upload photos, and get a daily email of the changes.
 
 **Live site:** https://markfergus.github.io/webapp-vervetDB-v2/
 
-Built with React 19 and Vite. Tests use Vitest.
+Built with React 19 and Vite. The data lives in [Supabase](https://supabase.com) (database, sign-in and photo storage). Tests use Vitest.
 
 ---
 
@@ -31,32 +31,39 @@ Press **Ctrl+C** in the terminal to stop it.
 
 ## Adding or editing a monkey
 
-All monkey data lives in [`src/monkeysArr.js`](src/monkeysArr.js). Each monkey looks like this:
+Monkeys are edited on the website itself. Changes go straight into the database and everyone sees them immediately; no code change or deploy is needed.
 
-```js
-{
-    name: "Aroha",
-    sex: "male",            // "male", "female", or "" if unknown
-    chip: 19806,            // a number (no quotes); "" if no chip; "1011 & 1604" for two chips
-    troop: "James",         // must match a troop in src/groupsArr.js
-    year: 2016,             // birth year as a number (no quotes); "" if unknown
-    img: [                  // one or more photo links, first one is the card photo
-        "https://i.ibb.co/smzxJ28/aroha-james-oct2023-min.webp",
-    ],
-    bio: "Arrived as an orphan in 2016.",
-    desc: "Distinctive features and behaviours (optional).",
-},
-```
+1. **Sign in** with the person icon at the top right (on phones: ☰ menu → **Sign In**). Only accounts listed as editors can make changes; the icon turns green once you're signed in.
+2. **To add a monkey:** click the **+** (**Add New Monkey**) at the top right (on phones: ☰ menu → **Add New Monkey**).
+3. **To edit or delete one:** open the monkey's pop-up and click **Edit** at the bottom left. **Delete** is in the edit form and asks you to confirm.
+4. Fill in the form and click **Save** (or **Add monkey**). The form tidies spaces and chip numbers for you (e.g. `1011 1604` becomes `1011 & 1604`) and explains anything it can't accept.
 
-**Photos** are hosted on [ImgBB](https://imgbb.com). Upload the photo, then copy its direct link (starting `https://i.ibb.co/`). WebP files are fine — they're converted automatically when making a PDF.
+| Field | Notes |
+|---|---|
+| Name | Required |
+| Troop | Required; chosen from the list |
+| Sex | Male, female, or blank if unknown |
+| Birth year | 1980 up to this year, or blank if unknown |
+| Chip | One number, or two for two chips; blank if none |
+| Photos | Up to 5; the first is the card photo |
+| Bio / Description | Optional |
 
-**After editing, run `npx vitest run`.** The data tests check every monkey and will name any entry with a problem, for example a misspelt field, a year in quotes, a troop that isn't in the filter, or a stray space at the end of a name.
+**Photos:** click **Upload photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match. You can also paste a link to a photo hosted elsewhere with **Add photo link**. Removing a photo (bin icon) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
 
 Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows as "No bio yet."
 
-### Adding a troop
+If the database can't be reached, the site shows a built-in copy of the data (from [`src/monkeysArr.js`](src/monkeysArr.js)) with a notice, and editing is switched off. That copy is a snapshot from before the database and isn't updated by edits.
 
-Add the troop's name to [`src/groupsArr.js`](src/groupsArr.js) so it appears in the troop filter. Monkeys in that troop must use exactly the same spelling.
+### Adding a troop or an editor
+
+There's no screen for these yet: run them in **Supabase → SQL Editor → New query**.
+
+- **Add a troop** (the number sets its place in the troop list):
+  `insert into public.troops (name, sort_order) values ('New Troop', 16);`
+- **Add an editor:** first create their account in **Authentication → Users → Add user**, then:
+  `insert into public.editors (user_id) select id from auth.users where email = 'them@example.com';`
+
+New sign-ups are switched off, so only accounts you create can sign in.
 
 ## Daily change emails
 
@@ -107,20 +114,36 @@ git push                         # publishes the site
 
 | File | Purpose |
 |---|---|
+| `src/App.jsx` | Loads the data, shows the main page or the game |
 | `src/ShowPage.jsx` | The main page: search, filters, sorting, the card grid, and PDF creation |
 | `src/MonkeyCard.jsx` | One card in the grid |
-| `src/Modal.jsx` | The monkey detail pop-up (photos, details, previous/next) |
-| `src/Nav.jsx` | Top bar: logo, search box, PDF button |
+| `src/Modal.jsx` | The monkey detail pop-up (photos, details, previous/next, Edit) |
+| `src/Nav.jsx` | Top bar: logo, search box, game / PDF / add / sign-in buttons (☰ menu on phones) |
+| `src/MonkeyForm.jsx`, `src/monkeyFormChecks.js` | The add / edit form, and its checks |
+| `src/PhotoCropper.jsx`, `src/photoUpload.js` | Cropping photos and uploading them to storage |
+| `src/AccountModal.jsx`, `src/auth.jsx` | Sign-in pop-up, and who's signed in / whether they're an editor |
+| `src/supabase.js` | The connection to Supabase |
+| `src/monkeyData.js`, `src/useMonkeyData.js` | Reading and saving monkeys (with the built-in copy as a fallback) |
+| `src/Game.jsx`, `src/gameLogic.js` | Guess The Monkey |
 | `src/ModalPDF.jsx` | The PDF pop-up (count, warning, progress) |
 | `src/MonkeyPDF.jsx` | Layout of the PDF profile book (cover page, rows of monkeys) |
 | `src/pdfPhotos.js` | Converts photos to JPG for the PDF (the PDF library can't use WebP) |
-| `src/useDialog.js` | Keyboard and focus behaviour shared by both pop-ups |
+| `src/useDialog.js` | Keyboard and focus behaviour shared by the pop-ups |
 | `src/MonkeyIcon.jsx`, `src/monkeyIconPath.js` | The monkey logo as a vector (used on the site and in the PDF) |
-| `src/monkeysArr.js`, `src/groupsArr.js` | The data: monkeys and troops |
+| `src/monkeysArr.js`, `src/groupsArr.js` | The built-in copy of the data (fallback only) |
 | `src/*.test.js(x)` | Tests |
+| `supabase/schema.sql` | Database tables, data rules and who can do what |
+| `supabase/seed.sql` | The original data loaded into the database (made by `make-seed.mjs`) |
+| `supabase/storage.sql` | Photo storage and its access rules |
+| `supabase/change-history.sql` | Change history and daily summary emails |
+| `.github/workflows/deploy.yml` | Tests, builds and publishes the site on every push to `master` |
+| `.github/workflows/keep-awake.yml` | Pings the database every 3 days so the free Supabase project isn't paused |
+
+The `supabase/*.sql` files have already been run. They're kept as a record of how the database is set up, and to rebuild it if ever needed.
 
 ### Notes
 
-- **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser. This relies on ImgBB allowing other sites to read its images (it does). Large PDFs (all troops) download every photo and can take several minutes.
+- **Access:** anyone can view the site. Only signed-in editors can change monkeys or photos; the database enforces this itself, not just the website.
+- **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser. Large PDFs (all troops) download every photo and can take several minutes.
 - **The PDF library is loaded only when a PDF is created**, which keeps the site itself quick to load.
-- **Keyboard:** Tab through cards, Enter to open, ← / → for previous/next monkey, Escape to close.
+- **Keyboard:** Tab through cards, Enter to open, ← / → for previous/next monkey, Escape to close. In the game, Enter or Space starts, and keys 1–4 pick an answer.
