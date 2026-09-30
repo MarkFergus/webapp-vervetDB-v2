@@ -1,3 +1,47 @@
 body {
     font-family: "Nunito Sans", sans-serif;
 }
+
+/* While the monkeys load from the database: logo and message, centred */
+.App-loading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    color: #b6b2a5;
+}
+
+.App-loading svg {
+    width: 64px;
+    height: 59px;
+    animation: App-breathe 1.6s ease-in-out infinite;
+}
+
+.App-loading p {
+    margin: 0;
+    font-size: 16px;
+}
+
+@keyframes App-breathe {
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .App-loading svg {
+        animation: none;
+    }
+}
+
+/* Shown if the database couldn't be reached and the built-in copy is used */
+.App-notice {
+    margin: 0;
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #1f1f1f;
+    background-color: #ffb454;
+}

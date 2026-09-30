@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { IconArrowsSort } from "@tabler/icons-react";
-import monkeysArr from "./monkeysArr";
-import groupsArr from "./groupsArr";
+import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import { preparePhotosForPdf } from "./pdfPhotos";
 import Modal from "./Modal";
@@ -25,11 +24,11 @@ const yearsArr = Array.from({ length: 31 }, (_, i) => currYear - i);
 
 // The list on screen is worked out from the search, filters and sort
 // every time, so they always agree with each other.
-function getVisibleMonkeys({ searchValue, troopFilter, yearFilter, sort }) {
+function getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort }) {
     const query = searchValue.trim().toLowerCase();
     const isChipSearch = /^\d+$/.test(query);
 
-    const results = monkeysArr.filter((monkey) => {
+    const results = monkeys.filter((monkey) => {
         const matchesTroop =
             troopFilter === "All Troops" ||
             monkey.troop.toLowerCase().includes(troopFilter.toLowerCase());
@@ -45,7 +44,7 @@ function getVisibleMonkeys({ searchValue, troopFilter, yearFilter, sort }) {
         return matchesTroop && matchesYear && matchesSearch;
     });
 
-    // filter() returns a new array, so sorting it leaves monkeysArr alone
+    // filter() returns a new array, so sorting it leaves the original data alone
     const compare = compareBy[sort.key];
     return results.sort((a, b) => {
         // Unknown birth years go last, whichever direction the year sort is
@@ -74,7 +73,9 @@ function downloadFile(blob, filename) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function ShowPage() {
+// monkeys / troops: the data to show (from the database, via App).
+// Defaults to the built-in copy, e.g. in tests.
+function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }) {
     const [searchValue, setSearchValue] = useState("");
     const [troopFilter, setTroopFilter] = useState("All Troops");
     const [yearFilter, setYearFilter] = useState("All Years");
@@ -87,11 +88,11 @@ function ShowPage() {
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
 
-    // Only recalculated when the search, a filter or the sort changes
+    // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
         () =>
-            getVisibleMonkeys({ searchValue, troopFilter, yearFilter, sort }),
-        [searchValue, troopFilter, yearFilter, sort]
+            getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort }),
+        [monkeys, searchValue, troopFilter, yearFilter, sort]
     );
 
     const selectedIndex = visibleMonkeys.indexOf(selectedMonkey);
@@ -244,7 +245,7 @@ function ShowPage() {
                         value={troopFilter}
                         onChange={filterTroops}
                     >
-                        {groupsArr.map((g) => (
+                        {troops.map((g) => (
                             <option key={g} value={g}>
                                 {g}
                             </option>

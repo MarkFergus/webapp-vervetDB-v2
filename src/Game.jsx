@@ -6,8 +6,7 @@ import {
     IconShare,
     IconX,
 } from "@tabler/icons-react";
-import monkeysArr from "./monkeysArr";
-import groupsArr from "./groupsArr";
+import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyIcon from "./MonkeyIcon";
 import {
     averageSeconds,
@@ -47,11 +46,11 @@ function saveBest(settings, score) {
 // they left off (this browser only)
 const SETTINGS_KEY = "vervetdb-game-settings";
 const DEFAULT_SETTINGS = { troop: "All Troops", difficulty: "normal" };
-function loadSettings() {
+function loadSettings(troops) {
     try {
         const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
         // Ignore anything out of date, e.g. a troop that's since been renamed
-        if (groupsArr.includes(saved?.troop) && difficultyById(saved?.difficulty)) {
+        if (troops.includes(saved?.troop) && difficultyById(saved?.difficulty)) {
             return { troop: saved.troop, difficulty: saved.difficulty };
         }
     } catch {
@@ -88,9 +87,11 @@ function preload(question) {
 
 let nextRoundId = 1;
 
-function Game() {
+// monkeys / troops: the data to play with (from the database, via App).
+// Defaults to the built-in copy, e.g. in tests.
+function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }) {
     // settings: what the current round is played with
-    const [settings, setSettings] = useState(loadSettings);
+    const [settings, setSettings] = useState(() => loadSettings(troops));
     const [round, setRound] = useState(() => newRound(settings));
     const [best, setBest] = useState(() => loadBest(settings));
     // Troop and difficulty picked in the controls; they take effect when
@@ -125,9 +126,9 @@ function Game() {
     function newRound(s) {
         const length = Math.min(
             QUESTIONS_PER_ROUND,
-            playableMonkeys(monkeysArr, s.troop).length
+            playableMonkeys(monkeys, s.troop).length
         );
-        const question = makeQuestion(monkeysArr, questionSettings(s));
+        const question = makeQuestion(monkeys, questionSettings(s));
         return {
             id: nextRoundId++,
             // The first photo waits, blurred, until Start is pressed
@@ -231,7 +232,7 @@ function Game() {
         // Work out the next photo now so it can load while you read the answer
         const upcoming =
             round.number < round.length
-                ? makeQuestion(monkeysArr, {
+                ? makeQuestion(monkeys, {
                       ...questionSettings(settings),
                       exclude: round.asked,
                   })
@@ -448,7 +449,7 @@ function Game() {
                     value={chosenTroop}
                     onChange={(e) => setChosenTroop(e.target.value)}
                 >
-                    {groupsArr.map((g) => (
+                    {troops.map((g) => (
                         <option key={g} value={g}>
                             {g}
                         </option>
