@@ -2,7 +2,7 @@
 
 A visual interface for the Vervet Monkey Foundation monkey database: search, filter and browse every monkey, view their photos and details, create printable profile books (PDF) for a troop, and play **Guess The Monkey** to learn their faces. Signed-in editors can add, edit and delete monkeys and upload photos, and get a daily email of the changes.
 
-**Live site:** https://markfergus.github.io/webapp-vervetDB-v2/
+**Live site:** https://vervetdb.com/
 
 Built with React 19 and Vite. The data lives in [Supabase](https://supabase.com) (database, sign-in and photo storage). Tests use Vitest.
 
@@ -14,7 +14,7 @@ You need [Node.js](https://nodejs.org) (the LTS version) and Git.
 
 ```
 npm install     # once, and again whenever package.json changes
-npm start       # runs the app at http://localhost:3000/webapp-vervetDB-v2/
+npm start       # runs the app at http://localhost:3000/
 ```
 
 Press **Ctrl+C** in the terminal to stop it.
@@ -102,6 +102,8 @@ The live site updates automatically: **push to `master` and GitHub does the rest
 - Follow progress in the repository's **Actions** tab.
 - To redeploy without a new commit: **Actions → Test and deploy → Run workflow**.
 - Pushes to other branches run the tests only.
+
+**The domain:** GitHub Pages serves the site at **vervetdb.com** (repository **Settings → Pages → Custom domain**, with "Enforce HTTPS" on). The domain's DNS points at GitHub: four `A` records for `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a `CNAME` for `www` → `markfergus.github.io`. The old address, markfergus.github.io/webapp-vervetDB-v2/, redirects to it automatically. If the address ever changes, also update Supabase's **Authentication → URL Configuration** and `site_url` in `private.summary_settings`.
 
 ## Making a change (Git routine)
 

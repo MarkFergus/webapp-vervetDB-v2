@@ -88,6 +88,8 @@ create table private.summary_settings (
     send_from     text not null default 'vervetDB <onboarding@resend.dev>',
     -- times in the email are shown in this time zone
     time_zone     text not null default 'Africa/Johannesburg',
+    -- the "Open vervetDB" link at the bottom of the email
+    site_url      text not null default 'https://vervetdb.com/',
     -- the next summary covers changes after this moment
     last_sent_at  timestamptz not null default now()
 );
@@ -222,9 +224,10 @@ declare
     html text := '';
     txt text := '';
     day_text text;
-    site text := 'https://markfergus.github.io/webapp-vervetDB-v2/';
+    site text;
 begin
     select * into settings from private.summary_settings;
+    site := settings.site_url;
 
     for c in
         select * from private.monkey_changes

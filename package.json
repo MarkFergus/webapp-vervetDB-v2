@@ -1,7 +1,7 @@
 {
     "name": "vervetdb",
     "version": "0.1.0",
-    "homepage": "https://markfergus.github.io/webapp-vervetDB-v2/",
+    "homepage": "https://vervetdb.com/",
     "private": true,
     "type": "module",
     "dependencies": {

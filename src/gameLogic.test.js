@@ -165,7 +165,7 @@ describe("share text", () => {
         outOf: 10,
         averageSeconds: "3.2",
         outcomes: ["right", "right", "wrong", "right", "timeout", "right", "right", "right", "right", "right"],
-        url: "https://markfergus.github.io/webapp-vervetDB-v2/#game",
+        url: "https://vervetdb.com/#game",
     };
 
     test("Wordle-style summary with mode, score, message, time and a row of results", () => {
@@ -175,7 +175,7 @@ describe("share text", () => {
                 "Expert mode · Goliath",
                 "8/10 LEGENDARY! ⏱ 3.2s average",
                 "✅✅❌✅⏰✅✅✅✅✅",
-                "Can you beat it? https://markfergus.github.io/webapp-vervetDB-v2/#game",
+                "Can you beat it? https://vervetdb.com/#game",
             ].join("\n")
         );
     });
