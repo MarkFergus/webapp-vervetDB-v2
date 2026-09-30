@@ -18,6 +18,8 @@ describe("Expert mode: checking a typed name", () => {
         ["patch adams", "Patch-Adams", "correct"],
         ["patchadams", "Patch-Adams", "correct"],
         ["Chloé", "Chloe", "correct"],
+        ["Mahodan (Mo", "Mahodan (Mo)", "correct"], // brackets are ignored
+        ["Mahodan (M)", "Mahodan (Mo)", "close"],
         ["Misie", "Missie", "close"], // one letter missing
         ["Mossie", "Missie", "close"], // one letter wrong
         ["Missiee", "Missie", "close"], // one letter extra

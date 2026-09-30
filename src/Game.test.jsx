@@ -297,7 +297,9 @@ describe("right / wrong indicators", () => {
             await user.keyboard("{Enter}");
             name = rightAnswer();
         }
-        await user.type(screen.getByRole("textbox"), `${name.slice(0, -1)}{Enter}`);
+        // Drop the last letter (not a bracket etc.: "Mahodan (Mo)" → "Mahodan (M)")
+        const slip = name.replace(/[a-z0-9](?=[^a-z0-9]*$)/i, "");
+        await user.type(screen.getByRole("textbox"), `${slip}{Enter}`);
         expect(screen.getByRole("status")).toHaveTextContent("Close enough!");
         expect(screen.getByRole("status")).toHaveClass("is-correct");
         expect(photoBox()).toHaveClass("is-correct");
