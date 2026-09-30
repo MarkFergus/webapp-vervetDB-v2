@@ -34,7 +34,7 @@ function rightAnswer() {
 // The "Your best on …" figure on the results screen
 const bestStat = (level) =>
     screen.getByText(`Your best on ${level}`).nextElementSibling;
-const newRoundButton = () => screen.getByRole("button", { name: "New round" });
+const applyButton = () => screen.getByRole("button", { name: "Apply" });
 const startButton = () => screen.getByRole("button", { name: "Start" });
 
 function optionButtons() {
@@ -116,7 +116,7 @@ test("practising a small troop gives a shorter round", async () => {
         screen.getByRole("combobox", { name: "Troop to play" }),
         "Jalamango"
     );
-    await user.click(newRoundButton());
+    await user.click(applyButton());
     const photos = monkeysArr.filter(
         (m) => m.troop === "Jalamango" && m.img.some((u) => !u.includes("blank-image"))
     ).length;
@@ -143,7 +143,7 @@ describe("difficulty", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(difficulty("Hard"));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton());
         expect(timer()).toHaveTextContent("5");
 
@@ -160,7 +160,7 @@ describe("difficulty", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(difficulty("Hard"));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton());
         const name = rightAnswer();
         fireEvent.load(photo());
@@ -180,7 +180,7 @@ describe("difficulty", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(difficulty("Hard"));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton());
         fireEvent.load(photo());
         tick(2);
@@ -197,7 +197,7 @@ describe("difficulty", () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(difficulty("Expert"));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         await user.click(startButton());
         expect(document.querySelector(".Game-options")).toBeNull();
         const input = screen.getByRole("textbox", { name: "Monkey's name" });
@@ -222,7 +222,7 @@ describe("difficulty", () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(difficulty("Expert"));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         await user.click(startButton());
         await user.keyboard("1");
         expect(screen.getByRole("textbox", { name: "Monkey's name" })).toHaveValue("1");
@@ -235,7 +235,7 @@ describe("difficulty", () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(difficulty("Hard"));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         await user.click(startButton());
         // Play a round quickly by always choosing the right answer
         for (let i = 0; i < 10; i++) {
@@ -287,7 +287,7 @@ describe("right / wrong indicators", () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(screen.getByRole("radio", { name: "Expert" }));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         await user.click(startButton());
         // Skip ahead to a name long enough for a one-letter slip to count
         let name = rightAnswer();
@@ -303,8 +303,8 @@ describe("right / wrong indicators", () => {
     });
 });
 
-describe("changing difficulty waits for New round", () => {
-    test("the round in progress carries on until New round is pressed", async () => {
+describe("changing difficulty waits for Apply", () => {
+    test("the round in progress carries on until Apply is pressed", async () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(startButton());
@@ -319,14 +319,14 @@ describe("changing difficulty waits for New round", () => {
         expect(screen.getByRole("status")).toHaveTextContent(`Correct! It's ${name}`);
         // ...and it's clear what to press
         expect(document.querySelector(".Game-hint")).toHaveTextContent(
-            "Starts when you press New round"
+            "Press Apply to use these settings"
         );
-        expect(newRoundButton()).toHaveClass("is-waiting");
+        expect(applyButton()).toHaveClass("is-waiting");
 
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         expect(screen.getByRole("textbox", { name: "Monkey's name" })).toBeInTheDocument();
         expect(document.querySelector(".Game-score")).toHaveTextContent("Score0");
-        expect(newRoundButton()).not.toHaveClass("is-waiting");
+        expect(applyButton()).not.toHaveClass("is-waiting");
         expect(document.querySelector(".Game-hint")).toHaveTextContent("Type the name");
     });
 
@@ -335,7 +335,7 @@ describe("changing difficulty waits for New round", () => {
         render(<Game />);
         expect(document.querySelector(".Game")).toHaveAttribute("data-level", "normal");
         await user.click(screen.getByRole("radio", { name: "Hard" }));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         expect(document.querySelector(".Game")).toHaveAttribute("data-level", "hard");
         expect(screen.getByRole("radio", { name: "Hard" })).toHaveAttribute("data-level", "hard");
     });
@@ -351,7 +351,7 @@ describe("Expert timer", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(screen.getByRole("radio", { name: "Expert" }));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton());
         const timer = () => screen.getByRole("timer");
         expect(timer()).toHaveTextContent("14");
@@ -376,11 +376,12 @@ describe("Expert timer", () => {
         expect(hint()).toHaveTextContent("Normal mode: Multiple choice, 30 second timer");
         await user.click(screen.getByRole("radio", { name: "Hard" }));
         expect(hint()).toHaveTextContent(
-            "Hard mode: Multiple choice, 5 second timer. Starts when you press New round."
+            "Hard mode: Multiple choice, 5 second timer. Press Apply to use these settings."
         );
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         expect(hint()).toHaveTextContent("Hard mode: Multiple choice, 5 second timer");
-        expect(hint()).not.toHaveTextContent("Starts when");
+        expect(hint()).not.toHaveTextContent("Press Apply");
+        expect(hint()).toHaveTextContent("Press Start to begin.");
     });
 });
 
@@ -413,7 +414,7 @@ describe("results screen", () => {
         render(<Game />);
         if (level) {
             fireEvent.click(screen.getByRole("radio", { name: level }));
-            fireEvent.click(newRoundButton());
+            fireEvent.click(applyButton());
         }
         // Waiting on the Start screen doesn't count towards answer times
         fireEvent.load(screen.getByAltText("Mystery monkey"));
@@ -469,7 +470,7 @@ describe("results screen", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(screen.getByRole("radio", { name: "Hard" }));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton());
         for (let i = 0; i < 10; i++) {
             fireEvent.load(screen.getByAltText("Mystery monkey"));
@@ -521,15 +522,39 @@ describe("Start", () => {
         expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
         expect(optionButtons()[0]).not.toBeDisabled();
 
-        await user.click(newRoundButton());
+        // Applying new settings brings back Start, ready to press
+        await user.click(screen.getByRole("radio", { name: "Hard" }));
+        await user.click(applyButton());
         expect(startButton()).toHaveFocus();
+    });
+
+    test("Apply is only available when the troop or difficulty has changed", async () => {
+        const user = userEvent.setup();
+        render(<Game />);
+        const hint = () => document.querySelector(".Game-hint");
+        expect(applyButton()).toBeDisabled();
+        expect(hint()).toHaveTextContent("Normal mode: Multiple choice, 30 second timer. Press Start to begin.");
+
+        await user.click(screen.getByRole("radio", { name: "Expert" }));
+        expect(applyButton()).not.toBeDisabled();
+        expect(hint()).toHaveTextContent(
+            "Expert mode: Type the name, 14 second timer. Press Apply to use these settings."
+        );
+
+        // Changing back to what's being played: nothing to apply again
+        await user.click(screen.getByRole("radio", { name: "Normal" }));
+        expect(applyButton()).toBeDisabled();
+
+        // Mid-round, with nothing changed, the hint is just the description
+        await user.click(startButton());
+        expect(hint()).toHaveTextContent(/^Normal mode: Multiple choice, 30 second timer$/);
     });
 
     test("Expert: the text box waits for Start", async () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(screen.getByRole("radio", { name: "Expert" }));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         const input = screen.getByRole("textbox", { name: "Monkey's name" });
         expect(input).toBeDisabled();
         expect(input).toHaveAttribute("placeholder", "Press Start when you're ready");
@@ -544,7 +569,7 @@ test("Hard shows only names of the same sex as the monkey in the photo", async (
     const user = userEvent.setup();
     render(<Game />);
     await user.click(screen.getByRole("radio", { name: "Hard" }));
-    await user.click(newRoundButton());
+    await user.click(applyButton());
     await user.click(startButton());
     const sexesOf = (name) => new Set(monkeysArr.filter((m) => m.name === name).map((m) => m.sex));
     // Check every photo in the round
@@ -622,7 +647,7 @@ describe("quality of life", () => {
         const { unmount } = render(<Game />);
         await user.selectOptions(screen.getByRole("combobox", { name: "Troop to play" }), "Goliath");
         await user.click(screen.getByRole("radio", { name: "Hard" }));
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         unmount();
 
         render(<Game />); // e.g. coming back tomorrow
@@ -642,7 +667,7 @@ describe("quality of life", () => {
         expect(screen.getByRole("radio", { name: "Normal" })).toHaveAttribute("aria-checked", "true");
     });
 
-    test("changing troop waits for New round, like difficulty", async () => {
+    test("changing troop waits for Apply, like difficulty", async () => {
         const user = userEvent.setup();
         render(<Game />);
         await user.click(startButton());
@@ -654,16 +679,16 @@ describe("quality of life", () => {
         expect(document.querySelector(".Game-score")).toHaveTextContent("Score1");
         expect(screen.getByRole("status")).toHaveTextContent(`Correct! It's ${name}`);
         expect(document.querySelector(".Game-hint")).toHaveTextContent(
-            "Normal mode: Multiple choice, 30 second timer · Goliath. Starts when you press New round."
+            "Normal mode: Multiple choice, 30 second timer · Goliath. Press Apply to use these settings."
         );
-        expect(newRoundButton()).toHaveClass("is-waiting");
+        expect(applyButton()).toHaveClass("is-waiting");
 
-        await user.click(newRoundButton());
+        await user.click(applyButton());
         const answer = monkeysArr.find((m) =>
             m.img.includes(screen.getByAltText("Mystery monkey").getAttribute("src"))
         );
         expect(answer.troop).toBe("Goliath");
-        expect(newRoundButton()).not.toHaveClass("is-waiting");
+        expect(applyButton()).not.toHaveClass("is-waiting");
     });
 
     test("phones buzz for a wrong answer or time up, not a right one", async () => {
@@ -788,7 +813,7 @@ describe("waiting for each photo to load", () => {
         vi.useFakeTimers();
         render(<Game />);
         fireEvent.click(screen.getByRole("radio", { name: "Expert" }));
-        fireEvent.click(newRoundButton());
+        fireEvent.click(applyButton());
         fireEvent.click(startButton()); // started before the photo arrived
         const input = screen.getByRole("textbox", { name: "Monkey's name" });
         expect(input).toBeDisabled();

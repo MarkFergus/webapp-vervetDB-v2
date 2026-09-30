@@ -76,9 +76,11 @@
     margin: 16px 0 12px;
 }
 
+/* Troop, difficulty and Apply: always one row (the troop list shrinks
+   to make room on narrow screens) */
 .Game-settings {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     gap: 12px;
@@ -87,12 +89,18 @@
 }
 
 .Game-settings select {
+    flex: 0 1 auto;
+    min-width: 0;
     font-family: "Nunito Sans", sans-serif;
     color: #d1cfc7;
     background-color: #2a282a;
     border: 1px solid #434343;
     border-radius: 4px;
     padding: 4px 6px;
+}
+
+.Game-settings button {
+    flex-shrink: 0;
 }
 
 .Game-settings button {
@@ -105,9 +113,15 @@
     cursor: pointer;
 }
 
-.Game-settings button:hover {
+.Game-settings button:hover:not(:disabled) {
     color: white;
     border-color: #d1cfc7;
+}
+
+/* Apply: dimmed until the troop or difficulty has been changed */
+.Game-settings .Game-apply:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
 
 /* Difficulty: three joined buttons, the chosen one lit up */
@@ -162,7 +176,7 @@
 }
 
 /* A new difficulty is waiting: New round lights up in its colour */
-.Game-settings .Game-newRound.is-waiting {
+.Game-settings .Game-apply.is-waiting {
     color: #1f1f1f;
     font-weight: 700;
     background-color: var(--level);
@@ -310,7 +324,7 @@
     .Game-photo.is-wrong,
     .Game-feedback.is-correct,
     .Game-feedback.is-wrong,
-    .Game-settings .Game-newRound.is-waiting,
+    .Game-settings .Game-apply.is-waiting,
     .Game-end,
     .Game-start {
         animation: none;
@@ -783,5 +797,20 @@
 @media (max-width: 420px) {
     .Game-options {
         grid-template-columns: 1fr;
+    }
+
+    /* Keep the troop / difficulty / Apply row on one line */
+    .Game-settings {
+        gap: 6px;
+        font-size: 13px;
+    }
+
+    .Game-settings select {
+        max-width: 110px;
+        padding: 4px 2px;
+    }
+
+    .Game-settings button {
+        padding: 4px 7px;
     }
 }

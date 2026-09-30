@@ -93,8 +93,8 @@ function Game() {
     const [settings, setSettings] = useState(loadSettings);
     const [round, setRound] = useState(() => newRound(settings));
     const [best, setBest] = useState(() => loadBest(settings));
-    // Troop and difficulty picked in the controls; they take effect at the
-    // next New round, so a round in progress is never cut short
+    // Troop and difficulty picked in the controls; they take effect when
+    // Apply is pressed, so a round in progress is never cut short
     const [chosenTroop, setChosenTroop] = useState(settings.troop);
     const [chosenDifficulty, setChosenDifficulty] = useState(settings.difficulty);
     // Paused because the page was hidden (another app, tab or a phone call)
@@ -392,11 +392,14 @@ function Game() {
     // A different troop or difficulty has been picked but the round hasn't
     // restarted yet
     const waiting = chosenDifficulty !== difficulty || chosenTroop !== settings.troop;
-    // e.g. "Hard mode: Multiple choice, 5 second timer · Goliath"
+    // e.g. "Hard mode: Multiple choice, 5 second timer · Goliath. Press Start to begin."
+    let nextStep = "";
+    if (waiting) nextStep = ". Press Apply to use these settings.";
+    else if (!round.started && !round.finished) nextStep = ". Press Start to begin.";
     const hint =
         chosen.description +
         (chosenTroop === "All Troops" ? "" : ` · ${chosenTroop}`) +
-        (waiting ? ". Starts when you press New round." : "");
+        nextStep;
     // Photo blurred with a button over it: before Start, or when paused
     const photoCovered = !round.started || paused;
     // Started but the photo is still downloading: show "Loading photo…"
@@ -470,13 +473,15 @@ function Game() {
                         </button>
                     ))}
                 </div>
+                {/* Only needed when the troop or difficulty has been changed */}
                 <button
                     type="button"
-                    className={waiting ? "Game-newRound is-waiting" : "Game-newRound"}
+                    className={waiting ? "Game-apply is-waiting" : "Game-apply"}
                     data-level={chosenDifficulty}
                     onClick={() => changeSettings({})}
+                    disabled={!waiting}
                 >
-                    New round
+                    Apply
                 </button>
             </div>
             <p className="Game-hint" data-level={chosenDifficulty}>
