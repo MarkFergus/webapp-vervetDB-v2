@@ -15,5 +15,8 @@ export default defineConfig({
         // Allows describe/test/expect without importing them (like Jest)
         globals: true,
         setupFiles: "./src/setupTests.js",
+        // Time limit per test. The default (5s) is too tight for the bigger
+        // tests on GitHub's servers, which are slower than a laptop
+        testTimeout: 15000,
     },
 });

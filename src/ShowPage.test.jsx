@@ -1,4 +1,4 @@
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -158,30 +158,32 @@ test("clicking outside the PDF modal closes it", async () => {
     );
 });
 
-test("unknown birth years go last in both year sort directions", async () => {
-    const { user, container } = setup();
+test("unknown birth years go last in both year sort directions", () => {
+    const { container } = setup();
     const years = () =>
         [...container.querySelectorAll(".MonkeyCard-info-year")].map(
             (el) => el.textContent
         );
     const yearButton = () => screen.getByRole("button", { name: /^Year/ });
-    // Sorting resets to page 1, so expand to every monkey after each sort
-    const showAll = async () => {
+    // Sorting resets to page 1, so expand to every monkey after each sort.
+    // fireEvent (a plain click) rather than the simulated user: much faster
+    // with 500+ cards on screen, which matters on GitHub's slower machines
+    const showAll = () => {
         let more;
         while ((more = screen.queryByRole("button", { name: "Show More" }))) {
-            await user.click(more);
+            fireEvent.click(more);
         }
     };
     const unknown = monkeysArr.filter((m) => m.year === "").length;
 
-    await user.click(yearButton());
-    await showAll();
+    fireEvent.click(yearButton());
+    showAll();
     expect(years()).toHaveLength(monkeysArr.length);
     expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
     expect(years()[0]).not.toBe("?");
 
-    await user.click(yearButton());
-    await showAll();
+    fireEvent.click(yearButton());
+    showAll();
     expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
     expect(Number(years()[0])).toBeGreaterThan(Number(years()[1]) - 1);
 });
