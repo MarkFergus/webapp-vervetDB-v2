@@ -82,10 +82,9 @@ create table private.summary_settings (
     only_row      boolean primary key default true check (only_row),
     -- who gets the summary
     send_to       text[] not null check (cardinality(send_to) >= 1),
-    -- who it's from. Until you add your own domain in Resend, it has to be
-    -- onboarding@resend.dev, and can only be sent to your Resend account's
-    -- own email address.
-    send_from     text not null default 'vervetDB <onboarding@resend.dev>',
+    -- who it's from: an address on a domain verified in Resend (without
+    -- one, only onboarding@resend.dev works, and only to your own address)
+    send_from     text not null default 'vervetDB <updates@vervetdb.com>',
     -- times in the email are shown in this time zone
     time_zone     text not null default 'Africa/Johannesburg',
     -- the "Open vervetDB" link at the bottom of the email

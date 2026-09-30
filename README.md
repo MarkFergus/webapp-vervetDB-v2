@@ -68,7 +68,7 @@ Every account added this way is an editor automatically ([`supabase/new-editors.
 - **Remove someone:** Authentication → Users → **…** → **Delete user**.
 - **Make someone view-only** (they can sign in but not edit):
   `delete from public.editors where user_id = (select id from auth.users where email = 'them@example.com');`
-- Supabase's built-in email sender only sends a few emails an hour (invites and password resets together). That's plenty for occasional use; connecting it to Resend with a verified domain removes the limit.
+- Invitation and password emails come from **vervetDB <noreply@vervetdb.com>**, sent through Resend (Supabase **Authentication → Emails → SMTP Settings**: host `smtp.resend.com`, port 465, username `resend`, password = a Resend API key). Up to 30 an hour; change it under **Authentication → Rate Limits**.
 
 ### Adding a troop
 
@@ -91,7 +91,7 @@ Run these in **Supabase → SQL Editor → New query**:
 | Change the time (UTC, `'minute hour * * *'`) | `select cron.schedule('vervetdb-daily-summary', '0 16 * * *', $$select private.send_daily_summary()$$);` |
 | Replace the Resend API key | `select vault.update_secret((select id from vault.secrets where name = 'resend_api_key'), 're_new_key');` |
 
-- Emails come from `onboarding@resend.dev` and can only go to the Resend account's own address (currently `github@accounts.markfergus.com`). To send to anyone else, verify the domain at [resend.com/domains](https://resend.com/domains) and change the sender: `update private.summary_settings set send_from = 'vervetDB <vervetdb@markfergus.com>';`
+- Summaries come from **vervetDB <updates@vervetdb.com>** (vervetdb.com is verified in Resend, so they can go to any address). Add someone: `update private.summary_settings set send_to = send_to || 'someone@example.com';`
 - Only changes made after the script was run are recorded.
 - The history and settings are in a `private` schema that the website can't reach.
 
@@ -103,7 +103,7 @@ The live site updates automatically: **push to `master` and GitHub does the rest
 - To redeploy without a new commit: **Actions → Test and deploy → Run workflow**.
 - Pushes to other branches run the tests only.
 
-**The domain:** GitHub Pages serves the site at **vervetdb.com** (repository **Settings → Pages → Custom domain**, with "Enforce HTTPS" on). The domain's DNS points at GitHub: four `A` records for `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a `CNAME` for `www` → `markfergus.github.io`. The old address, markfergus.github.io/webapp-vervetDB-v2/, redirects to it automatically. If the address ever changes, also update Supabase's **Authentication → URL Configuration** and `site_url` in `private.summary_settings`.
+**The domain:** vervetdb.com is registered with Namecheap. GitHub Pages serves the site at **vervetdb.com** (repository **Settings → Pages → Custom domain**, with "Enforce HTTPS" on). The domain's DNS points at GitHub: four `A` records for `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a `CNAME` for `www` → `markfergus.github.io`. The old address, markfergus.github.io/webapp-vervetDB-v2/, redirects to it automatically. The domain's other DNS records (`send`, `resend._domainkey`, `_dmarc`, and Mail Settings set to Custom MX) are for sending email through Resend; leave them in place. If the address ever changes, also update Supabase's **Authentication → URL Configuration** and `site_url` in `private.summary_settings`.
 
 ## Making a change (Git routine)
 
