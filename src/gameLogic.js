@@ -12,7 +12,7 @@ const LEVELS = [
     { id: "normal", label: "Normal", answer: "Multiple choice", seconds: 30, sameSexChoices: false },
     { id: "hard", label: "Hard", answer: "Multiple choice", seconds: 5, sameSexChoices: true },
     // Longer than Hard: typing takes a while, especially on a phone
-    { id: "expert", label: "Expert", answer: "Type the name", seconds: 14, sameSexChoices: true },
+    { id: "expert", label: "Expert", answer: "Type the name", seconds: 12, sameSexChoices: true },
 ];
 
 export const DIFFICULTIES = LEVELS.map((level) => ({
@@ -25,6 +25,34 @@ export const DIFFICULTIES = LEVELS.map((level) => ({
 
 export function difficultyById(id) {
     return DIFFICULTIES.find((d) => d.id === id);
+}
+
+// How long a round is: 10 photos, or every playable monkey in the chosen
+// troops once (with a streak counter)
+export const ROUND_LENGTHS = [
+    { id: "ten", label: "10 photos", description: "A quick round" },
+    { id: "all", label: "All photos", description: "Every monkey once" },
+];
+
+// The chosen troops, as a list: [] means every troop. Also accepts a single
+// troop name, or "All Troops".
+export function troopList(troops) {
+    if (!troops || troops === "All Troops") return [];
+    return Array.isArray(troops) ? troops : [troops];
+}
+
+// For headings and sharing: "Lankora + Skunkey", "5 troops", or "" for all
+export function troopsLabel(troops) {
+    const list = troopList(troops);
+    if (list.length > 3) return `${list.length} troops`;
+    return list.join(" + ");
+}
+
+// e.g. "Hard mode · Lankora + Skunkey" (the troops left out when it's all of them)
+export function modeLabel(difficulty, troops) {
+    const label = `${difficultyById(difficulty).label} mode`;
+    const which = troopsLabel(troops);
+    return which ? `${label} · ${which}` : label;
 }
 
 // Results screen headline, by difficulty and share of photos right.
@@ -71,9 +99,8 @@ export function resultMessage(score, outOf, difficulty) {
 // (shown as emoji, so nothing gives away which monkeys they were)
 const OUTCOME_EMOJI = { right: "✅", wrong: "❌", timeout: "⏰" };
 
-export function shareText({ score, outOf, difficulty, troop, averageSeconds, outcomes, url }) {
-    const level = difficultyById(difficulty);
-    const mode = troop === "All Troops" ? `${level.label} mode` : `${level.label} mode · ${troop}`;
+export function shareText({ score, outOf, difficulty, troops, averageSeconds, outcomes, url }) {
+    const mode = modeLabel(difficulty, troops);
     const time = averageSeconds ? ` ⏱ ${averageSeconds}s average` : "";
     return [
         "🐒 vervetDB · Guess the Monkey",
@@ -133,12 +160,18 @@ export function checkTypedAnswer(typed, name) {
 
 const isRealPhoto = (url) => !url.includes("blank-image");
 
-// Monkeys that can be the answer: they need at least one real photo
-export function playableMonkeys(monkeys, troop = "All Troops") {
+// Troops of samango monkeys, a different species from the vervets. In Hard
+// (and Expert), a samango's wrong names are other samangos and a vervet's
+// are other vervets, so the species doesn't give the answer away.
+export const SAMANGO_TROOPS = ["Jalamango"];
+const isSamango = (monkey) => SAMANGO_TROOPS.includes(monkey.troop);
+
+// Monkeys that can be the answer: they need at least one real photo.
+// troops: the chosen troops ([] or "All Troops" = every troop)
+export function playableMonkeys(monkeys, troops = []) {
+    const list = troopList(troops);
     return monkeys.filter(
-        (m) =>
-            m.img.some(isRealPhoto) &&
-            (troop === "All Troops" || m.troop === troop)
+        (m) => m.img.some(isRealPhoto) && (!list.length || list.includes(m.troop))
     );
 }
 
@@ -156,34 +189,37 @@ function shuffle(list, random) {
 }
 
 // One question: a photo of `answer`, plus 4 different names to choose from.
-// When practising one troop, the wrong names come from that troop too;
-// otherwise from any troop. With `sameSex`, wrong names of the answer's sex
-// come first (topped up with others if there aren't enough).
+// When practising chosen troops, the wrong names come from those troops too;
+// otherwise from any troop. With `sameSex` (Hard and Expert), wrong names
+// are the same species as the answer and its sex first; if there aren't
+// enough, they're topped up with the other sex, then other species. (There
+// are only 6 samangos: a samango gets its 2 same-sex troop-mates and 1 of the
+// other sex.)
 // `exclude` avoids repeating answers in a round.
 export function makeQuestion(
     monkeys,
-    { troop = "All Troops", sameSex = false, exclude = [], random = Math.random } = {}
+    { troops = [], troop, sameSex = false, exclude = [], random = Math.random } = {}
 ) {
-    const pool = playableMonkeys(monkeys, troop);
+    const list = troopList(troop ?? troops);
+    const pool = playableMonkeys(monkeys, list);
     const fresh = pool.filter((m) => !exclude.includes(m));
     const answer = pick(fresh.length ? fresh : pool, random);
     if (!answer) return null;
 
-    const sameTroop = troop !== "All Troops";
     let candidates = shuffle(
         monkeys.filter(
-            (m) =>
-                m.name !== answer.name &&
-                (!sameTroop || m.troop === answer.troop)
+            (m) => m.name !== answer.name && (!list.length || list.includes(m.troop))
         ),
         random
     );
-    if (sameSex && answer.sex) {
-        // Same sex first; the rest only used if there aren't enough
-        candidates = [
-            ...candidates.filter((m) => m.sex === answer.sex),
-            ...candidates.filter((m) => m.sex !== answer.sex),
-        ];
+    if (sameSex) {
+        // 0 = same species and sex, 1 = same species, other sex,
+        // 2 / 3 = the same for the other species. The sort keeps the shuffled
+        // order within each group.
+        const rank = (m) =>
+            (isSamango(m) === isSamango(answer) ? 0 : 2) +
+            (answer.sex && m.sex !== answer.sex ? 1 : 0);
+        candidates.sort((a, b) => rank(a) - rank(b));
     }
     // Names must all be different (two monkeys can share a name)
     const wrongNames = [...new Set(candidates.map((m) => m.name))].slice(

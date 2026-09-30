@@ -76,118 +76,245 @@
     margin: 16px 0 12px;
 }
 
-/* Troop, difficulty and Apply: always one row (the troop list shrinks
-   to make room on narrow screens) */
-.Game-settings {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
+/* Setup screen: a line of instructions under the title… */
+.Game-intro {
+    margin: -6px 0 20px;
+    text-align: center;
     font-size: 14px;
-    margin-bottom: 20px;
+    color: #b6b2a5;
 }
 
-.Game-settings select {
-    flex: 0 1 auto;
+/* …then troops, difficulty, round length, and Start */
+.Game-setup {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.Game-setup-section {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: none;
     min-width: 0;
-    font-family: "Nunito Sans", sans-serif;
-    color: #d1cfc7;
-    background-color: #2a282a;
-    border: 1px solid #434343;
-    border-radius: 4px;
-    padding: 4px 6px;
 }
 
-.Game-settings button {
-    flex-shrink: 0;
+.Game-setup-section legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #b6b2a5;
 }
 
-.Game-settings button {
+/* "44 monkeys", at the right of the Troops heading */
+.Game-setup-count {
+    font-size: 13px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #86e1ff;
+}
+
+.Game-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.Game-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 5px 12px;
     font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
     color: #d1cfc7;
     background: none;
     border: 1px solid #434343;
-    border-radius: 4px;
-    padding: 4px 10px;
+    border-radius: 999px;
     cursor: pointer;
 }
 
-.Game-settings button:hover:not(:disabled) {
+.Game-chip small {
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.Game-chip.is-all {
+    border-style: dashed;
+}
+
+.Game-chip:hover:not(:disabled) {
     color: white;
     border-color: #d1cfc7;
 }
 
-/* Apply: dimmed until the troop or difficulty has been changed */
-.Game-settings .Game-apply:disabled {
+.Game-chip[aria-pressed="true"] {
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border-color: #25c4f8;
+    border-style: solid;
+}
+
+.Game-chip[aria-pressed="true"] small {
+    color: #1f1f1f;
+    opacity: 0.7;
+}
+
+.Game-chip:disabled {
     opacity: 0.35;
     cursor: default;
 }
 
-/* Difficulty: three joined buttons, the chosen one lit up */
-.Game-difficulty {
+/* Difficulty and round: cards, the chosen one lit up */
+.Game-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.Game-cards.is-three {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.Game-card {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    font-family: "Nunito Sans", sans-serif;
+    color: #d1cfc7;
+    text-align: center;
+    background: none;
+    border: 2px solid #434343;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
-/* The buttons overlap by 1px so they share one border line. The hovered,
-   selected or focused button is brought to the front so all four of its
-   edges show (otherwise its right edge sits under the next button). */
-.Game-difficulty button {
-    position: relative;
-    border-radius: 0;
-    margin-left: -1px;
+.Game-card b {
+    font-size: 16px;
 }
 
-.Game-difficulty button:hover,
-.Game-difficulty button:focus-visible {
-    z-index: 2;
+.Game-card span {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #b6b2a5;
 }
 
-.Game-difficulty button[aria-checked="true"] {
-    z-index: 1;
+.Game-card.is-round {
+    align-items: flex-start;
+    text-align: left;
+    padding: 10px 12px;
 }
 
-.Game-difficulty button:first-child {
-    border-radius: 4px 0 0 4px;
-    margin-left: 0;
+.Game-card:hover {
+    border-color: #6b6966;
 }
 
-.Game-difficulty button:last-child {
-    border-radius: 0 4px 4px 0;
+/* Difficulty: in its own colour */
+.Game-card[aria-checked="true"] {
+    border-color: var(--level);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--level) 35%, transparent);
 }
 
-.Game-difficulty button[aria-checked="true"] {
+.Game-card[aria-checked="true"] b {
+    color: var(--level);
+}
+
+/* Expert, when chosen: a bigger glow that flickers like fire */
+.Game-card[data-level="expert"][aria-checked="true"] {
+    border-color: #ff6b1a;
+    animation: Game-fire 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes Game-fire {
+    0% {
+        box-shadow:
+            0 0 10px rgba(255, 107, 26, 0.7),
+            0 0 24px rgba(255, 60, 0, 0.45),
+            0 -4px 32px rgba(255, 180, 60, 0.25);
+    }
+    35% {
+        box-shadow:
+            0 0 14px rgba(255, 140, 40, 0.8),
+            0 0 32px rgba(255, 70, 0, 0.55),
+            0 -8px 40px rgba(255, 200, 80, 0.35);
+    }
+    70% {
+        box-shadow:
+            0 0 12px rgba(255, 90, 20, 0.75),
+            0 0 28px rgba(230, 50, 0, 0.5),
+            0 -6px 36px rgba(255, 170, 50, 0.3);
+    }
+    100% {
+        box-shadow:
+            0 0 16px rgba(255, 120, 30, 0.85),
+            0 0 38px rgba(255, 60, 0, 0.6),
+            0 -10px 46px rgba(255, 210, 90, 0.4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Game-card[data-level="expert"][aria-checked="true"] {
+        animation: none;
+        box-shadow:
+            0 0 14px rgba(255, 120, 30, 0.8),
+            0 0 32px rgba(255, 60, 0, 0.5);
+    }
+}
+
+/* Round length: blue, like the troops */
+.Game-card.is-round[aria-checked="true"] {
+    border-color: #25c4f8;
+    box-shadow: none;
+}
+
+.Game-card.is-round[aria-checked="true"] b {
+    color: #25c4f8;
+}
+
+.Game-setup-start {
+    padding: 14px;
+    font-family: "Russo One", sans-serif;
+    font-size: 24px;
     color: #1f1f1f;
     background-color: var(--level);
-    border-color: var(--level);
-    font-weight: 700;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 0 24px color-mix(in srgb, var(--level) 55%, transparent);
 }
 
-.Game-difficulty button[aria-checked="false"]:hover {
-    color: var(--level);
-    border-color: var(--level);
+.Game-setup-start:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
 }
 
-.Game-hint {
+.Game-setup-start:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.Game-setup-start:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.Game-setup-best {
+    margin: -8px 0 0;
     text-align: center;
     font-size: 13px;
-    color: var(--level);
-    margin: -8px 0 16px;
+    color: #b6b2a5;
 }
 
-/* A new difficulty is waiting: New round lights up in its colour */
-.Game-settings .Game-apply.is-waiting {
-    color: #1f1f1f;
-    font-weight: 700;
-    background-color: var(--level);
-    border-color: var(--level);
-    animation: Game-waiting 1.2s ease-in-out infinite;
-}
-
-@keyframes Game-waiting {
-    50% {
-        box-shadow: 0 0 12px var(--level);
-    }
+.Game-setup-best b {
+    color: white;
 }
 
 /* Photo count on the left, timer in the middle, big score on the right */
@@ -324,7 +451,6 @@
     .Game-photo.is-wrong,
     .Game-feedback.is-correct,
     .Game-feedback.is-wrong,
-    .Game-settings .Game-apply.is-waiting,
     .Game-end,
     .Game-start {
         animation: none;
@@ -646,7 +772,8 @@
     animation: Game-banner 0.3s ease-out;
 }
 
-.Game-end-mode {
+/* "Hard mode · Lankora + Skunkey": above the game and on the results */
+.Game-mode {
     display: inline-block;
     margin: 0;
     padding: 4px 12px;
@@ -657,6 +784,38 @@
     color: #1f1f1f;
     background-color: var(--level);
     border-radius: 999px;
+}
+
+/* The mode badge, with "Change settings" underneath */
+.Game-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 14px 0 12px;
+}
+
+.Game-change {
+    padding: 2px 4px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    color: #25c4f8;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Game-change:hover {
+    color: #86e1ff;
+    text-decoration: underline;
+}
+
+/* All photos: right answers in a row, under the photo count */
+.Game-streak {
+    display: block;
+    margin-top: 2px;
+    font-weight: 700;
+    color: #ffb454;
 }
 
 .Game-end-message {
@@ -755,6 +914,18 @@
     filter: brightness(1.15);
 }
 
+/* Save image: outlined in the level's colour, beside the filled Share */
+.Game-share.is-quiet {
+    color: var(--level);
+    background: none;
+}
+
+.Game-share:disabled {
+    opacity: 0.5;
+    cursor: default;
+    filter: none;
+}
+
 .Game-share svg {
     width: 20px;
     height: 20px;
@@ -800,13 +971,7 @@
         margin: 10px 0 8px;
     }
 
-    .Game-settings {
-        margin-bottom: 14px;
-    }
 
-    .Game-hint {
-        margin: -6px 0 10px;
-    }
 
     .Game-scoreboard {
         margin-bottom: 8px;
@@ -844,19 +1009,24 @@
     }
 }
 
+@media (max-width: 600px) {
+    .Game-chips {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .Game-chip {
+        justify-content: center;
+        padding: 6px 8px;
+    }
+}
+
 @media (max-width: 420px) {
-    /* Keep the troop / difficulty / Apply row on one line */
-    .Game-settings {
+    .Game-cards.is-three {
         gap: 6px;
-        font-size: 13px;
     }
 
-    .Game-settings select {
-        max-width: 110px;
-        padding: 4px 2px;
-    }
-
-    .Game-settings button {
-        padding: 4px 7px;
+    .Game-card {
+        padding: 8px 4px;
     }
 }

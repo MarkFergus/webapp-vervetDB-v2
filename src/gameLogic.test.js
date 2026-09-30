@@ -3,6 +3,8 @@ import {
     averageSeconds,
     resultMessage,
     shareText,
+    troopsLabel,
+    modeLabel,
     checkTypedAnswer,
     DIFFICULTIES,
     makeQuestion,
@@ -70,6 +72,39 @@ test("practising one troop only asks about that troop", () => {
     }
 });
 
+test("practising several troops asks about, and offers names from, only those troops", () => {
+    const chosen = ["Lankora", "Jalamango"];
+    const names = new Set([...namesInTroop("Lankora"), ...namesInTroop("Jalamango")]);
+    const seen = new Set();
+    for (const q of many({ troops: chosen }, 100)) {
+        expect(chosen).toContain(q.answer.troop);
+        expect(q.options.every((n) => names.has(n))).toBe(true);
+        seen.add(q.answer.troop);
+    }
+    expect(seen).toEqual(new Set(chosen)); // both troops come up
+});
+
+test("playable monkeys: every troop, one troop, or several", () => {
+    const all = playableMonkeys(monkeysArr);
+    expect(playableMonkeys(monkeysArr, [])).toEqual(all);
+    expect(playableMonkeys(monkeysArr, "All Troops")).toEqual(all);
+    const lankora = playableMonkeys(monkeysArr, ["Lankora"]);
+    const jalamango = playableMonkeys(monkeysArr, "Jalamango");
+    expect(playableMonkeys(monkeysArr, ["Lankora", "Jalamango"])).toHaveLength(
+        lankora.length + jalamango.length
+    );
+});
+
+test("labels for the chosen troops and the mode", () => {
+    expect(troopsLabel([])).toBe("");
+    expect(troopsLabel(["Goliath"])).toBe("Goliath");
+    expect(troopsLabel(["Lankora", "Skunkey"])).toBe("Lankora + Skunkey");
+    expect(troopsLabel(["A", "B", "C"])).toBe("A + B + C");
+    expect(troopsLabel(["A", "B", "C", "D"])).toBe("4 troops");
+    expect(modeLabel("hard", ["Lankora", "Skunkey"])).toBe("Hard mode · Lankora + Skunkey");
+    expect(modeLabel("expert", [])).toBe("Expert mode");
+});
+
 test("a round doesn't repeat a monkey while others are left", () => {
     const pool = playableMonkeys(monkeysArr, "Jalamango");
     const asked = [];
@@ -90,7 +125,7 @@ test("difficulty descriptions all follow the same pattern", () => {
     expect(DIFFICULTIES.map((d) => d.description)).toEqual([
         "Normal mode: Multiple choice, 30 second timer",
         "Hard mode: Multiple choice, 5 second timer",
-        "Expert mode: Type the name, 14 second timer",
+        "Expert mode: Type the name, 12 second timer",
     ]);
 });
 
@@ -131,6 +166,7 @@ describe("same-sex choices (Hard)", () => {
     test("with sameSex, every wrong name is the answer's sex (when there are enough)", () => {
         for (const q of many({ sameSex: true })) {
             if (!q.answer.sex) continue; // sex not recorded: nothing to match
+            if (q.answer.troop === "Jalamango") continue; // too few samangos: see below
             for (const name of q.options) {
                 expect(sexesOf(name).has(q.answer.sex)).toBe(true);
             }
@@ -152,6 +188,38 @@ describe("same-sex choices (Hard)", () => {
         }
     });
 
+    test("Hard: a samango's choices are all samangos, 2 of its sex and 1 of the other", () => {
+        const samangos = monkeysArr.filter((m) => m.troop === "Jalamango");
+        const sexOf = (name) => samangos.find((m) => m.name === name)?.sex;
+        let checked = 0;
+        // Samangos are rare among all troops, so ask plenty of questions
+        for (const q of many({ sameSex: true }, 3000)) {
+            if (q.answer.troop !== "Jalamango") continue;
+            checked++;
+            const wrong = q.options.filter((n) => n !== q.answer.name);
+            expect(wrong.every((n) => sexOf(n))).toBe(true); // all samangos
+            expect(wrong.filter((n) => sexOf(n) === q.answer.sex)).toHaveLength(2);
+            expect(wrong.filter((n) => sexOf(n) !== q.answer.sex)).toHaveLength(1);
+        }
+        expect(checked).toBeGreaterThan(0);
+    });
+
+    test("Hard: a vervet's choices never include samango names", () => {
+        const samangoNames = namesInTroop("Jalamango");
+        for (const q of many({ sameSex: true })) {
+            if (q.answer.troop === "Jalamango") continue;
+            expect(q.options.some((n) => samangoNames.has(n))).toBe(false);
+        }
+    });
+
+    test("Normal is unchanged: names can come from any troop", () => {
+        const samangoNames = namesInTroop("Jalamango");
+        const mixed = many({}, 3000).some(
+            (q) => q.answer.troop !== "Jalamango" && q.options.some((n) => samangoNames.has(n))
+        );
+        expect(mixed).toBe(true);
+    });
+
     test("only Hard and Expert use same-sex choices", () => {
         expect(DIFFICULTIES.map((d) => [d.id, d.sameSexChoices])).toEqual([
             ["normal", false],
@@ -171,7 +239,7 @@ describe("share text", () => {
     };
 
     test("Wordle-style summary with mode, score, message, time and a row of results", () => {
-        expect(shareText({ ...base, difficulty: "expert", troop: "Goliath" })).toBe(
+        expect(shareText({ ...base, difficulty: "expert", troops: ["Goliath"] })).toBe(
             [
                 "🐒 vervetDB · Guess the Monkey",
                 "Expert mode · Goliath",
@@ -182,13 +250,15 @@ describe("share text", () => {
         );
     });
 
-    test("All Troops just shows the mode", () => {
-        const text = shareText({ ...base, difficulty: "normal", troop: "All Troops" });
+    test("all troops just shows the mode; several troops are listed", () => {
+        const text = shareText({ ...base, difficulty: "normal", troops: [] });
         expect(text.split("\n")[1]).toBe("Normal mode");
+        const two = shareText({ ...base, difficulty: "hard", troops: ["Lankora", "Skunkey"] });
+        expect(two.split("\n")[1]).toBe("Hard mode · Lankora + Skunkey");
     });
 
     test("never includes monkey names", () => {
-        const text = shareText({ ...base, difficulty: "hard", troop: "All Troops" });
+        const text = shareText({ ...base, difficulty: "hard", troops: [] });
         const names = monkeysArr.map((m) => m.name).filter((n) => n.length > 3);
         expect(names.filter((n) => text.includes(n))).toEqual([]);
     });

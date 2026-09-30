@@ -1,31 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     IconCheck,
     IconCircleCheckFilled,
     IconCircleXFilled,
+    IconDownload,
     IconShare,
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyIcon from "./MonkeyIcon";
+import { drawResultImage } from "./resultImage";
 import {
     averageSeconds,
     checkTypedAnswer,
     DIFFICULTIES,
     difficultyById,
     makeQuestion,
+    modeLabel,
     playableMonkeys,
     QUESTIONS_PER_ROUND,
     resultMessage,
+    ROUND_LENGTHS,
     shareText,
 } from "./gameLogic";
 import "./Game.css";
 
-// Best score per troop and difficulty, remembered in this browser only.
-// (Normal keeps the original key so earlier best scores aren't lost.)
-function bestKey({ troop, difficulty }) {
-    const base = `vervetdb-game-best:${troop}`;
-    return difficulty === "normal" ? base : `${base}:${difficulty}`;
+// Best score for each set-up (troops, difficulty and round length),
+// remembered in this browser only. Keys match the ones used before the setup
+// screen, so earlier best scores aren't lost: one troop or all troops, and
+// Normal has no difficulty on the end.
+function bestKey({ troops, difficulty, length }) {
+    const which = troops.length ? [...troops].sort().join("+") : "All Troops";
+    const base = `vervetdb-game-best:${which}`;
+    const key = difficulty === "normal" ? base : `${base}:${difficulty}`;
+    return length === "all" ? `${key}:all` : key;
 }
 function loadBest(settings) {
     try {
@@ -42,21 +50,28 @@ function saveBest(settings, score) {
     }
 }
 
-// The troop and difficulty last played, so returning players carry on where
-// they left off (this browser only)
+// The set-up last played, so returning players carry on where they left off
+// (this browser only).
+//   troops:     chosen troop names ([] = all troops)
+//   difficulty: "normal" | "hard" | "expert"
+//   length:     "ten" | "all"
 const SETTINGS_KEY = "vervetdb-game-settings";
-const DEFAULT_SETTINGS = { troop: "All Troops", difficulty: "normal" };
-function loadSettings(troops) {
+const DEFAULT_SETTINGS = { troops: [], difficulty: "normal", length: "ten" };
+function loadSettings(troopNames) {
     try {
-        const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
-        // Ignore anything out of date, e.g. a troop that's since been renamed
-        if (troops.includes(saved?.troop) && difficultyById(saved?.difficulty)) {
-            return { troop: saved.troop, difficulty: saved.difficulty };
-        }
+        const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {};
+        // Saved before the setup screen: one troop, as "troop"
+        const troops = Array.isArray(saved.troops) ? saved.troops : [saved.troop];
+        return {
+            // Anything out of date is dropped, e.g. a troop since renamed
+            troops: troops.filter((t) => troopNames.includes(t)),
+            difficulty: difficultyById(saved.difficulty) ? saved.difficulty : "normal",
+            length: ROUND_LENGTHS.some((l) => l.id === saved.length) ? saved.length : "ten",
+        };
     } catch {
         // storage unavailable or unreadable: use the defaults
+        return DEFAULT_SETTINGS;
     }
-    return DEFAULT_SETTINGS;
 }
 function saveSettings(settings) {
     try {
@@ -77,8 +92,14 @@ function buzz() {
 }
 
 // What makeQuestion needs from the game settings
-function questionSettings({ troop, difficulty }) {
-    return { troop, sameSex: difficultyById(difficulty).sameSexChoices };
+function questionSettings({ troops, difficulty }) {
+    return { troops, sameSex: difficultyById(difficulty).sameSexChoices };
+}
+
+// Photos in a round with these settings
+function roundLength(monkeys, { troops, length }) {
+    const available = playableMonkeys(monkeys, troops).length;
+    return length === "all" ? available : Math.min(QUESTIONS_PER_ROUND, available);
 }
 
 function preload(question) {
@@ -90,19 +111,24 @@ let nextRoundId = 1;
 // monkeys / troops: the data to play with (from the database, via App).
 // Defaults to the built-in copy, e.g. in tests.
 function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }) {
-    // settings: what the current round is played with
-    const [settings, setSettings] = useState(() => loadSettings(troops));
-    const [round, setRound] = useState(() => newRound(settings));
-    const [best, setBest] = useState(() => loadBest(settings));
-    // Troop and difficulty picked in the controls; they take effect when
-    // Apply is pressed, so a round in progress is never cut short
-    const [chosenTroop, setChosenTroop] = useState(settings.troop);
-    const [chosenDifficulty, setChosenDifficulty] = useState(settings.difficulty);
+    const troopNames = troops.filter((t) => t !== "All Troops");
+    // "setup" (choosing troops, difficulty and round length) or "playing"
+    const [stage, setStage] = useState("setup");
+    // settings: what the current round is played with; draft: what's being
+    // chosen on the setup screen (used when Start is pressed)
+    const [settings, setSettings] = useState(() => loadSettings(troopNames));
+    const [draft, setDraft] = useState(settings);
+    // The round being played (null until the first Start)
+    const [round, setRound] = useState(null);
+    const [best, setBest] = useState(0);
     // Paused because the page was hidden (another app, tab or a phone call)
     const [paused, setPaused] = useState(false);
     const pausedAt = useRef(null);
     // After pressing Share on a computer: "copied" or "failed"
     const [shareStatus, setShareStatus] = useState(null);
+    // The results as a picture (a PNG File), made when the round ends so
+    // Share and Save image respond straight away
+    const [resultImage, setResultImage] = useState(null);
     // Countdown for each photo; it only starts once the photo has loaded
     const [secondsLeft, setSecondsLeft] = useState(
         () => difficultyById(settings.difficulty).seconds ?? 0
@@ -115,6 +141,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     const firstOptionRef = useRef(null);
     const typedInputRef = useRef(null);
     const startButtonRef = useRef(null);
+    const setupStartRef = useRef(null);
     const scoreboardRef = useRef(null);
     // When the current photo appeared, for timing answers
     const photoShownAt = useRef(Date.now());
@@ -122,20 +149,17 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     const { difficulty } = settings;
     const level = difficultyById(difficulty);
 
-    // A round is short if a troop has fewer photos than QUESTIONS_PER_ROUND
+    // A 10-photo round is shorter if the troops have fewer photos than that
     function newRound(s) {
-        const length = Math.min(
-            QUESTIONS_PER_ROUND,
-            playableMonkeys(monkeys, s.troop).length
-        );
         const question = makeQuestion(monkeys, questionSettings(s));
         return {
             id: nextRoundId++,
-            // The first photo waits, blurred, until Start is pressed
-            started: false,
-            length,
+            length: roundLength(monkeys, s),
             number: 1,
             score: 0,
+            // Right answers in a row, and the most this round
+            streak: 0,
+            bestStreak: 0,
             // Seconds taken on each photo answered
             times: [],
             // "right" | "wrong" | "timeout" for each photo, for sharing
@@ -159,16 +183,10 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         photoShownAt.current = Date.now();
     }
 
+    // The clock starts once the photo has loaded
     function handlePhotoShown() {
-        // Before Start, the clock starts when Start is pressed instead
-        if (round.started) photoShownAt.current = Date.now();
-        setPhotoReady(true);
-    }
-
-    function start() {
-        if (round.started || round.finished) return;
         photoShownAt.current = Date.now();
-        setRound({ ...round, started: true });
+        setPhotoReady(true);
     }
 
     function resume() {
@@ -178,9 +196,8 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         setPaused(false);
     }
 
-    // Starts a new round with the chosen troop and difficulty
-    function changeSettings(change) {
-        const s = { troop: chosenTroop, difficulty: chosenDifficulty, ...change };
+    // Starts a round: from the setup screen, or Play again with the same settings
+    function startRound(s) {
         setSettings(s);
         saveSettings(s);
         setRound(newRound(s));
@@ -188,20 +205,49 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         setPaused(false);
         setShareStatus(null);
         resetForNewPhoto(s.difficulty);
+        setStage("playing");
     }
 
-    // Phones (and some computers) open their share menu; otherwise the
-    // text is copied, ready to paste into a message
+    // Back to the setup screen, with the current settings chosen
+    function changeSetup() {
+        setDraft(settings);
+        setPaused(false);
+        setStage("setup");
+    }
+
+    // Setup screen: tapping a troop adds or removes it; "All troops" clears
+    // the choice (no troops chosen = all of them)
+    function toggleTroop(name) {
+        const chosen = draft.troops.includes(name)
+            ? draft.troops.filter((t) => t !== name)
+            : [...draft.troops, name];
+        // Kept in the troop list's order, so labels read the same way each time
+        setDraft({ ...draft, troops: troopNames.filter((t) => chosen.includes(t)) });
+    }
+
+    // Phones open their share menu with the picture and the text (or just the
+    // text if they can't share pictures); computers copy the text, ready to
+    // paste into a message
     async function shareResult() {
         const text = shareText({
             score: round.score,
             outOf: round.length,
             difficulty,
-            troop: settings.troop,
+            troops: settings.troops,
             averageSeconds: averageSeconds(round.times),
             outcomes: round.outcomes,
             url: `${window.location.origin}${window.location.pathname}#game`,
         });
+        const files = resultImage ? [resultImage] : [];
+        if (files.length && navigator.canShare?.({ files })) {
+            try {
+                await navigator.share({ files, text });
+                return;
+            } catch (err) {
+                if (err.name === "AbortError") return; // closed the share menu
+                // Couldn't share the picture: try the text on its own
+            }
+        }
         if (navigator.share) {
             try {
                 await navigator.share({ text });
@@ -217,6 +263,19 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         } catch {
             setShareStatus("failed");
         }
+    }
+
+    // Downloads the results picture
+    function saveImage() {
+        if (!resultImage) return;
+        const url = URL.createObjectURL(resultImage);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = resultImage.name;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function finishQuestion(result) {
@@ -238,10 +297,13 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                   })
                 : null;
         preload(upcoming);
+        const streak = scored ? round.streak + 1 : 0;
         setRound({
             ...round,
             result,
             score: round.score + (scored ? 1 : 0),
+            streak,
+            bestStreak: Math.max(round.bestStreak, streak),
             times: [...round.times, timeTaken],
             outcomes: [
                 ...round.outcomes,
@@ -285,8 +347,9 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         resetForNewPhoto();
     }
 
-    // A photo is being answered right now (started, not answered yet)
-    const inPlay = round.started && !round.result && !round.finished;
+    const playing = stage === "playing" && round !== null;
+    // A photo is being answered right now (not answered yet)
+    const inPlay = playing && !round.result && !round.finished;
     // Answers can be given: in play, not paused, and the photo has loaded (so
     // nobody answers while still looking at the previous photo)
     const answerable = inPlay && !paused && photoReady;
@@ -315,17 +378,16 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         return () => clearTimeout(id);
     });
 
-    // Keyboard: Enter or Space to start or resume, 1–4 to answer (not in
-    // Expert), Enter for the next photo
+    // Keyboard: Enter or Space to resume, 1–4 to answer (not in Expert),
+    // Enter for the next photo
     useEffect(() => {
         function handleKeyDown(event) {
             if (["SELECT", "INPUT"].includes(event.target.tagName)) return;
-            if (round.finished || !round.question) return;
-            if (!round.started || paused) {
+            if (!playing || round.finished || !round.question) return;
+            if (paused) {
                 if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    if (paused) resume();
-                    else start();
+                    resume();
                 }
                 return;
             }
@@ -349,7 +411,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     // preventScroll: moving focus mustn't scroll the photo out of view on phones
     const focusOn = (ref) => ref.current?.focus({ preventScroll: true });
     useEffect(() => {
-        if (!round.result) return;
+        if (!playing || !round.result) return;
         focusOn(nextButtonRef);
         // Safety net for very short windows: if Next is below the bottom
         // edge, scroll just enough to show it
@@ -357,26 +419,199 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         if (button && button.getBoundingClientRect().bottom > window.innerHeight) {
             button.scrollIntoView?.({ block: "nearest" });
         }
-    }, [round.result]);
+    }, [round?.result]);
     useEffect(() => {
-        if (round.result || round.finished) return;
-        // The Start / Resume button over the photo
-        if (!round.started || paused) focusOn(startButtonRef);
+        if (!playing || round.result || round.finished) return;
+        // The Resume button over the photo
+        if (paused) focusOn(startButtonRef);
         else if (!photoReady) return; // answers are locked until the photo shows
         else if (difficulty === "expert") focusOn(typedInputRef);
         else focusOn(firstOptionRef);
-    }, [round.id, round.number, round.started, round.result, round.finished, difficulty, paused, photoReady]);
+    }, [stage, round?.id, round?.number, round?.result, round?.finished, difficulty, paused, photoReady]);
+    // Setup screen: Start is ready to press
+    useEffect(() => {
+        if (stage === "setup") focusOn(setupStartRef);
+    }, [stage]);
 
     // New photo: if the top of the game has scrolled out of view (on a phone
     // the browser bar can cover it), bring it back so the whole photo shows
     useEffect(() => {
         const board = scoreboardRef.current;
-        if (!board || round.number === 1) return;
+        if (!board || !round || round.number === 1) return;
         if (board.getBoundingClientRect().top < 0) {
             const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
             board.scrollIntoView?.({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
         }
-    }, [round.number]);
+    }, [round?.number]);
+
+    // The round has ended: draw the results picture, ready to share or save
+    const finished = playing && round.finished;
+    useEffect(() => {
+        setResultImage(null);
+        if (!finished) return;
+        let cancelled = false;
+        drawResultImage({
+            mode: modeLabel(settings.difficulty, settings.troops),
+            difficulty: settings.difficulty,
+            message: resultMessage(round.score, round.length, settings.difficulty),
+            score: round.score,
+            outOf: round.length,
+            averageSeconds: averageSeconds(round.times),
+            bestStreak: settings.length === "all" ? round.bestStreak : null,
+            outcomes: round.outcomes,
+            site: window.location.host,
+        })
+            .then((blob) => {
+                if (cancelled) return;
+                setResultImage(new File([blob], "vervetdb-guess-the-monkey.png", { type: "image/png" }));
+            })
+            // No picture (e.g. a very old browser): Share still sends the text
+            .catch((err) => console.error("Couldn't make the results picture:", err));
+        return () => {
+            cancelled = true;
+        };
+    }, [finished, round?.id]);
+
+    // Photos with monkeys to guess, per troop, for the setup screen
+    const photosPerTroop = useMemo(() => {
+        const counts = {};
+        for (const m of playableMonkeys(monkeys)) counts[m.troop] = (counts[m.troop] ?? 0) + 1;
+        return counts;
+    }, [monkeys]);
+
+    const header = (
+        <header className="Game-header">
+            <a href="#" className="Game-home">
+                <MonkeyIcon color="currentColor" />
+                <span className="Game-home-title">vervetDB</span>
+            </a>
+            <a href="#" className="Game-back">
+                ← Back to monkeys
+            </a>
+        </header>
+    );
+
+    if (stage === "setup" || !round) {
+        const draftLevel = difficultyById(draft.difficulty);
+        const draftPhotos = roundLength(monkeys, draft);
+        const draftBest = loadBest(draft);
+        const available = playableMonkeys(monkeys, draft.troops).length;
+        return (
+            <div className="Game" data-level={draft.difficulty}>
+                {header}
+                <h1 className="Game-title">Guess The Monkey</h1>
+                <p className="Game-intro">
+                    Choose your troops and difficulty below, then press Start.
+                </p>
+
+                <div className="Game-setup">
+                    <fieldset className="Game-setup-section">
+                        <legend>
+                            Troops
+                            <span className="Game-setup-count">
+                                {draft.troops.length ? "" : "All · "}
+                                {available} {available === 1 ? "monkey" : "monkeys"}
+                            </span>
+                        </legend>
+                        <div className="Game-chips">
+                            <button
+                                type="button"
+                                className="Game-chip is-all"
+                                aria-pressed={draft.troops.length === 0}
+                                onClick={() => setDraft({ ...draft, troops: [] })}
+                            >
+                                All troops
+                            </button>
+                            {troopNames.map((name) => (
+                                <button
+                                    key={name}
+                                    type="button"
+                                    className="Game-chip"
+                                    aria-pressed={draft.troops.includes(name)}
+                                    onClick={() => toggleTroop(name)}
+                                    // No photos yet: nothing to guess
+                                    disabled={!photosPerTroop[name]}
+                                >
+                                    {name}
+                                    <small aria-hidden="true">{photosPerTroop[name] ?? 0}</small>
+                                </button>
+                            ))}
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="Game-setup-section">
+                        <legend>Difficulty</legend>
+                        <div className="Game-cards is-three" role="radiogroup" aria-label="Difficulty">
+                            {DIFFICULTIES.map((d) => (
+                                <button
+                                    key={d.id}
+                                    type="button"
+                                    role="radio"
+                                    className="Game-card"
+                                    data-level={d.id}
+                                    aria-checked={draft.difficulty === d.id}
+                                    aria-label={d.label}
+                                    aria-describedby={`Game-level-${d.id}`}
+                                    onClick={() => setDraft({ ...draft, difficulty: d.id })}
+                                >
+                                    <b>{d.label}</b>
+                                    <span id={`Game-level-${d.id}`}>
+                                        {d.answer}
+                                        <br />
+                                        {d.seconds} second timer
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="Game-setup-section">
+                        <legend>Round</legend>
+                        <div className="Game-cards" role="radiogroup" aria-label="Round">
+                            {ROUND_LENGTHS.map((l) => {
+                                // "All 44 photos": how many the chosen troops have
+                                const label = l.id === "all" ? `All ${available} photos` : l.label;
+                                return (
+                                    <button
+                                        key={l.id}
+                                        type="button"
+                                        role="radio"
+                                        className="Game-card is-round"
+                                        aria-checked={draft.length === l.id}
+                                        aria-label={label}
+                                        aria-describedby={`Game-length-${l.id}`}
+                                        onClick={() => setDraft({ ...draft, length: l.id })}
+                                    >
+                                        <b>{label}</b>
+                                        <span id={`Game-length-${l.id}`}>{l.description}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </fieldset>
+
+                    {available === 0 && (
+                        <p className="Game-empty">No monkey photos for these troops yet.</p>
+                    )}
+                    <button
+                        type="button"
+                        className="Game-setup-start"
+                        data-level={draftLevel.id}
+                        ref={setupStartRef}
+                        onClick={() => startRound(draft)}
+                        disabled={available === 0}
+                    >
+                        Start
+                    </button>
+                    {draftBest > 0 && (
+                        <p className="Game-setup-best">
+                            Your best here: <b>{draftBest} / {draftPhotos}</b>
+                        </p>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     const { question, result } = round;
     const answer = question?.answer;
@@ -389,22 +624,13 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     const outcomeClass = result ? (isRight ? "is-correct" : "is-wrong") : "";
     const OutcomeIcon = isRight ? IconCircleCheckFilled : IconCircleXFilled;
     const difficultyLabel = level.label;
-    const chosen = difficultyById(chosenDifficulty);
-    // A different troop or difficulty has been picked but the round hasn't
-    // restarted yet
-    const waiting = chosenDifficulty !== difficulty || chosenTroop !== settings.troop;
-    // e.g. "Hard mode: Multiple choice, 5 second timer · Goliath. Press Start to begin."
-    let nextStep = "";
-    if (waiting) nextStep = ". Press Apply to use these settings.";
-    else if (!round.started && !round.finished) nextStep = ". Press Start to begin.";
-    const hint =
-        chosen.description +
-        (chosenTroop === "All Troops" ? "" : ` · ${chosenTroop}`) +
-        nextStep;
-    // Photo blurred with a button over it: before Start, or when paused
-    const photoCovered = !round.started || paused;
-    // Started but the photo is still downloading: show "Loading photo…"
-    const photoLoading = round.started && !paused && !photoReady && !result;
+    // e.g. "Hard mode · Lankora + Skunkey"
+    const mode = modeLabel(difficulty, settings.troops);
+    const allPhotos = settings.length === "all";
+    // Photo blurred with Resume over it while paused
+    const photoCovered = paused;
+    // The photo is still downloading: show "Loading photo…"
+    const photoLoading = !paused && !photoReady && !result;
 
     function optionClass(name) {
         if (!result) return "Game-option";
@@ -431,72 +657,23 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     return (
         // data-level: colours parts of the page for the difficulty being played
         <div className="Game" data-level={difficulty}>
-            <header className="Game-header">
-                <a href="#" className="Game-home">
-                    <MonkeyIcon color="currentColor" />
-                    <span className="Game-home-title">vervetDB</span>
-                </a>
-                <a href="#" className="Game-back">
-                    ← Back to monkeys
-                </a>
-            </header>
+            {header}
 
-            <h1 className="Game-title">Guess the Monkey</h1>
-
-            <div className="Game-settings">
-                <select
-                    aria-label="Troop to play"
-                    value={chosenTroop}
-                    onChange={(e) => setChosenTroop(e.target.value)}
-                >
-                    {troops.map((g) => (
-                        <option key={g} value={g}>
-                            {g}
-                        </option>
-                    ))}
-                </select>
-                <div
-                    className="Game-difficulty"
-                    role="radiogroup"
-                    aria-label="Difficulty"
-                >
-                    {DIFFICULTIES.map((d) => (
-                        <button
-                            key={d.id}
-                            type="button"
-                            role="radio"
-                            data-level={d.id}
-                            aria-checked={chosenDifficulty === d.id}
-                            title={d.description}
-                            onClick={() => setChosenDifficulty(d.id)}
-                        >
-                            {d.label}
-                        </button>
-                    ))}
+            {/* What's being played, like the results screen's heading */}
+            {!round.finished && (
+                <div className="Game-summary">
+                    <p className="Game-mode">{mode}</p>
+                    <button type="button" className="Game-change" onClick={changeSetup}>
+                        Change settings
+                    </button>
                 </div>
-                {/* Only needed when the troop or difficulty has been changed */}
-                <button
-                    type="button"
-                    className={waiting ? "Game-apply is-waiting" : "Game-apply"}
-                    data-level={chosenDifficulty}
-                    onClick={() => changeSettings({})}
-                    disabled={!waiting}
-                >
-                    Apply
-                </button>
-            </div>
-            <p className="Game-hint" data-level={chosenDifficulty}>
-                {hint}
-            </p>
+            )}
 
             {!question ? (
                 <p className="Game-empty">No monkey photos for this troop yet.</p>
             ) : round.finished ? (
                 <div className="Game-end">
-                    <p className="Game-end-mode">
-                        {difficultyLabel} mode
-                        {settings.troop === "All Troops" ? "" : ` · ${settings.troop}`}
-                    </p>
+                    <p className="Game-mode">{mode}</p>
                     <p className="Game-end-message">
                         {resultMessage(round.score, round.length, difficulty)}
                     </p>
@@ -521,15 +698,24 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                                 {best} / {round.length}
                             </dd>
                         </div>
+                        {allPhotos && (
+                            <div>
+                                <dt>Longest streak</dt>
+                                <dd>{round.bestStreak} in a row</dd>
+                            </div>
+                        )}
                     </dl>
                     <div className="Game-end-actions">
                         <button
                             type="button"
                             className="Game-next"
-                            onClick={() => changeSettings({})}
+                            onClick={() => startRound(settings)}
                             autoFocus
                         >
                             Play again
+                        </button>
+                        <button type="button" className="Game-next" onClick={changeSetup}>
+                            Change settings
                         </button>
                         <button
                             type="button"
@@ -538,6 +724,15 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                         >
                             <IconShare aria-hidden="true" />
                             {shareStatus === "copied" ? "Copied!" : "Share"}
+                        </button>
+                        <button
+                            type="button"
+                            className="Game-share is-quiet"
+                            onClick={saveImage}
+                            disabled={!resultImage}
+                        >
+                            <IconDownload aria-hidden="true" />
+                            Save image
                         </button>
                     </div>
                     <p className="Game-share-status" role="status">
@@ -552,6 +747,10 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                     <div className="Game-scoreboard" ref={scoreboardRef}>
                         <p className="Game-progress">
                             Photo {round.number} of {round.length}
+                            {/* All photos: right answers in a row */}
+                            {allPhotos && round.streak >= 2 && (
+                                <span className="Game-streak">🔥 {round.streak} in a row</span>
+                            )}
                         </p>
                         {level.seconds && (
                             <p
@@ -628,9 +827,9 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                                 type="button"
                                 className="Game-start"
                                 ref={startButtonRef}
-                                onClick={paused ? resume : start}
+                                onClick={resume}
                             >
-                                {paused ? "Resume" : "Start"}
+                                Resume
                             </button>
                         )}
                         {photoLoading && (
@@ -646,11 +845,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                                 ref={typedInputRef}
                                 type="text"
                                 aria-label="Monkey's name"
-                                placeholder={
-                                    round.started
-                                        ? "Type the monkey's name"
-                                        : "Press Start when you're ready"
-                                }
+                                placeholder="Type the monkey's name"
                                 value={typed}
                                 onChange={(e) => setTyped(e.target.value)}
                                 disabled={!answerable}
@@ -681,8 +876,8 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                                     <span className="Game-key" aria-hidden="true">
                                         {i + 1}
                                     </span>
-                                    {/* Names stay hidden until the photo is showing
-                                        (after Start, once loaded): no head start */}
+                                    {/* Names stay hidden until the photo has loaded:
+                                        no head start */}
                                     {answerable || result ? name : "?"}
                                     {result && name === answer.name && (
                                         <IconCheck
