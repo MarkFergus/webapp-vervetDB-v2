@@ -29,6 +29,18 @@ vi.mock("./monkeyData", async (importOriginal) => {
     };
 });
 
+// Deletes a photo from the edit form: its ⋮ button, then "Delete photo"
+async function deletePhoto(user, number) {
+    await user.click(screen.getByRole("button", { name: new RegExp(`^Photo ${number} options`) }));
+    await user.click(screen.getByRole("menuitem", { name: "Delete photo" }));
+}
+
+// Signed in as an admin, so the form shows Delete
+vi.mock("./auth", async (importOriginal) => ({
+    ...(await importOriginal()),
+    useAuth: () => ({ isEditor: true, isAdmin: true }),
+}));
+
 // Stand-in crop screen: "Use photo" hands back a pretend cropped photo
 vi.mock("./PhotoCropper", () => ({
     default: ({ file, position, onUse, onCancel }) => (
@@ -279,8 +291,8 @@ describe("tidying up photos in storage", () => {
 
         test("saving deletes photos that were removed (and keeps the rest)", async () => {
             const { user } = setup();
-            await user.click(screen.getByRole("button", { name: "Remove photo 2" })); // dropped
-            await user.click(screen.getByRole("button", { name: "Remove photo 2" })); // the ImgBB one
+            await deletePhoto(user, 2); // dropped
+            await deletePhoto(user, 2); // the ImgBB one
             await user.click(screen.getByRole("button", { name: "Save" }));
 
             await waitFor(() => expect(deletePhotos).toHaveBeenCalled());
@@ -293,7 +305,7 @@ describe("tidying up photos in storage", () => {
             const fresh = `${OURS}goliath/nova-fresh.webp`;
             const { user } = setup();
             await uploadOne(user, fresh);
-            await user.click(screen.getByRole("button", { name: "Remove photo 4" }));
+            await deletePhoto(user, 4);
             await user.click(screen.getByRole("button", { name: "Save" }));
             await waitFor(() => expect(deletePhotos).toHaveBeenCalledWith([fresh]));
         });
@@ -339,7 +351,7 @@ describe("photo limit in the edit form", () => {
         expect(screen.getByLabelText("Upload photo")).toBeDisabled();
         expect(screen.getByRole("button", { name: /Add photo link/ })).toBeDisabled();
 
-        await user.click(screen.getByRole("button", { name: "Remove photo 1" }));
+        await deletePhoto(user, 1);
         expect(screen.queryByText(/5 photos is the most/)).toBeNull();
         expect(screen.getByLabelText("Upload photo")).not.toBeDisabled();
         expect(screen.getByRole("button", { name: /Add photo link/ })).not.toBeDisabled();

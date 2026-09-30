@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
-import { IconPlus, IconSquareRoundedX, IconTrash, IconUpload } from "@tabler/icons-react";
+import { IconPlus, IconSquareRoundedX, IconStarFilled, IconUpload } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { checkForm, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import { deleteMonkey, saveMonkey } from "./monkeyData";
 import { deletePhotos, uploadPhoto } from "./photoUpload";
 import PhotoCropper from "./PhotoCropper";
+import PhotoOptions from "./PhotoOptions";
+import { useAuth } from "./auth";
 import "./MonkeyForm.css";
 
 // Edit a monkey (monkey given) or add one (monkey null). Editors only.
@@ -14,6 +16,7 @@ import "./MonkeyForm.css";
 //   onSaved(savedMonkey) / onDeleted(id): after a successful save / delete
 function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, onDeleted }) {
     const isNew = !monkey;
+    const { isAdmin } = useAuth();
     const [initial] = useState(() =>
         isNew ? emptyForm(troops.includes(defaultTroop) ? defaultTroop : "") : formFromMonkey(monkey)
     );
@@ -22,6 +25,8 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
     const [problem, setProblem] = useState(null);
     const [busy, setBusy] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
+    // Which photo's ⋮ menu is open (its index), or null
+    const [photoMenu, setPhotoMenu] = useState(null);
     // Chosen photos waiting to be cropped: { files, index } (the one showing)
     const [cropQueue, setCropQueue] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -54,8 +59,27 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
     function setPhoto(index, url) {
         setForm({ ...form, photos: form.photos.map((p, i) => (i === index ? url : p)) });
     }
+    // Focus a photo's ⋮ button after the list changes (1 = first photo)
+    const focusPhotoOptions = (number) =>
+        requestAnimationFrame(() =>
+            document.getElementById(`MonkeyForm-photoOptions-${number}`)?.focus()
+        );
+
     function removePhoto(index) {
+        setPhotoMenu(null);
         setForm({ ...form, photos: form.photos.filter((_, i) => i !== index) });
+        // Focus the next photo's ⋮ (or the one before, if this was the last)
+        const left = form.photos.length - 1;
+        if (left > 0) focusPhotoOptions(Math.min(index, left - 1) + 1);
+    }
+    // The primary photo goes first: it's the card photo, the first in the
+    // pop-up, and the one in the Profile Book
+    function makePrimary(index) {
+        setPhotoMenu(null);
+        const others = form.photos.filter((_, i) => i !== index);
+        setForm({ ...form, photos: [form.photos[index], ...others] });
+        // The chosen photo is now first: focus its ⋮
+        focusPhotoOptions(1);
     }
     function addPhoto() {
         setForm({ ...form, photos: [...form.photos, ""] });
@@ -237,20 +261,29 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                     </div>
 
                     <fieldset className="MonkeyForm-photos">
-                        <legend>Photo links</legend>
+                        <legend>Photos</legend>
                         <p className="MonkeyForm-hint">
-                            Upload photos, or paste links (e.g. from ImgBB). The first
-                            photo is shown on the card.
+                            Upload photos, or paste links (e.g. from ImgBB). The primary
+                            photo (★) is shown on the card and in the Profile Book; use
+                            ⋮ to change it or delete a photo.
                             {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
                         </p>
                         {form.photos.map((url, i) => (
                             <div className="MonkeyForm-photo" key={i}>
-                                {/* Small preview, to check it's the right monkey */}
-                                {/^https:\/\/\S+$/.test(url.trim()) ? (
-                                    <img src={url.trim()} alt="" />
-                                ) : (
-                                    <span className="MonkeyForm-noPreview" aria-hidden="true" />
-                                )}
+                                {/* Small preview, to check it's the right monkey;
+                                    a star marks the primary photo */}
+                                <span className="MonkeyForm-preview">
+                                    {/^https:\/\/\S+$/.test(url.trim()) ? (
+                                        <img src={url.trim()} alt="" />
+                                    ) : (
+                                        <span className="MonkeyForm-noPreview" aria-hidden="true" />
+                                    )}
+                                    {i === 0 && (
+                                        <span className="MonkeyForm-primaryStar" title="Primary photo">
+                                            <IconStarFilled size={12} aria-hidden="true" />
+                                        </span>
+                                    )}
+                                </span>
                                 <input
                                     type="url"
                                     value={url}
@@ -258,14 +291,16 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                                     aria-label={`Photo link ${i + 1}`}
                                     placeholder="https://i.ibb.co/…"
                                 />
-                                <button
-                                    type="button"
-                                    className="MonkeyForm-iconButton"
-                                    onClick={() => removePhoto(i)}
-                                    aria-label={`Remove photo ${i + 1}`}
-                                >
-                                    <IconTrash size={20} />
-                                </button>
+                                <PhotoOptions
+                                    number={i + 1}
+                                    isPrimary={i === 0}
+                                    canBePrimary={Boolean(url.trim())}
+                                    open={photoMenu === i}
+                                    onOpen={() => setPhotoMenu(i)}
+                                    onClose={() => setPhotoMenu(null)}
+                                    onMakePrimary={() => makePrimary(i)}
+                                    onDelete={() => removePhoto(i)}
+                                />
                             </div>
                         ))}
                         {errors.photos && (
@@ -279,8 +314,8 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                         </p>
                         {photosFull && (
                             <p className="MonkeyForm-hint MonkeyForm-full">
-                                {MAX_PHOTOS} photos is the most a monkey can have. Remove one
-                                (bin icon) to add another.
+                                {MAX_PHOTOS} photos is the most a monkey can have. Delete one
+                                (⋮ → Delete photo) to add another.
                             </p>
                         )}
                         <div className="MonkeyForm-photoButtons">
@@ -343,7 +378,8 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                         </>
                     ) : (
                         <>
-                            {!isNew && (
+                            {/* Only admins can delete (the database enforces it too) */}
+                            {!isNew && isAdmin && (
                                 <button
                                     type="button"
                                     className="MonkeyForm-button is-danger is-outline"

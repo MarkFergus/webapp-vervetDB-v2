@@ -146,6 +146,77 @@
     gap: 8px;
 }
 
+/* The preview, with a star on the primary photo */
+.MonkeyForm-preview {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.MonkeyForm-primaryStar {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    display: flex;
+    padding: 2px;
+    color: #1f1f1f;
+    background-color: #ffc53d;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #202020;
+}
+
+/* ⋮ beside each photo, and its menu (see PhotoOptions.jsx) */
+.PhotoOptions {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.PhotoOptions-menu {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 4px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    padding: 6px 0;
+    background-color: #2a282a;
+    border: 1px solid #434343;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.PhotoOptions-menu button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 15px;
+    text-align: left;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.PhotoOptions-menu button:hover:not(:disabled),
+.PhotoOptions-menu button:focus-visible {
+    color: white;
+    background-color: #3a383a;
+    outline: none;
+}
+
+.PhotoOptions-menu button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.PhotoOptions-menu button.is-delete:hover,
+.PhotoOptions-menu button.is-delete:focus-visible {
+    color: #ff4d4f;
+}
+
 .MonkeyForm-photo img,
 .MonkeyForm-noPreview {
     flex-shrink: 0;
@@ -166,8 +237,10 @@
     cursor: pointer;
 }
 
-.MonkeyForm-iconButton:hover {
-    color: #fe39a4;
+.MonkeyForm-iconButton:hover,
+.MonkeyForm-iconButton[aria-expanded="true"] {
+    color: white;
+    background-color: #2a282a;
 }
 
 .MonkeyForm-photoButtons {

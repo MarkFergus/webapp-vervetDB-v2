@@ -4,11 +4,13 @@ import { supabase } from "./supabase";
 // Who's signed in, shared with every page through <AuthProvider>.
 //   user:          the signed-in account (null when signed out)
 //   isEditor:      whether that account may change monkeys (in the `editors` table)
+//   isAdmin:       whether it may also delete them (an admin editor)
 //   ready:         false until we've checked for a saved sign-in
 //   passwordSetup: why the account pop-up should open by itself (see below)
 const AuthContext = createContext({
     user: null,
     isEditor: false,
+    isAdmin: false,
     ready: true,
     passwordSetup: null,
     signIn: async () => {},
@@ -42,25 +44,27 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
-// Is this account listed as an editor? (The database only lets people see
-// their own entry, so a row coming back means yes.)
+// Is this account listed as an editor, and is it an admin? (The database
+// only lets people see their own entry, so a row coming back means editor.)
+const NOT_EDITOR = { isEditor: false, isAdmin: false };
 async function checkEditor(user) {
-    if (!user) return false;
+    if (!user) return NOT_EDITOR;
     const { data, error } = await supabase
         .from("editors")
-        .select("user_id")
+        .select("user_id, is_admin")
         .eq("user_id", user.id)
         .maybeSingle();
     if (error) {
         console.error("Couldn't check editor status:", error);
-        return false;
+        return NOT_EDITOR;
     }
-    return Boolean(data);
+    return { isEditor: Boolean(data), isAdmin: Boolean(data?.is_admin) };
 }
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isEditor, setIsEditor] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [ready, setReady] = useState(false);
     const [passwordSetup, setPasswordSetup] = useState(ARRIVED_FROM_LINK);
 
@@ -74,10 +78,11 @@ export function AuthProvider({ children }) {
 
         async function update(session) {
             const nextUser = session?.user ?? null;
-            const editor = await checkEditor(nextUser);
+            const roles = await checkEditor(nextUser);
             if (cancelled) return;
             setUser(nextUser);
-            setIsEditor(editor);
+            setIsEditor(roles.isEditor);
+            setIsAdmin(roles.isAdmin);
             setReady(true);
         }
 
@@ -157,6 +162,7 @@ export function AuthProvider({ children }) {
             value={{
                 user,
                 isEditor,
+                isAdmin,
                 ready,
                 passwordSetup,
                 signIn,

@@ -17,7 +17,7 @@ const troopName = (id) => troopNames[id - 1];
 const startingMonkeys = () => BUILT_IN_DATA.monkeys.map((m, i) => ({ ...m, id: i + 1 }));
 
 let saved; // what the pretend database was asked to do
-function fakeSupabase({ signedIn = true, refuse = false } = {}) {
+function fakeSupabase({ signedIn = true, refuse = false, admin = true } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({
         data: { session: signedIn ? { user: EDITOR } : null },
@@ -32,7 +32,7 @@ function fakeSupabase({ signedIn = true, refuse = false } = {}) {
     const refusal = { data: null, error: { code: "PGRST116", message: "0 rows" } };
     vi.spyOn(supabase, "from").mockImplementation((table) => {
         if (table === "editors") {
-            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id }, error: null }) }) }) };
+            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin }, error: null }) }) }) };
         }
         return {
             update: (row) => ({
@@ -200,11 +200,69 @@ test("photo links: add, preview and remove", async () => {
 
     await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
     await user.type(photoBox(2), "https://i.ibb.co/new/aroha-2026.webp");
-    await user.click(within(form()).getByRole("button", { name: "Remove photo 1" }));
+    await user.click(within(form()).getByRole("button", { name: /^Photo 1 options/ }));
+    await user.click(within(form()).getByRole("menuitem", { name: "Delete photo" }));
     await user.click(within(form()).getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row.photos).toEqual(["https://i.ibb.co/new/aroha-2026.webp"]);
+});
+
+test("⋮ → Make primary photo moves it first (card and Profile Book photo)", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    const options = (n) => within(form()).getByRole("button", { name: new RegExp(`^Photo ${n} options`) });
+    const original = screen.getByLabelText("Photo link 1").value;
+    expect(options(1)).toHaveAccessibleName("Photo 1 options (primary photo)");
+
+    // The primary photo's menu has only Delete
+    await user.click(options(1));
+    expect(within(form()).getAllByRole("menuitem").map((m) => m.textContent)).toEqual(["Delete photo"]);
+    await user.keyboard("{Escape}");
+
+    // A new, still-blank link can't be made primary yet
+    await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
+    await user.click(options(2));
+    expect(within(form()).getByRole("menuitem", { name: "Make primary photo" })).toBeDisabled();
+    await user.keyboard("{Escape}");
+    await user.type(screen.getByLabelText("Photo link 2"), "https://i.ibb.co/new/aroha-best.webp");
+
+    await user.click(options(2));
+    const makePrimary = within(form()).getByRole("menuitem", { name: "Make primary photo" });
+    expect(makePrimary).toHaveFocus(); // first item, ready for the keyboard
+    await user.click(makePrimary);
+    expect(within(form()).queryByRole("menu")).toBeNull();
+    expect(screen.getByLabelText("Photo link 1")).toHaveValue("https://i.ibb.co/new/aroha-best.webp");
+    expect(screen.getByLabelText("Photo link 2")).toHaveValue(original);
+    expect(options(1)).toHaveAccessibleName("Photo 1 options (primary photo)");
+
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row.photos).toEqual(["https://i.ibb.co/new/aroha-best.webp", original]);
+});
+
+test("the photo menu: arrow keys move, Escape closes just the menu, a click outside closes it", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
+    await user.type(screen.getByLabelText("Photo link 2"), "https://i.ibb.co/new/aroha-best.webp");
+    const options2 = within(form()).getByRole("button", { name: /^Photo 2 options/ });
+
+    await user.click(options2);
+    expect(options2).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{ArrowDown}");
+    expect(within(form()).getByRole("menuitem", { name: "Delete photo" })).toHaveFocus();
+    await user.keyboard("{ArrowDown}"); // wraps round
+    expect(within(form()).getByRole("menuitem", { name: "Make primary photo" })).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(within(form()).queryByRole("menu")).toBeNull();
+    expect(options2).toHaveFocus();
+    expect(form()).toBeInTheDocument(); // the edit form is still open
+
+    await user.click(options2);
+    await user.click(field("Bio"));
+    expect(within(form()).queryByRole("menu")).toBeNull();
 });
 
 test("deleting asks first, then removes the monkey", async () => {
@@ -221,6 +279,30 @@ test("deleting asks first, then removes the monkey", async () => {
     await waitFor(() => expect(saved.deletes).toEqual([1]));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.queryByRole("button", { name: /^Aroha,/ })).toBeNull();
+});
+
+test("editors who aren't admins can edit but have no Delete button", async () => {
+    const { user } = setup({ admin: false });
+    await openEditFor(user, "Aroha");
+    expect(within(form()).getByRole("button", { name: "Save" })).toBeInTheDocument();
+    expect(within(form()).queryByRole("button", { name: "Delete" })).toBeNull();
+});
+
+test("if the database refuses a delete, it says only admins can delete", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { user } = setup();
+    // The pretend database deletes nothing, as it would for a non-admin
+    const realFrom = supabase.from.getMockImplementation();
+    supabase.from.mockImplementation((table) => ({
+        ...realFrom(table),
+        delete: () => ({ eq: () => ({ select: async () => ({ data: [], error: null }) }) }),
+    }));
+    await openEditFor(user, "Aroha");
+    await user.click(within(form()).getByRole("button", { name: "Delete" }));
+    await user.click(within(form()).getByRole("button", { name: "Delete" }));
+
+    expect(await within(form()).findByText(/Only admins can delete monkeys/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Aroha,/ })).toBeInTheDocument();
 });
 
 test("if the database refuses, the form stays open with a clear message", async () => {

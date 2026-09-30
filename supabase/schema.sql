@@ -2,7 +2,8 @@
 -- Run once in Supabase: SQL Editor → New query → paste all of this → Run.
 --
 -- Access:  anyone can READ monkeys and troops (the public website).
---          Only people listed in `editors` can ADD, CHANGE or DELETE them.
+--          Only people listed in `editors` can ADD or CHANGE them, and only
+--          editors marked as admins can DELETE them (see admins.sql).
 
 ------------------------------------------------------------------------
 -- Troops (the troop filter list, in display order)
@@ -82,7 +83,9 @@ create trigger monkeys_stamp_update
 ------------------------------------------------------------------------
 create table public.editors (
     user_id   uuid primary key references auth.users (id) on delete cascade,
-    added_at  timestamptz not null default now()
+    added_at  timestamptz not null default now(),
+    -- admins can also delete monkeys and troops
+    is_admin  boolean not null default false
 );
 
 -- Is the person making this request an editor?
@@ -95,6 +98,20 @@ set search_path = ''
 as $$
     select exists (
         select 1 from public.editors where user_id = (select auth.uid())
+    )
+$$;
+
+-- Is the person making this request an admin?
+create function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select exists (
+        select 1 from public.editors
+        where user_id = (select auth.uid()) and is_admin
     )
 $$;
 
@@ -116,16 +133,16 @@ create policy "Anyone can read monkeys"
     to anon, authenticated
     using (true);
 
--- Only editors can add, change or delete
+-- Only editors can add or change; only admins can delete
 create policy "Editors can add troops"
     on public.troops for insert to authenticated
     with check ((select public.is_editor()));
 create policy "Editors can change troops"
     on public.troops for update to authenticated
     using ((select public.is_editor())) with check ((select public.is_editor()));
-create policy "Editors can delete troops"
+create policy "Admins can delete troops"
     on public.troops for delete to authenticated
-    using ((select public.is_editor()));
+    using ((select public.is_admin()));
 
 create policy "Editors can add monkeys"
     on public.monkeys for insert to authenticated
@@ -133,12 +150,12 @@ create policy "Editors can add monkeys"
 create policy "Editors can change monkeys"
     on public.monkeys for update to authenticated
     using ((select public.is_editor())) with check ((select public.is_editor()));
-create policy "Editors can delete monkeys"
+create policy "Admins can delete monkeys"
     on public.monkeys for delete to authenticated
-    using ((select public.is_editor()));
+    using ((select public.is_admin()));
 
--- Signed-in people can see whether they themselves are an editor
--- (so the website knows whether to show Edit buttons)
+-- Signed-in people can see whether they themselves are an editor or admin
+-- (so the website knows whether to show Edit and Delete buttons)
 create policy "People can see their own editor entry"
     on public.editors for select to authenticated
     using (user_id = (select auth.uid()));

@@ -106,6 +106,8 @@ export async function deleteMonkey(id) {
         console.error("Deleting monkey failed:", error);
         throw saveProblem(error);
     }
-    // Nothing deleted: not allowed (or already gone)
-    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+    // Nothing deleted: not allowed (only admins can delete), or already gone
+    if (!data?.length) {
+        throw new Error("The database didn't allow this. Only admins can delete monkeys.");
+    }
 }
