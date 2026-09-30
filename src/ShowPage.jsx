@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { IconArrowsSort } from "@tabler/icons-react";
+import { IconArrowsSort, IconPlus } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import { preparePhotosForPdf } from "./pdfPhotos";
 import Modal from "./Modal";
+import MonkeyForm from "./MonkeyForm";
+import { useAuth } from "./auth";
 import Nav from "./Nav";
 import "./ShowPage.css";
 
@@ -75,7 +77,18 @@ function downloadFile(blob, filename) {
 
 // monkeys / troops: the data to show (from the database, via App).
 // Defaults to the built-in copy, e.g. in tests.
-function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }) {
+// editable: the data is live from the database, so editors may change it.
+// onMonkeySaved / onMonkeyDeleted: tell App about a change, to update the list.
+function ShowPage({
+    monkeys = BUILT_IN_DATA.monkeys,
+    troops = BUILT_IN_DATA.troops,
+    troopIds = BUILT_IN_DATA.troopIds,
+    editable = false,
+    onMonkeySaved = () => {},
+    onMonkeyDeleted = () => {},
+}) {
+    const { isEditor } = useAuth();
+    const canEdit = editable && isEditor;
     const [searchValue, setSearchValue] = useState("");
     const [troopFilter, setTroopFilter] = useState("All Troops");
     const [yearFilter, setYearFilter] = useState("All Years");
@@ -85,6 +98,8 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
+    // The edit / add form: null when closed, else { monkey } (null = adding)
+    const [editing, setEditing] = useState(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
@@ -143,6 +158,25 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
             setSelectedMonkey(nextMonkey);
         }
     }
+    function startEdit(monkey) {
+        setIsModalOpen(false);
+        setEditing({ monkey });
+    }
+    function startAdd() {
+        setEditing({ monkey: null });
+    }
+    // Saved: update the list, then show the monkey (with its new details)
+    function handleSaved(saved) {
+        onMonkeySaved(saved);
+        setEditing(null);
+        setSelectedMonkey(saved);
+        setIsModalOpen(true);
+    }
+    function handleDeleted(id) {
+        onMonkeyDeleted(id);
+        setEditing(null);
+        setSelectedMonkey(null);
+    }
     function togglePDFModal() {
         setIsPDFModalOpen((open) => !open);
         setPdfError(null);
@@ -181,7 +215,8 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
 
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
-    const isAnyModalOpen = isModalOpen || isPDFModalOpen || isAccountOpen;
+    const isAnyModalOpen =
+        isModalOpen || isPDFModalOpen || isAccountOpen || Boolean(editing);
 
     function sortButton(key, label) {
         const isActive = sort.key === key;
@@ -212,9 +247,10 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
                     handlePrevNext={handlePrevNext}
                     prevMonkey={prevMonkey}
                     nextMonkey={nextMonkey}
+                    onEdit={canEdit ? startEdit : undefined}
                 />
             </div>
-            <div className="ShowPage-nav" inert={isModalOpen}>
+            <div className="ShowPage-nav" inert={isModalOpen || Boolean(editing)}>
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
@@ -270,6 +306,12 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
                         ))}
                     </select>
                 </div>
+                {canEdit && (
+                    <button type="button" className="ShowPage-add" onClick={startAdd}>
+                        <IconPlus size={16} aria-hidden="true" />
+                        Add monkey
+                    </button>
+                )}
             </div>
             {/* Read out by screen readers when the results change */}
             <p className="visually-hidden" role="status">
@@ -279,7 +321,7 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
             <div className="ShowPage-monkeys" inert={isAnyModalOpen}>
                 {currentMonkeys.map((m) => (
                     <MonkeyCard
-                        key={`${m.name}-${m.chip}-${m.troop}`}
+                        key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
                         onClick={() => openModal(m)}
                         name={m.name}
                         sex={m.sex}
@@ -299,6 +341,19 @@ function ShowPage({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troo
                         Show More
                     </button>
                 </div>
+            )}
+            {editing && (
+                <MonkeyForm
+                    // key: a fresh form for each monkey
+                    key={editing.monkey?.id ?? "new"}
+                    monkey={editing.monkey}
+                    troops={troops.filter((t) => t !== "All Troops")}
+                    troopIds={troopIds}
+                    defaultTroop={troopFilter}
+                    onClose={() => setEditing(null)}
+                    onSaved={handleSaved}
+                    onDeleted={handleDeleted}
+                />
             )}
         </div>
     );

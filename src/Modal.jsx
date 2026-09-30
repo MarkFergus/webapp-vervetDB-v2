@@ -6,6 +6,7 @@ import {
     IconCaretLeftFilled,
     IconCaretRightFilled,
     IconCamera,
+    IconPencil,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -18,6 +19,7 @@ function Modal({
     handlePrevNext,
     prevMonkey,
     nextMonkey,
+    onEdit, // given only to editors: shows the Edit button
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -216,6 +218,22 @@ function Modal({
                                         </span>
                                     </h3>
                                 </div>
+                                {/* Editors only: Edit, bottom-left under the details */}
+                                {onEdit && (
+                                    <div className="Modal-footer">
+                                        <button
+                                            type="button"
+                                            className="Modal-edit"
+                                            onClick={() => {
+                                                setCurrentIndex(0);
+                                                onEdit(monkey);
+                                            }}
+                                        >
+                                            <IconPencil size={18} aria-hidden="true" />
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>

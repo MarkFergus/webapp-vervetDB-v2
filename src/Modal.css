@@ -66,6 +66,39 @@
     z-index: 3;
 }
 
+/* Editors only: Edit, bottom-left under the details */
+.Modal-footer {
+    display: flex;
+    justify-content: flex-start;
+    margin: 12px 12px 0;
+}
+
+.Modal-edit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #25c4f8;
+    background: none;
+    border: 1px solid #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Modal-edit:hover {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+}
+
+@media (min-width: 500px) {
+    .Modal-footer {
+        margin: 12px 20px 0;
+    }
+}
+
 .Modal-close svg {
     display: block;
     width: 28px;

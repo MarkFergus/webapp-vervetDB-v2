@@ -115,6 +115,29 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
+/* Editors only: "+ Add monkey", at the end of the sort / filter row */
+.ShowPage-add {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    padding: 4px 10px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #25c4f8;
+    background: none;
+    border: 1px solid #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ShowPage-add:hover {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+}
+
 .ShowPage-showMore {
     display: flex;
     flex-direction: row;

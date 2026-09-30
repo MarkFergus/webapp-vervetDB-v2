@@ -8,7 +8,7 @@ import "./App.css";
 
 function App() {
     const route = useHashRoute();
-    const { status, monkeys, troops } = useMonkeyData();
+    const { status, monkeys, troops, troopIds, monkeySaved, monkeyDeleted } = useMonkeyData();
 
     if (status === "loading") {
         return (
@@ -32,7 +32,15 @@ function App() {
                 {route === "game" ? (
                     <Game monkeys={monkeys} troops={troops} />
                 ) : (
-                    <ShowPage monkeys={monkeys} troops={troops} />
+                    <ShowPage
+                        monkeys={monkeys}
+                        troops={troops}
+                        troopIds={troopIds}
+                        // Editing only when the data is live from the database
+                        editable={status === "live"}
+                        onMonkeySaved={monkeySaved}
+                        onMonkeyDeleted={monkeyDeleted}
+                    />
                 )}
             </div>
         </AuthProvider>

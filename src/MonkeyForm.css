@@ -1,0 +1,262 @@
+/* Edit / add monkey form. Same dark look as the other pop-ups:
+   neon blue #25c4f8 for Save, neon pink #fe39a4 for Delete. */
+
+.MonkeyForm-overlay {
+    position: fixed;
+    z-index: 5;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.MonkeyForm-window {
+    position: fixed;
+    z-index: 6;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: min(94vw, 560px);
+    max-height: 92svh;
+    display: flex;
+    flex-direction: column;
+    background-color: #202020;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.MonkeyForm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 8px 20px;
+}
+
+.MonkeyForm-header h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.MonkeyForm-close {
+    padding: 6px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: rgb(146, 145, 145);
+    cursor: pointer;
+}
+
+.MonkeyForm-close:hover {
+    color: white;
+}
+
+.MonkeyForm-close svg {
+    display: block;
+}
+
+/* The fields scroll; the header and buttons stay put */
+.MonkeyForm-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 8px 20px 12px;
+}
+
+.MonkeyForm-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.MonkeyForm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.MonkeyForm-field em {
+    font-style: normal;
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.MonkeyForm input,
+.MonkeyForm select,
+.MonkeyForm textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px; /* 16px stops phones zooming in on the box */
+    color: white;
+    background-color: #2a282a;
+    border: 2px solid #434343;
+    border-radius: 8px;
+    outline: none;
+}
+
+.MonkeyForm textarea {
+    resize: vertical;
+    line-height: 1.4;
+}
+
+.MonkeyForm input:focus,
+.MonkeyForm select:focus,
+.MonkeyForm textarea:focus {
+    border-color: #25c4f8;
+}
+
+.MonkeyForm [aria-invalid="true"] {
+    border-color: #ff4d4f;
+}
+
+.MonkeyForm-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.MonkeyForm-fieldError {
+    font-size: 13px;
+    color: #ff4d4f;
+}
+
+/* Photo links, each with a small preview */
+.MonkeyForm-photos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.MonkeyForm-photos legend {
+    padding: 0;
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.MonkeyForm-photo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.MonkeyForm-photo img,
+.MonkeyForm-noPreview {
+    flex-shrink: 0;
+    width: 48px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 4px;
+    background-color: #2a282a;
+}
+
+.MonkeyForm-iconButton {
+    flex-shrink: 0;
+    padding: 6px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #b6b2a5;
+    cursor: pointer;
+}
+
+.MonkeyForm-iconButton:hover {
+    color: #fe39a4;
+}
+
+.MonkeyForm-addPhoto {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    color: #25c4f8;
+    background: none;
+    border: 1px dashed #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.MonkeyForm-problem {
+    min-height: 0;
+    margin: 0;
+    padding: 0 20px;
+    font-size: 14px;
+    color: #ff4d4f;
+}
+
+.MonkeyForm-problem:not(:empty) {
+    padding: 8px 20px 0;
+}
+
+/* Buttons along the bottom */
+.MonkeyForm-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid #343234;
+}
+
+.MonkeyForm-spacer {
+    flex: 1;
+}
+
+.MonkeyForm-confirm {
+    flex: 1;
+    font-size: 15px;
+    color: white;
+}
+
+.MonkeyForm-button {
+    padding: 9px 18px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: 1px solid #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.MonkeyForm-button:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.MonkeyForm-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.MonkeyForm-button.is-quiet {
+    color: #d1cfc7;
+    background: none;
+    border-color: #434343;
+}
+
+.MonkeyForm-button.is-danger {
+    color: #1f1f1f;
+    background-color: #fe39a4;
+    border-color: #fe39a4;
+}
+
+.MonkeyForm-button.is-danger.is-outline {
+    color: #fe39a4;
+    background: none;
+}
+
+@media (max-width: 420px) {
+    .MonkeyForm-row {
+        grid-template-columns: 1fr;
+    }
+}
