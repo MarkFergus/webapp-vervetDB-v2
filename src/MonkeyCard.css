@@ -30,16 +30,23 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     text-align: inherit;
 }
 
+/* Every photo shows in the same 5:4 frame (the site's photo shape), so an
+   odd-shaped photo can't upset the grid: it fills the frame, trimming any
+   overflow */
 .MonkeyCard-image {
     display: block;
+    width: 100%;
+    aspect-ratio: 5 / 4;
     overflow: hidden;
     padding-bottom: 0;
     border-radius: 8px;
 }
 
 .MonkeyCard img {
+    display: block;
     width: 100%;
     height: 100%;
+    object-fit: cover;
     transition: transform 0.5s ease-out;
 }
 

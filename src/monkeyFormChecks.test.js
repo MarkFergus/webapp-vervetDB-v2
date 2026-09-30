@@ -112,3 +112,14 @@ describe("checking the form", () => {
         expect(check({ sex: "Male" }).values.sex).toBe("");
     });
 });
+
+test("up to 5 photos; more are refused with a clear message", () => {
+    const links = (n) => Array.from({ length: n }, (_, i) => `https://i.ibb.co/p${i}.webp`);
+    expect(check({ photos: links(5) }).errors.photos).toBeUndefined();
+    expect(check({ photos: links(6) }).errors.photos).toBe(
+        "5 photos is the most a monkey can have. Please remove one."
+    );
+    expect(check({ photos: links(8) }).errors.photos).toMatch(/Please remove 3/);
+    // Empty boxes don't count
+    expect(check({ photos: [...links(5), "", " "] }).errors.photos).toBeUndefined();
+});

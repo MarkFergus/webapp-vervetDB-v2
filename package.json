@@ -10,7 +10,8 @@
         "@tabler/icons-react": "^3.3.0",
         "motion": "^13.4.6",
         "react": "^19.3.0",
-        "react-dom": "^19.3.0"
+        "react-dom": "^19.3.0",
+        "react-easy-crop": "^6.2.3"
     },
     "scripts": {
         "start": "vite",

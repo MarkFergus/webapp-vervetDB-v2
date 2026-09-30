@@ -170,6 +170,40 @@
     color: #fe39a4;
 }
 
+.MonkeyForm-photoButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.MonkeyForm-uploading {
+    margin: 0;
+    font-size: 13px;
+    color: #86e1ff;
+}
+
+.MonkeyForm-uploading:empty {
+    display: none;
+}
+
+/* The upload "button" is a label around a hidden file box: show the
+   keyboard focus ring on the label */
+.MonkeyForm-addPhoto:focus-within {
+    outline: 2px solid #25c4f8;
+    outline-offset: 2px;
+}
+
+.MonkeyForm-addPhoto.is-disabled,
+.MonkeyForm-addPhoto:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* At the photo limit */
+.MonkeyForm-full {
+    color: #ffb454;
+}
+
 .MonkeyForm-addPhoto {
     align-self: flex-start;
     display: flex;

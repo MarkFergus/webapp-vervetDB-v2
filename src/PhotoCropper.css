@@ -1,0 +1,112 @@
+/* Crop screen for uploaded photos. Sits above the edit form. */
+
+.PhotoCropper {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+.PhotoCropper-window {
+    width: min(94vw, 560px);
+    max-height: 94svh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background-color: #202020;
+    border-radius: 10px;
+    overflow-y: auto;
+}
+
+.PhotoCropper-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.PhotoCropper-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.PhotoCropper-position {
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+/* The cropping area: a fixed height, with the 5:4 frame drawn by the library */
+.PhotoCropper-area {
+    position: relative;
+    height: min(56svh, 400px);
+    background-color: #111;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* The library's frame: neon blue edge, darkened outside */
+.PhotoCropper-area .reactEasyCrop_CropArea {
+    border: 2px solid #25c4f8;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.PhotoCropper-hint {
+    margin: 0;
+    font-size: 13px;
+    color: #8a877e;
+    text-align: center;
+}
+
+.PhotoCropper-zoom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b6b2a5;
+}
+
+.PhotoCropper-zoom input {
+    flex: 1;
+    accent-color: #25c4f8;
+}
+
+.PhotoCropper-problem {
+    margin: 0;
+    font-size: 14px;
+    color: #ff4d4f;
+}
+
+.PhotoCropper-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.PhotoCropper-button {
+    padding: 9px 18px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: 1px solid #25c4f8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.PhotoCropper-button:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.PhotoCropper-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.PhotoCropper-button.is-quiet {
+    color: #d1cfc7;
+    background: none;
+    border-color: #434343;
+}

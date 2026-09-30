@@ -6,6 +6,9 @@
 // Shown on cards when a monkey has no photo yet
 export const PLACEHOLDER_PHOTO = "https://i.ibb.co/2YvYtBJ/blank-image-min.jpg";
 
+// The most photos one monkey can have
+export const MAX_PHOTOS = 5;
+
 const isPlaceholder = (url) => url === PLACEHOLDER_PHOTO;
 
 // A monkey (as used on the site) → what the form's boxes start with
@@ -75,6 +78,10 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
     const badPhoto = photos.findIndex((url) => !/^https:\/\/\S+$/.test(url));
     if (badPhoto !== -1) {
         errors.photos = `Photo link ${badPhoto + 1} should be a web address starting with https://`;
+    } else if (photos.length > MAX_PHOTOS) {
+        errors.photos = `${MAX_PHOTOS} photos is the most a monkey can have. Please remove ${
+            photos.length - MAX_PHOTOS === 1 ? "one" : photos.length - MAX_PHOTOS
+        }.`;
     }
 
     return {
