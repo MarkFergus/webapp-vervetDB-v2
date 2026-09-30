@@ -56,7 +56,9 @@ test("shows how many monkeys a troop's PDF will include, without a warning", asy
     expect(
         within(screen.getByRole("dialog")).getByText(`${count} monkeys`, { exact: false })
     ).toBeInTheDocument();
-    expect(screen.getByText(/from Goliath/)).toBeInTheDocument();
+    expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
+        `This Profile Book will contain ${count} monkeys from Goliath Troop.`
+    );
     expect(screen.queryByText(/can take several minutes/)).toBeNull();
 });
 
@@ -98,6 +100,6 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
 
     // Modal closes once the download starts
     await waitFor(() =>
-        expect(screen.queryByText("Profile Book PDF")).toBeNull()
+        expect(screen.queryByText("Create Profile Book")).toBeNull()
     );
 });

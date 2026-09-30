@@ -92,7 +92,7 @@ test("the PDF dialog closes with Escape and focus returns to the PDF button", as
     const { user } = setup();
     const pdfButton = screen.getByRole("button", { name: "Create Profile Book" });
     await user.click(pdfButton);
-    expect(screen.getByRole("dialog", { name: "Profile Book PDF" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Create Profile Book" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
 
     await user.keyboard("{Escape}");

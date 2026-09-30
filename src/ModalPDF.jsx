@@ -19,7 +19,7 @@ function ModalPDF({
 }) {
     const plural = monkeyCount === 1 ? "monkey" : "monkeys";
     const troopNote =
-        troopFilter === "All Troops" ? "from all troops" : `from ${troopFilter}`;
+        troopFilter === "All Troops" ? "all troops" : `${troopFilter} Troop`;
 
     let status = null;
     if (progress && progress.done < progress.total) {
@@ -86,32 +86,37 @@ function ModalPDF({
                                     className="ModalPDF-title"
                                     id="ModalPDF-title"
                                 >
-                                    Profile Book PDF
+                                    Create Profile Book
                                 </h1>
                                 <div>
-                                    <h3 className="ModalPDF-details">
-                                        Creates a profile book PDF of the
-                                        monkeys currently shown, in the same
-                                        order.
-                                    </h3>
-                                    <h3 className="ModalPDF-subdetails">
+                                    <p className="ModalPDF-details">
+                                        Creates a formatted Profile Book as a
+                                        PDF file with the currently displayed
+                                        monkeys.
+                                    </p>
+                                    <p className="ModalPDF-subdetails">
                                         {monkeyCount === 0 ? (
                                             "No monkeys match the current filters."
                                         ) : (
                                             <>
-                                                This PDF will include{" "}
-                                                <b>
-                                                    {monkeyCount} {plural}
-                                                </b>{" "}
-                                                {troopNote}.
+                                                This Profile Book will contain{" "}
+                                                <span className="ModalPDF-line">
+                                                    <b>
+                                                        {monkeyCount} {plural}
+                                                    </b>{" "}
+                                                    from <b>{troopNote}</b>.
+                                                </span>
                                             </>
                                         )}
-                                    </h3>
+                                    </p>
                                     {monkeyCount > LARGE_PDF_THRESHOLD && (
                                         <p className="ModalPDF-warning">
                                             Large PDFs can take several minutes
-                                            to create. Tip: pick a troop in the
-                                            filter first.
+                                            to create.{" "}
+                                            <span className="ModalPDF-line">
+                                                Tip: pick a troop in the filter
+                                                first.
+                                            </span>
                                         </p>
                                     )}
                                     {status && (

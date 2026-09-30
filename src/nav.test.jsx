@@ -97,7 +97,7 @@ describe("☰ menu (phones)", () => {
         await user.click(menuButton());
         await user.click(within(menu()).getByRole("button", { name: "Create Profile Book" }));
         expect(menu()).toBeNull();
-        expect(await screen.findByRole("dialog", { name: "Profile Book PDF" })).toBeInTheDocument();
+        expect(await screen.findByRole("dialog", { name: "Create Profile Book" })).toBeInTheDocument();
     });
 
     test("Escape closes it and returns focus to ☰", async () => {

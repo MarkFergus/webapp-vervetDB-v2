@@ -89,22 +89,35 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 .ModalPDF-title {
     font-size: 24px;
     text-align: center;
-    margin: 50px 0 32px 0;
+    margin: 50px 0 16px 0;
 }
 
+/* What it does: quieter, supporting text */
 .ModalPDF-details {
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #b6b2a5;
     text-align: center;
-    margin: 8px 0;
+    margin: 0 8px 24px;
 }
 
-.ModalPDF-details h3 {
-    font-weight: 300;
-    margin: 4px 0 32px 0;
-}
-
+/* What this book will contain: the main line */
 .ModalPDF-subdetails {
+    font-size: 17px;
+    line-height: 1.4;
+    color: #d1cfc7;
     text-align: center;
+    margin: 0 0 28px;
+}
+
+.ModalPDF-subdetails b {
+    color: white;
+}
+
+/* Starts a new line (keeping the space before it for screen readers) */
+.ModalPDF-line {
+    display: block;
 }
 
 .ModalPDF-Btns {
