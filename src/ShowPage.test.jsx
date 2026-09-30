@@ -126,9 +126,15 @@ test("modal shows 'No Chip' when a monkey has no chip number", async () => {
 test("closing the modal by clicking outside resets the photo", async () => {
     const { user, container } = setup();
     const aroha = monkeysArr.find((m) => m.name === "Aroha");
+    // Any monkey with 2+ photos (and a name no other monkey shares)
+    const multiPhoto = monkeysArr.find(
+        (m) =>
+            m.img.length > 1 &&
+            monkeysArr.filter((x) => x.name === m.name).length === 1
+    );
 
-    // Beau has 2 photos: move to the second one, then close via the backdrop
-    await openCard(user, container, "Beau");
+    // Move to its second photo, then close via the backdrop
+    await openCard(user, container, multiPhoto.name);
     await user.click(container.querySelectorAll(".Modal-imageButton")[1]);
     await user.click(container.querySelector(".Modal-overlay"));
     await waitFor(() =>

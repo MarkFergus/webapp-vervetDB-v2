@@ -5,7 +5,7 @@ const groupsArr = [
     "D&D",
     "Royal",
     "Engeltjie",
-    "SAAV",
+    "Lankora",
     "Koko",
     "Camelot",
     "Skrow",
