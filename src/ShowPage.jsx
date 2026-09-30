@@ -4,7 +4,6 @@ import {
     IconArrowUp,
     IconCalendar,
     IconChevronDown,
-    IconPlus,
     IconUsersGroup,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
@@ -337,12 +336,6 @@ function ShowPage({
                     {sortButton("troop", "Troop")}
                     {sortButton("year", "Year")}
                 </div>
-                {canEdit && (
-                    <button type="button" className="ShowPage-add" onClick={startAdd}>
-                        <IconPlus size={16} aria-hidden="true" />
-                        Add monkey
-                    </button>
-                )}
             </div>
             {/* Read out by screen readers when the results change */}
             <p className="visually-hidden" role="status">

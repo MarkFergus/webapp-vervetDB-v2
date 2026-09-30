@@ -56,7 +56,7 @@ test("search, filters and icon buttons have accessible names", async () => {
     });
     expect(screen.getByRole("combobox", { name: "Filter by troop" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter by year" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Profile book PDF" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Profile Book" })).toBeInTheDocument();
 
     await user.type(search, "ab");
     await user.click(screen.getByRole("button", { name: "Clear search" }));
@@ -90,7 +90,7 @@ test("the number of results is announced when filters change", async () => {
 
 test("the PDF dialog closes with Escape and focus returns to the PDF button", async () => {
     const { user } = setup();
-    const pdfButton = screen.getByRole("button", { name: "Profile book PDF" });
+    const pdfButton = screen.getByRole("button", { name: "Create Profile Book" });
     await user.click(pdfButton);
     expect(screen.getByRole("dialog", { name: "Profile Book PDF" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();

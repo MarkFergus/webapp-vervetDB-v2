@@ -35,7 +35,7 @@ function Nav({
     troopFilter,
     isAccountOpen,
     toggleAccount,
-    onAddMonkey, // editors only: adds "Add monkey" to the ☰ menu
+    onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
 }) {
     const { user, signOut } = useAuth();
     const searchInputRef = useRef(null);
@@ -135,8 +135,8 @@ function Nav({
                     <a
                         href="#game"
                         className="Nav-gameLink"
-                        aria-label="Guess the monkey game"
-                        title="Guess the monkey game"
+                        aria-label="Guess The Monkey"
+                        title="Guess The Monkey"
                     >
                         <IconDeviceGamepad2 stroke="2" size="36" />
                     </a>
@@ -146,10 +146,10 @@ function Nav({
                         disabled={isGeneratingPDF}
                         aria-label={
                             isGeneratingPDF
-                                ? "Creating profile book PDF"
-                                : "Profile book PDF"
+                                ? "Creating Profile Book…"
+                                : "Create Profile Book"
                         }
-                        title="Profile book PDF"
+                        title={isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
                     >
                         {isGeneratingPDF ? (
                             <IconHourglassLow
@@ -161,6 +161,17 @@ function Nav({
                             <IconFileTypePdf stroke="2" size="36" />
                         )}
                     </button>
+                    {onAddMonkey && (
+                        <button
+                            type="button"
+                            className="Nav-addMonkey"
+                            onClick={onAddMonkey}
+                            aria-label="Add New Monkey"
+                            title="Add New Monkey"
+                        >
+                            <IconPlus stroke="2" size="36" />
+                        </button>
+                    )}
                     {/* Sign in / account: green tick-person when signed in */}
                     <button
                         type="button"
@@ -192,7 +203,7 @@ function Nav({
                         <div className="Nav-menu" id="Nav-menu" ref={menuRef}>
                             <a href="#game" onClick={() => closeMenu()}>
                                 <IconDeviceGamepad2 stroke={2} aria-hidden="true" />
-                                Guess the Monkey
+                                Guess The Monkey
                             </a>
                             <button type="button" onClick={openPDF} disabled={isGeneratingPDF}>
                                 <IconFileTypePdf stroke={2} aria-hidden="true" />
@@ -201,7 +212,7 @@ function Nav({
                             {onAddMonkey && (
                                 <button type="button" onClick={addMonkey}>
                                     <IconPlus stroke={2} aria-hidden="true" />
-                                    Add Monkey
+                                    Add New Monkey
                                 </button>
                             )}
                             <button type="button" onClick={signInOrOut}>

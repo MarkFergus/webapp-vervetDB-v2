@@ -81,13 +81,14 @@
 .Nav-buttons {
     height: 38px;
     display: flex;
+    gap: 10px; /* space between the icons */
+    margin-left: 4px;
     align-items: center;
     justify-content: center;
 }
 
 .Nav-buttons button {
     color: #d1cfc7;
-    margin-left: 4px;
     padding: 6px 0 2px 0;
     border: none;
     border-radius: 5px;
@@ -103,9 +104,14 @@
 .Nav-gameLink {
     display: flex;
     color: #d1cfc7;
-    margin-left: 4px;
     padding: 4px 0 0 0;
     border-radius: 5px;
+}
+
+/* Editors only: add a monkey */
+.Nav-buttons .Nav-addMonkey {
+    display: flex;
+    padding: 4px 0 0 0;
 }
 
 /* Sign in / account button: green when signed in */

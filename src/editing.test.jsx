@@ -111,7 +111,7 @@ test("visitors see no Edit or Add buttons", async () => {
     const { user } = setup({ signedIn: false });
     await user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
-    expect(screen.queryByRole("button", { name: /Add monkey/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Add (New )?Monkey/i })).toBeNull();
 });
 
 test("no editing when the site is showing its built-in copy", async () => {
@@ -169,7 +169,11 @@ test("problems are explained and nothing is saved until they're fixed", async ()
 
 test("adding a monkey: it appears in the list and its pop-up opens", async () => {
     const { user } = setup();
-    await user.click(await screen.findByRole("button", { name: /Add monkey/ }));
+    const addButton = await screen.findByRole("button", { name: "Add New Monkey" });
+    // In the top bar with the other buttons, not the sort / filter row
+    expect(addButton.closest(".Nav-buttons")).not.toBeNull();
+    expect(document.querySelector(".ShowPage-toolbar button[title='Add New Monkey']")).toBeNull();
+    await user.click(addButton);
     expect(form()).toHaveAccessibleName("Add a monkey");
 
     await user.type(field("Name"), "Brand New");
@@ -252,9 +256,9 @@ test("closing with unsaved changes asks first", async () => {
 test("phones: editors also find Add monkey in the ☰ menu", async () => {
     const { user } = setup();
     // Signed in as an editor: wait for the desktop button, then use the menu
-    await screen.findByRole("button", { name: /^Add monkey$/ });
+    await screen.findByRole("button", { name: "Add New Monkey" });
     await user.click(screen.getByRole("button", { name: /^Menu/ }));
     const menu = document.getElementById("Nav-menu");
-    await user.click(within(menu).getByRole("button", { name: "Add Monkey" }));
+    await user.click(within(menu).getByRole("button", { name: "Add New Monkey" }));
     expect(form()).toHaveAccessibleName("Add a monkey");
 });

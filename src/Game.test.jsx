@@ -48,7 +48,7 @@ test("the Game button in the nav opens the game, and Back returns", async () => 
     const user = userEvent.setup();
     render(<App />);
     // The site shows "Loading monkeys…" until the data has arrived
-    await user.click(await screen.findByRole("link", { name: "Guess the monkey game" }));
+    await user.click(await screen.findByRole("link", { name: "Guess The Monkey" }));
     expect(
         await screen.findByRole("heading", { name: "Guess the Monkey" })
     ).toBeInTheDocument();

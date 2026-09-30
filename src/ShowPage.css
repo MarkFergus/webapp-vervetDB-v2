@@ -136,33 +136,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
-/* Editors only: "+ Add monkey", at the end of the sort / filter row */
-.ShowPage-add {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: auto; /* right-hand end of the row */
-    height: 28px;
-    padding: 0 12px;
-    font-family: "Nunito Sans", sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: #25c4f8;
-    background: none;
-    border: 1px solid #25c4f8;
-    border-radius: 999px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.ShowPage-add:hover {
-    color: #1f1f1f;
-    background-color: #25c4f8;
-}
-
 /* Phones: filters share one line, sort fills the next with three equal,
-   easy-to-tap segments. "Add monkey" lives
-   in the ☰ menu instead (see Nav). */
+   easy-to-tap segments. */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
         flex-wrap: wrap;
@@ -192,10 +167,6 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     .ShowPage-sort button {
         flex: 1;
         height: 26px;
-    }
-
-    .ShowPage-add {
-        display: none;
     }
 }
 
