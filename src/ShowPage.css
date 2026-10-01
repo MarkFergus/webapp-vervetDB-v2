@@ -164,9 +164,11 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 /* Phones: Filters and the sort share one line; the sort's four segments
-   share the space left */
+   share the space left. On the narrowest phones (or with filters on) the
+   sort moves onto its own full-width line rather than running off the edge. */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
+        flex-wrap: wrap;
         gap: 8px;
     }
 
@@ -175,7 +177,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 
     .ShowPage-sort {
-        flex: 1;
+        flex: 1 1 210px; /* needs about 210px; otherwise it wraps */
         min-width: 0;
     }
 
