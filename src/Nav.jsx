@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
     IconSearch,
     IconX,
@@ -258,21 +259,30 @@ function Nav({
                     )}
                 </div>
             </nav>
-            <div className="Nav-pdfmodal">
-                <ModalPDF
-                    closePDFModal={togglePDFModal}
-                    isPDFModalOpen={isPDFModalOpen}
-                    createPDF={createPDF}
-                    isGeneratingPDF={isGeneratingPDF}
-                    progress={pdfProgress}
-                    error={pdfError}
-                    monkeyCount={pdfMonkeyCount}
-                    book={pdfBook}
-                    troops={pdfTroops}
-                    onChooseBook={onChoosePdfBook}
-                />
-            </div>
-            <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />
+            {/* The pop-ups are drawn at the top level of the page (a portal),
+                not inside the header: the pinned header's blur would
+                otherwise trap them in its own small strip */}
+            {createPortal(
+                <div className="Nav-pdfmodal">
+                    <ModalPDF
+                        closePDFModal={togglePDFModal}
+                        isPDFModalOpen={isPDFModalOpen}
+                        createPDF={createPDF}
+                        isGeneratingPDF={isGeneratingPDF}
+                        progress={pdfProgress}
+                        error={pdfError}
+                        monkeyCount={pdfMonkeyCount}
+                        book={pdfBook}
+                        troops={pdfTroops}
+                        onChooseBook={onChoosePdfBook}
+                    />
+                </div>,
+                document.body
+            )}
+            {createPortal(
+                <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />,
+                document.body
+            )}
         </>
     );
 }
