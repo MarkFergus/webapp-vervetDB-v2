@@ -3,7 +3,8 @@ import {
     IconSquareRoundedX,
     IconChevronLeft,
     IconChevronRight,
-    IconCamera,
+    IconMars,
+    IconVenus,
     IconDownload,
     IconPencil,
     IconShare,
@@ -11,7 +12,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { drawMonkeyImage } from "./monkeyImage";
-import { ageText } from "./ages";
+import { ageLabel } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
 import { downloadBlob } from "./canvasHelpers";
 import "./Modal.css";
@@ -24,6 +25,7 @@ function Modal({
     prevMonkey,
     nextMonkey,
     onEdit, // given only to editors: shows the Edit button
+    position, // { number, total }: where this monkey is in the list (optional)
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -150,43 +152,37 @@ function Modal({
                                 </button>
                             </div>
                             <motion.div className="Modal-content">
+                                {/* Name between quiet round previous / next buttons
+                                    (kept in place, just hidden, at either end of
+                                    the list so the name doesn't shift) */}
                                 <div className="Modal-header">
                                     <button
                                         type="button"
-                                        className={
-                                            prevMonkey
-                                                ? "Modal-arrowleft"
-                                                : "Modal-arrowleft-hidden"
-                                        }
+                                        className="Modal-monkeyArrow"
                                         onClick={() => handleClick("prev")}
                                         disabled={!prevMonkey}
                                         aria-label="Previous monkey"
                                     >
-                                        <IconChevronLeft
-                                            className="arrowleft"
-                                            stroke="3"
-                                        />
+                                        <IconChevronLeft size={22} stroke={2} aria-hidden="true" />
                                     </button>
-
-                                    <h1 className="Modal-title" id="Modal-title">
-                                        {monkey.name}
-                                    </h1>
-
+                                    <div className="Modal-heading">
+                                        <h1 className="Modal-title" id="Modal-title">
+                                            {monkey.name}
+                                        </h1>
+                                        {position && (
+                                            <p className="Modal-position">
+                                                {position.number} of {position.total}
+                                            </p>
+                                        )}
+                                    </div>
                                     <button
                                         type="button"
-                                        className={
-                                            nextMonkey
-                                                ? "Modal-arrowright"
-                                                : "Modal-arrowright-hidden"
-                                        }
+                                        className="Modal-monkeyArrow"
                                         onClick={() => handleClick("next")}
                                         disabled={!nextMonkey}
                                         aria-label="Next monkey"
                                     >
-                                        <IconChevronRight
-                                            className="arrowright"
-                                            stroke="3"
-                                        />
+                                        <IconChevronRight size={22} stroke={2} aria-hidden="true" />
                                     </button>
                                 </div>
                                 <div className="Modal-img">
@@ -231,50 +227,30 @@ function Modal({
                                     )}
                                 </div>
 
+                                {/* The facts as pills (like the cards and the saved
+                                    picture), then the bio and features */}
                                 <div className="Modal-details">
-                                    <div className="Modal-icons">
-                                        <div
-                                            className="iconCamera"
-                                            role="img"
-                                            aria-label={`${monkey.img.length} ${monkey.img.length === 1 ? "photo" : "photos"}`}
-                                        >
-                                            <IconCamera aria-hidden="true" />
-                                            <span aria-hidden="true">
-                                                {monkey.img.length}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <h3>
-                                        Troop: <span>{monkey.troop}</span>
-                                    </h3>
-                                    <h3>
-                                        Sex: <span>{monkey.sex || "Unknown"}</span>
-                                    </h3>
-                                    <h3>
-                                        Born:{" "}
-                                        <span>
-                                            {monkey.year
-                                                ? `${monkey.year} ${ageText(monkey.year)}`
-                                                : "Unknown"}
-                                        </span>
-                                    </h3>
-                                    <h3>
-                                        Chip:{" "}
-                                        <span>
-                                            {monkey.chip ? monkey.chip : "No Chip"}
-                                        </span>
-                                    </h3>
-                                    <h3>
-                                        Bio: <span>{monkey.bio || "No bio yet."}</span>
-                                    </h3>
-                                    <h3>
-                                        Distinctive features/behaviours:{" "}
-                                        <span className="Modal-details-description">
-                                            {monkey.desc
-                                                ? monkey.desc
-                                                : "Nothing. Nada. Zilch."}
-                                        </span>
-                                    </h3>
+                                    <ul className="Modal-pills" aria-label="Details">
+                                        <li className="is-troop">{monkey.troop} troop</li>
+                                        <li>
+                                            {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}
+                                            {monkey.sex === "female" && <IconVenus size={15} stroke={2} aria-hidden="true" />}
+                                            {monkey.sex === "male" ? "Male" : monkey.sex === "female" ? "Female" : "Sex unknown"}
+                                        </li>
+                                        <li>{monkey.year ? `Born ${monkey.year}` : "Birth year unknown"}</li>
+                                        {monkey.year && <li>{ageLabel(monkey.year)}</li>}
+                                        <li>{monkey.chip ? `Chip ${monkey.chip}` : "No chip"}</li>
+                                    </ul>
+                                    <section className="Modal-section">
+                                        <h2 className="Modal-label">Bio</h2>
+                                        <p>{monkey.bio || "No bio yet."}</p>
+                                    </section>
+                                    <section className="Modal-section">
+                                        <h2 className="Modal-label">Distinctive features &amp; behaviours</h2>
+                                        <p className="Modal-details-description">
+                                            {monkey.desc ? monkey.desc : "Nothing. Nada. Zilch."}
+                                        </p>
+                                    </section>
                                 </div>
                                 {/* Edit (editors only) on the left; Share and
                                     Save image on the right */}
@@ -293,13 +269,13 @@ function Modal({
                                         </button>
                                     )}
                                     <span className="Modal-footer-spacer" />
-                                    <button type="button" className="Modal-edit" onClick={shareMonkey}>
+                                    <button type="button" className="Modal-edit is-quiet" onClick={shareMonkey}>
                                         <IconShare size={18} aria-hidden="true" />
                                         {shareStatus === "copied" ? "Link copied!" : "Share"}
                                     </button>
                                     <button
                                         type="button"
-                                        className="Modal-edit"
+                                        className="Modal-edit is-quiet"
                                         onClick={saveImage}
                                         disabled={shareStatus === "saving"}
                                     >

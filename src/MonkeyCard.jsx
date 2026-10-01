@@ -1,19 +1,11 @@
 import { IconMars, IconVenus } from "@tabler/icons-react";
-import { ageInYears } from "./ages";
+import { ageLabel } from "./ages";
 import "./MonkeyCard.css";
 
 function SexIcon({ sex }) {
     if (sex === "male") return <IconMars size={15} stroke={2} aria-hidden="true" />;
     if (sex === "female") return <IconVenus size={15} stroke={2} aria-hidden="true" />;
     return null;
-}
-
-// "9 yrs old", "1 yr old", "Baby" (under 1), "Age unknown"
-function ageLabel(year) {
-    const age = ageInYears(year);
-    if (age === null) return "Age unknown";
-    if (age === 0) return "Baby";
-    return age === 1 ? "1 yr old" : `${age} yrs old`;
 }
 
 // A monkey in the grid, laid out like a video on YouTube: the photo, the

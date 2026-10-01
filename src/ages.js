@@ -18,6 +18,15 @@ export function ageInYears(year, today = new Date()) {
     return Math.max(0, currentBabySeason(today) - Number(year));
 }
 
+// Short, for cards and the pop-up: "9 yrs old", "1 yr old", "Baby" (under 1),
+// "Age unknown"
+export function ageLabel(year, today = new Date()) {
+    const age = ageInYears(year, today);
+    if (age === null) return "Age unknown";
+    if (age === 0) return "Baby";
+    return age === 1 ? "1 yr old" : `${age} yrs old`;
+}
+
 // "(10 years old)", "(1 year old)", "(Baby)" for under 1, or "" if unknown
 export function ageText(year, today = new Date()) {
     const age = ageInYears(year, today);

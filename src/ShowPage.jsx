@@ -439,6 +439,11 @@ function ShowPage({
                     handlePrevNext={handlePrevNext}
                     prevMonkey={prevMonkey}
                     nextMonkey={nextMonkey}
+                    position={
+                        selectedIndex === -1
+                            ? null
+                            : { number: selectedIndex + 1, total: visibleMonkeys.length }
+                    }
                     onEdit={canEdit ? startEdit : undefined}
                 />
             </div>

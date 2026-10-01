@@ -103,7 +103,7 @@ test("modal next arrow follows the filtered list", async () => {
     await user.click(within(container.querySelector(".ShowPage-monkeys")).getByText(first));
     expect(container.querySelector(".Modal-title")).toHaveTextContent(first);
 
-    await user.click(container.querySelector(".Modal-arrowright"));
+    await user.click(screen.getByRole("button", { name: "Next monkey" }));
     expect(container.querySelector(".Modal-title")).toHaveTextContent(second);
 });
 
@@ -119,7 +119,7 @@ test("modal shows 'No Chip' when a monkey has no chip number", async () => {
     await openCard(user, container, "Bloem");
 
     expect(container.querySelector(".Modal-details")).toHaveTextContent(
-        "Chip: No Chip"
+        "No chip"
     );
 });
 
@@ -194,12 +194,12 @@ test("modal shows Unknown and 'No bio yet.' for missing details", async () => {
     // Caryl has no birth year and no bio; Fuzz has no sex recorded
     await openCard(user, container, "Caryl");
     const details = () => container.querySelector(".Modal-details");
-    expect(details()).toHaveTextContent("Born: Unknown");
-    expect(details()).toHaveTextContent("Bio: No bio yet.");
+    expect(details()).toHaveTextContent("Birth year unknown");
+    expect(details()).toHaveTextContent("No bio yet.");
 
     await user.click(screen.getByRole("button", { name: "Close" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await user.clear(screen.getByPlaceholderText("Name or chip number"));
     await openCard(user, container, "Fuzz");
-    expect(details()).toHaveTextContent("Sex: Unknown");
+    expect(details()).toHaveTextContent("Sex unknown");
 });

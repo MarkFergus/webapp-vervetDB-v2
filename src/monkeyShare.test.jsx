@@ -4,7 +4,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import { drawMonkeyImage } from "./monkeyImage";
-import { ageText } from "./ages";
+import { ageLabel, ageText } from "./ages";
 import { monkeyFromHash, monkeyHash } from "./monkeyLink";
 import monkeysArr from "./monkeysArr";
 
@@ -53,8 +53,9 @@ test("the pop-up shows the age after the birth year", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
     await openAroha(user);
-    expect(within(popUp()).getByText(/^Born:/)).toHaveTextContent(
-        `Born: ${aroha.year} ${ageText(aroha.year)}`
+    expect(within(popUp()).getByText(`Born ${aroha.year}`)).toBeInTheDocument();
+    expect(within(popUp()).getByText(ageLabel(aroha.year))).toBeInTheDocument(
+        // e.g. "9 yrs old", next to "Born 2016"
     );
 });
 
@@ -144,4 +145,24 @@ test("Save image downloads a picture of the profile", async () => {
     const [monkey, options] = drawMonkeyImage.mock.lastCall;
     expect(monkey).toBe(aroha);
     expect(options.photo).toBe(aroha.img[0]); // the photo showing
+});
+
+test("the pop-up shows where the monkey is in the list", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    await openAroha(user);
+    const where = () => within(popUp()).getByText(/^\d+ of \d+$/).textContent;
+    const [number, total] = where().split(" of ").map(Number);
+    expect(total).toBe(monkeysArr.length);
+    await user.click(within(popUp()).getByRole("button", { name: "Next monkey" }));
+    expect(where()).toBe(`${number + 1} of ${total}`);
+});
+
+test("at the start of the list, Previous is hidden but keeps its place", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    const cards = within(document.querySelector(".ShowPage-monkeys")).getAllByRole("button");
+    await user.click(cards[0]);
+    expect(within(popUp()).getByText(/^1 of \d+$/)).toBeInTheDocument();
+    expect(within(popUp()).getByRole("button", { name: "Previous monkey", hidden: true })).toBeDisabled();
 });
