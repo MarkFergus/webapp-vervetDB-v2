@@ -17,6 +17,7 @@ import {
     DIFFICULTIES,
     difficultyById,
     makeQuestion,
+    isUltimate,
     modeLabel,
     playableMonkeys,
     QUESTIONS_PER_ROUND,
@@ -235,6 +236,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
             outOf: round.length,
             difficulty,
             troops: settings.troops,
+            length: settings.length,
             averageSeconds: averageSeconds(round.times),
             outcomes: round.outcomes,
             url: `${window.location.origin}${window.location.pathname}#game`,
@@ -444,7 +446,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         if (!finished) return;
         let cancelled = false;
         drawResultImage({
-            mode: modeLabel(settings.difficulty, settings.troops),
+            mode: modeLabel(settings.difficulty, settings.troops, settings.length),
             difficulty: settings.difficulty,
             message: resultMessage(round.score, round.length, settings.difficulty),
             score: round.score,
@@ -485,16 +487,26 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     );
 
     if (stage === "setup" || !round) {
+        // The hardest game possible: the screen turns fiery orange
+        const ultimate = isUltimate(draft);
         const draftLevel = difficultyById(draft.difficulty);
         const draftPhotos = roundLength(monkeys, draft);
         const draftBest = loadBest(draft);
         const available = playableMonkeys(monkeys, draft.troops).length;
         return (
-            <div className="Game" data-level={draft.difficulty}>
+            <div
+                className="Game"
+                data-level={draft.difficulty}
+                // The hardest game possible (all troops, Expert, all photos):
+                // the picked options all turn fiery orange
+                data-ultimate={ultimate ? "true" : undefined}
+            >
                 {header}
                 <h1 className="Game-title">Monkey Guesser</h1>
                 <p className="Game-intro">
-                    Choose your troops and difficulty below, then press Start.
+                    {ultimate
+                        ? "🔥 The ultimate challenge: every monkey, every troop, no multiple choice. 🔥"
+                        : "Choose your troops and difficulty below, then press Start."}
                 </p>
 
                 <div className="Game-setup">
@@ -594,7 +606,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                         onClick={() => startRound(draft)}
                         disabled={available === 0}
                     >
-                        Start
+                        {ultimate ? "Start the Ultimate Challenge" : "Start"}
                     </button>
                     {draftBest > 0 && (
                         <p className="Game-setup-best">
@@ -618,7 +630,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     const OutcomeIcon = isRight ? IconCircleCheckFilled : IconCircleXFilled;
     const difficultyLabel = level.label;
     // e.g. "Hard mode · Lankora + Skunkey"
-    const mode = modeLabel(difficulty, settings.troops);
+    const mode = modeLabel(difficulty, settings.troops, settings.length);
     const allPhotos = settings.length === "all";
     // Photo blurred with Resume over it while paused
     const photoCovered = paused;

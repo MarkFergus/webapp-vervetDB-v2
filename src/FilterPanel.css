@@ -198,9 +198,9 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 14px;
+    padding: 6px 14px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #d1cfc7;
     background: none;
@@ -220,9 +220,9 @@
 }
 
 .FilterPanel-show {
-    padding: 8px 16px;
+    padding: 6px 14px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #1f1f1f;
     background-color: #25c4f8;
@@ -232,7 +232,7 @@
 }
 
 .FilterPanel-show:hover {
-    filter: brightness(1.1);
+    background-color: #6dd8fb;
 }
 
 /* Phones: a sheet from the bottom of the screen, page dimmed behind */

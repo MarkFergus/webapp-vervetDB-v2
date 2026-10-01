@@ -157,7 +157,7 @@ function AccountModal({ isOpen, onClose }) {
                 </h1>
                 <p className="AccountModal-email">{user.email}</p>
                 <label className="AccountModal-field">
-                    New password
+                    <span>New password</span>
                     <input
                         ref={firstFieldRef}
                         type="password"
@@ -172,7 +172,7 @@ function AccountModal({ isOpen, onClose }) {
                     At least {MIN_PASSWORD_LENGTH} characters.
                 </p>
                 <label className="AccountModal-field">
-                    Type it again
+                    <span>Type it again</span>
                     <input
                         type="password"
                         autoComplete="new-password"
@@ -249,7 +249,7 @@ function AccountModal({ isOpen, onClose }) {
                     password.
                 </p>
                 <label className="AccountModal-field">
-                    Email
+                    <span>Email</span>
                     <input
                         ref={firstFieldRef}
                         type="email"
@@ -287,7 +287,7 @@ function AccountModal({ isOpen, onClose }) {
                     signing in.
                 </p>
                 <label className="AccountModal-field">
-                    Email
+                    <span>Email</span>
                     <input
                         ref={firstFieldRef}
                         type="email"
@@ -298,7 +298,7 @@ function AccountModal({ isOpen, onClose }) {
                     />
                 </label>
                 <label className="AccountModal-field">
-                    Password
+                    <span>Password</span>
                     <input
                         type="password"
                         autoComplete="current-password"

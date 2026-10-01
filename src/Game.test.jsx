@@ -903,3 +903,31 @@ describe("setup screen", () => {
         expect(screen.queryByText("Your best here:", { exact: false })).toBeNull(); // none yet
     });
 });
+
+test("only the hardest game (all troops, Expert, all photos) turns the picks orange", async () => {
+    const user = userEvent.setup();
+    render(<Game />);
+    const game = () => document.querySelector(".Game");
+    await user.click(difficultyCard("Expert"));
+    expect(game()).not.toHaveAttribute("data-ultimate"); // still 10 photos
+    await user.click(roundCard("All photos"));
+    expect(game()).toHaveAttribute("data-ultimate", "true");
+    await user.click(troopChip("Goliath")); // one troop: no longer the hardest
+    expect(game()).not.toHaveAttribute("data-ultimate");
+    await user.click(troopChip("All troops"));
+    expect(game()).toHaveAttribute("data-ultimate", "true");
+    await user.click(difficultyCard("Hard"));
+    expect(game()).not.toHaveAttribute("data-ultimate");
+});
+
+test("the Ultimate Challenge: its own line, Start wording, and badge while playing", async () => {
+    const user = userEvent.setup();
+    render(<Game />);
+    await user.click(difficultyCard("Expert"));
+    await user.click(roundCard("All photos"));
+    expect(
+        screen.getByText("🔥 The ultimate challenge: every monkey, every troop, no multiple choice. 🔥")
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Start the Ultimate Challenge" }));
+    expect(document.querySelector(".Game-mode")).toHaveTextContent("🔥 Ultimate Challenge");
+});

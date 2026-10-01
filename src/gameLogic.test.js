@@ -103,6 +103,10 @@ test("labels for the chosen troops and the mode", () => {
     expect(troopsLabel(["A", "B", "C", "D"])).toBe("4 troops");
     expect(modeLabel("hard", ["Lankora", "Skunkey"])).toBe("Hard mode · Lankora + Skunkey");
     expect(modeLabel("expert", [])).toBe("Expert mode");
+    // The hardest game possible: every troop, Expert, every photo
+    expect(modeLabel("expert", [], "all")).toBe("🔥 Ultimate Challenge");
+    expect(modeLabel("expert", ["Goliath"], "all")).toBe("Expert mode · Goliath");
+    expect(modeLabel("hard", [], "all")).toBe("Hard mode");
 });
 
 test("a round doesn't repeat a monkey while others are left", () => {
@@ -255,6 +259,8 @@ describe("share text", () => {
         expect(text.split("\n")[1]).toBe("Normal mode");
         const two = shareText({ ...base, difficulty: "hard", troops: ["Lankora", "Skunkey"] });
         expect(two.split("\n")[1]).toBe("Hard mode · Lankora + Skunkey");
+        const ultimate = shareText({ ...base, difficulty: "expert", troops: [], length: "all" });
+        expect(ultimate.split("\n")[1]).toBe("🔥 Ultimate Challenge");
     });
 
     test("never includes monkey names", () => {

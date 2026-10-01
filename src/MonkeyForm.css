@@ -33,6 +33,8 @@
 .MonkeyForm-header h1 {
     margin: 0;
     font-size: 22px;
+    font-weight: 800;
+    color: white;
 }
 
 .MonkeyForm-close {
@@ -74,6 +76,21 @@
     gap: 5px;
     font-size: 14px;
     color: #b6b2a5;
+}
+
+/* Field names: small grey capitals, like the rest of the site */
+.MonkeyForm-field > span:first-child {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+.MonkeyForm-field > span:first-child em {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
 }
 
 .MonkeyForm-field em {
@@ -136,8 +153,11 @@
 .MonkeyForm-photos legend {
     padding: 0;
     margin-bottom: 4px;
-    font-size: 14px;
-    color: #b6b2a5;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
 }
 
 .MonkeyForm-photo {
@@ -325,19 +345,22 @@
 }
 
 .MonkeyForm-button {
-    padding: 9px 18px;
+    padding: 6px 14px;
     font-family: "Nunito Sans", sans-serif;
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 700;
     color: #1f1f1f;
     background-color: #25c4f8;
     border: 1px solid #25c4f8;
     border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
+/* Hover: a clearly lighter blue (the same as the site's other main buttons) */
 .MonkeyForm-button:hover:not(:disabled) {
-    filter: brightness(1.15);
+    background-color: #6dd8fb;
+    border-color: #6dd8fb;
 }
 
 .MonkeyForm-button:disabled {
@@ -345,10 +368,29 @@
     cursor: default;
 }
 
+/* Save / Add monkey: the site's green */
+.MonkeyForm-button.is-save {
+    color: white;
+    background-color: #47b028;
+    border-color: #47b028;
+}
+
+.MonkeyForm-button.is-save:hover:not(:disabled) {
+    background-color: #5bc63a;
+    border-color: #5bc63a;
+}
+
+/* Cancel, Keep: quiet outlines that light up on hover */
 .MonkeyForm-button.is-quiet {
     color: #d1cfc7;
     background: none;
-    border-color: #434343;
+    border-color: #4a4849;
+}
+
+.MonkeyForm-button.is-quiet:hover:not(:disabled) {
+    color: white;
+    background: none;
+    border-color: #d1cfc7;
 }
 
 .MonkeyForm-button.is-danger {
@@ -357,9 +399,21 @@
     border-color: #fe39a4;
 }
 
+.MonkeyForm-button.is-danger:hover:not(:disabled) {
+    background-color: #ff6dbb;
+    border-color: #ff6dbb;
+}
+
+/* Delete (before confirming): pink outline that fills pink on hover */
 .MonkeyForm-button.is-danger.is-outline {
     color: #fe39a4;
     background: none;
+}
+
+.MonkeyForm-button.is-danger.is-outline:hover:not(:disabled) {
+    color: #1f1f1f;
+    background-color: #fe39a4;
+    border-color: #fe39a4;
 }
 
 @media (max-width: 420px) {

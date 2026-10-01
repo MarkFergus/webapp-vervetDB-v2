@@ -219,9 +219,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     background-color: transparent;
     color: #25c4f8;
     border: 1px solid #25c4f8;
-    font-size: 1rem;
+    font-size: 14px;
     margin: 32px;
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 4px;
     cursor: pointer;
 }

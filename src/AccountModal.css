@@ -7,13 +7,17 @@
     background-color: rgba(0, 0, 0, 0.8);
 }
 
+/* Centred when there's room; on a short screen (or with the phone keyboard
+   up) it starts at the top and the screen scrolls, so nothing is cut off */
 .AccountModal-windowbox {
     position: fixed;
     z-index: 1;
     inset: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding: 16px 0;
+    overflow-y: auto;
     pointer-events: none;
 }
 
@@ -21,6 +25,7 @@
     position: relative;
     width: 96%;
     max-width: 380px;
+    margin: auto 0; /* centres it when there's room */
     background-color: #202020;
     border-radius: 10px;
     pointer-events: auto;
@@ -51,13 +56,15 @@
 .AccountModal-content {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 48px 24px 32px;
+    gap: 12px;
+    padding: 40px 24px 24px;
 }
 
 .AccountModal-title {
     margin: 0;
     font-size: 24px;
+    font-weight: 800;
+    color: white;
     text-align: center;
 }
 
@@ -85,8 +92,15 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-size: 14px;
-    color: #b6b2a5;
+}
+
+/* Field names: small grey capitals, like the rest of the site */
+.AccountModal-field > span {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
 }
 
 .AccountModal-field input {
@@ -113,9 +127,9 @@
 }
 
 .AccountModal-button {
-    padding: 10px 16px;
+    padding: 8px 14px;
     font-family: "Nunito Sans", sans-serif;
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 700;
     color: #1f1f1f;
     background-color: #25c4f8;
@@ -133,12 +147,14 @@
 
 .AccountModal-button.is-signOut:hover:not(:disabled) {
     color: #ff92ce;
+    background: none;
     border-color: #ff92ce;
     filter: none;
 }
 
 .AccountModal-button:hover:not(:disabled) {
-    filter: brightness(1.15);
+    background-color: #6dd8fb;
+    border-color: #6dd8fb;
 }
 
 .AccountModal-button:disabled {

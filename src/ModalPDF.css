@@ -21,11 +21,15 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     background-color: rgba(0, 0, 0, 0.8);
 }
 
+/* Centred when there's room; on a short screen it starts at the top and the
+   screen scrolls, so nothing is cut off */
 .ModalPDF-windowbox {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    padding: 16px 0;
+    overflow-y: auto;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -40,6 +44,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     width: 96%;
     max-width: 400px;
     height: auto;
+    margin: auto 0; /* centres it when there's room */
     background-color: #202020;
     border-radius: 10px;
     display: block;
@@ -163,9 +168,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     color: #fe39a4;
     border: 1px solid #fe39a4;
     font-family: "Nunito Sans", sans-serif;
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 700;
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 4px;
     cursor: pointer;
 }

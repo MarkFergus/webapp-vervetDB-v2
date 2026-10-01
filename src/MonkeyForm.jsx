@@ -409,7 +409,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                                 Cancel
                             </button>
                             {/* Not while a photo is still uploading */}
-                            <button type="submit" className="MonkeyForm-button" disabled={busy || Boolean(uploading)}>
+                            <button type="submit" className="MonkeyForm-button is-save" disabled={busy || Boolean(uploading)}>
                                 {busy ? "Saving…" : isNew ? "Add monkey" : "Save"}
                             </button>
                         </>

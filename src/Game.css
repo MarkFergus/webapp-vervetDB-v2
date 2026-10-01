@@ -84,6 +84,13 @@
     color: #b6b2a5;
 }
 
+/* The Ultimate Challenge: the line turns bold and fiery */
+.Game[data-ultimate="true"] .Game-intro {
+    font-weight: 800;
+    color: #ff6b1a;
+    text-shadow: 0 0 12px rgba(255, 107, 26, 0.45);
+}
+
 /* …then troops, difficulty, round length, and Start */
 .Game-setup {
     display: flex;
@@ -228,46 +235,31 @@
     color: var(--level);
 }
 
-/* Expert, when chosen: a bigger glow that flickers like fire */
+/* Expert, when chosen: a steady fiery glow */
 .Game-card[data-level="expert"][aria-checked="true"] {
     border-color: #ff6b1a;
-    animation: Game-fire 1.6s ease-in-out infinite alternate;
+    box-shadow:
+        0 0 14px rgba(255, 120, 30, 0.8),
+        0 0 32px rgba(255, 60, 0, 0.5);
 }
 
-@keyframes Game-fire {
-    0% {
-        box-shadow:
-            0 0 10px rgba(255, 107, 26, 0.7),
-            0 0 24px rgba(255, 60, 0, 0.45),
-            0 -4px 32px rgba(255, 180, 60, 0.25);
-    }
-    35% {
-        box-shadow:
-            0 0 14px rgba(255, 140, 40, 0.8),
-            0 0 32px rgba(255, 70, 0, 0.55),
-            0 -8px 40px rgba(255, 200, 80, 0.35);
-    }
-    70% {
-        box-shadow:
-            0 0 12px rgba(255, 90, 20, 0.75),
-            0 0 28px rgba(230, 50, 0, 0.5),
-            0 -6px 36px rgba(255, 170, 50, 0.3);
-    }
-    100% {
-        box-shadow:
-            0 0 16px rgba(255, 120, 30, 0.85),
-            0 0 38px rgba(255, 60, 0, 0.6),
-            0 -10px 46px rgba(255, 210, 90, 0.4);
-    }
+/* The hardest game possible (all troops, Expert, all photos): the other
+   picked options catch fire too, in the same deep orange */
+.Game[data-ultimate="true"] .Game-chip[aria-pressed="true"] {
+    color: #1f1f1f;
+    background-color: #ff6b1a;
+    border-color: #ff6b1a;
+    box-shadow: 0 0 10px rgba(255, 107, 26, 0.45);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .Game-card[data-level="expert"][aria-checked="true"] {
-        animation: none;
-        box-shadow:
-            0 0 14px rgba(255, 120, 30, 0.8),
-            0 0 32px rgba(255, 60, 0, 0.5);
-    }
+.Game[data-ultimate="true"] .Game-card.is-round[aria-checked="true"] {
+    border-color: #ff6b1a;
+    box-shadow: 0 0 14px rgba(255, 90, 20, 0.45);
+}
+
+.Game[data-ultimate="true"] .Game-card.is-round[aria-checked="true"] b,
+.Game[data-ultimate="true"] .Game-setup-count {
+    color: #ff6b1a;
 }
 
 /* Round length: blue, like the troops */
@@ -290,6 +282,42 @@
     border-radius: 999px;
     cursor: pointer;
     box-shadow: 0 0 24px color-mix(in srgb, var(--level) 55%, transparent);
+}
+
+/* The Ultimate Challenge: Start's glow flickers like fire */
+.Game[data-ultimate="true"] .Game-setup-start {
+    animation: Game-embers 1.6s ease-in-out infinite alternate;
+}
+
+/* Phones: the longer wording on one line */
+@media (max-width: 480px) {
+    .Game[data-ultimate="true"] .Game-setup-start {
+        padding: 14px 10px;
+        font-size: 17px;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 360px) {
+    .Game[data-ultimate="true"] .Game-setup-start {
+        font-size: 15px;
+    }
+}
+
+@keyframes Game-embers {
+    from {
+        box-shadow: 0 0 18px rgba(255, 107, 26, 0.45), 0 0 4px rgba(255, 180, 60, 0.3);
+    }
+    to {
+        box-shadow: 0 0 34px rgba(255, 90, 20, 0.75), 0 -4px 22px rgba(255, 190, 80, 0.4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Game[data-ultimate="true"] .Game-setup-start {
+        animation: none;
+        box-shadow: 0 0 28px rgba(255, 90, 20, 0.6);
+    }
 }
 
 .Game-setup-start:focus-visible {

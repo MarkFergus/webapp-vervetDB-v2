@@ -48,8 +48,16 @@ export function troopsLabel(troops) {
     return list.join(" + ");
 }
 
-// e.g. "Hard mode · Lankora + Skunkey" (the troops left out when it's all of them)
-export function modeLabel(difficulty, troops) {
+// The hardest game possible: every troop, Expert, every photo
+export function isUltimate({ troops, difficulty, length }) {
+    return troopList(troops).length === 0 && difficulty === "expert" && length === "all";
+}
+export const ULTIMATE_LABEL = "🔥 Ultimate Challenge";
+
+// e.g. "Hard mode · Lankora + Skunkey" (the troops left out when it's all of
+// them), or "🔥 Ultimate Challenge" for the hardest game
+export function modeLabel(difficulty, troops, length) {
+    if (isUltimate({ troops, difficulty, length })) return ULTIMATE_LABEL;
     const label = `${difficultyById(difficulty).label} mode`;
     const which = troopsLabel(troops);
     return which ? `${label} · ${which}` : label;
@@ -99,8 +107,8 @@ export function resultMessage(score, outOf, difficulty) {
 // (shown as emoji, so nothing gives away which monkeys they were)
 const OUTCOME_EMOJI = { right: "✅", wrong: "❌", timeout: "⏰" };
 
-export function shareText({ score, outOf, difficulty, troops, averageSeconds, outcomes, url }) {
-    const mode = modeLabel(difficulty, troops);
+export function shareText({ score, outOf, difficulty, troops, length, averageSeconds, outcomes, url }) {
+    const mode = modeLabel(difficulty, troops, length);
     const time = averageSeconds ? ` ⏱ ${averageSeconds}s average` : "";
     return [
         "🐒 vervetDB · Monkey Guesser",
