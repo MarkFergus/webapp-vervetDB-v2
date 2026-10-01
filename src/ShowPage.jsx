@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowDown,
     IconArrowUp,
+    IconArrowBarToUp,
     IconCalendar,
     IconChevronDown,
     IconUsersGroup,
@@ -275,6 +276,27 @@ function ShowPage({
         setCurrentPage((page) => page + 1);
     }
 
+    // "Back to top": shown once the nav bar has scrolled out of view
+    const navRef = useRef(null);
+    const [navOutOfView, setNavOutOfView] = useState(false);
+    useEffect(() => {
+        function check() {
+            const nav = navRef.current;
+            if (nav) setNavOutOfView(nav.getBoundingClientRect().bottom < 0);
+        }
+        check();
+        window.addEventListener("scroll", check, { passive: true });
+        return () => window.removeEventListener("scroll", check);
+    }, []);
+    function scrollToTop() {
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+        // Keyboard users carry on from the top: the search box
+        document
+            .querySelector('input[aria-label="Search by name or chip number"]')
+            ?.focus({ preventScroll: true });
+    }
+
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
     const isAnyModalOpen =
@@ -317,7 +339,7 @@ function ShowPage({
                     onEdit={canEdit ? startEdit : undefined}
                 />
             </div>
-            <div className="ShowPage-nav" inert={isModalOpen || Boolean(editing)}>
+            <div className="ShowPage-nav" ref={navRef} inert={isModalOpen || Boolean(editing)}>
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
@@ -421,6 +443,17 @@ function ShowPage({
                         Show More
                     </button>
                 </div>
+            )}
+            {navOutOfView && !isAnyModalOpen && (
+                <button
+                    type="button"
+                    className="ShowPage-toTop"
+                    onClick={scrollToTop}
+                    aria-label="Back to top"
+                    title="Back to top"
+                >
+                    <IconArrowBarToUp size={24} aria-hidden="true" />
+                </button>
             )}
             {editing && (
                 <MonkeyForm

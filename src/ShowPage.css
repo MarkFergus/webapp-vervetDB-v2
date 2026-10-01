@@ -209,3 +209,49 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         margin: 0 24px;
     }
 }
+
+/* "Back to top": bottom right, once the nav bar has scrolled away */
+.ShowPage-toTop {
+    position: fixed;
+    z-index: 1;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    color: #d1cfc7;
+    background-color: #2a282a;
+    border: 2px solid #6b6966;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    animation: ShowPage-toTop-in 0.2s ease-out;
+}
+
+.ShowPage-toTop:hover {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border-color: #25c4f8;
+}
+
+@keyframes ShowPage-toTop-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ShowPage-toTop {
+        animation: none;
+    }
+}
+
+@media (max-width: 624px) {
+    .ShowPage-toTop {
+        right: max(16px, env(safe-area-inset-right));
+        bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
