@@ -8,11 +8,11 @@ function SexIcon({ sex }) {
     return null;
 }
 
-// "9 yrs old", "1 yr old", "Under 1 yr old", "Age unknown"
+// "9 yrs old", "1 yr old", "Baby" (under 1), "Age unknown"
 function ageLabel(year) {
     const age = ageInYears(year);
     if (age === null) return "Age unknown";
-    if (age === 0) return "Under 1 yr old";
+    if (age === 0) return "Baby";
     return age === 1 ? "1 yr old" : `${age} yrs old`;
 }
 

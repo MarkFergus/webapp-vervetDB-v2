@@ -43,9 +43,9 @@ test("age from the birth year", () => {
     expect(ageText(2016, oct2026)).toBe("(9 years old)");
     expect(ageText(2016, nov2026)).toBe("(10 years old)");
     expect(ageText(2024, oct2026)).toBe("(1 year old)");
-    expect(ageText(2025, oct2026)).toBe("(under 1 year old)");
+    expect(ageText(2025, oct2026)).toBe("(Baby)");
     expect(ageText(2025, nov2026)).toBe("(1 year old)");
-    expect(ageText(2026, oct2026)).toBe("(under 1 year old)"); // a July 2026 baby
+    expect(ageText(2026, oct2026)).toBe("(Baby)"); // a July 2026 baby
     expect(ageText("", oct2026)).toBe("");
 });
 

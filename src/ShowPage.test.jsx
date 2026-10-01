@@ -162,7 +162,7 @@ test("sort by age: youngest first, then oldest first; unknown ages always last",
     const { container } = setup();
     const ages = () =>
         [...container.querySelectorAll(".MonkeyCard-info-age")].map((el) => el.textContent);
-    const ageNumber = (text) => (text.startsWith("Under") ? 0 : parseInt(text, 10));
+    const ageNumber = (text) => (text === "Baby" ? 0 : parseInt(text, 10));
     const ageButton = () => screen.getByRole("button", { name: /^Age/ });
     // Sorting resets to page 1, so expand to every monkey after each sort.
     // fireEvent (a plain click) rather than the simulated user: much faster

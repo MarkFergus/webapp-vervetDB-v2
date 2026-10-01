@@ -18,10 +18,10 @@ export function ageInYears(year, today = new Date()) {
     return Math.max(0, currentBabySeason(today) - Number(year));
 }
 
-// "(10 years old)", "(1 year old)", "(under 1 year old)", or "" if unknown
+// "(10 years old)", "(1 year old)", "(Baby)" for under 1, or "" if unknown
 export function ageText(year, today = new Date()) {
     const age = ageInYears(year, today);
     if (age === null) return "";
-    if (age === 0) return "(under 1 year old)";
+    if (age === 0) return "(Baby)";
     return age === 1 ? "(1 year old)" : `(${age} years old)`;
 }
