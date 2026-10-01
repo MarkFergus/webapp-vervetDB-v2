@@ -42,12 +42,12 @@ Font.register({ family: "RussoOne", src: RussoOne });
 // Keep words whole: wrap to the next line instead of splitting with a hyphen
 Font.registerHyphenationCallback((word) => [word]);
 
-const ROWS_PER_PAGE = 4;
-
 // Every photo is shown at the same size (5:4, like most of the photos),
 // cropped to fit, so all rows line up
-const PHOTO_WIDTH = 224;
-const PHOTO_HEIGHT = 179;
+// 3 monkeys a page: photos just under half the page width, leaving room for
+// up to three section headings without pushing a row to the next page
+const PHOTO_WIDTH = 262;
+const PHOTO_HEIGHT = 210;
 
 // Colour of the cover's logo and "vervetDB"
 const BRAND_GREY = "#666";
@@ -88,8 +88,13 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         borderBottom: "1px solid #ccc",
     },
-    firstRow: {
-        borderTop: "1px solid #ccc",
+    // "Adult Females", "2024 Orphans/Babies"…
+    sectionTitle: {
+        fontFamily: "RussoOne",
+        fontSize: 14,
+        paddingTop: 10,
+        paddingBottom: 5,
+        borderBottom: "1px solid #ccc",
     },
     image: {
         width: PHOTO_WIDTH,
@@ -189,17 +194,43 @@ function formatDate(date) {
     return `${date.getDate()} ${month} ${date.getFullYear()}`;
 }
 
-function MonkeyPDF({ monkeys, troop }) {
-    const formattedDate = formatDate(new Date());
-    const troopTitle =
-        !troop || troop === "All Troops" ? "All Troops" : `${troop} Troop`;
+const monkeyKey = (monkey) => `${monkey.name}-${monkey.troop}`;
 
-    // Split the monkeys into pages of ROWS_PER_PAGE
-    const pages = [];
-    for (let i = 0; i < monkeys.length; i += ROWS_PER_PAGE) {
-        pages.push(monkeys.slice(i, i + ROWS_PER_PAGE));
-    }
-    const totalPages = pages.length;
+// One monkey: photo on the left, details on the right
+function monkeyRow(monkey, showTroop) {
+    return (
+        <View style={styles.row}>
+            {monkey.pdfPhoto ? (
+                <Image src={monkey.pdfPhoto} style={styles.image} />
+            ) : (
+                <View style={styles.noPhoto}>
+                    <Text>Photo unavailable</Text>
+                </View>
+            )}
+            <View style={styles.detailsContainer}>
+                <Text style={styles.name}>{monkey.name}</Text>
+                <Text style={styles.chip}>
+                    {showTroop ? `${monkey.troop} troop · ` : ""}
+                    Chip: {monkey.chip ? monkey.chip : "No chip"}
+                </Text>
+                <Text style={styles.bio}>
+                    {bioIntro(monkey)} {monkey.bio || "No bio yet."}
+                </Text>
+                <Text style={styles.descTitle}>Distinctive features/behaviours:</Text>
+                <Text style={styles.descInfo}>
+                    {monkey.desc ? monkey.desc : "Nothing. Nada. Zilch."}
+                </Text>
+            </View>
+        </View>
+    );
+}
+
+// sections: [{ title, monkeys }] in book order (see profileBook.js), each
+// monkey with its pdfPhoto. title: e.g. "Goliath Troop". showTroop: add each
+// monkey's troop (for books that mix troops, like Orphans/Babies).
+function MonkeyPDF({ sections, title, showTroop = false }) {
+    const formattedDate = formatDate(new Date());
+    const troopTitle = title;
 
     return (
         <Document style={styles.document}>
@@ -222,55 +253,41 @@ function MonkeyPDF({ monkeys, troop }) {
                     <Text style={styles.coverBrandName}>vervetDB</Text>
                 </View>
             </Page>
-            {pages.map((pageMonkeys, pageIndex) => (
-                // wrap={false}: each page holds exactly ROWS_PER_PAGE monkeys
-                <Page style={styles.page} key={pageIndex} wrap={false}>
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>
-                            {troopTitle} Profile Book
-                        </Text>
-                        <Text>Created {formattedDate}</Text>
-                    </View>
-                    {pageMonkeys.map((monkey, index) => (
-                        <View
-                            key={index}
-                            style={[styles.row, index === 0 && styles.firstRow]}
-                        >
-                            {monkey.pdfPhoto ? (
-                                <Image
-                                    src={monkey.pdfPhoto}
-                                    style={styles.image}
-                                />
-                            ) : (
-                                <View style={styles.noPhoto}>
-                                    <Text>Photo unavailable</Text>
+            {/* The pages flow on by themselves; a monkey's row is never split
+                across pages, and a heading never sits alone at the bottom */}
+            <Page style={styles.page}>
+                <View style={styles.header} fixed>
+                    <Text style={styles.headerTitle}>{troopTitle} Profile Book</Text>
+                    <Text>Created {formattedDate}</Text>
+                </View>
+                {sections.map((section) => (
+                    <View key={section.title}>
+                        {section.monkeys.map((monkey, i) =>
+                            i === 0 ? (
+                                // The heading and the section's first monkey
+                                // stay together, so a heading is never left
+                                // alone at the bottom of a page
+                                <View key={monkeyKey(monkey)} wrap={false}>
+                                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                                    {monkeyRow(monkey, showTroop)}
                                 </View>
-                            )}
-                            <View style={styles.detailsContainer}>
-                                <Text style={styles.name}>{monkey.name}</Text>
-                                <Text style={styles.chip}>
-                                    Chip: {monkey.chip ? monkey.chip : "No chip"}
-                                </Text>
-                                <Text style={styles.bio}>
-                                    {bioIntro(monkey)}{" "}
-                                    {monkey.bio || "No bio yet."}
-                                </Text>
-                                <Text style={styles.descTitle}>
-                                    Distinctive features/behaviours:
-                                </Text>
-                                <Text style={styles.descInfo}>
-                                    {monkey.desc
-                                        ? monkey.desc
-                                        : "Nothing. Nada. Zilch."}
-                                </Text>
-                            </View>
-                        </View>
-                    ))}
-                    <Text style={styles.pageNumber} fixed>
-                        Page {pageIndex + 1} of {totalPages}
-                    </Text>
-                </Page>
-            ))}
+                            ) : (
+                                <View key={monkeyKey(monkey)} wrap={false}>
+                                    {monkeyRow(monkey, showTroop)}
+                                </View>
+                            )
+                        )}
+                    </View>
+                ))}
+                {/* Page numbers leave out the cover */}
+                <Text
+                    style={styles.pageNumber}
+                    fixed
+                    render={({ pageNumber, totalPages }) =>
+                        `Page ${pageNumber - 1} of ${totalPages - 1}`
+                    }
+                />
+            </Page>
         </Document>
     );
 }

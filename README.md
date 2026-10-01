@@ -143,8 +143,9 @@ git push                         # publishes the site
 | `src/supabase.js` | The connection to Supabase |
 | `src/monkeyData.js`, `src/useMonkeyData.js` | Reading and saving monkeys (with the built-in copy as a fallback) |
 | `src/Game.jsx`, `src/gameLogic.js` | Guess The Monkey |
-| `src/ModalPDF.jsx` | The PDF pop-up (count, warning, progress) |
-| `src/MonkeyPDF.jsx` | Layout of the PDF profile book (cover page, rows of monkeys) |
+| `src/ModalPDF.jsx` | The Create Profile Book pop-up (troop picker, count, progress) |
+| `src/MonkeyPDF.jsx` | Layout of the PDF profile book (cover page, section headings, rows of monkeys) |
+| `src/profileBook.js`, `src/ages.js` | Which monkeys go in a book and in what order; ages (1 November birthday) |
 | `src/pdfPhotos.js` | Converts photos to JPG for the PDF (the PDF library can't use WebP) |
 | `src/useDialog.js` | Keyboard and focus behaviour shared by the pop-ups |
 | `src/MonkeyIcon.jsx`, `src/monkeyIconPath.js` | The monkey logo as a vector (used on the site and in the PDF) |
@@ -164,6 +165,8 @@ The `supabase/*.sql` files have already been run. They're kept as a record of ho
 ### Notes
 
 - **Access:** anyone can view the site. Only signed-in editors can add or change monkeys and photos, and only admins can delete monkeys; the database enforces this itself, not just the website.
-- **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser. Large PDFs (all troops) download every photo and can take several minutes.
+- **Profile Books** are made for one troop (chosen in the pop-up, not the page's search or filters), or for **Orphans/Babies**: this season's babies from every troop. Sections, each A–Z: Adult Females, Adult Males (4 and over; monkeys with no birth year count as adults), then younger monkeys by birth season ("2024 Orphans/Babies"…), oldest first.
+- **Ages:** a monkey's year is its birth season (July–June), and everyone is a year older on 1 November. Used in the pop-up, Save image and the Profile Book.
+- **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser.
 - **The PDF library is loaded only when a PDF is created**, which keeps the site itself quick to load.
 - **Keyboard:** Tab through cards, Enter to open, ← / → for previous/next monkey, Escape to close. In the game, Enter or Space starts, and keys 1–4 pick an answer.

@@ -99,7 +99,37 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     line-height: 1.4;
     color: #b6b2a5;
     text-align: center;
-    margin: 0 8px 24px;
+    margin: 0 8px 14px;
+}
+
+/* Which troop the book is for */
+.ModalPDF-troop {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 8px 22px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #b6b2a5;
+}
+
+.ModalPDF-troop select {
+    padding: 10px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: white;
+    background-color: #2a282a;
+    border: 2px solid #434343;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.ModalPDF-troop select:focus {
+    border-color: #25c4f8;
+    outline: none;
 }
 
 /* What this book will contain: the main line */

@@ -12,7 +12,8 @@ import {
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
-import { ageText, drawMonkeyImage } from "./monkeyImage";
+import { drawMonkeyImage } from "./monkeyImage";
+import { ageText } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
 import { downloadBlob } from "./canvasHelpers";
 import "./Modal.css";

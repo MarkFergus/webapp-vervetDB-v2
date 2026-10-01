@@ -15,6 +15,7 @@ import MonkeyForm from "./MonkeyForm";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
+import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
@@ -66,10 +67,10 @@ function getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort
 }
 
 // e.g. profile_book_Goliath_2026-09-30.pdf
-function pdfFilename(troopFilter) {
-    const troop = troopFilter === "All Troops" ? "all_troops" : troopFilter;
+// e.g. "profile_book_Goliath_2026-10-01.pdf", "profile_book_Orphans_Babies_…"
+function pdfFilename(book) {
     const date = new Date().toISOString().slice(0, 10);
-    return `profile_book_${troop.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf`;
+    return `profile_book_${book.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf`;
 }
 
 function downloadFile(blob, filename) {
@@ -115,6 +116,15 @@ function ShowPage({
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
+    // Which Profile Book to make: a troop, or BABIES_BOOK
+    const troopNames = troops.filter((t) => t !== "All Troops");
+    const [pdfBook, setPdfBook] = useState(troopNames[0] ?? BABIES_BOOK);
+    // The book's monkeys, in sections, in book order
+    const pdfSections = useMemo(
+        () => bookSections(bookMonkeys(monkeys, pdfBook)),
+        [monkeys, pdfBook]
+    );
+    const pdfMonkeyCount = pdfSections.reduce((n, s) => n + s.monkeys.length, 0);
 
     // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
@@ -241,12 +251,14 @@ function ShowPage({
         setSelectedMonkey(null);
     }
     function togglePDFModal() {
+        // Opening it while looking at one troop: that troop to start with
+        if (!isPDFModalOpen && troopNames.includes(troopFilter)) setPdfBook(troopFilter);
         setIsPDFModalOpen((open) => !open);
         setPdfError(null);
     }
-    // Builds a profile book of the monkeys currently shown and downloads it
+    // Builds the chosen Profile Book and downloads it
     async function createPDF() {
-        const monkeys = visibleMonkeys;
+        const monkeys = pdfSections.flatMap((s) => s.monkeys);
         setIsGeneratingPDF(true);
         setPdfError(null);
         setPdfProgress({ done: 0, total: monkeys.length });
@@ -259,10 +271,20 @@ function ShowPage({
             const prepared = await preparePhotosForPdf(monkeys, (done, total) =>
                 setPdfProgress({ done, total })
             );
+            // Back into sections, now with photos ready for the PDF
+            let next = 0;
+            const sections = pdfSections.map((s) => ({
+                ...s,
+                monkeys: prepared.slice(next, (next += s.monkeys.length)),
+            }));
             const blob = await pdf(
-                <MonkeyPDF monkeys={prepared} troop={troopFilter} />
+                <MonkeyPDF
+                    sections={sections}
+                    title={bookTitle(pdfBook)}
+                    showTroop={pdfBook === BABIES_BOOK}
+                />
             ).toBlob();
-            downloadFile(blob, pdfFilename(troopFilter));
+            downloadFile(blob, pdfFilename(pdfBook));
             setIsPDFModalOpen(false);
         } catch (err) {
             console.error(err);
@@ -345,8 +367,10 @@ function ShowPage({
                     isGeneratingPDF={isGeneratingPDF}
                     pdfProgress={pdfProgress}
                     pdfError={pdfError}
-                    pdfMonkeyCount={visibleMonkeys.length}
-                    troopFilter={troopFilter}
+                    pdfMonkeyCount={pdfMonkeyCount}
+                    pdfBook={pdfBook}
+                    pdfTroops={troopNames}
+                    onChoosePdfBook={setPdfBook}
                     searchValue={searchValue}
                     handleSearch={handleSearch}
                     handleDelete={handleDelete}

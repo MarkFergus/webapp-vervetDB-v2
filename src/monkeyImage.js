@@ -1,5 +1,6 @@
 import { MONKEY_ICON_PATH } from "./monkeyIconPath";
 import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
+import { ageText } from "./ages";
 
 // A monkey's profile as a picture: the logo, photo, name, details, bio and
 // features. 1080 wide and at least 1350 tall (the portrait shape phones show
@@ -12,14 +13,6 @@ const MARGIN = 80; // card edge to content
 const LINE = 42; // bio / features line height
 const BIO_LINES = 6;
 const FEATURE_LINES = 5;
-
-// "(10 years old)" from a birth year; "" if the year isn't known
-export function ageText(year, thisYear = new Date().getFullYear()) {
-    if (!year) return "";
-    const age = thisYear - Number(year);
-    if (age < 1) return "(under 1 year old)";
-    return age === 1 ? "(1 year old)" : `(${age} years old)`;
-}
 
 // Loads a photo so it can be drawn (ImgBB and our storage both allow this);
 // null if it can't be

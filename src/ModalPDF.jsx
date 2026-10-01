@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
+import { BABIES_BOOK, bookTitle } from "./profileBook";
+import { currentBabySeason } from "./ages";
 import "./ModalPDF.css";
 
 // Largest troop is ~55, so anything over this is probably "All Troops"
@@ -15,11 +17,14 @@ function ModalPDF({
     progress,
     error,
     monkeyCount,
-    troopFilter,
+    // The troop picker: the book chosen ("Goliath", or BABIES_BOOK), the
+    // troops to choose from, and what to call when the choice changes
+    book,
+    troops,
+    onChooseBook,
 }) {
     const plural = monkeyCount === 1 ? "monkey" : "monkeys";
-    const troopNote =
-        troopFilter === "All Troops" ? "all troops" : `${troopFilter} Troop`;
+    const troopNote = bookTitle(book);
 
     let status = null;
     if (progress && progress.done < progress.total) {
@@ -90,13 +95,30 @@ function ModalPDF({
                                 </h1>
                                 <div>
                                     <p className="ModalPDF-details">
-                                        Creates a formatted Profile Book as a
-                                        PDF file with the currently displayed
-                                        monkeys.
+                                        Creates a formatted Troop Profile Book
+                                        PDF file.
                                     </p>
+                                    <label className="ModalPDF-troop">
+                                        Troop
+                                        <select
+                                            value={book}
+                                            onChange={(e) => onChooseBook(e.target.value)}
+                                            disabled={isGeneratingPDF}
+                                        >
+                                            {troops.map((t) => (
+                                                <option key={t} value={t}>
+                                                    {t}
+                                                </option>
+                                            ))}
+                                            {/* This season's babies, from every troop */}
+                                            <option value={BABIES_BOOK}>
+                                                Orphans/Babies ({currentBabySeason()})
+                                            </option>
+                                        </select>
+                                    </label>
                                     <p className="ModalPDF-subdetails">
                                         {monkeyCount === 0 ? (
-                                            "No monkeys match the current filters."
+                                            "No monkeys in this troop yet."
                                         ) : (
                                             <>
                                                 This Profile Book will contain{" "}

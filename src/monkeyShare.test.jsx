@@ -3,7 +3,8 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import { ageText, drawMonkeyImage } from "./monkeyImage";
+import { drawMonkeyImage } from "./monkeyImage";
+import { ageText } from "./ages";
 import { monkeyFromHash, monkeyHash } from "./monkeyLink";
 import monkeysArr from "./monkeysArr";
 
@@ -36,10 +37,16 @@ test("links: name and troop, unique for every monkey", () => {
 });
 
 test("age from the birth year", () => {
-    expect(ageText(2016, 2026)).toBe("(10 years old)");
-    expect(ageText(2025, 2026)).toBe("(1 year old)");
-    expect(ageText(2026, 2026)).toBe("(under 1 year old)");
-    expect(ageText("", 2026)).toBe("");
+    // Everyone is a year older from 1 November
+    const oct2026 = new Date(2026, 9, 1);
+    const nov2026 = new Date(2026, 10, 1);
+    expect(ageText(2016, oct2026)).toBe("(9 years old)");
+    expect(ageText(2016, nov2026)).toBe("(10 years old)");
+    expect(ageText(2024, oct2026)).toBe("(1 year old)");
+    expect(ageText(2025, oct2026)).toBe("(under 1 year old)");
+    expect(ageText(2025, nov2026)).toBe("(1 year old)");
+    expect(ageText(2026, oct2026)).toBe("(under 1 year old)"); // a July 2026 baby
+    expect(ageText("", oct2026)).toBe("");
 });
 
 test("the pop-up shows the age after the birth year", async () => {

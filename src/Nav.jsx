@@ -32,7 +32,9 @@ function Nav({
     pdfProgress,
     pdfError,
     pdfMonkeyCount,
-    troopFilter,
+    pdfBook,
+    pdfTroops,
+    onChoosePdfBook,
     isAccountOpen,
     toggleAccount,
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
@@ -237,7 +239,9 @@ function Nav({
                     progress={pdfProgress}
                     error={pdfError}
                     monkeyCount={pdfMonkeyCount}
-                    troopFilter={troopFilter}
+                    book={pdfBook}
+                    troops={pdfTroops}
+                    onChooseBook={onChoosePdfBook}
                 />
             </div>
             <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />
