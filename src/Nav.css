@@ -1,28 +1,44 @@
+/* Logo, search and icons all share one middle line */
 .Nav {
     display: flex;
-    justify-content: centre;
-    align-items: centre;
-    font-size: 32px;
+    align-items: center;
 }
 
+/* The logo and name: a link back home */
+.Nav-home {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.Nav-home:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 4px;
+}
+
+/* The logo: about 70% of the search bar's height, like YouTube's */
 .Nav-icon {
     display: flex;
-    justify-content: center;
+    flex-shrink: 0;
     align-items: center;
 }
 
 .Nav-icon svg {
-    height: 34px;
-    width: 38px;
-    padding-top: 3px;
-    padding-right: 4px;
-    padding-bottom: 10px;
+    display: block;
+    height: 28px;
+    width: 30px;
+    margin-right: 6px;
 }
 
 .Nav-title {
-    height: 38px;
+    flex-shrink: 0;
+    margin-right: 16px; /* before the search bar */
     font-family: "Russo One", sans-serif;
-    margin: 3px 10px 0 0; /* same 10px gap as between the nav icons */
+    font-size: 24px;
+    line-height: 1;
 }
 
 /* Search: a softly filled pill, like YouTube's */
@@ -88,9 +104,9 @@
 }
 
 .Nav-buttons {
-    height: 38px;
+    height: 40px; /* the search bar's height */
     display: flex;
-    gap: 6px; /* space between the (round) icon buttons */
+    gap: 8px; /* space between the (round) icon buttons */
     margin-left: 10px; /* space between the search bar and the first icon */
     align-items: center;
     justify-content: center;
@@ -110,15 +126,16 @@
     color: white;
 }
 
-/* Icon buttons: round, with a soft grey circle on hover (like YouTube) */
+/* Icon buttons: all the same size, round, with a soft grey circle on hover
+   (like YouTube) */
 .Nav-buttons button,
 .Nav-buttons .Nav-gameLink,
 .Nav-menuButton {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     padding: 0;
     border-radius: 50%;
     transition: background-color 0.15s;
@@ -140,6 +157,62 @@
 
 .Nav-gameLink {
     color: #d1cfc7;
+}
+
+/* Sign in / account: a person in a circle, like an account picture */
+.Nav-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1.75px solid currentColor;
+    border-radius: 50%;
+}
+
+/* Signed in: green, with a soft green fill */
+/* Hover labels under the icon buttons: small, dark and rounded (like
+   YouTube's), after a short pause so they don't flash while passing over */
+.Nav-buttons [data-tooltip] {
+    position: relative;
+}
+
+.Nav-buttons [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 9px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: white;
+    background-color: rgba(70, 70, 70, 0.95);
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+
+/* The last icon's label lines up with its right edge, so it stays on screen */
+.Nav-buttons [data-tooltip-align="end"]::after {
+    left: auto;
+    right: 0;
+    transform: none;
+}
+
+.Nav-buttons [data-tooltip]:hover::after,
+.Nav-buttons [data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transition-delay: 0.4s;
+}
+
+.Nav-buttons .Nav-account.is-signed-in .Nav-avatar {
+    background-color: rgba(71, 176, 40, 0.15);
 }
 
 /* Sign in / account button: green when signed in */

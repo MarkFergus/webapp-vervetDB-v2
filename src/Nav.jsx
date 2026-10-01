@@ -10,7 +10,6 @@ import {
     IconMenu2,
     IconPlus,
     IconUser,
-    IconUserCheck,
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
@@ -38,6 +37,7 @@ function Nav({
     isAccountOpen,
     toggleAccount,
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
+    onHome, // the logo: back to the top, search and filters cleared
 }) {
     const { user, signOut } = useAuth();
     const searchInputRef = useRef(null);
@@ -95,18 +95,47 @@ function Nav({
         onAddMonkey();
     }
 
-    const AccountIcon = user ? IconUserCheck : IconUser;
     const accountLabel = user ? "Account (signed in)" : "Sign in";
+
+    // "/" anywhere on the page jumps into the search box (like YouTube and X),
+    // unless you're already typing somewhere
+    useEffect(() => {
+        function handleKeyDown(event) {
+            if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
+            const tag = event.target.tagName;
+            if (["INPUT", "TEXTAREA", "SELECT"].includes(tag) || event.target.isContentEditable) return;
+            const input = searchInputRef.current;
+            if (!input || input.closest("[inert]")) return; // a pop-up is open
+            event.preventDefault();
+            input.focus();
+        }
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     return (
         <>
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
             <nav className="Nav" inert={isPDFModalOpen || isAccountOpen}>
-                <div className="Nav-icon">
-                    {/* Same colour as the "vervetDB" text beside it */}
-                    <MonkeyIcon color="currentColor" />
-                </div>
-                <div className="Nav-title">vervetDB</div>
+                {/* The logo: back home (top of the page, search and filters
+                    cleared), like YouTube's */}
+                <a
+                    href="#"
+                    className="Nav-home"
+                    aria-label="vervetDB home"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        onHome?.();
+                    }}
+                >
+                    <span className="Nav-icon">
+                        {/* Same colour as the "vervetDB" text beside it */}
+                        <MonkeyIcon color="currentColor" aria-hidden="true" role={undefined} aria-label={undefined} />
+                    </span>
+                    <span className="Nav-title" aria-hidden="true">
+                        vervetDB
+                    </span>
+                </a>
 
                 <div className="Nav-searchbar">
                     <div className="Nav-iconSearch" aria-hidden="true">
@@ -139,9 +168,9 @@ function Nav({
                         href="#game"
                         className="Nav-gameLink"
                         aria-label="Monkey Guesser Game"
-                        title="Monkey Guesser Game"
+                        data-tooltip="Monkey Guesser Game"
                     >
-                        <IconDeviceGamepad2 stroke="2" size="36" />
+                        <IconDeviceGamepad2 stroke={1.75} size={26} />
                     </a>
                     <button
                         type="button"
@@ -152,16 +181,12 @@ function Nav({
                                 ? "Creating Profile Book…"
                                 : "Create Profile Book"
                         }
-                        title={isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
+                        data-tooltip={isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
                     >
                         {isGeneratingPDF ? (
-                            <IconHourglassLow
-                                className="hourglass"
-                                stroke="2"
-                                size="32"
-                            />
+                            <IconHourglassLow className="hourglass" stroke={1.75} size={24} />
                         ) : (
-                            <IconFileTypePdf stroke="2" size="36" />
+                            <IconFileTypePdf stroke={1.75} size={26} />
                         )}
                     </button>
                     {onAddMonkey && (
@@ -170,20 +195,23 @@ function Nav({
                             className="Nav-addMonkey"
                             onClick={onAddMonkey}
                             aria-label="Add New Monkey"
-                            title="Add New Monkey"
+                            data-tooltip="Add New Monkey"
                         >
-                            <IconPlus stroke="2" size="36" />
+                            <IconPlus stroke={1.75} size={26} />
                         </button>
                     )}
-                    {/* Sign in / account: green tick-person when signed in */}
+                    {/* Sign in / account: a person in a circle, green when signed in */}
                     <button
                         type="button"
                         className={user ? "Nav-account is-signed-in" : "Nav-account"}
                         onClick={toggleAccount}
                         aria-label={accountLabel}
-                        title={user ? `Signed in as ${user.email}` : "Sign in"}
+                        data-tooltip={user ? `Signed in as ${user.email}` : "Sign in"}
+                        data-tooltip-align="end"
                     >
-                        <AccountIcon stroke="2" size="32" />
+                        <span className="Nav-avatar" aria-hidden="true">
+                            <IconUser stroke={1.75} size={20} />
+                        </span>
                     </button>
                 </div>
 

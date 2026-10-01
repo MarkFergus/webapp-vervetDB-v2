@@ -204,6 +204,14 @@ function ShowPage({
         });
         setCurrentPage(1);
     }
+    // The logo: back to the top, with the search and filters cleared
+    function goHome() {
+        setSearchValue("");
+        setFilters(NO_FILTERS);
+        setCurrentPage(1);
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo?.({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    }
     function clearFilters() {
         setFilters(NO_FILTERS);
         setCurrentPage(1);
@@ -352,10 +360,13 @@ function ShowPage({
     // view (the header itself stays at the top)
     const toolbarRef = useRef(null);
     const [navOutOfView, setNavOutOfView] = useState(false);
+    // Scrolled at all: a faint line under the pinned header
+    const [scrolled, setScrolled] = useState(false);
     useEffect(() => {
         function check() {
             const toolbar = toolbarRef.current;
             if (toolbar) setNavOutOfView(toolbar.getBoundingClientRect().bottom < 0);
+            setScrolled(window.scrollY > 0);
         }
         check();
         window.addEventListener("scroll", check, { passive: true });
@@ -431,7 +442,10 @@ function ShowPage({
                     onEdit={canEdit ? startEdit : undefined}
                 />
             </div>
-            <div className="ShowPage-nav" inert={isModalOpen || Boolean(editing)}>
+            <div
+                className={scrolled ? "ShowPage-nav is-scrolled" : "ShowPage-nav"}
+                inert={isModalOpen || Boolean(editing)}
+            >
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
@@ -449,6 +463,7 @@ function ShowPage({
                     toggleAccount={() => setIsAccountOpen((open) => !open)}
                     onAddMonkey={canEdit ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
+                    onHome={goHome}
                 />
             </div>
             {/* Filters (pills, blue when active), sort (segmented control)

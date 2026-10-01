@@ -15,9 +15,9 @@ test("shows 'Loading monkeys…' until the data arrives", async () => {
 test("renders the vervetDB title and logo", async () => {
     render(<App />);
     expect(await screen.findByText("vervetDB")).toBeInTheDocument();
-    expect(
-        screen.getByRole("img", { name: "vervetDB monkey logo" })
-    ).toBeInTheDocument();
+    // The logo and name together are a link back home
+    const home = screen.getByRole("link", { name: "vervetDB home" });
+    expect(home.querySelector("svg")).not.toBeNull();
 });
 
 test("shows the first page of monkey cards", async () => {
