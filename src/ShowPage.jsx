@@ -190,6 +190,10 @@ function ShowPage({
             const next = { ...f, [field]: value };
             // A troop outside the newly chosen section: back to all troops
             if (field === "section" && !inSection(next.troop, value)) next.troop = NO_FILTERS.troop;
+            // A birth year or an age category, not both (a year already
+            // decides the category): choosing one clears the other
+            if (field === "year" && value !== NO_FILTERS.year) next.age = NO_FILTERS.age;
+            if (field === "age" && value !== NO_FILTERS.age) next.year = NO_FILTERS.year;
             return next;
         });
         setCurrentPage(1);
@@ -472,6 +476,7 @@ function ShowPage({
                         onChange={setFilter}
                         onClear={clearFilters}
                         count={visibleMonkeys.length}
+                        anyOn={activeFilters.length > 0}
                     />
                 </div>
                 <div className="ShowPage-sort" role="group" aria-label="Sort by">

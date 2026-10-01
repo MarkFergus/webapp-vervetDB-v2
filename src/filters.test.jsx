@@ -45,7 +45,8 @@ test("birth years: this year back to 2000", async () => {
         .getAllByRole("option")
         .map((o) => o.textContent);
     const thisYear = new Date().getFullYear();
-    expect(years[0]).toBe("All Years");
+    // ("Choose a year…" only shows in the box, not in the list)
+    expect(years[0]).toBe("Any year");
     expect(years[1]).toBe(String(thisYear));
     expect(years.at(-1)).toBe("2000");
     expect(years).toHaveLength(thisYear - 2000 + 2);
@@ -58,8 +59,8 @@ test.each([
 ])("Age: %s", async (group, fits) => {
     const { user } = setup();
     await user.click(filtersButton());
-    await user.click(choice("Age", group));
-    expect(choice("Age", group)).toHaveAttribute("aria-checked", "true");
+    await user.click(choice("Category", group));
+    expect(choice("Category", group)).toHaveAttribute("aria-checked", "true");
     const expected = monkeysArr.filter((m) => fits(ageInYears(m.year))).length;
     expectShowing(expected);
     expect(within(panel()).getByRole("button", { name: /^Show / })).toHaveTextContent(
@@ -81,7 +82,7 @@ test("filters in use show as chips: remove one, or Clear all", async () => {
     const { user } = setup();
     await user.click(filtersButton());
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
-    await user.click(choice("Age", "Adults"));
+    await user.click(choice("Category", "Adults"));
     await user.click(choice("Sex", "Male"));
     await user.click(within(panel()).getByRole("button", { name: /^Show / }));
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
@@ -157,4 +158,42 @@ describe("Location", () => {
         const placed = new Set(SECTIONS.flatMap((s) => s.troops));
         expect([...troops].filter((t) => !placed.has(t))).toEqual([]);
     });
+});
+
+test("a birth year or an age category, not both: choosing one clears the other", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    await user.click(filtersButton());
+    const year = () => screen.getByRole("combobox", { name: "Filter by year" });
+
+    await user.click(choice("Category", "Adults"));
+    await user.selectOptions(year(), "2019");
+    expect(choice("Category", "All")).toHaveAttribute("aria-checked", "true");
+    expectShowing(monkeysArr.filter((m) => Number(m.year) === 2019).length);
+
+    await user.click(choice("Category", "Juveniles"));
+    expect(year()).toHaveValue("All Years");
+    expect(year()).toHaveDisplayValue("Choose a year…"); // dimmed, unused
+    expect(year()).toHaveClass("is-empty");
+
+    // "Any year" clears a chosen year
+    await user.selectOptions(year(), "2019");
+    expect(year()).not.toHaveClass("is-empty");
+    await user.selectOptions(year(), "Any year");
+    expect(year()).toHaveDisplayValue("Choose a year…");
+    expectShowing(monkeysArr.length);
+    expect(screen.getByText("Pick a birth year or a category")).toBeInTheDocument();
+});
+
+test("Clear all in the panel is greyed out until a filter is on", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    await user.click(filtersButton());
+    const clear = () => within(panel()).getByRole("button", { name: "Clear all" });
+    expect(clear()).toBeDisabled();
+    await user.click(choice("Sex", "Female"));
+    expect(clear()).toBeEnabled();
+    await user.click(clear());
+    expect(choice("Sex", "All")).toHaveAttribute("aria-checked", "true");
+    expect(clear()).toBeDisabled();
 });

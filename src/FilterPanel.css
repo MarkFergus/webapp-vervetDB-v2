@@ -16,6 +16,10 @@
     border: 1px solid #434343;
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    /* Never taller than the window: scrolls inside instead */
+    max-height: calc(100dvh - 140px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .FilterPanel[hidden] {
@@ -70,6 +74,20 @@
     color: #d1cfc7;
 }
 
+/* A box's title, with a short instruction at the right */
+.FilterPanel-groupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.FilterPanel-note {
+    font-size: 12px;
+    color: #8a877e;
+    text-align: right;
+}
+
 .FilterPanel-choice button:disabled {
     opacity: 0.4;
     cursor: default;
@@ -101,6 +119,15 @@
     border: 1px solid #434343;
     border-radius: 8px;
     cursor: pointer;
+}
+
+/* "Choose a year…": dimmed, like a search box's hint */
+.FilterPanel select.is-empty {
+    color: #8a877e;
+}
+
+.FilterPanel select option {
+    color: #d1cfc7;
 }
 
 .FilterPanel select:focus {
@@ -151,26 +178,44 @@
     background-color: #25c4f8;
 }
 
+/* Clear all / Show N monkeys: always in view, even when the panel scrolls */
 .FilterPanel-footer {
+    position: sticky;
+    bottom: -18px; /* over the panel's bottom padding */
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    padding-top: 4px;
+    margin: 0 -16px -18px;
+    padding: 10px 16px 18px;
+    background-color: #242224;
+    border-top: 1px solid #3a3839;
 }
 
+/* Clear all: a quieter, grey-outlined partner to the blue Show button */
 .FilterPanel-clear {
-    padding: 6px 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
     font-family: inherit;
-    font-size: 14px;
-    color: #25c4f8;
+    font-size: 15px;
+    font-weight: 700;
+    color: #d1cfc7;
     background: none;
-    border: none;
+    border: 1px solid #5a5856;
+    border-radius: 8px;
     cursor: pointer;
 }
 
-.FilterPanel-clear:hover {
-    text-decoration: underline;
+.FilterPanel-clear:hover:not(:disabled) {
+    color: white;
+    border-color: #d1cfc7;
+}
+
+.FilterPanel-clear:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
 
 .FilterPanel-show {
@@ -202,6 +247,7 @@
         padding: 18px 16px max(18px, env(safe-area-inset-bottom));
         border-radius: 16px 16px 0 0;
         border-bottom: none;
+        max-height: calc(100dvh - 24px);
         animation: FilterPanel-up 0.2s ease-out;
     }
 

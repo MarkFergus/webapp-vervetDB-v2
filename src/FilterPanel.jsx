@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { IconX } from "@tabler/icons-react";
+import { IconFilterOff, IconX } from "@tabler/icons-react";
 import { SECTIONS, inSection } from "./sections";
 import "./FilterPanel.css";
 
@@ -27,13 +27,14 @@ export const SEXES = [
 const thisYear = new Date().getFullYear();
 export const FILTER_YEARS = Array.from({ length: thisYear - 1999 }, (_, i) => thisYear - i);
 
-// One row of joined buttons, one of them chosen (like the sort control)
-function Choice({ label, options, value, onChange }) {
+// One row of joined buttons, one of them chosen (like the sort control).
+// hideLabel: the box's title already says what it is (e.g. Sex)
+function Choice({ label, options, value, onChange, hideLabel = false }) {
     // e.g. "FilterPanel-enclosure" (no spaces: aria-labelledby splits on them)
     const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
     return (
         <div className="FilterPanel-section">
-            <span className="FilterPanel-label" id={labelId}>
+            <span className={hideLabel ? "visually-hidden" : "FilterPanel-label"} id={labelId}>
                 {label}
             </span>
             <div className="FilterPanel-choice" role="radiogroup" aria-labelledby={labelId}>
@@ -61,7 +62,8 @@ function Choice({ label, options, value, onChange }) {
 // "Show N monkeys" just closes it.
 //   filters: { location, section, troop, year, age, sex }; onChange(field, value)
 //   open / onClose; buttonRef: the Filters button (focus goes back to it)
-function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onClear, count }) {
+//   anyOn: some filter is in use (otherwise Clear all is greyed out)
+function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onClear, count, anyOn }) {
     const panelRef = useRef(null);
 
     // Open: focus the first choice. Escape or a click outside closes it.
@@ -145,28 +147,59 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                     </label>
                 </div>
 
-                <label className="FilterPanel-section">
-                    <span className="FilterPanel-label">Birth year</span>
-                    <select
-                        id="year"
-                        aria-label="Filter by year"
-                        value={filters.year}
-                        onChange={(e) => onChange("year", e.target.value)}
-                    >
-                        <option value="All Years">All Years</option>
-                        {FILTER_YEARS.map((y) => (
-                            <option key={y} value={y}>
-                                {y}
+                {/* A birth year or an age category, not both: choosing one
+                    puts the other back to "all" (see ShowPage setFilter) */}
+                <div className="FilterPanel-group">
+                    <div className="FilterPanel-groupHeader">
+                        <span className="FilterPanel-groupTitle">Age</span>
+                        <span className="FilterPanel-note">Pick a birth year or a category</span>
+                    </div>
+                    <label className="FilterPanel-section">
+                        <span className="FilterPanel-label">Birth year</span>
+                        {/* No year chosen: a dimmed "Choose a year…" (not in the
+                            list itself); "Any year" in the list clears it */}
+                        <select
+                            id="year"
+                            aria-label="Filter by year"
+                            className={filters.year === "All Years" ? "is-empty" : undefined}
+                            value={filters.year}
+                            onChange={(e) =>
+                                onChange("year", e.target.value === "any" ? "All Years" : e.target.value)
+                            }
+                        >
+                            <option value="All Years" hidden>
+                                Choose a year…
                             </option>
-                        ))}
-                    </select>
-                </label>
+                            <option value="any">Any year</option>
+                            {FILTER_YEARS.map((y) => (
+                                <option key={y} value={y}>
+                                    {y}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    <Choice
+                        label="Category"
+                        options={AGE_GROUPS}
+                        value={filters.age}
+                        onChange={(v) => onChange("age", v)}
+                    />
+                </div>
 
-                <Choice label="Age" options={AGE_GROUPS} value={filters.age} onChange={(v) => onChange("age", v)} />
-                <Choice label="Sex" options={SEXES} value={filters.sex} onChange={(v) => onChange("sex", v)} />
+                <div className="FilterPanel-group">
+                    <span className="FilterPanel-groupTitle">Sex</span>
+                    <Choice
+                        label="Sex"
+                        hideLabel
+                        options={SEXES}
+                        value={filters.sex}
+                        onChange={(v) => onChange("sex", v)}
+                    />
+                </div>
 
                 <div className="FilterPanel-footer">
-                    <button type="button" className="FilterPanel-clear" onClick={onClear}>
+                    <button type="button" className="FilterPanel-clear" onClick={onClear} disabled={!anyOn}>
+                        <IconFilterOff size={16} aria-hidden="true" />
                         Clear all
                     </button>
                     <button type="button" className="FilterPanel-show" onClick={close}>
