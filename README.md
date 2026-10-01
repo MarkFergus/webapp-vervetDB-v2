@@ -133,6 +133,7 @@ git push                         # publishes the site
 |---|---|
 | `src/App.jsx` | Loads the data, shows the main page or the game |
 | `src/ShowPage.jsx` | The main page: search, filters, sorting, the card grid, and PDF creation |
+| `src/FilterPanel.jsx`, `src/sections.js` | The Filters panel (location, section, troop, birth year, age, sex), and which troops are in each section |
 | `src/MonkeyCard.jsx` | One card in the grid |
 | `src/Modal.jsx` | The monkey detail pop-up (photos, details, previous/next, Edit, Share, Save image) |
 | `src/monkeyLink.js`, `src/monkeyImage.js` | Each monkey's link, and the profile picture for Save image |
@@ -165,6 +166,7 @@ The `supabase/*.sql` files have already been run. They're kept as a record of ho
 ### Notes
 
 - **Access:** anyone can view the site. Only signed-in editors can add or change monkeys and photos, and only admins can delete monkeys; the database enforces this itself, not just the website.
+- **Filters:** the **Filters** button opens a panel with Location (Troop; Introcage to come), Section (Top / Middle / Bottom / Sickbay), Troop, Birth year (this year back to 2000), Age (Adults 4+, Juveniles 1–3, Babies under 1; no birth year counts as adult) and Sex. Filters in use show as chips under the toolbar. Sort by Name, Troop, Year or Sex. Sections are listed in `src/sections.js`: add any new troop there.
 - **Profile Books** are made for one troop (chosen in the pop-up, not the page's search or filters), or for **Orphans/Babies**: this season's babies from every troop. Sections, each A–Z: Adult Females, Adult Males (4 and over; monkeys with no birth year count as adults), then younger monkeys by birth season ("2024 Orphans/Babies"…), oldest first.
 - **Ages:** a monkey's year is its birth season (July–June), and everyone is a year older on 1 November. Used in the pop-up, Save image and the Profile Book.
 - **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser.

@@ -27,21 +27,19 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     font-size: 14px;
 }
 
-.ShowPage-filters {
-    display: flex;
-    gap: 8px;
+/* Filters button (the panel drops down from it; see FilterPanel.css) */
+.ShowPage-filtersWrap {
+    position: relative;
 }
 
-/* A filter "pill": icon, dropdown, little arrow. The native dropdown is
-   stretched over the whole pill so the entire pill is tappable. */
-.ShowPage-pill {
-    position: relative;
+.ShowPage-filtersButton {
     display: flex;
     align-items: center;
-    height: 28px;
-    padding: 0 10px;
     gap: 6px;
-    color: #b6b2a5;
+    height: 28px;
+    padding: 0 12px;
+    font: inherit;
+    color: #d1cfc7;
     background-color: #262426;
     border: 1px solid #3a3839;
     border-radius: 999px;
@@ -49,47 +47,76 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     transition: border-color 0.15s, color 0.15s;
 }
 
-.ShowPage-pill:hover {
+.ShowPage-filtersButton:hover,
+.ShowPage-filtersButton[aria-expanded="true"] {
     color: white;
     border-color: #6b6862;
 }
 
-.ShowPage-pill:focus-within {
-    border-color: #25c4f8;
-}
-
-.ShowPage-pill select {
-    appearance: none;
-    font: inherit;
-    color: #d1cfc7;
-    background: none;
-    border: none;
-    outline: none;
-    padding: 0 16px 0 0;
-    cursor: pointer;
-}
-
-.ShowPage-pill select option {
-    color: #d1cfc7;
-    background-color: #1f1f1f;
-}
-
-.ShowPage-pill-arrow {
-    position: absolute;
-    right: 10px;
-    pointer-events: none;
-}
-
-/* A filter in use: blue, so it's clear what's narrowing the list */
-.ShowPage-pill.is-active {
+/* Filters in use: blue, with how many */
+.ShowPage-filtersButton.is-active {
     color: #25c4f8;
     border-color: #25c4f8;
     background-color: rgba(37, 196, 248, 0.1);
+    font-weight: 700;
 }
 
-.ShowPage-pill.is-active select {
-    color: #25c4f8;
+.ShowPage-filtersCount {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 12px;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border-radius: 999px;
+}
+
+/* The filters in use, under the toolbar: tap one to remove it */
+.ShowPage-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 8px 0;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.ShowPage-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px 3px 12px;
+    font: inherit;
+    font-size: 13px;
     font-weight: 700;
+    color: #25c4f8;
+    background-color: rgba(37, 196, 248, 0.1);
+    border: 1px solid #25c4f8;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.ShowPage-chip:hover {
+    color: white;
+    border-color: white;
+}
+
+.ShowPage-clearChips {
+    padding: 3px 6px;
+    font: inherit;
+    font-size: 13px;
+    color: #b6b2a5;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.ShowPage-clearChips:hover {
+    color: white;
+    text-decoration: underline;
 }
 
 /* Sort: segmented control, the active segment raised with an arrow */
@@ -136,37 +163,26 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
-/* Phones: filters share one line, sort fills the next with three equal,
-   easy-to-tap segments. */
+/* Phones: Filters and the sort share one line; the sort's four segments
+   share the space left */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
-        flex-wrap: wrap;
         gap: 8px;
     }
 
-    .ShowPage-filters {
-        flex: 1 1 100%;
-    }
-
-    .ShowPage-pill {
-        flex: 1;
-        min-width: 0;
+    .ShowPage-filtersButton {
         height: 32px;
     }
 
-    .ShowPage-pill select {
+    .ShowPage-sort {
         flex: 1;
         min-width: 0;
-        text-overflow: ellipsis;
-    }
-
-    .ShowPage-sort {
-        flex: 1 1 100%;
     }
 
     .ShowPage-sort button {
         flex: 1;
         height: 26px;
+        padding: 0 4px;
     }
 }
 
@@ -196,6 +212,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 @media (min-width: 500px) {
     .ShowPage-toolbar {
         margin: 14px 24px 6px;
+    }
+
+    .ShowPage-chips {
+        margin: 6px 24px 0;
     }
 
     .ShowPage-monkeys {

@@ -54,9 +54,14 @@ test("search, filters and icon buttons have accessible names", async () => {
     const search = screen.getByRole("textbox", {
         name: "Search by name or chip number",
     });
+    expect(screen.getByRole("button", { name: "Create Profile Book" })).toBeInTheDocument();
+    // The filters are in the Filters panel
+    await user.click(screen.getByRole("button", { name: "Filters" }));
     expect(screen.getByRole("combobox", { name: "Filter by troop" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter by year" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create Profile Book" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Age" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Sex" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Show \d+ monkeys$/ }));
 
     await user.type(search, "ab");
     await user.click(screen.getByRole("button", { name: "Clear search" }));
@@ -80,6 +85,7 @@ test("sort buttons say which sort is active and its direction", async () => {
 
 test("the number of results is announced when filters change", async () => {
     const { user } = setup();
+    await user.click(screen.getByRole("button", { name: "Filters" }));
     await user.selectOptions(
         screen.getByRole("combobox", { name: "Filter by troop" }),
         "Goliath"

@@ -117,17 +117,17 @@ describe("☰ menu (phones)", () => {
 });
 
 describe("filter / sort toolbar", () => {
-    const pill = (name) => screen.getByRole("combobox", { name }).closest(".ShowPage-pill");
-
-    test("a filter pill turns blue while it's in use", async () => {
+    test("the Filters button turns blue and counts the filters in use", async () => {
         const { user } = setup();
-        expect(pill("Filter by troop")).not.toHaveClass("is-active");
+        const filtersButton = () => screen.getByRole("button", { name: /^Filters/ });
+        expect(filtersButton()).not.toHaveClass("is-active");
+        await user.click(filtersButton());
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
-        expect(pill("Filter by troop")).toHaveClass("is-active");
-        expect(pill("Filter by year")).not.toHaveClass("is-active");
+        expect(filtersButton()).toHaveClass("is-active");
+        expect(filtersButton()).toHaveAccessibleName("Filters (1 on)");
 
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "All Troops");
-        expect(pill("Filter by troop")).not.toHaveClass("is-active");
+        expect(filtersButton()).not.toHaveClass("is-active");
     });
 
     test("the active sort shows an arrow for its direction", async () => {

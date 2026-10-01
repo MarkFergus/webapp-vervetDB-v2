@@ -3,9 +3,8 @@ import {
     IconArrowDown,
     IconArrowUp,
     IconArrowBarToUp,
-    IconCalendar,
-    IconChevronDown,
-    IconUsersGroup,
+    IconAdjustmentsHorizontal,
+    IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
@@ -16,26 +15,47 @@ import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
+import { ageInYears } from "./ages";
+import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
+import { SECTIONS, inSection } from "./sections";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
 
 const byName = (a, b) => a.name.localeCompare(b.name);
 
-// Ties (same troop or year) fall back to alphabetical by name
+// Ties (same troop, year or sex) fall back to alphabetical by name
+const SEX_ORDER = { female: 0, male: 1 };
 const compareBy = {
     name: byName,
     troop: (a, b) => a.troop.localeCompare(b.troop) || byName(a, b),
     year: (a, b) => a.year - b.year || byName(a, b),
+    sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
-// This year back to 30 years ago, for the year filter
-const currYear = new Date().getFullYear();
-const yearsArr = Array.from({ length: 31 }, (_, i) => currYear - i);
+// Age group filter: ages use the 1 November birthday, and no birth year
+// counts as an adult (as in the Profile Book)
+function inAgeGroup(monkey, group) {
+    if (group === "all") return true;
+    const age = ageInYears(monkey.year);
+    if (group === "adults") return age === null || age >= 4;
+    if (group === "juveniles") return age !== null && age >= 1 && age <= 3;
+    return age === 0; // babies
+}
+
+const NO_FILTERS = {
+    location: "troop",
+    section: "all",
+    troop: "All Troops",
+    year: "All Years",
+    age: "all",
+    sex: "all",
+};
 
 // The list on screen is worked out from the search, filters and sort
 // every time, so they always agree with each other.
-function getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort }) {
+function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
+    const { section, troop: troopFilter, year: yearFilter, age, sex } = filters;
     const query = searchValue.trim().toLowerCase();
     const isChipSearch = /^\d+$/.test(query);
 
@@ -52,15 +72,27 @@ function getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort
             (isChipSearch
                 ? monkey.chip.toString().includes(query)
                 : monkey.name.toLowerCase().includes(query));
-        return matchesTroop && matchesYear && matchesSearch;
+        const matchesSex = sex === "all" || monkey.sex === sex;
+        return (
+            matchesTroop &&
+            inSection(monkey.troop, section) &&
+            matchesYear &&
+            matchesSearch &&
+            matchesSex &&
+            inAgeGroup(monkey, age)
+        );
     });
 
     // filter() returns a new array, so sorting it leaves the original data alone
     const compare = compareBy[sort.key];
     return results.sort((a, b) => {
-        // Unknown birth years go last, whichever direction the year sort is
+        // Unknown birth years (or sexes) go last, whichever direction
         if (sort.key === "year" && !a.year !== !b.year) {
             return a.year ? -1 : 1;
+        }
+        const knownSex = (m) => m.sex in SEX_ORDER;
+        if (sort.key === "sex" && knownSex(a) !== knownSex(b)) {
+            return knownSex(a) ? -1 : 1;
         }
         return sort.ascending ? compare(a, b) : compare(b, a);
     });
@@ -99,8 +131,11 @@ function ShowPage({
     const { isEditor, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
     const [searchValue, setSearchValue] = useState("");
-    const [troopFilter, setTroopFilter] = useState("All Troops");
-    const [yearFilter, setYearFilter] = useState("All Years");
+    // Filters: { troop, year, age, sex } (see FilterPanel)
+    const [filters, setFilters] = useState(NO_FILTERS);
+    const troopFilter = filters.troop;
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const filtersButtonRef = useRef(null);
     const [sort, setSort] = useState({ key: "name", ascending: true });
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedMonkey, setSelectedMonkey] = useState(null);
@@ -129,8 +164,8 @@ function ShowPage({
     // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
         () =>
-            getVisibleMonkeys(monkeys, { searchValue, troopFilter, yearFilter, sort }),
-        [monkeys, searchValue, troopFilter, yearFilter, sort]
+            getVisibleMonkeys(monkeys, { searchValue, filters, sort }),
+        [monkeys, searchValue, filters, sort]
     );
 
     const selectedIndex = visibleMonkeys.indexOf(selectedMonkey);
@@ -150,12 +185,17 @@ function ShowPage({
         }));
         setCurrentPage(1);
     }
-    function filterTroops(event) {
-        setTroopFilter(event.target.value);
+    function setFilter(field, value) {
+        setFilters((f) => {
+            const next = { ...f, [field]: value };
+            // A troop outside the newly chosen section: back to all troops
+            if (field === "section" && !inSection(next.troop, value)) next.troop = NO_FILTERS.troop;
+            return next;
+        });
         setCurrentPage(1);
     }
-    function filterYear(event) {
-        setYearFilter(event.target.value);
+    function clearFilters() {
+        setFilters(NO_FILTERS);
         setCurrentPage(1);
     }
     function handleSearch(event) {
@@ -319,6 +359,23 @@ function ShowPage({
             ?.focus({ preventScroll: true });
     }
 
+    const activeFilters = [
+        filters.section !== "all" && {
+            field: "section",
+            label: `${SECTIONS.find((x) => x.id === filters.section).label} section`,
+        },
+        filters.troop !== NO_FILTERS.troop && { field: "troop", label: filters.troop },
+        filters.year !== NO_FILTERS.year && { field: "year", label: `Born ${filters.year}` },
+        filters.age !== "all" && {
+            field: "age",
+            label: AGE_GROUPS.find((g) => g.id === filters.age).label,
+        },
+        filters.sex !== "all" && {
+            field: "sex",
+            label: SEXES.find((x) => x.id === filters.sex).label,
+        },
+    ].filter(Boolean);
+
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
     const isAnyModalOpen =
@@ -384,61 +441,66 @@ function ShowPage({
             {/* Filters (pills, blue when active), sort (segmented control)
                 and, for editors, Add monkey */}
             <div className="ShowPage-toolbar" inert={isAnyModalOpen}>
-                <div className="ShowPage-filters">
-                    <label
+                <div className="ShowPage-filtersWrap">
+                    <button
+                        type="button"
                         className={
-                            troopFilter === "All Troops"
-                                ? "ShowPage-pill"
-                                : "ShowPage-pill is-active"
+                            activeFilters.length ? "ShowPage-filtersButton is-active" : "ShowPage-filtersButton"
+                        }
+                        ref={filtersButtonRef}
+                        onClick={() => setFiltersOpen((open) => !open)}
+                        aria-expanded={filtersOpen}
+                        aria-controls="FilterPanel"
+                        aria-label={
+                            activeFilters.length ? `Filters (${activeFilters.length} on)` : "Filters"
                         }
                     >
-                        <IconUsersGroup size={16} aria-hidden="true" />
-                        <select
-                            name="troops"
-                            id="troops"
-                            aria-label="Filter by troop"
-                            value={troopFilter}
-                            onChange={filterTroops}
-                        >
-                            {troops.map((g) => (
-                                <option key={g} value={g}>
-                                    {g}
-                                </option>
-                            ))}
-                        </select>
-                        <IconChevronDown size={14} className="ShowPage-pill-arrow" aria-hidden="true" />
-                    </label>
-                    <label
-                        className={
-                            yearFilter === "All Years"
-                                ? "ShowPage-pill"
-                                : "ShowPage-pill is-active"
-                        }
-                    >
-                        <IconCalendar size={16} aria-hidden="true" />
-                        <select
-                            name="year"
-                            id="year"
-                            aria-label="Filter by year"
-                            value={yearFilter}
-                            onChange={filterYear}
-                        >
-                            <option value="All Years">All Years</option>
-                            {yearsArr.map((y) => (
-                                <option key={y} value={y}>
-                                    {y}
-                                </option>
-                            ))}
-                        </select>
-                        <IconChevronDown size={14} className="ShowPage-pill-arrow" aria-hidden="true" />
-                    </label>
+                        <IconAdjustmentsHorizontal size={16} aria-hidden="true" />
+                        Filters
+                        {activeFilters.length > 0 && (
+                            <span className="ShowPage-filtersCount" aria-hidden="true">
+                                {activeFilters.length}
+                            </span>
+                        )}
+                    </button>
+                    <FilterPanel
+                        open={filtersOpen}
+                        onClose={() => setFiltersOpen(false)}
+                        buttonRef={filtersButtonRef}
+                        troops={troops}
+                        filters={filters}
+                        onChange={setFilter}
+                        onClear={clearFilters}
+                        count={visibleMonkeys.length}
+                    />
                 </div>
                 <div className="ShowPage-sort" role="group" aria-label="Sort by">
                     {sortButton("name", "Name")}
                     {sortButton("troop", "Troop")}
                     {sortButton("year", "Year")}
+                    {sortButton("sex", "Sex")}
                 </div>
             </div>
+            {/* The filters in use: tap one to remove it */}
+            {activeFilters.length > 0 && (
+                <div className="ShowPage-chips" inert={isAnyModalOpen}>
+                    {activeFilters.map((f) => (
+                        <button
+                            key={f.field}
+                            type="button"
+                            className="ShowPage-chip"
+                            onClick={() => setFilter(f.field, NO_FILTERS[f.field])}
+                            aria-label={`Remove filter: ${f.label}`}
+                        >
+                            {f.label}
+                            <IconX size={14} aria-hidden="true" />
+                        </button>
+                    ))}
+                    <button type="button" className="ShowPage-clearChips" onClick={clearFilters}>
+                        Clear all
+                    </button>
+                </div>
+            )}
             {/* Read out by screen readers when the results change */}
             <p className="visually-hidden" role="status">
                 Showing {visibleMonkeys.length}{" "}
