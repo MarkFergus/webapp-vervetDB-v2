@@ -1,19 +1,25 @@
 import { IconMars, IconVenus } from "@tabler/icons-react";
+import { ageInYears } from "./ages";
 import "./MonkeyCard.css";
 
 function SexIcon({ sex }) {
-    const iconSize = 19;
-    const strokeSize = 1;
-    if (sex === "male") {
-        return <IconMars size={iconSize} stroke={strokeSize} />;
-    } else if (sex === "female") {
-        return <IconVenus size={iconSize} stroke={strokeSize} />;
-    }
+    if (sex === "male") return <IconMars size={15} stroke={2} aria-hidden="true" />;
+    if (sex === "female") return <IconVenus size={15} stroke={2} aria-hidden="true" />;
     return null;
 }
 
+// "9 yrs old", "1 yr old", "Under 1 yr old", "Age unknown"
+function ageLabel(year) {
+    const age = ageInYears(year);
+    if (age === null) return "Age unknown";
+    if (age === 0) return "Under 1 yr old";
+    return age === 1 ? "1 yr old" : `${age} yrs old`;
+}
+
+// A monkey in the grid, laid out like a video on YouTube: the photo, the
+// name, and a quieter line of details ("H&B · ♂ Male · 9 yrs old").
 // A button, so it can be reached with Tab and opened with Enter or Space.
-// Buttons may only contain inline elements, hence spans rather than divs/h3s.
+// Buttons may only contain inline elements, hence spans rather than divs.
 function MonkeyCard({ name, sex, year, troop, img, onClick }) {
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
     const label = [
@@ -24,23 +30,23 @@ function MonkeyCard({ name, sex, year, troop, img, onClick }) {
     ].join(", ");
 
     return (
-        <button
-            type="button"
-            className="MonkeyCard"
-            onClick={onClick}
-            aria-label={label}
-        >
+        <button type="button" className="MonkeyCard" onClick={onClick} aria-label={label}>
             <span className="MonkeyCard-image">
                 {/* alt="" because the name is right below the photo */}
                 <img src={img} alt="" loading="lazy"></img>
             </span>
             <span className="MonkeyCard-info">
                 <span className="MonkeyCard-info-name">{name}</span>
-                <span className="MonkeyCard-info-sex">
-                    <SexIcon sex={sex} />
+                <span className="MonkeyCard-meta">
+                    <span className="MonkeyCard-info-troop">{troop}</span>
+                    {sex && (
+                        <span className="MonkeyCard-sex">
+                            <SexIcon sex={sex} />
+                            {sex === "male" ? "Male" : "Female"}
+                        </span>
+                    )}
+                    <span className="MonkeyCard-info-age">{ageLabel(year)}</span>
                 </span>
-                <span className="MonkeyCard-info-year">{year || "?"}</span>
-                <span className="MonkeyCard-info-troop">{troop}</span>
             </span>
         </button>
     );

@@ -139,11 +139,11 @@ describe("filter / sort toolbar", () => {
         expect(arrows("Name")).toBe(1);
         expect(arrows("Troop")).toBe(0);
 
-        await user.click(button("Year"));
-        expect(arrows("Year")).toBe(1);
+        await user.click(button("Age"));
+        expect(arrows("Age")).toBe(1);
         expect(arrows("Name")).toBe(0);
-        expect(button("Year")).toHaveAccessibleName("Year, ascending");
-        await user.click(button("Year"));
-        expect(button("Year")).toHaveAccessibleName("Year, descending");
+        expect(button("Age")).toHaveAccessibleName("Age, ascending");
+        await user.click(button("Age"));
+        expect(button("Age")).toHaveAccessibleName("Age, descending");
     });
 });

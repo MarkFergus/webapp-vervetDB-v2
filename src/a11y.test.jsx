@@ -77,7 +77,7 @@ test("sort buttons say which sort is active and its direction", async () => {
 
     await user.click(nameSort());
     expect(nameSort()).toHaveAccessibleName(/descending/);
-    expect(screen.getByRole("button", { name: /^Year/ })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /^Age/ })).toHaveAttribute(
         "aria-pressed",
         "false"
     );

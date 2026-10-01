@@ -25,15 +25,23 @@
     margin: 3px 10px 0 0; /* same 10px gap as between the nav icons */
 }
 
+/* Search: a softly filled pill, like YouTube's */
 .Nav-searchbar {
     width: 100%;
-    max-width: 500px;
-    height: 38px;
+    max-width: 540px;
+    height: 40px;
     display: flex;
     align-items: center;
-    border: 1px solid #d1cfc7;
-    border-radius: 8px;
+    background-color: #161616;
+    border: 1px solid #3f3d3f;
+    border-radius: 999px;
     margin: 0 auto;
+    padding: 0 6px;
+    transition: border-color 0.15s;
+}
+
+.Nav-searchbar:hover {
+    border-color: #5a5856;
 }
 
 .Nav-searchbar input {
@@ -51,7 +59,8 @@
 }
 
 .Nav-searchbar:focus-within {
-    border: 2px solid #25c4f8;
+    border-color: #25c4f8;
+    box-shadow: 0 0 0 1px #25c4f8;
 }
 
 .Nav-searchbar input:focus {
@@ -81,8 +90,8 @@
 .Nav-buttons {
     height: 38px;
     display: flex;
-    gap: 10px; /* space between the icons */
-    margin-left: 10px; /* the same gap between the search bar and the first icon */
+    gap: 6px; /* space between the (round) icon buttons */
+    margin-left: 10px; /* space between the search bar and the first icon */
     align-items: center;
     justify-content: center;
 }
@@ -101,23 +110,39 @@
     color: white;
 }
 
-.Nav-gameLink {
+/* Icon buttons: round, with a soft grey circle on hover (like YouTube) */
+.Nav-buttons button,
+.Nav-buttons .Nav-gameLink,
+.Nav-menuButton {
     display: flex;
-    color: #d1cfc7;
-    padding: 4px 0 0 0;
-    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    transition: background-color 0.15s;
 }
 
-/* Editors only: add a monkey */
-.Nav-buttons .Nav-addMonkey {
-    display: flex;
-    padding: 4px 0 0 0;
+.Nav-buttons button:hover:not(:disabled),
+.Nav-buttons .Nav-gameLink:hover,
+.Nav-menuButton:hover,
+.Nav-menuButton[aria-expanded="true"] {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.Nav-buttons button:focus-visible,
+.Nav-buttons .Nav-gameLink:focus-visible,
+.Nav-menuButton:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 0;
+}
+
+.Nav-gameLink {
+    color: #d1cfc7;
 }
 
 /* Sign in / account button: green when signed in */
-.Nav-buttons .Nav-account {
-    padding: 4px 0 0 0;
-}
 
 .Nav-buttons .Nav-account.is-signed-in {
     color: #47b028;

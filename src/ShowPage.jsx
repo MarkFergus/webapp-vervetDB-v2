@@ -29,7 +29,8 @@ const SEX_ORDER = { female: 0, male: 1 };
 const compareBy = {
     name: byName,
     troop: (a, b) => a.troop.localeCompare(b.troop) || byName(a, b),
-    year: (a, b) => a.year - b.year || byName(a, b),
+    // Age: youngest first (the latest birth year)
+    age: (a, b) => b.year - a.year || byName(a, b),
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
@@ -92,7 +93,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
     const compare = compareBy[sort.key];
     return results.sort((a, b) => {
         // Unknown birth years (or sexes) go last, whichever direction
-        if (sort.key === "year" && !a.year !== !b.year) {
+        if (sort.key === "age" && !a.year !== !b.year) {
             return a.year ? -1 : 1;
         }
         const knownSex = (m) => m.sex in SEX_ORDER;
@@ -347,13 +348,14 @@ function ShowPage({
         setCurrentPage((page) => page + 1);
     }
 
-    // "Back to top": shown once the nav bar has scrolled out of view
-    const navRef = useRef(null);
+    // "Back to top": shown once the Filters / sort row has scrolled out of
+    // view (the header itself stays at the top)
+    const toolbarRef = useRef(null);
     const [navOutOfView, setNavOutOfView] = useState(false);
     useEffect(() => {
         function check() {
-            const nav = navRef.current;
-            if (nav) setNavOutOfView(nav.getBoundingClientRect().bottom < 0);
+            const toolbar = toolbarRef.current;
+            if (toolbar) setNavOutOfView(toolbar.getBoundingClientRect().bottom < 0);
         }
         check();
         window.addEventListener("scroll", check, { passive: true });
@@ -429,7 +431,7 @@ function ShowPage({
                     onEdit={canEdit ? startEdit : undefined}
                 />
             </div>
-            <div className="ShowPage-nav" ref={navRef} inert={isModalOpen || Boolean(editing)}>
+            <div className="ShowPage-nav" inert={isModalOpen || Boolean(editing)}>
                 <Nav
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
@@ -451,7 +453,7 @@ function ShowPage({
             </div>
             {/* Filters (pills, blue when active), sort (segmented control)
                 and, for editors, Add monkey */}
-            <div className="ShowPage-toolbar" inert={isAnyModalOpen}>
+            <div className="ShowPage-toolbar" ref={toolbarRef} inert={isAnyModalOpen}>
                 <div className="ShowPage-filtersWrap">
                     <button
                         type="button"
@@ -489,7 +491,7 @@ function ShowPage({
                 <div className="ShowPage-sort" role="group" aria-label="Sort by">
                     {sortButton("name", "Name")}
                     {sortButton("troop", "Troop")}
-                    {sortButton("year", "Year")}
+                    {sortButton("age", "Age")}
                     {sortButton("sex", "Sex")}
                 </div>
             </div>

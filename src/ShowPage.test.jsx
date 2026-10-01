@@ -69,7 +69,7 @@ test("year filter shows only monkeys born that year", async () => {
 test("sorting doesn't reorder the original monkey data", async () => {
     const before = monkeysArr.map((m) => m.name);
     const { user } = setup();
-    await user.click(screen.getByRole("button", { name: /^Year/ }));
+    await user.click(screen.getByRole("button", { name: /^Age/ }));
     await user.click(screen.getByRole("button", { name: /^Troop/ }));
 
     expect(monkeysArr.map((m) => m.name)).toEqual(before);
@@ -158,13 +158,12 @@ test("clicking outside the PDF modal closes it", async () => {
     );
 });
 
-test("unknown birth years go last in both year sort directions", () => {
+test("sort by age: youngest first, then oldest first; unknown ages always last", () => {
     const { container } = setup();
-    const years = () =>
-        [...container.querySelectorAll(".MonkeyCard-info-year")].map(
-            (el) => el.textContent
-        );
-    const yearButton = () => screen.getByRole("button", { name: /^Year/ });
+    const ages = () =>
+        [...container.querySelectorAll(".MonkeyCard-info-age")].map((el) => el.textContent);
+    const ageNumber = (text) => (text.startsWith("Under") ? 0 : parseInt(text, 10));
+    const ageButton = () => screen.getByRole("button", { name: /^Age/ });
     // Sorting resets to page 1, so expand to every monkey after each sort.
     // fireEvent (a plain click) rather than the simulated user: much faster
     // with 500+ cards on screen, which matters on GitHub's slower machines
@@ -175,17 +174,19 @@ test("unknown birth years go last in both year sort directions", () => {
         }
     };
     const unknown = monkeysArr.filter((m) => m.year === "").length;
+    const known = (list) => list.slice(0, -unknown).map(ageNumber);
+    const inOrder = (list, up) => list.every((n, i) => i === 0 || (up ? list[i - 1] <= n : list[i - 1] >= n));
 
-    fireEvent.click(yearButton());
+    fireEvent.click(ageButton());
     showAll();
-    expect(years()).toHaveLength(monkeysArr.length);
-    expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
-    expect(years()[0]).not.toBe("?");
+    expect(ages()).toHaveLength(monkeysArr.length);
+    expect(ages().slice(-unknown).every((a) => a === "Age unknown")).toBe(true);
+    expect(inOrder(known(ages()), true)).toBe(true); // youngest first
 
-    fireEvent.click(yearButton());
+    fireEvent.click(ageButton());
     showAll();
-    expect(years().slice(-unknown).every((y) => y === "?")).toBe(true);
-    expect(Number(years()[0])).toBeGreaterThan(Number(years()[1]) - 1);
+    expect(ages().slice(-unknown).every((a) => a === "Age unknown")).toBe(true);
+    expect(inOrder(known(ages()), false)).toBe(true); // oldest first
 });
 
 test("modal shows Unknown and 'No bio yet.' for missing details", async () => {

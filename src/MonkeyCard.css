@@ -33,13 +33,16 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 /* Every photo shows in the same 5:4 frame (the site's photo shape), so an
    odd-shaped photo can't upset the grid: it fills the frame, trimming any
    overflow */
+/* Every photo shows in the same 5:4 frame (the site's photo shape), so an
+   odd-shaped photo can't upset the grid: it fills the frame, trimming any
+   overflow. Rounded like YouTube's thumbnails. */
 .MonkeyCard-image {
     display: block;
     width: 100%;
     aspect-ratio: 5 / 4;
     overflow: hidden;
-    padding-bottom: 0;
-    border-radius: 8px;
+    border-radius: 12px;
+    background-color: #2a282a;
 }
 
 .MonkeyCard img {
@@ -47,61 +50,67 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease-out;
+    transition: transform 0.5s ease-out, filter 0.2s;
 }
 
 .MonkeyCard:hover img,
 .MonkeyCard:focus-visible img {
-    transform: scale(1.1);
+    transform: scale(1.06);
+    filter: brightness(1.08);
 }
 
+.MonkeyCard:focus-visible {
+    outline: none;
+}
+
+.MonkeyCard:focus-visible .MonkeyCard-image {
+    outline: 2px solid #25c4f8;
+    outline-offset: 2px;
+}
+
+/* Under the photo: the name, then a quieter line of details */
 .MonkeyCard-info {
-    color: #d1cfc7;
-    width: 100%;
-    font-size: 0.9rem;
-    margin: 2px 0 0 0;
     display: flex;
-    justify-content: end;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.MonkeyCard:hover .MonkeyCard-info,
-.MonkeyCard:focus-visible .MonkeyCard-info {
-    color: white;
-}
-
-/* Same size and weight as the h3 headings these used to be */
-.MonkeyCard-info-name,
-.MonkeyCard-info-troop,
-.MonkeyCard-info-year {
-    margin: 0;
-    font-size: 1.17em;
-    font-weight: bold;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    margin-top: 6px;
+    padding: 0 2px;
+    line-height: 1.3; /* close together, so they read as the photo's caption */
 }
 
 .MonkeyCard-info-name {
-    margin-right: auto;
-    padding-left: 4px;
-    flex-grow: 1;
     overflow: hidden;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.MonkeyCard-info-sex {
-    display: block;
-    height: 22px;
-    width: 22px;
-    padding-top: 1px;
+/* "H&B · ♂ Male · 9 yrs old" */
+.MonkeyCard-meta {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: 14px;
+    color: #aaa79f;
+    white-space: nowrap;
 }
 
-.MonkeyCard-info-year {
-    font-weight: 300;
+.MonkeyCard-meta > span + span::before {
+    content: "·";
+    margin: 0 6px;
 }
 
-.MonkeyCard-info-troop {
-    margin-left: 4px;
-    padding-right: 4px;
-    font-weight: 300;
+.MonkeyCard-sex {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .MonkeyCard img {
+        transition: none;
+    }
 }
