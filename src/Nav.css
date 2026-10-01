@@ -22,7 +22,7 @@
 .Nav-title {
     height: 38px;
     font-family: "Russo One", sans-serif;
-    margin: 3px 8px 0 0;
+    margin: 3px 10px 0 0; /* same 10px gap as between the nav icons */
 }
 
 .Nav-searchbar {
@@ -82,7 +82,7 @@
     height: 38px;
     display: flex;
     gap: 10px; /* space between the icons */
-    margin-left: 4px;
+    margin-left: 10px; /* the same gap between the search bar and the first icon */
     align-items: center;
     justify-content: center;
 }
