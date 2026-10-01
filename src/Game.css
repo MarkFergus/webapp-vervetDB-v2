@@ -73,7 +73,7 @@
     font-weight: normal;
     text-align: center;
     font-size: 28px;
-    margin: 16px 0 12px;
+    margin: 32px 0 12px; /* room below the vervetDB header */
 }
 
 /* Setup screen: a line of instructions under the title… */
@@ -968,7 +968,7 @@
 
     .Game-title {
         font-size: 24px;
-        margin: 10px 0 8px;
+        margin: 24px 0 8px;
     }
 
 

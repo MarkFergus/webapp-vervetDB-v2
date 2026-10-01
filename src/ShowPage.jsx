@@ -33,14 +33,19 @@ const compareBy = {
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
-// Age group filter: ages use the 1 November birthday, and no birth year
+// Age categories: ages use the 1 November birthday, and no birth year
 // counts as an adult (as in the Profile Book)
-function inAgeGroup(monkey, group) {
-    if (group === "all") return true;
+const AGE_TESTS = {
+    babies: (age) => age === 0,
+    juveniles: (age) => age !== null && age >= 1 && age <= 3,
+    adults: (age) => age === null || (age >= 4 && age <= 14),
+    elderly: (age) => age !== null && age >= 15,
+};
+// In any of the chosen categories ([] = every monkey)
+function inAgeGroups(monkey, groups) {
+    if (groups.length === 0) return true;
     const age = ageInYears(monkey.year);
-    if (group === "adults") return age === null || age >= 4;
-    if (group === "juveniles") return age !== null && age >= 1 && age <= 3;
-    return age === 0; // babies
+    return groups.some((g) => AGE_TESTS[g](age));
 }
 
 const NO_FILTERS = {
@@ -48,7 +53,7 @@ const NO_FILTERS = {
     section: "all",
     troop: "All Troops",
     year: "All Years",
-    age: "all",
+    age: [], // age categories picked ([] = all)
     sex: "all",
 };
 
@@ -79,7 +84,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
             matchesYear &&
             matchesSearch &&
             matchesSex &&
-            inAgeGroup(monkey, age)
+            inAgeGroups(monkey, age)
         );
     });
 
@@ -193,7 +198,7 @@ function ShowPage({
             // A birth year or an age category, not both (a year already
             // decides the category): choosing one clears the other
             if (field === "year" && value !== NO_FILTERS.year) next.age = NO_FILTERS.age;
-            if (field === "age" && value !== NO_FILTERS.age) next.year = NO_FILTERS.year;
+            if (field === "age" && value.length > 0) next.year = NO_FILTERS.year;
             return next;
         });
         setCurrentPage(1);
@@ -370,10 +375,12 @@ function ShowPage({
         },
         filters.troop !== NO_FILTERS.troop && { field: "troop", label: filters.troop },
         filters.year !== NO_FILTERS.year && { field: "year", label: `Born ${filters.year}` },
-        filters.age !== "all" && {
+        // One chip per age category picked
+        ...AGE_GROUPS.filter((g) => filters.age.includes(g.id)).map((g) => ({
             field: "age",
-            label: AGE_GROUPS.find((g) => g.id === filters.age).label,
-        },
+            id: g.id,
+            label: g.label,
+        })),
         filters.sex !== "all" && {
             field: "sex",
             label: SEXES.find((x) => x.id === filters.sex).label,
@@ -491,10 +498,14 @@ function ShowPage({
                 <div className="ShowPage-chips" inert={isAnyModalOpen}>
                     {activeFilters.map((f) => (
                         <button
-                            key={f.field}
+                            key={f.id ?? f.field}
                             type="button"
                             className="ShowPage-chip"
-                            onClick={() => setFilter(f.field, NO_FILTERS[f.field])}
+                            onClick={() =>
+                                f.field === "age"
+                                    ? setFilter("age", filters.age.filter((a) => a !== f.id))
+                                    : setFilter(f.field, NO_FILTERS[f.field])
+                            }
                             aria-label={`Remove filter: ${f.label}`}
                         >
                             {f.label}

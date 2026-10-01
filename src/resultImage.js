@@ -101,7 +101,7 @@ export async function drawResultImage({
     ctx.textAlign = "center";
     ctx.font = `36px ${TITLE_FONT}`;
     ctx.fillStyle = "#b6b2a5";
-    ctx.fillText("Guess The Monkey", SIZE / 2, 250);
+    ctx.fillText("Monkey Guesser", SIZE / 2, 250);
 
     // Mode badge
     const badge = mode.toUpperCase();

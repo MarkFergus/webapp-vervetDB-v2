@@ -175,7 +175,7 @@
     display: flex;
     flex-direction: column;
     padding: 6px;
-    font-size: 16px;
+    font-size: 15px;
     background-color: #2a282a;
     border: 1px solid #434343;
     border-radius: 10px;
@@ -189,7 +189,8 @@
     gap: 12px;
     padding: 12px 12px;
     font-family: "Nunito Sans", sans-serif;
-    font-size: 16px;
+    font-size: 15px;
+    white-space: nowrap; /* each item on one line, e.g. "Monkey Guesser Game" */
     text-align: left;
     color: #d1cfc7;
     text-decoration: none;

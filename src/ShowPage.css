@@ -37,7 +37,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     align-items: center;
     gap: 6px;
     height: 28px;
-    padding: 0 12px;
+    padding: 0 18px; /* a little wider than the sort, so it stands out */
     font: inherit;
     color: #d1cfc7;
     background-color: #262426;

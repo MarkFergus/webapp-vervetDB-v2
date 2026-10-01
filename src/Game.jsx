@@ -456,7 +456,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         })
             .then((blob) => {
                 if (cancelled) return;
-                setResultImage(new File([blob], "vervetdb-guess-the-monkey.png", { type: "image/png" }));
+                setResultImage(new File([blob], "vervetdb-monkey-guesser.png", { type: "image/png" }));
             })
             // No picture (e.g. a very old browser): Share still sends the text
             .catch((err) => console.error("Couldn't make the results picture:", err));
@@ -492,7 +492,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         return (
             <div className="Game" data-level={draft.difficulty}>
                 {header}
-                <h1 className="Game-title">Guess The Monkey</h1>
+                <h1 className="Game-title">Monkey Guesser</h1>
                 <p className="Game-intro">
                     Choose your troops and difficulty below, then press Start.
                 </p>

@@ -151,9 +151,9 @@
     justify-content: center;
     align-items: center;
     line-height: 1.2;
-    padding: 6px 4px;
+    padding: 6px 2px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     color: #b6b2a5;
     background: none;
     border: none;
@@ -172,7 +172,8 @@
     color: white;
 }
 
-.FilterPanel-choice button[aria-checked="true"] {
+.FilterPanel-choice button[aria-checked="true"],
+.FilterPanel-choice button[aria-pressed="true"] {
     font-weight: 700;
     color: #1f1f1f;
     background-color: #25c4f8;

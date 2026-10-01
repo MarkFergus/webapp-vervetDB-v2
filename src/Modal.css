@@ -236,52 +236,82 @@
     border-radius: 5px;
 }
 
-.Modal-imageButtonBox {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0;
-}
-
-.Modal-imageButtonBox p {
-    margin: 0;
-    padding-bottom: 2px;
-}
-
+/* Previous / next photo: round, see-through dark buttons over the photo's
+   left and right edges */
 .Modal-imageButton {
-    height: 100%;
-    border: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
     padding: 0;
-    background: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0) 20%,
-        rgba(0, 0, 0, 0.75) 48%,
-        rgba(0, 0, 0, 0.75) 52%,
-        rgba(0, 0, 0, 0) 80%,
-        rgba(0, 0, 0, 0) 100%
-    );
-    /* background: radial-gradient(
-        circle,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0) 50%
-    ); */
+    color: white;
+    background-color: rgba(20, 20, 20, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.Modal-imageButton.is-prev {
+    left: 10px;
+}
+
+.Modal-imageButton.is-next {
+    right: 10px;
 }
 
 .Modal-imageButton svg {
-    width: 36px;
-    height: 36px;
-    color: #47b028;
-    cursor: pointer;
+    width: 24px;
+    height: 24px;
 }
 
-.Modal-imageButton svg:hover {
-    color: #96f977;
+.Modal-imageButton:hover {
+    background-color: rgba(20, 20, 20, 0.8);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.Modal-imageButton:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 2px;
+}
+
+/* A dot per photo along the bottom; the current one bright */
+.Modal-photoDots {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    padding: 5px 8px;
+    background-color: rgba(20, 20, 20, 0.45);
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.Modal-photoDots span {
+    width: 7px;
+    height: 7px;
+    background-color: rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.Modal-photoDots span.is-current {
+    background-color: white;
+    transform: scale(1.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Modal-imageButton,
+    .Modal-photoDots span {
+        transition: none;
+    }
 }
 
 .Modal-details {

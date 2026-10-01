@@ -1,6 +1,6 @@
 # vervetDB
 
-A visual interface for the Vervet Monkey Foundation monkey database: search, filter and browse every monkey, view their photos and details, create printable profile books (PDF) for a troop, and play **Guess The Monkey** to learn their faces. Signed-in editors can add, edit and delete monkeys and upload photos, and get a daily email of the changes.
+A visual interface for the Vervet Monkey Foundation monkey database: search, filter and browse every monkey, view their photos and details, create printable profile books (PDF) for a troop, and play **Monkey Guesser** to learn their faces. Signed-in editors can add, edit and delete monkeys and upload photos, and get a daily email of the changes.
 
 **Live site:** https://vervetdb.com/
 
@@ -143,7 +143,7 @@ git push                         # publishes the site
 | `src/AccountModal.jsx`, `src/auth.jsx` | Account pop-up (sign in, forgot / change password), and who's signed in / whether they're an editor |
 | `src/supabase.js` | The connection to Supabase |
 | `src/monkeyData.js`, `src/useMonkeyData.js` | Reading and saving monkeys (with the built-in copy as a fallback) |
-| `src/Game.jsx`, `src/gameLogic.js` | Guess The Monkey |
+| `src/Game.jsx`, `src/gameLogic.js` | Monkey Guesser (the game) |
 | `src/ModalPDF.jsx` | The Create Profile Book pop-up (troop picker, count, progress) |
 | `src/MonkeyPDF.jsx` | Layout of the PDF profile book (cover page, section headings, rows of monkeys) |
 | `src/profileBook.js`, `src/ages.js` | Which monkeys go in a book and in what order; ages (1 November birthday) |
@@ -166,7 +166,7 @@ The `supabase/*.sql` files have already been run. They're kept as a record of ho
 ### Notes
 
 - **Access:** anyone can view the site. Only signed-in editors can add or change monkeys and photos, and only admins can delete monkeys; the database enforces this itself, not just the website.
-- **Filters:** the **Filters** button opens a panel with Location (Troop; Introcage to come), Section (Top / Middle / Bottom / Sickbay), Troop, Age (Birth year, this year back to 2000, or Category: Adults 4+, Juveniles 1–3, Babies under 1, where no birth year counts as adult; choosing one clears the other) and Sex. Filters in use show as chips under the toolbar. Sort by Name, Troop, Year or Sex. Sections are listed in `src/sections.js`: add any new troop there.
+- **Filters:** the **Filters** button opens a panel with Location (Troop; Introcage to come), Section (Top / Middle / Bottom / Sickbay), Troop, Age (Birth year, this year back to 2000, or Categories — Babies under 1, Juveniles 1–3, Adults 4–14, Elderly 15+, pick several; no birth year counts as adult; a year and categories clear each other) and Sex. Filters in use show as chips under the toolbar. Sort by Name, Troop, Year or Sex. Sections are listed in `src/sections.js`: add any new troop there.
 - **Profile Books** are made for one troop (chosen in the pop-up, not the page's search or filters), or for **Orphans/Babies**: this season's babies from every troop. Sections, each A–Z: Adult Females, Adult Males (4 and over; monkeys with no birth year count as adults), then younger monkeys by birth season ("2024 Orphans/Babies"…), oldest first.
 - **Ages:** a monkey's year is its birth season (July–June), and everyone is a year older on 1 November. Used in the pop-up, Save image and the Profile Book.
 - **PDF photos:** the PDF library only supports JPG/PNG, so `pdfPhotos.js` redraws each photo as a JPG in the browser.

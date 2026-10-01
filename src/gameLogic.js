@@ -1,4 +1,4 @@
-// Logic for the "Guess the monkey" game, kept separate from the page so it's
+// Logic for the "Monkey Guesser" game, kept separate from the page so it's
 // easy to test. `random` can be swapped for a predictable one in tests.
 
 export const OPTIONS_PER_QUESTION = 4;
@@ -90,7 +90,7 @@ export function resultMessage(score, outOf, difficulty) {
 }
 
 // The text shared from the results screen, e.g.
-//   🐒 vervetDB · Guess the Monkey
+//   🐒 vervetDB · Monkey Guesser
 //   Expert mode · Goliath
 //   10/10 GODLIKE! ⏱ 3.2s average
 //   ✅✅❌⏰✅…
@@ -103,7 +103,7 @@ export function shareText({ score, outOf, difficulty, troops, averageSeconds, ou
     const mode = modeLabel(difficulty, troops);
     const time = averageSeconds ? ` ⏱ ${averageSeconds}s average` : "";
     return [
-        "🐒 vervetDB · Guess the Monkey",
+        "🐒 vervetDB · Monkey Guesser",
         mode,
         `${score}/${outOf} ${resultMessage(score, outOf, difficulty)}${time}`,
         outcomes.map((o) => OUTCOME_EMOJI[o]).join(""),

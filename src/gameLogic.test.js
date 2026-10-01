@@ -241,7 +241,7 @@ describe("share text", () => {
     test("Wordle-style summary with mode, score, message, time and a row of results", () => {
         expect(shareText({ ...base, difficulty: "expert", troops: ["Goliath"] })).toBe(
             [
-                "🐒 vervetDB · Guess the Monkey",
+                "🐒 vervetDB · Monkey Guesser",
                 "Expert mode · Goliath",
                 "8/10 LEGENDARY! ⏱ 3.2s average",
                 "✅✅❌✅⏰✅✅✅✅✅",

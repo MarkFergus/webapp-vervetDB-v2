@@ -138,8 +138,8 @@ function Nav({
                     <a
                         href="#game"
                         className="Nav-gameLink"
-                        aria-label="Guess The Monkey"
-                        title="Guess The Monkey"
+                        aria-label="Monkey Guesser Game"
+                        title="Monkey Guesser Game"
                     >
                         <IconDeviceGamepad2 stroke="2" size="36" />
                     </a>
@@ -206,7 +206,7 @@ function Nav({
                         <div className="Nav-menu" id="Nav-menu" ref={menuRef}>
                             <a href="#game" onClick={() => closeMenu()}>
                                 <IconDeviceGamepad2 stroke={2} aria-hidden="true" />
-                                Guess The Monkey
+                                Monkey Guesser Game
                             </a>
                             <button type="button" onClick={openPDF} disabled={isGeneratingPDF}>
                                 <IconFileTypePdf stroke={2} aria-hidden="true" />

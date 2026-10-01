@@ -16,6 +16,9 @@ const shownNames = () =>
     within(document.querySelector(".ShowPage-monkeys"))
         .getAllByRole("button")
         .map((b) => b.getAttribute("aria-label").split(",")[0]);
+// Age categories: toggle buttons (several can be on)
+const ageButton = (name) =>
+    within(screen.getByRole("group", { name: "Category" })).getByRole("button", { name: new RegExp(`^${name}`) });
 const status = () => screen.getByText(/^Showing \d+ monkeys?$/);
 const expectShowing = (n) => expect(status()).toHaveTextContent(`Showing ${n} monkey`);
 
@@ -53,19 +56,46 @@ test("birth years: this year back to 2000", async () => {
 });
 
 test.each([
-    ["Adults", (age) => age === null || age >= 4],
-    ["Juveniles", (age) => age !== null && age >= 1 && age <= 3],
     ["Babies", (age) => age === 0],
+    ["Juveniles", (age) => age !== null && age >= 1 && age <= 3],
+    ["Adults", (age) => age === null || (age >= 4 && age <= 14)], // no birth year = adult
+    ["Elderly", (age) => age !== null && age >= 15],
 ])("Age: %s", async (group, fits) => {
     const { user } = setup();
     await user.click(filtersButton());
-    await user.click(choice("Category", group));
-    expect(choice("Category", group)).toHaveAttribute("aria-checked", "true");
+    await user.click(ageButton(group));
+    expect(ageButton(group)).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("All")).toHaveAttribute("aria-pressed", "false");
     const expected = monkeysArr.filter((m) => fits(ageInYears(m.year))).length;
     expectShowing(expected);
     expect(within(panel()).getByRole("button", { name: /^Show / })).toHaveTextContent(
         `Show ${expected} monkey`
     );
+});
+
+test("several age categories together, e.g. Adults + Juveniles; All turns them off", async () => {
+    const { user } = setup();
+    await user.click(filtersButton());
+    await user.click(ageButton("Adults"));
+    await user.click(ageButton("Juveniles"));
+    const fits = (age) => age === null || (age >= 1 && age <= 14);
+    expectShowing(monkeysArr.filter((m) => fits(ageInYears(m.year))).length);
+    // A chip for each
+    expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual([
+        "Juveniles",
+        "Adults",
+    ]);
+    expect(filtersButton()).toHaveAccessibleName("Filters (2 on)");
+
+    // Tapping one again turns just that one off
+    await user.click(ageButton("Juveniles"));
+    expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("Juveniles")).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(ageButton("All"));
+    expect(ageButton("All")).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "false");
+    expectShowing(monkeysArr.length);
 });
 
 test("Sex, and filters combine", async () => {
@@ -82,7 +112,7 @@ test("filters in use show as chips: remove one, or Clear all", async () => {
     const { user } = setup();
     await user.click(filtersButton());
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
-    await user.click(choice("Category", "Adults"));
+    await user.click(ageButton("Adults"));
     await user.click(choice("Sex", "Male"));
     await user.click(within(panel()).getByRole("button", { name: /^Show / }));
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
@@ -166,12 +196,12 @@ test("a birth year or an age category, not both: choosing one clears the other",
     await user.click(filtersButton());
     const year = () => screen.getByRole("combobox", { name: "Filter by year" });
 
-    await user.click(choice("Category", "Adults"));
+    await user.click(ageButton("Adults"));
     await user.selectOptions(year(), "2019");
-    expect(choice("Category", "All")).toHaveAttribute("aria-checked", "true");
+    expect(ageButton("All")).toHaveAttribute("aria-pressed", "true");
     expectShowing(monkeysArr.filter((m) => Number(m.year) === 2019).length);
 
-    await user.click(choice("Category", "Juveniles"));
+    await user.click(ageButton("Juveniles"));
     expect(year()).toHaveValue("All Years");
     expect(year()).toHaveDisplayValue("Choose a year…"); // dimmed, unused
     expect(year()).toHaveClass("is-empty");

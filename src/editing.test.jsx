@@ -157,14 +157,26 @@ test("problems are explained and nothing is saved until they're fixed", async ()
     const { user } = setup();
     await openEditFor(user, "Aroha");
     await user.clear(field("Name"));
-    await user.clear(field("Birth year"));
-    await user.type(field("Birth year"), "3000");
     await user.click(within(form()).getByRole("button", { name: "Save" }));
 
     expect(within(form()).getByText("Please enter a name.")).toBeInTheDocument();
-    expect(within(form()).getByText(/Birth year should be between 1980/)).toBeInTheDocument();
     expect(field("Name")).toHaveAttribute("aria-invalid", "true");
     expect(saved.updates).toHaveLength(0);
+});
+
+test("birth year: chosen from this year back to 2000, or Unknown", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    const years = within(field("Birth year")).getAllByRole("option").map((o) => o.textContent);
+    const thisYear = new Date().getFullYear();
+    expect(years[0]).toBe("Unknown");
+    expect(years[1]).toBe(String(thisYear));
+    expect(years.at(-1)).toBe("2000");
+
+    await user.selectOptions(field("Birth year"), "Unknown");
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row.birth_year).toBeNull();
 });
 
 test("adding a monkey: it appears in the list and its pop-up opens", async () => {
@@ -179,7 +191,7 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     await user.type(field("Name"), "Brand New");
     await user.selectOptions(field("Troop"), "Goliath");
     await user.selectOptions(field("Sex"), "female");
-    await user.type(field("Birth year"), "2026");
+    await user.selectOptions(field("Birth year"), "2026");
     await user.click(within(form()).getByRole("button", { name: "Add monkey" }));
 
     await waitFor(() => expect(saved.inserts).toHaveLength(1));

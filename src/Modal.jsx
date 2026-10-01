@@ -3,8 +3,6 @@ import {
     IconSquareRoundedX,
     IconChevronLeft,
     IconChevronRight,
-    IconCaretLeftFilled,
-    IconCaretRightFilled,
     IconCamera,
     IconDownload,
     IconPencil,
@@ -201,28 +199,35 @@ function Modal({
                                         }
                                     ></img>
                                     {monkey.img.length > 1 && (
-                                        <div className="Modal-imageButtonBox">
+                                        <>
+                                            {/* Round buttons over the photo's edges */}
                                             <button
                                                 type="button"
-                                                className="Modal-imageButton"
-                                                onClick={() =>
-                                                    handleImgClick("prev")
-                                                }
+                                                className="Modal-imageButton is-prev"
+                                                onClick={() => handleImgClick("prev")}
                                                 aria-label="Previous photo"
                                             >
-                                                <IconCaretLeftFilled />
+                                                <IconChevronLeft stroke={2.5} aria-hidden="true" />
                                             </button>
                                             <button
                                                 type="button"
-                                                className="Modal-imageButton"
-                                                onClick={() =>
-                                                    handleImgClick("next")
-                                                }
+                                                className="Modal-imageButton is-next"
+                                                onClick={() => handleImgClick("next")}
                                                 aria-label="Next photo"
                                             >
-                                                <IconCaretRightFilled />
+                                                <IconChevronRight stroke={2.5} aria-hidden="true" />
                                             </button>
-                                        </div>
+                                            {/* Which photo this is (the photo's
+                                                description says it in words) */}
+                                            <div className="Modal-photoDots" aria-hidden="true">
+                                                {monkey.img.map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={i === currentIndex ? "is-current" : undefined}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
                                     )}
                                 </div>
 

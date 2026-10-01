@@ -59,7 +59,7 @@ test("search, filters and icon buttons have accessible names", async () => {
     await user.click(screen.getByRole("button", { name: "Filters" }));
     expect(screen.getByRole("combobox", { name: "Filter by troop" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter by year" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Category" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Category" })).toBeInTheDocument();
     expect(screen.getByRole("radiogroup", { name: "Sex" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Show \d+ monkeys$/ }));
 

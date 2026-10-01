@@ -66,9 +66,9 @@ test("the Game button in the nav opens the game, and Back returns", async () => 
     const user = userEvent.setup();
     render(<App />);
     // The site shows "Loading monkeys…" until the data has arrived
-    await user.click(await screen.findByRole("link", { name: "Guess The Monkey" }));
+    await user.click(await screen.findByRole("link", { name: "Monkey Guesser Game" }));
     expect(
-        await screen.findByRole("heading", { name: "Guess The Monkey" })
+        await screen.findByRole("heading", { name: "Monkey Guesser" })
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: "← Back to monkeys" }));
@@ -616,7 +616,7 @@ describe("sharing results", () => {
         await user.click(screen.getByRole("button", { name: "Share" }));
         const { files, text } = share.mock.calls[0][0];
         expect(files).toHaveLength(1);
-        expect(files[0].name).toBe("vervetdb-guess-the-monkey.png");
+        expect(files[0].name).toBe("vervetdb-monkey-guesser.png");
         expect(files[0].type).toBe("image/png");
         expect(text).toContain("9/10 Great work!");
     });
@@ -626,7 +626,7 @@ describe("sharing results", () => {
         URL.createObjectURL = vi.fn(() => "blob:result");
         URL.revokeObjectURL = vi.fn();
         const clicked = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function () {
-            expect(this.download).toBe("vervetdb-guess-the-monkey.png");
+            expect(this.download).toBe("vervetdb-monkey-guesser.png");
             expect(this.href).toBe("blob:result");
         });
         await finishRound(user);
@@ -770,7 +770,7 @@ describe("setup screen", () => {
 
     test("opens on the setup screen: all troops, Normal, 10 photos, Start ready", () => {
         render(<Game />);
-        expect(screen.getByRole("heading", { name: "Guess The Monkey" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Monkey Guesser" })).toBeInTheDocument();
         expect(
             screen.getByText("Choose your troops and difficulty below, then press Start.")
         ).toBeInTheDocument();

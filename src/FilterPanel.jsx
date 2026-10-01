@@ -3,13 +3,14 @@ import { IconFilterOff, IconX } from "@tabler/icons-react";
 import { SECTIONS, inSection } from "./sections";
 import "./FilterPanel.css";
 
-// The choices in the Filters panel. Ages use the 1 November birthday (see
-// ages.js); monkeys with no birth year count as adults.
+// The choices in the Filters panel. Age categories (several can be picked)
+// use the 1 November birthday (see ages.js); monkeys with no birth year
+// count as adults.
 export const AGE_GROUPS = [
-    { id: "all", label: "All" },
-    { id: "adults", label: "Adults", hint: "4+" },
-    { id: "juveniles", label: "Juveniles", hint: "1–3" },
     { id: "babies", label: "Babies", hint: "<1" },
+    { id: "juveniles", label: "Juveniles", hint: "1–3" },
+    { id: "adults", label: "Adults", hint: "4–14" },
+    { id: "elderly", label: "Elderly", hint: "15+" },
 ];
 // Where the monkeys live: troops, or (later) introcages
 export const LOCATIONS = [
@@ -48,6 +49,33 @@ function Choice({ label, options, value, onChange, hideLabel = false }) {
                         disabled={o.disabled}
                         title={o.title}
                     >
+                        {o.label}
+                        {o.hint && <small aria-hidden="true">{o.hint}</small>}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Joined buttons where several can be on at once (e.g. Adults + Juveniles).
+// "All" is on when none are, and turns them all off.
+//   value: the ids that are on ([] = all)
+function MultiChoice({ label, options, value, onChange }) {
+    const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
+    const toggle = (id) =>
+        onChange(value.includes(id) ? value.filter((v) => v !== id) : options.map((o) => o.id).filter((o) => o === id || value.includes(o)));
+    return (
+        <div className="FilterPanel-section">
+            <span className="FilterPanel-label" id={labelId}>
+                {label}
+            </span>
+            <div className="FilterPanel-choice" role="group" aria-labelledby={labelId}>
+                <button type="button" aria-pressed={value.length === 0} onClick={() => onChange([])}>
+                    All
+                </button>
+                {options.map((o) => (
+                    <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
                         {o.label}
                         {o.hint && <small aria-hidden="true">{o.hint}</small>}
                     </button>
@@ -178,7 +206,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                             ))}
                         </select>
                     </label>
-                    <Choice
+                    <MultiChoice
                         label="Category"
                         options={AGE_GROUPS}
                         value={filters.age}
