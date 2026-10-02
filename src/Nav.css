@@ -1,10 +1,16 @@
-/* Logo, search and icons all share one middle line */
+/* The top bar. Phones: logo, search filling the middle, ☰ menu.
+   Computers (the media query at the end): logo and name, search in the
+   middle of the page, then the icon buttons. */
+
+/* ---- Layout ---- */
+
 .Nav {
     display: flex;
     align-items: center;
 }
 
-/* The logo and name: a link back home */
+/* ---- Logo: a link back home ---- */
+
 .Nav-home {
     display: flex;
     flex-shrink: 0;
@@ -19,42 +25,42 @@
     outline-offset: 4px;
 }
 
-/* The logo: about 70% of the search bar's height, like YouTube's. Neon
-   blue, like the app icon; the "vervetDB" text beside it stays as it is. */
+/* The monkey, about 70% of the search bar's height (like YouTube's), in
+   neon blue like the app icon */
 .Nav-icon {
     display: flex;
-    flex-shrink: 0;
-    align-items: center;
     color: #25c4f8;
 }
 
 .Nav-icon svg {
     display: block;
-    height: 28px;
     width: 30px;
+    height: 28px;
     margin-right: 6px;
 }
 
+/* "vervetDB" (computers only) */
 .Nav-title {
-    flex-shrink: 0;
-    margin-right: 16px; /* before the search bar */
+    display: none;
     font-family: "Russo One", sans-serif;
     font-size: 24px;
     line-height: 1;
 }
 
-/* Search: a softly filled pill, like YouTube's */
+/* ---- Search: a softly filled pill, like YouTube's ---- */
+
 .Nav-searchbar {
-    width: 100%;
+    box-sizing: border-box; /* 540px wide includes the padding and border */
+    flex: 1;
     max-width: 540px;
     height: 40px;
     display: flex;
     align-items: center;
+    margin: 0 6px 0 4px;
+    padding: 0 6px;
     background-color: #161616;
     border: 1px solid #3f3d3f;
     border-radius: 999px;
-    margin: 0 auto;
-    padding: 0 6px;
     transition: border-color 0.15s;
 }
 
@@ -62,42 +68,43 @@
     border-color: #5a5856;
 }
 
-.Nav-searchbar input {
-    width: 100%;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    border: none;
-    outline: none;
-    font-family: "Nunito Sans", sans-serif;
-    font-size: 16px;
-    color: #b6b2a5;
-    padding: 4px 8px 4px 0;
-    background-color: transparent;
-}
-
 .Nav-searchbar:focus-within {
     border-color: #25c4f8;
     box-shadow: 0 0 0 1px #25c4f8;
 }
 
-.Nav-searchbar input:focus {
+.Nav-searchbar input {
+    width: 100%;
+    height: 100%;
+    padding: 0 8px 0 0;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px; /* 16px stops phones zooming in */
+    color: #b6b2a5;
+    background: none;
+    border: none;
     outline: none;
+}
+
+.Nav-searchbar input:focus {
     color: white;
 }
 
-.Nav-iconSearch {
+/* The magnifying glass, and ✕ to clear the search */
+.Nav-iconSearch,
+.Nav-iconX {
+    display: flex; /* centres the icon in the box's height */
+    align-items: center;
     color: #d1cfc7;
+    background: none;
     border: none;
-    background-color: transparent;
-    padding: 2px 8px 0 8px;
+}
+
+.Nav-iconSearch {
+    padding: 0 8px;
 }
 
 .Nav-iconX {
-    color: #d1cfc7;
-    border: none;
-    background-color: transparent;
-    padding: 2px 8px 0 4px;
+    padding: 0 8px 0 4px;
     cursor: pointer;
 }
 
@@ -105,80 +112,56 @@
     color: white;
 }
 
+/* ---- Icon buttons (computers): round, a soft grey circle on hover ---- */
+
 .Nav-buttons {
-    height: 40px; /* the search bar's height */
-    display: flex;
-    gap: 8px; /* space between the (round) icon buttons */
-    margin-left: 10px; /* space between the search bar and the first icon */
+    display: none;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    height: 40px; /* the search bar's height */
 }
 
-.Nav-buttons button {
-    color: #d1cfc7;
-    padding: 6px 0 2px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: transparent;
-    cursor: pointer;
-}
-
-.Nav button:hover,
-.Nav-gameLink:hover {
-    color: white;
-}
-
-/* Icon buttons: all the same size, round, with a soft grey circle on hover
-   (like YouTube) */
 .Nav-buttons button,
-.Nav-buttons .Nav-gameLink,
-.Nav-menuButton {
+.Nav-buttons a {
+    position: relative; /* for the hover label */
     display: flex;
     justify-content: center;
     align-items: center;
     width: 40px;
     height: 40px;
     padding: 0;
+    color: #d1cfc7;
+    background: none;
+    border: none;
     border-radius: 50%;
+    cursor: pointer;
     transition: background-color 0.15s;
 }
 
+.Nav-buttons button:hover,
+.Nav-buttons a:hover {
+    color: white;
+}
+
 .Nav-buttons button:hover:not(:disabled),
-.Nav-buttons .Nav-gameLink:hover,
-.Nav-menuButton:hover,
-.Nav-menuButton[aria-expanded="true"] {
+.Nav-buttons a:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
 .Nav-buttons button:focus-visible,
-.Nav-buttons .Nav-gameLink:focus-visible,
-.Nav-menuButton:focus-visible {
+.Nav-buttons a:focus-visible {
     outline: 2px solid #25c4f8;
     outline-offset: 0;
 }
 
-.Nav-gameLink {
-    color: #d1cfc7;
+/* Creating a Profile Book: the hourglass instead of the PDF icon */
+.hourglass {
+    color: white;
+    cursor: auto;
 }
 
-/* Sign in / account: a person in a circle, like an account picture */
-.Nav-avatar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 30px;
-    height: 30px;
-    border: 1.75px solid currentColor;
-    border-radius: 50%;
-}
-
-/* Signed in: green, with a soft green fill */
-/* Hover labels under the icon buttons: small, dark and rounded (like
-   YouTube's), after a short pause so they don't flash while passing over */
-.Nav-buttons [data-tooltip] {
-    position: relative;
-}
-
+/* Hover labels under the icons: small, dark and rounded (like YouTube's),
+   after a short pause so they don't flash while passing over */
 .Nav-buttons [data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -200,6 +183,12 @@
     transition: opacity 0.15s;
 }
 
+.Nav-buttons [data-tooltip]:hover::after,
+.Nav-buttons [data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transition-delay: 0.4s;
+}
+
 /* The last icon's label lines up with its right edge, so it stays on screen */
 .Nav-buttons [data-tooltip-align="end"]::after {
     left: auto;
@@ -207,53 +196,63 @@
     transform: none;
 }
 
-.Nav-buttons [data-tooltip]:hover::after,
-.Nav-buttons [data-tooltip]:focus-visible::after {
-    opacity: 1;
-    transition-delay: 0.4s;
+/* ---- Account: a person in a circle, green when signed in ---- */
+
+.Nav-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1.75px solid currentColor;
+    border-radius: 50%;
 }
 
-.Nav-buttons .Nav-account.is-signed-in .Nav-avatar {
-    background-color: rgba(71, 176, 40, 0.15);
-}
-
-/* Sign in / account button: green when signed in */
-
-.Nav-buttons .Nav-account.is-signed-in {
+/* (.Nav-buttons in front: stronger than the white hover, so it stays green) */
+.Nav-buttons .Nav-account.is-signed-in,
+.Nav-menuAccount.is-signed-in .Nav-avatar {
     color: #47b028;
 }
 
-.hourglass {
-    color: white;
-    cursor: auto;
+.Nav-buttons .Nav-account.is-signed-in .Nav-avatar,
+.Nav-menuAccount.is-signed-in .Nav-avatar {
+    background-color: rgba(71, 176, 40, 0.15);
 }
 
-/* ---- Phone-only parts (shown by the media query below) ---- */
+/* ---- ☰ menu (phones) ---- */
+
 .Nav-menuWrap {
-    display: none;
+    position: relative;
 }
 
 .Nav-menuButton {
-    align-items: center;
+    position: relative; /* for the green dot */
+    display: flex;
     justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
     padding: 4px;
     color: #d1cfc7;
     background: none;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.15s;
 }
 
-.Nav-menuWrap {
-    position: relative;
+.Nav-menuButton:hover,
+.Nav-menuButton[aria-expanded="true"] {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.Nav-menuButton {
-    position: relative;
-    display: flex;
+.Nav-menuButton:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 0;
 }
 
-/* Small green dot on ☰ while signed in */
+/* A small green dot on ☰ while signed in */
 .Nav-menuDot {
     position: absolute;
     top: 3px;
@@ -265,7 +264,7 @@
     box-shadow: 0 0 0 2px #1f1f1f;
 }
 
-/* The ☰ menu: drops down from the right-hand edge */
+/* The menu: drops down from the right-hand edge */
 .Nav-menu {
     position: absolute;
     top: calc(100% + 6px);
@@ -275,7 +274,6 @@
     display: flex;
     flex-direction: column;
     padding: 6px;
-    font-size: 15px;
     background-color: #2a282a;
     border: 1px solid #434343;
     border-radius: 10px;
@@ -287,7 +285,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 12px;
+    padding: 12px;
     font-family: "Nunito Sans", sans-serif;
     font-size: 15px;
     white-space: nowrap; /* each item on one line, e.g. "Monkey Guesser Game" */
@@ -306,41 +304,49 @@
     background-color: #343234;
 }
 
-/* Sign In / Account: the same circle as on computers, green (with a soft
-   green fill) when signed in */
+.Nav-menu button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* Sign In / Account: a smaller version of the account circle */
 .Nav-menuAccount .Nav-avatar {
     width: 22px;
     height: 22px;
     border-width: 1.5px;
 }
 
-.Nav-menuAccount.is-signed-in .Nav-avatar {
-    color: #47b028;
-    background-color: rgba(71, 176, 40, 0.15);
-}
+/* ---- Computers ---- */
 
-.Nav-menu button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-@media (max-width: 624px) {
+/* Three columns, so the search bar sits in the middle of the page (not just
+   the middle of the space between logo and icons). The side columns share
+   what's left equally; on tight screens they still grow to fit. */
+@media (min-width: 625px) {
     .Nav {
-        align-items: center;
+        display: grid;
+        grid-template-columns: 1fr minmax(0, 540px) 1fr;
+        column-gap: 16px;
     }
 
-    /* Logo, search box filling the middle, ☰ on the right */
-    .Nav-title,
-    .Nav-buttons {
-        display: none;
+    .Nav-home {
+        justify-self: start;
+    }
+
+    .Nav-title {
+        display: block;
     }
 
     .Nav-searchbar {
-        flex: 1;
-        margin: 0 6px 0 4px;
+        width: 100%;
+        margin: 0;
+    }
+
+    .Nav-buttons {
+        display: flex;
+        justify-self: end;
     }
 
     .Nav-menuWrap {
-        display: block;
+        display: none;
     }
 }
