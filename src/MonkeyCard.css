@@ -115,8 +115,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 }
 
-/* Phones (two cards per row): a bit smaller, and the troop gets its own
-   line so the details fit: "Global" / "♀ Female · 7 yrs old" */
+/* Phones (two cards per row): a bit smaller, and the sex as just its
+   ♂ / ♀ icon, so the details fit on one line: "Global · ♀ · 7 yrs old".
+   A long troop name is shortened with "…" rather than pushing the rest off. */
 @media (max-width: 624px) {
     .MonkeyCard-image {
         border-radius: 10px;
@@ -127,17 +128,46 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 
     .MonkeyCard-meta {
-        flex-wrap: wrap;
         font-size: 13px;
     }
 
+    .MonkeyCard-meta > span + span::before {
+        margin: 0 4px;
+    }
+
     .MonkeyCard-info-troop {
-        flex-basis: 100%;
+        flex-shrink: 1;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .MonkeyCard-meta > .MonkeyCard-info-troop + span::before {
-        content: none;
+    .MonkeyCard-sex,
+    .MonkeyCard-info-age {
+        flex-shrink: 0;
+    }
+
+    .MonkeyCard-sexWord {
+        display: none;
+    }
+
+    /* Only the icon now: no gap after the "·", so the dots space evenly */
+    .MonkeyCard-sex {
+        gap: 0;
+    }
+}
+
+/* "Age unknown" in full, or "Age ?" on phones */
+.MonkeyCard-ageShort {
+    display: none;
+}
+
+@media (max-width: 624px) {
+    .MonkeyCard-ageLong {
+        display: none;
+    }
+
+    .MonkeyCard-ageShort {
+        display: inline;
     }
 }

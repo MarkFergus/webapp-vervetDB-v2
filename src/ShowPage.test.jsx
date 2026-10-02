@@ -161,7 +161,9 @@ test("clicking outside the PDF modal closes it", async () => {
 test("sort by age: youngest first, then oldest first; unknown ages always last", () => {
     const { container } = setup();
     const ages = () =>
-        [...container.querySelectorAll(".MonkeyCard-info-age")].map((el) => el.textContent);
+        [...container.querySelectorAll(".MonkeyCard-info-age")].map(
+            (el) => (el.querySelector(".MonkeyCard-ageLong") ?? el).textContent
+        );
     const ageNumber = (text) => (text === "Baby" ? 0 : parseInt(text, 10));
     const ageButton = () => screen.getByRole("button", { name: /^Age/ });
     // Sorting resets to page 1, so expand to every monkey after each sort.

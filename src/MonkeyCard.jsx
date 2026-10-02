@@ -45,10 +45,24 @@ function MonkeyCard({ name, sex, year, troop, img, onClick }) {
                     {sex && (
                         <span className="MonkeyCard-sex">
                             <SexIcon sex={sex} />
-                            {sex === "male" ? "Male" : "Female"}
+                            {/* Phones: just the ♂ / ♀ icon (the card's label
+                                still says it in words for screen readers) */}
+                            <span className="MonkeyCard-sexWord">
+                                {sex === "male" ? "Male" : "Female"}
+                            </span>
                         </span>
                     )}
-                    <span className="MonkeyCard-info-age">{ageLabel(year)}</span>
+                    <span className="MonkeyCard-info-age">
+                        {ageLabel(year) === "Age unknown" ? (
+                            // Phones (short of space): "Age ?" instead
+                            <>
+                                <span className="MonkeyCard-ageLong">Age unknown</span>
+                                <span className="MonkeyCard-ageShort">Age ?</span>
+                            </>
+                        ) : (
+                            ageLabel(year)
+                        )}
+                    </span>
                 </span>
             </span>
         </button>
