@@ -71,7 +71,8 @@ describe("the app with and without a connection", () => {
         vi.mocked(loadMonkeyData).mockResolvedValue(LIVE);
         render(<App />);
         await screen.findByRole("button", { name: /^Brand New/ });
-        expect(loadSavedCopy().monkeys[0].name).toBe("Brand New");
+        // Saved just after the cards appear
+        await waitFor(() => expect(loadSavedCopy()?.monkeys[0].name).toBe("Brand New"));
         expect(screen.queryByRole("alert")).toBeNull();
     });
 
