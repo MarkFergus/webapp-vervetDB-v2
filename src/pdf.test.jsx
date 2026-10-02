@@ -189,3 +189,38 @@ test("choosing another troop after the book is ready goes back to Create PDF", a
     expect(screen.getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
     expect(downloads).toHaveLength(0);
 });
+
+describe("Firefox's home-screen app on Android", () => {
+    const FIREFOX_ANDROID = "Mozilla/5.0 (Android 15; Mobile; rv:156.0) Gecko/156.0 Firefox/156.0";
+    let restore;
+    beforeEach(() => {
+        const realAgent = navigator.userAgent;
+        Object.defineProperty(navigator, "userAgent", { configurable: true, get: () => FIREFOX_ANDROID });
+        window.matchMedia = (query) => ({ matches: query === "(display-mode: standalone)" });
+        restore = () => {
+            Object.defineProperty(navigator, "userAgent", { configurable: true, get: () => realAgent });
+            delete window.matchMedia;
+        };
+    });
+    afterEach(() => restore());
+
+    // A download link shows about:blank there; a new window works
+    test("files open in a new window instead of downloading from a link", async () => {
+        const { downloadBlob } = await import("./canvasHelpers");
+        const open = vi.spyOn(window, "open").mockImplementation(() => null);
+        downloadBlob(new Blob(["pdf"], { type: "application/pdf" }), "profile_book_James.pdf");
+        expect(open).toHaveBeenCalledWith("blob:test", "_blank");
+        expect(downloads).toHaveLength(0);
+        // The file keeps its name, for browsers that use it
+        expect(URL.createObjectURL.mock.lastCall[0].name).toBe("profile_book_James.pdf");
+    });
+
+    test("in a normal Firefox tab, the usual download", async () => {
+        delete window.matchMedia; // not the installed app
+        const { downloadBlob } = await import("./canvasHelpers");
+        const open = vi.spyOn(window, "open").mockImplementation(() => null);
+        downloadBlob(new Blob(["pdf"]), "profile_book_James.pdf");
+        expect(open).not.toHaveBeenCalled();
+        expect(downloads).toEqual(["profile_book_James.pdf"]);
+    });
+});

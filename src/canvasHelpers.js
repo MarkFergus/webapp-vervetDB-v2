@@ -1,3 +1,5 @@
+import { isInstalledApp } from "./installApp";
+
 // Shared by the pictures made for sharing (game results, monkey profiles):
 // the site's fonts and a few drawing helpers for a canvas.
 
@@ -42,18 +44,31 @@ export function canvasToPng(canvas) {
 }
 
 // How long a download's temporary address stays usable. Firefox on Android
-// opens a downloaded PDF in its own viewer and only reads the file after a
-// moment; freeing the address sooner (it was 1 second) left a black screen.
+// reads the file a moment after the tap, so it mustn't be freed straight away.
 export const DOWNLOAD_KEEP_MS = 5 * 60 * 1000;
 
-// Downloads a Blob as a file (photos, pictures, Profile Books)
+// Firefox's home-screen app on Android can't download from a link (it shows
+// about:blank), but opening the file in a new window works (tested 2026-10-03)
+export function isFirefoxAndroidApp() {
+    const ua = navigator.userAgent;
+    return /Android/.test(ua) && /Firefox\//.test(ua) && isInstalledApp();
+}
+
+// Downloads a Blob as a file (photos, pictures, Profile Books). Must be
+// called straight from a tap: browsers block downloads that aren't.
 export function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.append(link);
-    link.click();
-    link.remove();
+    // A File (rather than a Blob) carries its name, for browsers that use it
+    const file = new File([blob], filename, { type: blob.type });
+    const url = URL.createObjectURL(file);
+    if (isFirefoxAndroidApp()) {
+        window.open(url, "_blank");
+    } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.append(link);
+        link.click();
+        link.remove();
+    }
     setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_KEEP_MS);
 }

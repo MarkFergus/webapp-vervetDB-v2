@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
 import { CHANGELOG, releaseDate } from "./changelog";
-import { useAuth } from "./auth";
-import DownloadTest from "./DownloadTest";
 import "./AboutModal.css";
 
 // The About pop-up: which version of vervetDB this is, and what changed in it
@@ -15,7 +13,6 @@ function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
     useDialog(isOpen, closeRef, { onClose });
     const latest = CHANGELOG[0];
-    const { isAdmin } = useAuth();
 
     return (
         <AnimatePresence>
@@ -63,7 +60,6 @@ function AboutModal({ isOpen, onClose }) {
                                         ))}
                                     </ul>
                                 </section>
-                                {isAdmin && <DownloadTest />}
                             </div>
                         </div>
                     </motion.div>
