@@ -326,7 +326,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                                         : "MonkeyForm-addPhoto"
                                 }
                             >
-                                <IconUpload size={18} aria-hidden="true" /> Upload photo
+                                <IconUpload size={18} aria-hidden="true" /> Upload new photo
                                 <input
                                     type="file"
                                     accept="image/*"

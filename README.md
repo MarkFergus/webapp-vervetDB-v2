@@ -48,7 +48,7 @@ Monkeys are edited on the website itself. Changes go straight into the database 
 | Photos | Up to 5. The primary photo (★) is used on the card and in the Profile Book; each photo's **⋮** menu has **Make primary photo** and **Delete photo** |
 | Bio / Description | Optional |
 
-**Photos:** click **Upload photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match, along with a small thumbnail (480 × 384, under `thumbs/` in storage). Photos can only be uploaded, not linked from elsewhere. Deleting a photo (**⋮ → Delete photo**) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
+**Photos:** click **Upload new photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match, along with a small thumbnail (480 × 384, under `thumbs/` in storage). Photos can only be uploaded, not linked from elsewhere. Deleting a photo (**⋮ → Delete photo**) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
 
 Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows as "No bio yet." The pop-up shows each monkey's age from its birth year.
 

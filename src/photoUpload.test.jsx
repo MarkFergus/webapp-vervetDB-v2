@@ -168,7 +168,7 @@ describe("Upload photo in the edit form", () => {
     // The photos listed in the form, in order (from their previews)
     const photoLinks = () =>
         screen.queryAllByRole("img", { name: /^Photo \d/ }).map((img) => img.getAttribute("src"));
-    const fileInput = () => screen.getByLabelText("Upload photo");
+    const fileInput = () => screen.getByLabelText("Upload new photo");
 
     function setup() {
         const user = userEvent.setup();
@@ -323,7 +323,7 @@ describe("tidying up photos in storage", () => {
         }
         async function uploadOne(user, url) {
             uploadPhoto.mockResolvedValueOnce(url);
-            await user.upload(screen.getByLabelText("Upload photo"), new File(["x"], "p.jpg", { type: "image/jpeg" }));
+            await user.upload(screen.getByLabelText("Upload new photo"), new File(["x"], "p.jpg", { type: "image/jpeg" }));
             await user.click(within(screen.getByRole("dialog", { name: "Crop photo" })).getByRole("button", { name: "Use photo" }));
             await waitFor(() =>
                 expect(screen.queryAllByRole("img", { name: /^Photo \d/ }).map((i) => i.getAttribute("src"))).toContain(url)
@@ -389,16 +389,16 @@ describe("photo limit in the edit form", () => {
     test("at 5 photos, adding is switched off until one is removed", async () => {
         const { user } = setup(withPhotos(5));
         expect(screen.getByText(/5 photos is the most a monkey can have/)).toBeInTheDocument();
-        expect(screen.getByLabelText("Upload photo")).toBeDisabled();
+        expect(screen.getByLabelText("Upload new photo")).toBeDisabled();
 
         await deletePhoto(user, 1);
         expect(screen.queryByText(/5 photos is the most/)).toBeNull();
-        expect(screen.getByLabelText("Upload photo")).not.toBeDisabled();
+        expect(screen.getByLabelText("Upload new photo")).not.toBeDisabled();
     });
 
     test("choosing more than fit: only the ones that fit go to the crop screen", async () => {
         const { user } = setup(withPhotos(3));
-        await user.upload(screen.getByLabelText("Upload photo"), [photo("a.jpg"), photo("b.jpg"), photo("c.jpg"), photo("d.jpg")]);
+        await user.upload(screen.getByLabelText("Upload new photo"), [photo("a.jpg"), photo("b.jpg"), photo("c.jpg"), photo("d.jpg")]);
         expect(screen.getByText("Only 2 more photos fit (5 is the most), so the first 2 will be used.")).toBeInTheDocument();
         const crop = screen.getByRole("dialog", { name: "Crop photo" });
         expect(within(crop).getByText("Photo 1 of 2")).toBeInTheDocument();
@@ -407,7 +407,7 @@ describe("photo limit in the edit form", () => {
 
     test("with one space left, it says so in words", async () => {
         const { user } = setup(withPhotos(4));
-        await user.upload(screen.getByLabelText("Upload photo"), [photo("a.jpg"), photo("b.jpg")]);
+        await user.upload(screen.getByLabelText("Upload new photo"), [photo("a.jpg"), photo("b.jpg")]);
         expect(screen.getByText("Only 1 more photo fit (5 is the most), so the first one will be used.")).toBeInTheDocument();
     });
 });
