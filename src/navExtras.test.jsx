@@ -51,7 +51,7 @@ test("a faint line appears under the header once the page has scrolled", () => {
 test("the icons have hover labels (and the last one lines up to its right edge)", () => {
     render(<ShowPage />);
     const labels = [...document.querySelectorAll(".Nav-buttons [data-tooltip]")].map((el) => el.dataset.tooltip);
-    expect(labels).toEqual(["Monkey Guesser Game", "Create Profile Book", "About", "Sign in"]);
+    expect(labels).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign in"]);
     expect(document.querySelector(".Nav-account")).toHaveAttribute("data-tooltip-align", "end");
     // No browser tooltips as well
     expect(document.querySelectorAll(".Nav-buttons [title]")).toHaveLength(0);

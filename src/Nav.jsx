@@ -178,6 +178,18 @@ function Nav({
 
                 {/* Computers: icon buttons */}
                 <div className="Nav-buttons">
+                    {/* Add New Monkey (admins only) comes first */}
+                    {onAddMonkey && (
+                        <button
+                            type="button"
+                            className="Nav-addMonkey"
+                            onClick={onAddMonkey}
+                            aria-label="Add New Monkey"
+                            data-tooltip="Add New Monkey"
+                        >
+                            <IconPlus stroke={1.75} size={26} />
+                        </button>
+                    )}
                     <a
                         href="#game"
                         className="Nav-gameLink"
@@ -203,17 +215,15 @@ function Nav({
                             <IconFileTypePdf stroke={1.75} size={26} />
                         )}
                     </button>
-                    {onAddMonkey && (
-                        <button
-                            type="button"
-                            className="Nav-addMonkey"
-                            onClick={onAddMonkey}
-                            aria-label="Add New Monkey"
-                            data-tooltip="Add New Monkey"
-                        >
-                            <IconPlus stroke={1.75} size={26} />
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        className="Nav-offline"
+                        onClick={toggleOffline}
+                        aria-label="Install & Use Offline"
+                        data-tooltip="Install & Use Offline"
+                    >
+                        <IconDeviceMobileDown stroke={1.75} size={26} />
+                    </button>
                     <button
                         type="button"
                         className="Nav-about"
@@ -255,6 +265,12 @@ function Nav({
                     </button>
                     {menuOpen && (
                         <div className="Nav-menu" id="Nav-menu" ref={menuRef}>
+                            {onAddMonkey && (
+                                <button type="button" onClick={addMonkey}>
+                                    <IconPlus stroke={2} aria-hidden="true" />
+                                    Add New Monkey
+                                </button>
+                            )}
                             <a href="#game" onClick={() => closeMenu()}>
                                 <IconDeviceGamepad2 stroke={2} aria-hidden="true" />
                                 Monkey Guesser Game
@@ -263,15 +279,9 @@ function Nav({
                                 <IconFileTypePdf stroke={2} aria-hidden="true" />
                                 {isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
                             </button>
-                            {onAddMonkey && (
-                                <button type="button" onClick={addMonkey}>
-                                    <IconPlus stroke={2} aria-hidden="true" />
-                                    Add New Monkey
-                                </button>
-                            )}
                             <button type="button" onClick={openOffline}>
                                 <IconDeviceMobileDown stroke={2} aria-hidden="true" />
-                                Install & offline
+                                Install & Use Offline
                             </button>
                             <button type="button" onClick={openAbout}>
                                 <IconInfoCircle stroke={2} aria-hidden="true" />
@@ -316,14 +326,7 @@ function Nav({
                 document.body
             )}
             {createPortal(
-                <AboutModal
-                    isOpen={isAboutOpen}
-                    onClose={toggleAbout}
-                    onOpenOffline={() => {
-                        toggleAbout();
-                        toggleOffline();
-                    }}
-                />,
+                <AboutModal isOpen={isAboutOpen} onClose={toggleAbout} />,
                 document.body
             )}
         </>

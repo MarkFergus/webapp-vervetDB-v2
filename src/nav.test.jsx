@@ -10,7 +10,7 @@ import ShowPage from "./ShowPage";
 const EDITOR = { id: "editor-1", email: "editor@example.com" };
 
 // Pretend Supabase: signed in (or not) as an editor
-function fakeAuth(signedIn) {
+function fakeAuth(signedIn, admin = false) {
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({
         data: { session: signedIn ? { user: EDITOR } : null },
     });
@@ -24,14 +24,14 @@ function fakeAuth(signedIn) {
         return { error: null };
     });
     vi.spyOn(supabase, "from").mockReturnValue({
-        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id }, error: null }) }) }),
+        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin }, error: null }) }) }),
     });
 }
 
 afterEach(() => vi.restoreAllMocks());
 
-function setup({ signedIn = false } = {}) {
-    fakeAuth(signedIn);
+function setup({ signedIn = false, admin = false } = {}) {
+    fakeAuth(signedIn, admin);
     const user = userEvent.setup();
     render(
         <AuthProvider>
@@ -61,16 +61,27 @@ describe("☰ menu (phones)", () => {
 
         await user.click(menuButton());
         expect(menuButton()).toHaveAttribute("aria-expanded", "true");
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & offline", "About", "Sign In"]);
+        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign In"]);
         expect(within(menu()).getByRole("link", { name: "Monkey Guesser Game" })).toHaveAttribute("href", "#game");
         expect(menu().querySelector("a")).toHaveFocus();
     });
 
-    test("signed in as an editor: Add New Monkey, then Account at the end", async () => {
+    test("signed in as an editor: no Add New Monkey (admins only), Account at the end", async () => {
         const { user, menuButton, menuItems } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "Menu (signed in)" });
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Add New Monkey", "Install & offline", "About", "Account"]);
+        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
+        expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
+    });
+
+    test("signed in as an admin: Add New Monkey, first", async () => {
+        const { user, menuButton, menuItems } = setup({ signedIn: true, admin: true });
+        await screen.findByRole("button", { name: "Menu (signed in)" });
+        await waitFor(() => expect(screen.getByRole("button", { name: "Add New Monkey" })).toBeInTheDocument());
+        // First in the top bar too
+        expect(document.querySelector(".Nav-buttons > :first-child")).toHaveAccessibleName("Add New Monkey");
+        await user.click(menuButton());
+        expect(menuItems()).toEqual(["Add New Monkey", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
     });
 
     test("Sign In opens the sign-in pop-up", async () => {

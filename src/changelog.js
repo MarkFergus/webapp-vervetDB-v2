@@ -16,7 +16,7 @@ export const CHANGELOG = [
         changes: [
             "Install vervetDB as an app on your phone or computer",
             "Works offline: the monkeys and their photos are saved on your device",
-            "Download every photo to use without signal (Install & use offline)",
+            "Download every photo to use without signal (Install & Use Offline)",
             "Sharper photos on phones, with two monkeys per row",
             "New, sharp vervetDB app icon",
             "Change your password from the Account pop-up on any device",

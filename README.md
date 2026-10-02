@@ -34,7 +34,7 @@ Press **Ctrl+C** in the terminal to stop it.
 Monkeys are edited on the website itself. Changes go straight into the database and everyone sees them immediately; no code change or deploy is needed.
 
 1. **Sign in** with the person icon at the top right (on phones: ☰ menu → **Sign In**, or **Account** once signed in). Only accounts listed as editors can make changes; the icon turns green once you're signed in.
-2. **To add a monkey:** click the **+** (**Add New Monkey**) at the top right (on phones: ☰ menu → **Add New Monkey**).
+2. **To add a monkey (admins only):** click the **+** (**Add New Monkey**) at the top right (on phones: ☰ menu → **Add New Monkey**).
 3. **To edit one:** open the monkey's pop-up and click **Edit** at the bottom left. **Delete** is in the edit form, for admins only (see below), and asks you to confirm.
 4. Fill in the form and click **Save** (or **Add monkey**). The form tidies spaces and chip numbers for you (e.g. `1011 1604` becomes `1011 & 1604`) and explains anything it can't accept.
 
@@ -68,7 +68,7 @@ In Supabase, go to **Authentication → Users → Add user**, then either:
 Every account added this way is an editor automatically ([`supabase/new-editors.sql`](supabase/new-editors.sql)). New sign-ups are switched off, so only accounts you add can sign in. Anyone signed in can change their password from the account pop-up (**Change password**).
 
 - **Remove someone:** Authentication → Users → **…** → **Delete user**.
-- **Admins:** only admins can delete monkeys (and troops), so nothing is deleted by accident; other editors can add and edit. mark@vervet.za.org is the admin ([`supabase/admins.sql`](supabase/admins.sql)). Make someone else an admin:
+- **Admins:** only admins can add or delete monkeys (and delete troops), so nothing is added or deleted by accident; other editors can edit monkeys and their photos ([`supabase/admins-add-monkeys.sql`](supabase/admins-add-monkeys.sql) made adding admin-only). mark@vervet.za.org is the admin ([`supabase/admins.sql`](supabase/admins.sql)). Make someone else an admin:
   `update public.editors set is_admin = true where user_id = (select id from auth.users where email = 'them@example.com');`
   A deleted monkey can be recovered from the change history, which keeps its details.
 - **Make someone view-only** (they can sign in but not edit):
@@ -113,7 +113,7 @@ vervetDB can be installed as an app (Add to Home Screen on phones, the install i
 - **The site itself** is kept on the device by a service worker ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/), set up in [`vite.config.js`](vite.config.js)). When a new version is deployed, a "A new version of vervetDB is ready" card offers **Refresh**.
 - **The monkeys:** every time they load from the database, a copy is saved on the device ([`src/savedData.js`](src/savedData.js)). Opened with no signal, the site shows that copy straight away with a note saying how old it is, and switches back to live data when the connection returns. Editing is off while offline.
 - **Photos:** the cards use small thumbnails, and every thumbnail (about 8 MB) is saved in the background for signed-in staff and anyone using the installed app ([`src/offlinePhotos.js`](src/offlinePhotos.js); skipped on data-saver or very slow connections). Casual visitors don't, to stay within Supabase's monthly data allowance. Each full-size photo is saved the first time it's opened; offline, a photo that was never opened shows its thumbnail instead.
-- **Install & use offline** (☰ → Install & offline on phones, or the button in the About pop-up) shows how to install on the device in use (an **Install app** button where the browser offers one; steps for iPhone, Android and Firefox), how many photos are saved, and **Download all photos** (about 60 MB, with progress and Stop; signed-in staff only, others are offered Sign in) to save every full-size photo ([`src/OfflineModal.jsx`](src/OfflineModal.jsx), [`src/installApp.js`](src/installApp.js)).
+- **Install & Use Offline** (the phone-with-arrow icon in the top bar on computers, ☰ → Install & Use Offline on phones) shows how to install on the device in use (an **Install app** button where the browser offers one; steps for iPhone, Android and Firefox), how many photos are saved, and **Download all photos** (about 60 MB, with progress and Stop; signed-in staff only, others are offered Sign in) to save every full-size photo ([`src/OfflineModal.jsx`](src/OfflineModal.jsx), [`src/installApp.js`](src/installApp.js)).
 
 ## Deploying
 
@@ -179,6 +179,7 @@ git push                         # publishes the site
 | `supabase/change-history.sql` | Change history and daily summary emails |
 | `supabase/new-editors.sql` | Makes every account added in Supabase an editor |
 | `supabase/admins.sql` | Admins: only they can delete monkeys and troops |
+| `supabase/admins-add-monkeys.sql` | Only admins can add monkeys |
 | `.github/workflows/deploy.yml` | Tests, builds and publishes the site on every push to `master` |
 | `.github/workflows/keep-awake.yml` | Pings the database every 3 days so the free Supabase project isn't paused |
 

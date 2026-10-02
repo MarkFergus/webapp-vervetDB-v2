@@ -126,8 +126,10 @@ function ShowPage({
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
-    const { isEditor, passwordSetup } = useAuth();
+    const { isEditor, isAdmin, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
+    // Adding a monkey is for admins only (the database enforces it too)
+    const canAdd = canEdit && isAdmin;
     const [searchValue, setSearchValue] = useState("");
     // Filters: { troop, year, age, sex } (see FilterPanel)
     const [filters, setFilters] = useState(NO_FILTERS);
@@ -464,7 +466,7 @@ function ShowPage({
                     toggleAbout={() => setIsAboutOpen((open) => !open)}
                     isOfflineOpen={isOfflineOpen}
                     toggleOffline={() => setIsOfflineOpen((open) => !open)}
-                    onAddMonkey={canEdit ? startAdd : undefined}
+                    onAddMonkey={canAdd ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
                 />

@@ -28,7 +28,7 @@ const INSTALL_STEPS = {
     ],
 };
 
-// The "Install & use offline" pop-up (☰ menu on phones, or from About):
+// The "Install & Use Offline" pop-up (the top bar on computers, ☰ on phones):
 // how to install vervetDB as an app, and saving every photo on the device.
 // Downloading every photo is for signed-in staff (it uses the database's
 // monthly data allowance); anyone else is offered Sign in (onSignIn).
@@ -102,7 +102,7 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                             </div>
                             <div className="AboutModal-content OfflineModal">
                                 <h1 className="AboutModal-title" id="OfflineModal-title">
-                                    Install & use offline
+                                    Install & Use Offline
                                 </h1>
 
                                 <section className="OfflineModal-section" aria-labelledby="OfflineModal-install">
@@ -135,7 +135,8 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                                 </section>
 
                                 <section className="OfflineModal-section" aria-labelledby="OfflineModal-photos">
-                                    <h2 id="OfflineModal-photos">Photos without signal</h2>
+                                    <h2 id="OfflineModal-photos">Use Offline</h2>
+                                    <p>Download all photos to make available when offline.</p>
                                     {!supported ? (
                                         <p>
                                             Saving photos isn't ready in this window yet. Reload the

@@ -1,4 +1,4 @@
-// "Install & use offline": install steps or button, and saving every photo.
+// "Install & Use Offline": install steps or button, and saving every photo.
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
@@ -120,28 +120,29 @@ describe("photo helpers", () => {
 });
 
 describe("the pop-up", () => {
-    const dialog = () => screen.getByRole("dialog", { name: "Install & use offline" });
+    const dialog = () => screen.getByRole("dialog", { name: "Install & Use Offline" });
 
     async function openFromMenu(user) {
         await user.click(screen.getByRole("button", { name: /^Menu/ }));
-        await user.click(within(document.getElementById("Nav-menu")).getByRole("button", { name: "Install & offline" }));
+        await user.click(within(document.getElementById("Nav-menu")).getByRole("button", { name: "Install & Use Offline" }));
     }
 
-    test("☰ → Install & offline: install steps for this browser", async () => {
+    test("☰ → Install & Use Offline: install steps for this browser", async () => {
         const user = userEvent.setup();
         render(<ShowPage monkeys={MONKEYS} />);
         await openFromMenu(user);
         expect(within(dialog()).getByText(/install icon/)).toBeInTheDocument();
+        expect(within(dialog()).getByRole("heading", { name: "Use Offline" })).toBeInTheDocument();
+        expect(within(dialog()).getByText("Download all photos to make available when offline.")).toBeInTheDocument();
         // No service worker here (a test): explains instead of offering a download
         expect(within(dialog()).getByText(/isn't ready in this window yet/)).toBeInTheDocument();
     });
 
-    test("About → Install & use offline opens it", async () => {
+    test("computers: the top bar's Install & Use Offline icon opens it", async () => {
         const user = userEvent.setup();
         render(<ShowPage monkeys={MONKEYS} />);
-        await user.click(screen.getByRole("button", { name: "About vervetDB" }));
-        await user.click(screen.getByRole("button", { name: "Install & use offline" }));
-        expect(await screen.findByRole("dialog", { name: "Install & use offline" })).toBeInTheDocument();
+        await user.click(document.querySelector(".Nav-buttons .Nav-offline"));
+        expect(await screen.findByRole("dialog", { name: "Install & Use Offline" })).toBeInTheDocument();
     });
 
     test("where the browser offers it: an Install app button", async () => {

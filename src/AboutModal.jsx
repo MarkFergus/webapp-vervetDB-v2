@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { IconDeviceMobileDown, IconSquareRoundedX } from "@tabler/icons-react";
+import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
@@ -9,7 +9,7 @@ import "./AboutModal.css";
 // The About pop-up: which version of vervetDB this is, and what changed in it
 // (from changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
 // phones, or the line at the bottom of the main page.
-function AboutModal({ isOpen, onClose, onOpenOffline }) {
+function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
     useDialog(isOpen, closeRef, { onClose });
     const latest = CHANGELOG[0];
@@ -60,12 +60,6 @@ function AboutModal({ isOpen, onClose, onOpenOffline }) {
                                         ))}
                                     </ul>
                                 </section>
-                                {onOpenOffline && (
-                                    <button type="button" className="AboutModal-offline" onClick={onOpenOffline}>
-                                        <IconDeviceMobileDown size={18} aria-hidden="true" />
-                                        Install & use offline
-                                    </button>
-                                )}
                             </div>
                         </div>
                     </motion.div>

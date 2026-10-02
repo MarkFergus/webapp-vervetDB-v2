@@ -144,9 +144,9 @@ create policy "Admins can delete troops"
     on public.troops for delete to authenticated
     using ((select public.is_admin()));
 
-create policy "Editors can add monkeys"
+create policy "Admins can add monkeys"
     on public.monkeys for insert to authenticated
-    with check ((select public.is_editor()));
+    with check ((select public.is_admin()));
 create policy "Editors can change monkeys"
     on public.monkeys for update to authenticated
     using ((select public.is_editor())) with check ((select public.is_editor()));

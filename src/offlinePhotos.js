@@ -32,7 +32,7 @@ export async function saveThumbnails(monkeys) {
     await Promise.all(Array.from({ length: AT_ONCE }, worker));
 }
 
-// ---- "Download all photos" (the Install & use offline pop-up) ----
+// ---- "Download all photos" (the Install & Use Offline pop-up) ----
 
 // The service worker's stores (see vite.config.js)
 const PHOTO_CACHE = "vervetdb-photos";
