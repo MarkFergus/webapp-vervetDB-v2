@@ -80,10 +80,12 @@
     text-align: center;
 }
 
+/* "Version 1.0.0 · 2 October 2026", in the site's neon pink */
 .AboutModal-version {
     margin: 4px 0 0;
     font-size: 14px;
-    color: #b6b2a5;
+    font-weight: 700;
+    color: #fe39a4;
 }
 
 /* What vervetDB is, in a sentence or two */
