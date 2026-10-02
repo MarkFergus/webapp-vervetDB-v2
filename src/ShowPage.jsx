@@ -19,6 +19,7 @@ import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { SECTIONS, inSection } from "./sections";
 import { APP_VERSION } from "./changelog";
+import OfflineModal from "./OfflineModal";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
@@ -150,6 +151,7 @@ function ShowPage({
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
+    const [isOfflineOpen, setIsOfflineOpen] = useState(false);
     // Arrived from a password email link: open the account pop-up by itself
     useEffect(() => {
         if (passwordSetup) setIsAccountOpen(true);
@@ -405,7 +407,7 @@ function ShowPage({
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
     const isAnyModalOpen =
-        isModalOpen || isPDFModalOpen || isAccountOpen || isAboutOpen || Boolean(editing);
+        isModalOpen || isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen || Boolean(editing);
 
     // One segment of the Name | Troop | Year sort control. The active one is
     // highlighted with an arrow showing the direction.
@@ -470,6 +472,8 @@ function ShowPage({
                     toggleAccount={() => setIsAccountOpen((open) => !open)}
                     isAboutOpen={isAboutOpen}
                     toggleAbout={() => setIsAboutOpen((open) => !open)}
+                    isOfflineOpen={isOfflineOpen}
+                    toggleOffline={() => setIsOfflineOpen((open) => !open)}
                     onAddMonkey={canEdit ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
@@ -589,6 +593,15 @@ function ShowPage({
                     <IconArrowBarToUp size={24} aria-hidden="true" />
                 </button>
             )}
+            <OfflineModal
+                isOpen={isOfflineOpen}
+                onClose={() => setIsOfflineOpen(false)}
+                monkeys={monkeys}
+                onSignIn={() => {
+                    setIsOfflineOpen(false);
+                    setIsAccountOpen(true);
+                }}
+            />
             {editing && (
                 <MonkeyForm
                     // key: a fresh form for each monkey

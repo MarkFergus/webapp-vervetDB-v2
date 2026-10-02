@@ -3,26 +3,34 @@ import ShowPage from "./ShowPage";
 import Game from "./Game";
 import MonkeyIcon from "./MonkeyIcon";
 import UpdatePrompt from "./UpdatePrompt";
-import { AuthProvider } from "./auth";
+import { AuthProvider, useAuth } from "./auth";
 import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
 import useOnline from "./useOnline";
 import { saveThumbnails } from "./offlinePhotos";
+import { isInstalledApp } from "./installApp";
 import { timeAgo } from "./savedData";
 import "./App.css";
+
+// Saves every photo's thumbnail on the device for offline use, for the
+// people who need it: signed-in staff, or anyone using the installed app.
+// (Everyone else would use up the database's monthly data allowance.)
+// Runs after a short pause, so the page itself loads first.
+function SaveThumbnails({ live, monkeys }) {
+    const { user } = useAuth();
+    const wanted = live && (Boolean(user) || isInstalledApp());
+    useEffect(() => {
+        if (!wanted) return;
+        const timer = setTimeout(() => saveThumbnails(monkeys), 3000);
+        return () => clearTimeout(timer);
+    }, [wanted]);
+    return null;
+}
 
 function App() {
     const route = useHashRoute();
     const online = useOnline();
     const { status, savedAt, monkeys, troops, troopIds, monkeySaved, monkeyDeleted } = useMonkeyData();
-
-    // Live data: save every photo's thumbnail on the device for offline use
-    // (after a short pause, so the page itself loads first)
-    useEffect(() => {
-        if (status !== "live") return;
-        const timer = setTimeout(() => saveThumbnails(monkeys), 3000);
-        return () => clearTimeout(timer);
-    }, [status]);
 
     if (status === "loading") {
         return (
@@ -68,6 +76,7 @@ function App() {
                     />
                 )}
                 <UpdatePrompt />
+                <SaveThumbnails live={status === "live"} monkeys={monkeys} />
             </div>
         </AuthProvider>
     );

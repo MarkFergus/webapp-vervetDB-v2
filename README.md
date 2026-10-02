@@ -112,7 +112,8 @@ vervetDB can be installed as an app (Add to Home Screen on phones, the install i
 
 - **The site itself** is kept on the device by a service worker ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/), set up in [`vite.config.js`](vite.config.js)). When a new version is deployed, a "A new version of vervetDB is ready" card offers **Refresh**.
 - **The monkeys:** every time they load from the database, a copy is saved on the device ([`src/savedData.js`](src/savedData.js)). Opened with no signal, the site shows that copy straight away with a note saying how old it is, and switches back to live data when the connection returns. Editing is off while offline.
-- **Photos:** the cards use small thumbnails, and every thumbnail (about 8 MB) is saved in the background ([`src/offlinePhotos.js`](src/offlinePhotos.js); skipped on data-saver or very slow connections). Each full-size photo is saved the first time it's opened; offline, a photo that was never opened shows its thumbnail instead.
+- **Photos:** the cards use small thumbnails, and every thumbnail (about 8 MB) is saved in the background for signed-in staff and anyone using the installed app ([`src/offlinePhotos.js`](src/offlinePhotos.js); skipped on data-saver or very slow connections). Casual visitors don't, to stay within Supabase's monthly data allowance. Each full-size photo is saved the first time it's opened; offline, a photo that was never opened shows its thumbnail instead.
+- **Install & use offline** (☰ → Install & offline on phones, or the button in the About pop-up) shows how to install on the device in use (an **Install app** button where the browser offers one; steps for iPhone, Android and Firefox), how many photos are saved, and **Download all photos** (about 60 MB, with progress and Stop; signed-in staff only, others are offered Sign in) to save every full-size photo ([`src/OfflineModal.jsx`](src/OfflineModal.jsx), [`src/installApp.js`](src/installApp.js)).
 
 ## Deploying
 

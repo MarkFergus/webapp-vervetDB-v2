@@ -225,8 +225,8 @@ function AccountModal({ isOpen, onClose }) {
                     </span>
                     <p className="AccountModal-role">
                         {isEditor
-                            ? "You can edit monkeys and upload photos."
-                            : "This account can view but not edit monkeys."}
+                            ? "You can edit monkeys, upload photos, and download all photos for offline use."
+                            : "This account can download all photos for offline use, but can't edit monkeys."}
                     </p>
                 </div>
                 {notice && (
@@ -308,7 +308,8 @@ function AccountModal({ isOpen, onClose }) {
                     Sign in
                 </h1>
                 <p className="AccountModal-note">
-                    For vervetDB editors. Anyone can browse the monkeys without
+                    For vervetDB staff: sign in to edit monkeys and download all
+                    photos for offline use. Anyone can browse the monkeys without
                     signing in.
                 </p>
                 <label className="AccountModal-field">

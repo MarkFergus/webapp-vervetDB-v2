@@ -6,6 +6,7 @@ import {
     IconFileTypePdf,
     IconHourglassLow,
     IconInfoCircle,
+    IconDeviceMobileDown,
     IconDeviceGamepad2,
     IconMenu2,
     IconPlus,
@@ -39,6 +40,8 @@ function Nav({
     toggleAccount,
     isAboutOpen,
     toggleAbout,
+    isOfflineOpen,
+    toggleOffline,
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
     onHome, // the logo: back to the top, search and filters cleared
 }) {
@@ -93,6 +96,10 @@ function Nav({
         closeMenu();
         toggleAccount();
     }
+    function openOffline() {
+        closeMenu();
+        toggleOffline();
+    }
     function openAbout() {
         closeMenu();
         toggleAbout();
@@ -123,7 +130,7 @@ function Nav({
     return (
         <>
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
-            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen || isAboutOpen}>
+            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen}>
                 {/* The logo: back home (top of the page, search and filters
                     cleared), like YouTube's */}
                 <a
@@ -262,6 +269,10 @@ function Nav({
                                     Add New Monkey
                                 </button>
                             )}
+                            <button type="button" onClick={openOffline}>
+                                <IconDeviceMobileDown stroke={2} aria-hidden="true" />
+                                Install & offline
+                            </button>
                             <button type="button" onClick={openAbout}>
                                 <IconInfoCircle stroke={2} aria-hidden="true" />
                                 About
@@ -304,7 +315,17 @@ function Nav({
                 <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />,
                 document.body
             )}
-            {createPortal(<AboutModal isOpen={isAboutOpen} onClose={toggleAbout} />, document.body)}
+            {createPortal(
+                <AboutModal
+                    isOpen={isAboutOpen}
+                    onClose={toggleAbout}
+                    onOpenOffline={() => {
+                        toggleAbout();
+                        toggleOffline();
+                    }}
+                />,
+                document.body
+            )}
         </>
     );
 }

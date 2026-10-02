@@ -106,7 +106,7 @@ test("the editor signs in: told they can edit, and the nav icon turns green", as
 
     await waitFor(() => expect(dialog()).toHaveAccessibleName("Signed in"));
     expect(within(dialog()).getByText(EDITOR.email)).toBeInTheDocument();
-    expect(within(dialog()).getByText("You can edit monkeys and upload photos.")).toBeInTheDocument();
+    expect(within(dialog()).getByText("You can edit monkeys, upload photos, and download all photos for offline use.")).toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: "Account (signed in)" });
     expect(accountButton).toHaveClass("is-signed-in");
 });
@@ -115,7 +115,7 @@ test("an account that isn't an editor is told it can only view", async () => {
     const { user, dialog } = setup();
     await signIn(user, VIEWER.email, PASSWORD);
     await waitFor(() =>
-        expect(within(dialog()).getByText("This account can view but not edit monkeys.")).toBeInTheDocument()
+        expect(within(dialog()).getByText("This account can download all photos for offline use, but can't edit monkeys.")).toBeInTheDocument()
     );
 });
 

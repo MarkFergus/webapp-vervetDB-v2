@@ -126,6 +126,28 @@
     color: #d1cfc7;
 }
 
+/* Opens "Install & use offline": a quiet outlined button at the bottom */
+.AboutModal-offline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #25c4f8;
+    background: none;
+    border: 1px solid #25c4f8;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.AboutModal-offline:hover {
+    color: #86e1ff;
+    border-color: #86e1ff;
+}
+
 .AboutModal-changes li::marker {
     color: #25c4f8;
 }

@@ -61,7 +61,7 @@ describe("☰ menu (phones)", () => {
 
         await user.click(menuButton());
         expect(menuButton()).toHaveAttribute("aria-expanded", "true");
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "About", "Sign In"]);
+        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & offline", "About", "Sign In"]);
         expect(within(menu()).getByRole("link", { name: "Monkey Guesser Game" })).toHaveAttribute("href", "#game");
         expect(menu().querySelector("a")).toHaveFocus();
     });
@@ -70,7 +70,7 @@ describe("☰ menu (phones)", () => {
         const { user, menuButton, menuItems } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "Menu (signed in)" });
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Add New Monkey", "About", "Account"]);
+        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Add New Monkey", "Install & offline", "About", "Account"]);
     });
 
     test("Sign In opens the sign-in pop-up", async () => {

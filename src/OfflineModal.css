@@ -1,0 +1,139 @@
+/* "Install & use offline": the About pop-up's window (AboutModal.css),
+   with two sections */
+
+.OfflineModal {
+    padding-top: 40px;
+}
+
+.OfflineModal-section {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #3a3839;
+}
+
+.OfflineModal-section h2 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+.OfflineModal-section p,
+.OfflineModal-section li {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: #d1cfc7;
+}
+
+.OfflineModal-section b {
+    color: white;
+}
+
+.OfflineModal-steps,
+.OfflineModal-counts {
+    margin: 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.OfflineModal-steps li::marker,
+.OfflineModal-counts li::marker {
+    color: #25c4f8;
+}
+
+/* "You're using the installed app." / "Every photo is saved" */
+.OfflineModal-section .OfflineModal-done {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #47b028;
+    font-weight: 700;
+}
+
+/* Install app / Download all photos: the site's blue button */
+.OfflineModal-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.OfflineModal-button:hover {
+    background-color: #6dd8fb;
+}
+
+.OfflineModal-section .OfflineModal-hint {
+    font-size: 13px;
+    color: #8a877e;
+}
+
+/* The download's progress bar, "Saving 120 of 525…" and Stop */
+.OfflineModal-progress {
+    align-self: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: 14px;
+    color: #d1cfc7;
+}
+
+.OfflineModal-progress progress {
+    flex-basis: 100%;
+    height: 8px;
+    appearance: none;
+    border: none;
+    border-radius: 999px;
+    overflow: hidden;
+    background-color: #343234;
+}
+
+.OfflineModal-progress progress::-webkit-progress-bar {
+    background-color: #343234;
+}
+
+.OfflineModal-progress progress::-webkit-progress-value {
+    background-color: #25c4f8;
+    border-radius: 999px;
+}
+
+.OfflineModal-progress progress::-moz-progress-bar {
+    background-color: #25c4f8;
+    border-radius: 999px;
+}
+
+.OfflineModal-stop {
+    margin-left: auto;
+    padding: 4px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: #d1cfc7;
+    background: none;
+    border: 1px solid #5a5856;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.OfflineModal-stop:hover {
+    color: white;
+    border-color: #d1cfc7;
+}
