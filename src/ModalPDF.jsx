@@ -6,6 +6,10 @@ import { BABIES_BOOK, bookTitle } from "./profileBook";
 import { currentBabySeason } from "./ages";
 import "./ModalPDF.css";
 
+// Firefox on Android: saving can fail in its home-screen app (opens a blank
+// page), so a note warns about it
+const IS_FIREFOX_ANDROID = /Android/.test(navigator.userAgent) && /Firefox\//.test(navigator.userAgent);
+
 // Largest troop is ~55, so anything over this is probably "All Troops"
 const LARGE_PDF_THRESHOLD = 60;
 
@@ -200,6 +204,11 @@ function ModalPDF({
                                         </button>
                                     )}
                                 </div>
+                                {IS_FIREFOX_ANDROID && (
+                                    <p className="ModalPDF-firefoxNote">
+                                        Firefox users may encounter issues downloading the PDF.
+                                    </p>
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>

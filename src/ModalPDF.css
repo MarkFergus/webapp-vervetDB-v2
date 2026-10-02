@@ -214,6 +214,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 /* "Your Profile Book is ready (1.2 MB)" */
 .ModalPDF-ready {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 6px;
     color: #47b028;
@@ -226,4 +227,12 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
 .ModalPDF-error {
     color: #ff92ce;
+}
+
+/* Firefox on Android only: under the buttons, quiet */
+.ModalPDF-firefoxNote {
+    margin: 10px 16px 0;
+    font-size: 13px;
+    color: #8a877e;
+    text-align: center;
 }

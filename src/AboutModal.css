@@ -131,3 +131,47 @@
 .AboutModal-changes li::marker {
     color: #25c4f8;
 }
+
+/* TEMPORARY: the admin-only download test (DownloadTest.jsx) */
+.DownloadTest {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed #fe39a4;
+}
+
+.DownloadTest h2 {
+    margin: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fe39a4;
+}
+
+.DownloadTest p {
+    margin: 0;
+    font-size: 13px;
+    color: #b6b2a5;
+}
+
+.DownloadTest button {
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: none;
+    border-radius: 8px;
+}
+
+.DownloadTest pre {
+    margin: 0;
+    font-size: 12px;
+    color: #8a877e;
+    white-space: pre-wrap;
+}
