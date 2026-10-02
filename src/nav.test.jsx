@@ -144,20 +144,37 @@ describe("filter / sort toolbar", () => {
         expect(filtersButton()).not.toHaveClass("is-active");
     });
 
-    test("the active sort shows an arrow for its direction", async () => {
+    test("the sort button shows the sort in use, and stays grey (it only changes the order)", async () => {
         const { user } = setup();
-        const button = (name) => screen.getByRole("button", { name: new RegExp(`^${name}`) });
-        const arrows = (name) => button(name).querySelectorAll("svg").length;
+        const sortButton = () => screen.getByRole("button", { name: /^Sort/ });
+        const choose = async (name) => {
+            await user.click(sortButton());
+            await user.click(screen.getByRole("menuitem", { name }));
+        };
+        expect(sortButton()).toHaveTextContent(/^NameA–Z$/);
+        expect(sortButton()).not.toHaveClass("is-active");
 
-        expect(button("Name")).toHaveAttribute("aria-pressed", "true");
-        expect(arrows("Name")).toBe(1);
-        expect(arrows("Troop")).toBe(0);
+        await choose("Age");
+        expect(sortButton()).toHaveTextContent(/^AgeYoungest first$/);
+        expect(sortButton()).not.toHaveClass("is-active");
+        expect(sortButton()).toHaveAccessibleName("Sort: Age, Youngest first");
+        // Age is now offered the other way round, in words
+        await user.click(sortButton());
+        expect(screen.getByRole("menuitem", { name: "Age, Oldest first" })).toHaveTextContent("AgeOldest first");
+        expect(screen.getByRole("menuitem", { name: "Name" })).toHaveTextContent(/^Name$/);
+        await user.click(screen.getByRole("menuitem", { name: "Age, Oldest first" }));
+        expect(sortButton()).toHaveAccessibleName("Sort: Age, Oldest first");
 
-        await user.click(button("Age"));
-        expect(arrows("Age")).toBe(1);
-        expect(arrows("Name")).toBe(0);
-        expect(button("Age")).toHaveAccessibleName("Age, ascending");
-        await user.click(button("Age"));
-        expect(button("Age")).toHaveAccessibleName("Age, descending");
+        await choose("Name");
+        expect(sortButton()).toHaveTextContent(/^NameA–Z$/);
+        expect(sortButton()).not.toHaveClass("is-active");
+    });
+
+    test("Sort's menu closes when tapping elsewhere", async () => {
+        const { user } = setup();
+        await user.click(screen.getByRole("button", { name: /^Sort/ }));
+        expect(screen.getByRole("menu")).toBeInTheDocument();
+        await user.click(document.body);
+        expect(screen.queryByRole("menu")).toBeNull();
     });
 });

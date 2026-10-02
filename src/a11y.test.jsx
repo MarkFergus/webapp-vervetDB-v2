@@ -69,18 +69,28 @@ test("search, filters and icon buttons have accessible names", async () => {
     expect(search).toHaveFocus();
 });
 
-test("sort buttons say which sort is active and its direction", async () => {
+test("Sort says which sort is in use and which way round; its menu works by keyboard", async () => {
     const { user } = setup();
-    const nameSort = () => screen.getByRole("button", { name: /^Name/ });
-    expect(nameSort()).toHaveAttribute("aria-pressed", "true");
-    expect(nameSort()).toHaveAccessibleName(/ascending/);
+    const sortButton = () => screen.getByRole("button", { name: /^Sort/ });
+    expect(sortButton()).toHaveAccessibleName("Sort: Name, A–Z");
+    expect(sortButton()).toHaveAttribute("aria-haspopup", "menu");
 
-    await user.click(nameSort());
-    expect(nameSort()).toHaveAccessibleName(/descending/);
-    expect(screen.getByRole("button", { name: /^Age/ })).toHaveAttribute(
-        "aria-pressed",
-        "false"
-    );
+    await user.click(sortButton());
+    expect(sortButton()).toHaveAttribute("aria-expanded", "true");
+    const items = screen.getAllByRole("menuitem");
+    // The current sort the other way round, then the others
+    expect(items.map((item) => item.getAttribute("aria-label"))).toEqual(["Name, Z–A", "Troop", "Age", "Sex"]);
+    expect(items[0]).toHaveFocus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(items[1]).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(sortButton()).toHaveFocus();
+
+    await user.click(sortButton());
+    await user.click(screen.getByRole("menuitem", { name: "Name, Z–A" }));
+    expect(sortButton()).toHaveAccessibleName("Sort: Name, Z–A");
 });
 
 test("the number of results is announced when filters change", async () => {

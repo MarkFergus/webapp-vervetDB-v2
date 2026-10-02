@@ -37,7 +37,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     z-index: 2;
 }
 
-/* ---- Toolbar: filters, sort, Add monkey ---- */
+/* ---- Toolbar: Filters and Sort (SortMenu.jsx uses the same button look) ---- */
 .ShowPage-toolbar {
     display: flex;
     align-items: center;
@@ -57,7 +57,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     align-items: center;
     gap: 6px;
     height: 28px;
-    padding: 0 18px; /* a little wider than the sort, so it stands out */
+    padding: 0 16px;
     font: inherit;
     color: #d1cfc7;
     background-color: #262426;
@@ -73,12 +73,22 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     border-color: #6b6862;
 }
 
+/* The ⌄ at the end of Filters and Sort: they open a panel / menu */
+.ShowPage-chevron {
+    margin-left: -2px;
+    color: #8a877e;
+}
+
 /* Filters in use: blue, with how many */
 .ShowPage-filtersButton.is-active {
     color: #25c4f8;
     border-color: #25c4f8;
     background-color: rgba(37, 196, 248, 0.1);
     font-weight: 700;
+}
+
+.ShowPage-filtersButton.is-active .ShowPage-chevron {
+    color: inherit;
 }
 
 .ShowPage-filtersCount {
@@ -139,41 +149,6 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     text-decoration: underline;
 }
 
-/* Sort: segmented control, the active segment raised with an arrow */
-.ShowPage-sort {
-    display: flex;
-    padding: 2px;
-    background-color: #262426;
-    border: 1px solid #3a3839;
-    border-radius: 999px;
-}
-
-.ShowPage-sort button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    height: 22px;
-    padding: 0 12px;
-    font: inherit;
-    color: #b6b2a5;
-    background: none;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background-color 0.15s, color 0.15s;
-}
-
-.ShowPage-sort button:hover {
-    color: white;
-}
-
-.ShowPage-sort button[aria-pressed="true"] {
-    color: white;
-    font-weight: 700;
-    background-color: #3f3d3f;
-}
-
 .ShowPage-monkeys {
     margin: 8px;
     display: flex;
@@ -183,28 +158,14 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
-/* Phones: Filters and the sort share one line; the sort's four segments
-   share the space left. On the narrowest phones (or with filters on) the
-   sort moves onto its own full-width line rather than running off the edge. */
+/* Phones: Filters and Sort a little taller, easier to tap */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
-        flex-wrap: wrap;
         gap: 8px;
     }
 
     .ShowPage-filtersButton {
         height: 32px;
-    }
-
-    .ShowPage-sort {
-        flex: 1 1 210px; /* needs about 210px; otherwise it wraps */
-        min-width: 0;
-    }
-
-    .ShowPage-sort button {
-        flex: 1;
-        height: 26px;
-        padding: 0 4px;
     }
 }
 

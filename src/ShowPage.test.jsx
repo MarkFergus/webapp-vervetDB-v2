@@ -66,19 +66,25 @@ test("year filter shows only monkeys born that year", async () => {
     expect(cardNames()).toHaveLength(expected);
 });
 
+// Sort → pick an option from its menu
+async function chooseSort(user, label) {
+    await user.click(screen.getByRole("button", { name: /^Sort/ }));
+    await user.click(screen.getByRole("menuitem", { name: new RegExp(`^${label}`) }));
+}
+
 test("sorting doesn't reorder the original monkey data", async () => {
     const before = monkeysArr.map((m) => m.name);
     const { user } = setup();
-    await user.click(screen.getByRole("button", { name: /^Age/ }));
-    await user.click(screen.getByRole("button", { name: /^Troop/ }));
+    await chooseSort(user, "Age");
+    await chooseSort(user, "Troop");
 
     expect(monkeysArr.map((m) => m.name)).toEqual(before);
 });
 
-test("clicking a sort button twice reverses the order", async () => {
+test("choosing the current sort again reverses the order", async () => {
     const { user, cardNames } = setup();
     const ascending = cardNames();
-    await user.click(screen.getByRole("button", { name: /^Name/ }));
+    await chooseSort(user, "Name");
 
     expect(cardNames()[0]).not.toBe(ascending[0]);
     expect(
@@ -165,7 +171,11 @@ test("sort by age: youngest first, then oldest first; unknown ages always last",
             (el) => (el.querySelector(".MonkeyCard-ageLong") ?? el).textContent
         );
     const ageNumber = (text) => (text === "Baby" ? 0 : parseInt(text, 10));
-    const ageButton = () => screen.getByRole("button", { name: /^Age/ });
+    // Sort → Age (a plain click on each, like the rest of this test)
+    const sortByAge = () => {
+        fireEvent.click(screen.getByRole("button", { name: /^Sort/ }));
+        fireEvent.click(screen.getByRole("menuitem", { name: /^Age/ }));
+    };
     // Sorting resets to page 1, so expand to every monkey after each sort.
     // fireEvent (a plain click) rather than the simulated user: much faster
     // with 500+ cards on screen, which matters on GitHub's slower machines
@@ -179,13 +189,13 @@ test("sort by age: youngest first, then oldest first; unknown ages always last",
     const known = (list) => list.slice(0, -unknown).map(ageNumber);
     const inOrder = (list, up) => list.every((n, i) => i === 0 || (up ? list[i - 1] <= n : list[i - 1] >= n));
 
-    fireEvent.click(ageButton());
+    sortByAge();
     showAll();
     expect(ages()).toHaveLength(monkeysArr.length);
     expect(ages().slice(-unknown).every((a) => a === "Age unknown")).toBe(true);
     expect(inOrder(known(ages()), true)).toBe(true); // youngest first
 
-    fireEvent.click(ageButton());
+    sortByAge();
     showAll();
     expect(ages().slice(-unknown).every((a) => a === "Age unknown")).toBe(true);
     expect(inOrder(known(ages()), false)).toBe(true); // oldest first

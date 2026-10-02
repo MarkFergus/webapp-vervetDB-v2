@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-    IconArrowDown,
-    IconArrowUp,
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
+    IconChevronDown,
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
@@ -21,6 +20,7 @@ import { SECTIONS, inSection } from "./sections";
 import { APP_VERSION } from "./changelog";
 import { downloadBlob } from "./canvasHelpers";
 import OfflineModal from "./OfflineModal";
+import SortMenu from "./SortMenu";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
@@ -410,30 +410,6 @@ function ShowPage({
     const isAnyModalOpen =
         isModalOpen || isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen || Boolean(editing);
 
-    // One segment of the Name | Troop | Year sort control. The active one is
-    // highlighted with an arrow showing the direction.
-    function sortButton(key, label) {
-        const isActive = sort.key === key;
-        const Arrow = sort.ascending ? IconArrowUp : IconArrowDown;
-        return (
-            <button
-                type="button"
-                onClick={() => sortBy(key)}
-                aria-pressed={isActive}
-            >
-                {label}
-                {isActive && (
-                    <>
-                        <Arrow size={14} stroke={2.5} aria-hidden="true" />
-                        <span className="visually-hidden">
-                            {sort.ascending ? ", ascending" : ", descending"}
-                        </span>
-                    </>
-                )}
-            </button>
-        );
-    }
-
     return (
         <div className="ShowPage">
             <div className="ShowPage-modal">
@@ -510,6 +486,7 @@ function ShowPage({
                                 {activeFilters.length}
                             </span>
                         )}
+                        <IconChevronDown className="ShowPage-chevron" size={14} stroke={2} aria-hidden="true" />
                     </button>
                     <FilterPanel
                         open={filtersOpen}
@@ -523,12 +500,7 @@ function ShowPage({
                         anyOn={activeFilters.length > 0}
                     />
                 </div>
-                <div className="ShowPage-sort" role="group" aria-label="Sort by">
-                    {sortButton("name", "Name")}
-                    {sortButton("troop", "Troop")}
-                    {sortButton("age", "Age")}
-                    {sortButton("sex", "Sex")}
-                </div>
+                <SortMenu sort={sort} onSort={sortBy} />
             </div>
             {/* The filters in use: tap one to remove it */}
             {activeFilters.length > 0 && (

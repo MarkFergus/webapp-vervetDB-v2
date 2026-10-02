@@ -5,7 +5,7 @@ import path from "node:path";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import { APP_VERSION, CHANGELOG, releaseDate } from "./changelog";
+import { APP_VERSION, CHANGELOG, LATEST_CHANGES, releaseDate } from "./changelog";
 
 const dialog = () => screen.getByRole("dialog", { name: "About vervetDB" });
 
@@ -25,6 +25,14 @@ test("package.json has the same version as the changelog", () => {
     expect(pkg.version).toBe(APP_VERSION);
 });
 
+test("latest changes: the newest first, across versions, up to 8", () => {
+    expect(LATEST_CHANGES.length).toBeLessThanOrEqual(8);
+    expect(LATEST_CHANGES.slice(0, CHANGELOG[0].changes.length)).toEqual(CHANGELOG[0].changes);
+    if (CHANGELOG.length > 1 && CHANGELOG[0].changes.length < 8) {
+        expect(LATEST_CHANGES).toContain(CHANGELOG[1].changes[0]); // older versions fill the rest
+    }
+});
+
 test("dates read as words", () => {
     expect(releaseDate("2026-10-02")).toBe("2 October 2026");
 });
@@ -37,7 +45,7 @@ test("ⓘ in the top bar opens About: version, date and latest changes", async (
     expect(within(dialog()).getByText(`Version ${APP_VERSION} · ${releaseDate(CHANGELOG[0].date)}`)).toBeInTheDocument();
     expect(within(dialog()).getByText(/web app for the Vervet Monkey Foundation's monkey records/)).toBeInTheDocument();
     const changes = within(dialog()).getAllByRole("listitem").map((li) => li.textContent);
-    expect(changes).toEqual(CHANGELOG[0].changes);
+    expect(changes).toEqual(LATEST_CHANGES);
     expect(within(dialog()).getByRole("button", { name: "Close" })).toHaveFocus();
 
     await user.keyboard("{Escape}");

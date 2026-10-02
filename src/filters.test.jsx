@@ -131,6 +131,12 @@ test("filters in use show as chips: remove one, or Clear all", async () => {
     expectShowing(monkeysArr.length);
 });
 
+// Sort → pick an option from its menu
+async function chooseSort(user, label) {
+    await user.click(screen.getByRole("button", { name: /^Sort/ }));
+    await user.click(screen.getByRole("menuitem", { name: new RegExp(`^${label}`) }));
+}
+
 test("sort by sex: females first, then males (and back)", async () => {
     const { user } = setup();
     // (Only the first 100 are on screen, so check the order rather than the ends)
@@ -138,12 +144,12 @@ test("sort by sex: females first, then males (and back)", async () => {
     const sexOf = (name) => monkeysArr.find((m) => m.name === name).sex;
     const inOrder = (ranks) => ranks.every((r, i) => i === 0 || ranks[i - 1] <= r);
 
-    await user.click(screen.getByRole("button", { name: /^Sex/ }));
+    await chooseSort(user, "Sex");
     const firstWay = shownNames().map((n) => rank[sexOf(n)]);
     expect(firstWay[0]).toBe(0); // a female first
     expect(inOrder(firstWay)).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: /^Sex/ }));
+    await chooseSort(user, "Sex");
     const otherWay = shownNames().map((n) => rank[sexOf(n)]);
     expect(otherWay[0]).toBe(1); // now a male first
     expect(inOrder(otherWay.map((r) => (r === 2 ? 2 : 1 - r)))).toBe(true);

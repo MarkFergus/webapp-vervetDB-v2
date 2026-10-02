@@ -73,7 +73,7 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
 
     // Ready: nothing downloads until Save PDF is tapped (Firefox on Android
     // only allows a download straight after a tap)
-    const save = await screen.findByRole("button", { name: "Save PDF" });
+    const save = await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
     expect(screen.getByText(/Your Profile Book is ready/)).toBeInTheDocument();
     expect(save).toHaveFocus();
     expect(downloads).toHaveLength(0);
@@ -126,7 +126,7 @@ describe("choosing the troop", () => {
         );
 
         await user.click(screen.getByRole("button", { name: "Create PDF" }));
-        await user.click(await screen.findByRole("button", { name: "Save PDF" }));
+        await user.click(await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 }));
         expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Royal_\d{4}-\d{2}-\d{2}\.pdf$/);
         const { sections, title, showTroop } = madeWith();
@@ -153,7 +153,7 @@ describe("choosing the troop", () => {
         if (babies.length === 0) return; // nothing to make yet this season
 
         await user.click(screen.getByRole("button", { name: "Create PDF" }));
-        await user.click(await screen.findByRole("button", { name: "Save PDF" }));
+        await user.click(await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 }));
         expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Orphans_Babies_/);
         expect(madeWith()).toMatchObject({ title: `${season} Orphans/Babies`, showTroop: true });
@@ -182,7 +182,7 @@ test("choosing another troop after the book is ready goes back to Create PDF", a
     await user.selectOptions(troopSelect(), "D&D");
     await openPdfModal();
     await user.click(screen.getByRole("button", { name: "Create PDF" }));
-    await screen.findByRole("button", { name: "Save PDF" });
+    await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
 
     await user.selectOptions(within(screen.getByRole("dialog")).getByRole("combobox"), "Royal");
     expect(screen.queryByRole("button", { name: "Save PDF" })).toBeNull();

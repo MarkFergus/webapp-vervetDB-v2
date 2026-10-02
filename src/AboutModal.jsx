@@ -3,11 +3,11 @@ import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
-import { CHANGELOG, releaseDate } from "./changelog";
+import { CHANGELOG, LATEST_CHANGES, releaseDate } from "./changelog";
 import "./AboutModal.css";
 
-// The About pop-up: which version of vervetDB this is, and what changed in it
-// (from changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
+// The About pop-up: which version of vervetDB this is, and a general list of
+// the latest changes (from changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
 // phones, or the line at the bottom of the main page.
 function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
@@ -55,7 +55,7 @@ function AboutModal({ isOpen, onClose }) {
                                 <section className="AboutModal-changes" aria-labelledby="AboutModal-changesTitle">
                                     <h2 id="AboutModal-changesTitle">Latest changes</h2>
                                     <ul>
-                                        {latest.changes.map((change) => (
+                                        {LATEST_CHANGES.map((change) => (
                                             <li key={change}>{change}</li>
                                         ))}
                                     </ul>

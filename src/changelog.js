@@ -1,6 +1,7 @@
-// vervetDB's version and what changed in each one, shown in the About
-// pop-up. Newest first. Only things people using the site will notice;
-// behind-the-scenes work doesn't need a line.
+// vervetDB's version and what changed in each one. Newest first. Only things
+// people using the site will notice; behind-the-scenes work doesn't need a
+// line. The About pop-up shows the current version and a general list of the
+// latest changes (LATEST_CHANGES, across versions).
 //
 // Version numbers: major.minor.patch
 //   major (1.0 → 2.0): a big milestone that changes how vervetDB works
@@ -10,6 +11,14 @@
 // To release a new version: add an entry at the top AND change "version"
 // in package.json to match (a test checks they agree).
 export const CHANGELOG = [
+    {
+        version: "1.0.1",
+        date: "2026-10-02",
+        changes: [
+            "Profile Books and pictures now save in Firefox's home-screen app on Android",
+            "Tidier Sort button: shows the current order in words",
+        ],
+    },
     {
         version: "1.0.0",
         date: "2026-10-02",
@@ -25,6 +34,10 @@ export const CHANGELOG = [
 ];
 
 export const APP_VERSION = CHANGELOG[0].version;
+
+// About's "Latest changes": the newest changes, whichever version they came in
+const LATEST_COUNT = 8;
+export const LATEST_CHANGES = CHANGELOG.flatMap((entry) => entry.changes).slice(0, LATEST_COUNT);
 
 // "2 October 2026"
 export function releaseDate(date) {

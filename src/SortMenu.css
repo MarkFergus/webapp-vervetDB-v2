@@ -1,0 +1,61 @@
+/* Sort: the button looks like Filters (ShowPage-filtersButton); its menu
+   drops down underneath, like the ☰ menu */
+.SortMenu {
+    position: relative;
+}
+
+.SortMenu-menu {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    background-color: #2a282a;
+    border: 1px solid #434343;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.SortMenu-menu button {
+    display: flex;
+    align-items: baseline; /* the faded description on the same line as the name */
+    gap: 8px;
+    padding: 9px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 15px;
+    text-align: left;
+    white-space: nowrap;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.SortMenu-menu button:hover,
+.SortMenu-menu button:focus-visible {
+    color: white;
+    background-color: #343234;
+    outline: none;
+}
+
+/* The current sort, the other way round: "Z–A", "Oldest first" */
+.SortMenu-direction {
+    font-size: 13px;
+    color: #8a877e;
+}
+
+/* The button: "Name  A–Z ▾" (the description faded, as in the menu) */
+.SortMenu > button {
+    gap: 6px;
+}
+
+.SortMenu-current {
+    display: inline-flex;
+    align-items: baseline; /* name and description on the same line */
+    gap: 6px;
+}
+
