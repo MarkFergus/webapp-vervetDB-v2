@@ -11,6 +11,8 @@ import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyIcon from "./MonkeyIcon";
 import { drawResultImage } from "./resultImage";
 import { downloadBlob } from "./canvasHelpers";
+import { thumbUrl } from "./photoPaths";
+import { fallbackTo } from "./photoFallback";
 import {
     averageSeconds,
     checkTypedAnswer,
@@ -824,8 +826,10 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                             key={question.photo}
                             src={question.photo}
                             alt="Mystery monkey"
+                            crossOrigin="anonymous"
                             onLoad={handlePhotoShown}
-                            onError={handlePhotoShown}
+                            // Offline and never seen: its saved thumbnail instead
+                            onError={fallbackTo(thumbUrl(question.photo), handlePhotoShown)}
                         />
                         {photoCovered && (
                             <button

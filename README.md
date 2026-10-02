@@ -106,6 +106,14 @@ All photos live in the `monkey-photos` bucket in Supabase Storage, each with a s
 
 The script can be run again at any time: it only touches monkeys that still have ImgBB photos and uploaded photos missing a thumbnail. `node scripts/move-photos.mjs --dry-run` reports without changing anything; `--troop "Name"` limits it to one troop. It signs in as you (editor account).
 
+## Installing and offline use
+
+vervetDB can be installed as an app (Add to Home Screen on phones, the install icon in Chrome / Edge / Brave on computers) and works without signal:
+
+- **The site itself** is kept on the device by a service worker ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/), set up in [`vite.config.js`](vite.config.js)). When a new version is deployed, a "A new version of vervetDB is ready" card offers **Refresh**.
+- **The monkeys:** every time they load from the database, a copy is saved on the device ([`src/savedData.js`](src/savedData.js)). Opened with no signal, the site shows that copy straight away with a note saying how old it is, and switches back to live data when the connection returns. Editing is off while offline.
+- **Photos:** the cards use small thumbnails, and every thumbnail (about 8 MB) is saved in the background ([`src/offlinePhotos.js`](src/offlinePhotos.js); skipped on data-saver or very slow connections). Each full-size photo is saved the first time it's opened; offline, a photo that was never opened shows its thumbnail instead.
+
 ## Deploying
 
 The live site updates automatically: **push to `master` and GitHub does the rest.** The workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) installs, runs all the tests, builds, and publishes to GitHub Pages. If any test fails, nothing is published.

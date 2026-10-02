@@ -15,4 +15,6 @@ vi.mock("./monkeyData", async (importOriginal) => {
 // (#monkey/…) left by one test would otherwise open its pop-up in the next
 beforeEach(() => {
     window.history.replaceState(null, "", "/");
+    // Each test starts with no copy of the monkeys saved on the "device"
+    localStorage.removeItem("vervetdb-saved-data");
 });

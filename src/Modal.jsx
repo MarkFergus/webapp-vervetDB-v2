@@ -15,6 +15,8 @@ import { drawMonkeyImage } from "./monkeyImage";
 import { ageLabel } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
 import { downloadBlob } from "./canvasHelpers";
+import { thumbUrl } from "./photoPaths";
+import { fallbackTo } from "./photoFallback";
 import "./Modal.css";
 
 function Modal({
@@ -186,8 +188,12 @@ function Modal({
                                     </button>
                                 </div>
                                 <div className="Modal-img">
+                                    {/* Offline and never opened: its saved thumbnail instead */}
                                     <img
+                                        key={monkey.img[currentIndex]}
                                         src={monkey.img[currentIndex]}
+                                        crossOrigin="anonymous"
+                                        onError={fallbackTo(thumbUrl(monkey.img[currentIndex]))}
                                         alt={
                                             monkey.img.length > 1
                                                 ? `${monkey.name}, photo ${currentIndex + 1} of ${monkey.img.length}`

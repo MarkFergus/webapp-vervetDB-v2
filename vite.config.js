@@ -42,7 +42,46 @@ export default defineConfig({
                 globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
                 globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js"],
                 navigateFallback: "/index.html",
+                // First visit: start saving things for offline use straight
+                // away, rather than from the next visit. (New versions still
+                // wait for Refresh, see UpdatePrompt.)
+                clientsClaim: true,
                 runtimeCaching: [
+                    // Monkey photos never change at the same address (a new
+                    // photo gets a new name), so once saved they're used from
+                    // the device. Thumbnails: all of them (~8 MB, saved in the
+                    // background, see offlinePhotos.js). Full photos: each one
+                    // the first time it's opened. The first rule that matches wins.
+                    {
+                        urlPattern: ({ url }) =>
+                            url.pathname.includes("/storage/v1/object/public/monkey-photos/thumbs/"),
+                        handler: "CacheFirst",
+                        options: {
+                            cacheName: "vervetdb-thumbnails",
+                            expiration: { maxEntries: 3000, purgeOnQuotaError: true },
+                            cacheableResponse: { statuses: [200] },
+                        },
+                    },
+                    {
+                        urlPattern: ({ url }) =>
+                            url.pathname.includes("/storage/v1/object/public/monkey-photos/"),
+                        handler: "CacheFirst",
+                        options: {
+                            cacheName: "vervetdb-photos",
+                            expiration: { maxEntries: 1500, purgeOnQuotaError: true },
+                            cacheableResponse: { statuses: [200] },
+                        },
+                    },
+                    {
+                        // The "no photo yet" picture (still on ImgBB)
+                        urlPattern: ({ url }) => url.origin === "https://i.ibb.co",
+                        handler: "CacheFirst",
+                        options: {
+                            cacheName: "vervetdb-other-photos",
+                            expiration: { maxEntries: 20, purgeOnQuotaError: true },
+                            cacheableResponse: { statuses: [200] },
+                        },
+                    },
                     {
                         // Files in /assets/ never change (their names change instead)
                         urlPattern: ({ url, sameOrigin }) =>

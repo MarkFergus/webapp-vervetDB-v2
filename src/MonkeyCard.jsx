@@ -1,5 +1,7 @@
 import { IconMars, IconVenus } from "@tabler/icons-react";
 import { ageLabel } from "./ages";
+import { thumbUrl } from "./photoPaths";
+import { fallbackTo } from "./photoFallback";
 import "./MonkeyCard.css";
 
 function SexIcon({ sex }) {
@@ -24,8 +26,17 @@ function MonkeyCard({ name, sex, year, troop, img, onClick }) {
     return (
         <button type="button" className="MonkeyCard" onClick={onClick} aria-label={label}>
             <span className="MonkeyCard-image">
-                {/* alt="" because the name is right below the photo */}
-                <img src={img} alt="" loading="lazy"></img>
+                {/* alt="" because the name is right below the photo.
+                    The small thumbnail (faster, and saved for offline use);
+                    the full photo if there's no thumbnail */}
+                <img
+                    key={img}
+                    src={thumbUrl(img)}
+                    alt=""
+                    loading="lazy"
+                    crossOrigin="anonymous"
+                    onError={fallbackTo(img)}
+                ></img>
             </span>
             <span className="MonkeyCard-info">
                 <span className="MonkeyCard-info-name">{name}</span>

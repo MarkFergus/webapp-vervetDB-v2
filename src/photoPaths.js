@@ -28,3 +28,14 @@ export function photoPath(troop, name, extension, time = Date.now()) {
 export function thumbPath(path) {
     return `thumbs/${path.replace(/\.[a-z0-9]+$/i, "")}.webp`;
 }
+
+// A photo's thumbnail address. Photos stored elsewhere (e.g. the "no photo
+// yet" picture on ImgBB) have no thumbnail, so their own address is returned.
+const STORED = "/storage/v1/object/public/monkey-photos/";
+export function thumbUrl(url) {
+    const at = url.indexOf(STORED);
+    if (at < 0) return url;
+    const path = url.slice(at + STORED.length);
+    if (path.startsWith("thumbs/")) return url;
+    return url.slice(0, at + STORED.length) + thumbPath(path);
+}
