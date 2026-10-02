@@ -296,3 +296,15 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         bottom: max(16px, env(safe-area-inset-bottom));
     }
 }
+
+/* Phones: two cards per row, so the thumbnails are shown at about their own
+   size (sharp) and more monkeys fit on the screen */
+@media (max-width: 624px) {
+    .ShowPage-monkeys {
+        margin: 8px 12px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 10px;
+        align-items: start;
+    }
+}

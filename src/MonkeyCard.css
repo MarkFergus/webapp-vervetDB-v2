@@ -114,3 +114,30 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         transition: none;
     }
 }
+
+/* Phones (two cards per row): a bit smaller, and the troop gets its own
+   line so the details fit: "Global" / "♀ Female · 7 yrs old" */
+@media (max-width: 624px) {
+    .MonkeyCard-image {
+        border-radius: 10px;
+    }
+
+    .MonkeyCard-info-name {
+        font-size: 15px;
+    }
+
+    .MonkeyCard-meta {
+        flex-wrap: wrap;
+        font-size: 13px;
+    }
+
+    .MonkeyCard-info-troop {
+        flex-basis: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .MonkeyCard-meta > .MonkeyCard-info-troop + span::before {
+        content: none;
+    }
+}
