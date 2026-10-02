@@ -42,6 +42,8 @@ export default defineConfig({
                 globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
                 globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js"],
                 navigateFallback: "/index.html",
+                // Other pages (e.g. a temporary test page) open as themselves
+                navigateFallbackDenylist: [/^\/(?!index\.html)[^/]+\.html$/],
                 // First visit: start saving things for offline use straight
                 // away, rather than from the next visit. (New versions still
                 // wait for Refresh, see UpdatePrompt.)
