@@ -1,0 +1,131 @@
+/* The About pop-up. Same window as the account pop-up (dark, neon blue). */
+
+.AboutModal-overlay {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Centred when there's room; on a short screen it starts at the top and
+   the screen scrolls, so nothing is cut off */
+.AboutModal-windowbox {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px 0;
+    overflow-y: auto;
+    pointer-events: none;
+}
+
+.AboutModal-window {
+    position: relative;
+    width: 96%;
+    max-width: 400px;
+    margin: auto 0;
+    background-color: #202020;
+    border-radius: 10px;
+    pointer-events: auto;
+}
+
+.AboutModal-close button {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(36, 36, 36, 0.6);
+    color: rgb(146, 145, 145);
+    cursor: pointer;
+}
+
+.AboutModal-close button:hover {
+    color: white;
+}
+
+.AboutModal-close svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.AboutModal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 24px 24px;
+}
+
+/* The monkey logo in neon blue, like the app icon */
+.AboutModal-logo {
+    display: flex;
+    width: 56px;
+    color: #25c4f8;
+}
+
+.AboutModal-logo svg {
+    width: 100%;
+    height: auto;
+}
+
+.AboutModal-title {
+    margin: 10px 0 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+}
+
+.AboutModal-version {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+/* What vervetDB is, in a sentence or two */
+.AboutModal-description {
+    margin: 14px 0 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #d1cfc7;
+    text-align: center;
+}
+
+/* Latest changes: below a line, with a small capitals heading */
+.AboutModal-changes {
+    align-self: stretch;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #3a3839;
+}
+
+.AboutModal-changes h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+.AboutModal-changes ul {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.AboutModal-changes li {
+    font-size: 15px;
+    line-height: 1.4;
+    color: #d1cfc7;
+}
+
+.AboutModal-changes li::marker {
+    color: #25c4f8;
+}

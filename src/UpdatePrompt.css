@@ -1,13 +1,16 @@
 /* "A new version is ready": a small card at the bottom of the screen, in
    the site's neon pink so it stands out */
 .UpdatePrompt {
+    /* 16px in from both edges (never off the screen), centred once the
+       screen is wider than the card */
     position: fixed;
     z-index: 20;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 16px;
+    right: 16px;
     max-width: 420px;
+    margin: 0 auto;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -26,7 +29,7 @@
 @keyframes UpdatePrompt-in {
     from {
         opacity: 0;
-        transform: translate(-50%, 16px);
+        transform: translateY(16px);
     }
 }
 
@@ -79,4 +82,17 @@
 .UpdatePrompt-refresh:hover {
     background-color: #ff92ce;
     border-color: #ff92ce;
+}
+
+/* Narrow phones: the buttons go under the message, on the right */
+@media (max-width: 480px) {
+    .UpdatePrompt {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .UpdatePrompt-buttons {
+        justify-content: flex-end;
+    }
 }

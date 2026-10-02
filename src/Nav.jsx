@@ -5,6 +5,7 @@ import {
     IconX,
     IconFileTypePdf,
     IconHourglassLow,
+    IconInfoCircle,
     IconDeviceGamepad2,
     IconMenu2,
     IconPlus,
@@ -12,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
+import AboutModal from "./AboutModal";
 import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
 import "./Nav.css";
@@ -35,6 +37,8 @@ function Nav({
     onChoosePdfBook,
     isAccountOpen,
     toggleAccount,
+    isAboutOpen,
+    toggleAbout,
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
     onHome, // the logo: back to the top, search and filters cleared
 }) {
@@ -89,6 +93,10 @@ function Nav({
         closeMenu();
         toggleAccount();
     }
+    function openAbout() {
+        closeMenu();
+        toggleAbout();
+    }
     function addMonkey() {
         closeMenu();
         onAddMonkey();
@@ -115,7 +123,7 @@ function Nav({
     return (
         <>
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
-            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen}>
+            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen || isAboutOpen}>
                 {/* The logo: back home (top of the page, search and filters
                     cleared), like YouTube's */}
                 <a
@@ -199,6 +207,15 @@ function Nav({
                             <IconPlus stroke={1.75} size={26} />
                         </button>
                     )}
+                    <button
+                        type="button"
+                        className="Nav-about"
+                        onClick={toggleAbout}
+                        aria-label="About vervetDB"
+                        data-tooltip="About"
+                    >
+                        <IconInfoCircle stroke={1.75} size={26} />
+                    </button>
                     {/* Sign in / account: a person in a circle, green when signed in */}
                     <button
                         type="button"
@@ -245,6 +262,10 @@ function Nav({
                                     Add New Monkey
                                 </button>
                             )}
+                            <button type="button" onClick={openAbout}>
+                                <IconInfoCircle stroke={2} aria-hidden="true" />
+                                About
+                            </button>
                             <button
                                 type="button"
                                 className={user ? "Nav-menuAccount is-signed-in" : "Nav-menuAccount"}
@@ -283,6 +304,7 @@ function Nav({
                 <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />,
                 document.body
             )}
+            {createPortal(<AboutModal isOpen={isAboutOpen} onClose={toggleAbout} />, document.body)}
         </>
     );
 }

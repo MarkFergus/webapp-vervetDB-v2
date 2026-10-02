@@ -308,3 +308,26 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         align-items: start;
     }
 }
+
+/* "vervetDB 1.0.0 · About": a quiet line at the very bottom of the page */
+.ShowPage-footer {
+    display: flex;
+    justify-content: center;
+    padding: 28px 16px 36px;
+}
+
+.ShowPage-footer button {
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #8a877e;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.ShowPage-footer button:hover {
+    color: #d1cfc7;
+    text-decoration: underline;
+}

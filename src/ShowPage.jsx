@@ -18,6 +18,7 @@ import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { SECTIONS, inSection } from "./sections";
+import { APP_VERSION } from "./changelog";
 import "./ShowPage.css";
 
 const MONKEYS_PER_PAGE = 100;
@@ -148,6 +149,7 @@ function ShowPage({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
+    const [isAboutOpen, setIsAboutOpen] = useState(false);
     // Arrived from a password email link: open the account pop-up by itself
     useEffect(() => {
         if (passwordSetup) setIsAccountOpen(true);
@@ -403,7 +405,7 @@ function ShowPage({
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
     const isAnyModalOpen =
-        isModalOpen || isPDFModalOpen || isAccountOpen || Boolean(editing);
+        isModalOpen || isPDFModalOpen || isAccountOpen || isAboutOpen || Boolean(editing);
 
     // One segment of the Name | Troop | Year sort control. The active one is
     // highlighted with an arrow showing the direction.
@@ -466,6 +468,8 @@ function ShowPage({
                     isPDFModalOpen={isPDFModalOpen}
                     isAccountOpen={isAccountOpen}
                     toggleAccount={() => setIsAccountOpen((open) => !open)}
+                    isAboutOpen={isAboutOpen}
+                    toggleAbout={() => setIsAboutOpen((open) => !open)}
                     onAddMonkey={canEdit ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
@@ -568,6 +572,12 @@ function ShowPage({
                     </button>
                 </div>
             )}
+            {/* A quiet line at the very bottom: the version, and About */}
+            <footer className="ShowPage-footer" inert={isAnyModalOpen}>
+                <button type="button" onClick={() => setIsAboutOpen(true)}>
+                    vervetDB {APP_VERSION} · About
+                </button>
+            </footer>
             {navOutOfView && !isAnyModalOpen && (
                 <button
                     type="button"

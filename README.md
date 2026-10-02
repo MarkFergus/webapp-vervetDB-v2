@@ -124,6 +124,12 @@ The live site updates automatically: **push to `master` and GitHub does the rest
 
 **The domain:** vervetdb.com is registered with Namecheap. GitHub Pages serves the site at **vervetdb.com** (repository **Settings → Pages → Custom domain**, with "Enforce HTTPS" on). The domain's DNS points at GitHub: four `A` records for `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a `CNAME` for `www` → `markfergus.github.io`. The old address, markfergus.github.io/webapp-vervetDB-v2/, redirects to it automatically. The domain's other DNS records (`send`, `resend._domainkey`, `_dmarc`, and Mail Settings set to Custom MX) are for sending email through Resend; leave them in place. If the address ever changes, also update Supabase's **Authentication → URL Configuration** and `site_url` in `private.summary_settings`.
 
+## Versions and the About pop-up
+
+The version (e.g. **1.0.0**) and what changed in each one live in [`src/changelog.js`](src/changelog.js) and show in the **About** pop-up (ⓘ in the top bar, ☰ → About on phones, or the line at the bottom of the main page). Versions are major.minor.patch: **major** for a big milestone, **minor** for new features people will notice, **patch** for small fixes. Only user-facing changes get a line.
+
+To release a version: add an entry at the top of `CHANGELOG` and change `"version"` in `package.json` to match (a test fails if they differ).
+
 ## Making a change (Git routine)
 
 For anything bigger than a small fix, work on a branch so `master` (the live site) stays working:
