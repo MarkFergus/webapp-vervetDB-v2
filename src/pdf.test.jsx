@@ -71,7 +71,15 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
     await openPdfModal();
     await user.click(screen.getByRole("button", { name: "Create PDF" }));
 
-    await waitFor(() => expect(downloads).toHaveLength(1));
+    // Ready: nothing downloads until Save PDF is tapped (Firefox on Android
+    // only allows a download straight after a tap)
+    const save = await screen.findByRole("button", { name: "Save PDF" });
+    expect(screen.getByText(/Your Profile Book is ready/)).toBeInTheDocument();
+    expect(save).toHaveFocus();
+    expect(downloads).toHaveLength(0);
+    await user.click(save);
+    expect(downloads).toHaveLength(1);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); // closes after saving
     expect(downloads[0]).toMatch(/^profile_book_D_D_\d{4}-\d{2}-\d{2}\.pdf$/);
 
     const sent = preparePhotosForPdf.mock.lastCall[0];
@@ -118,7 +126,8 @@ describe("choosing the troop", () => {
         );
 
         await user.click(screen.getByRole("button", { name: "Create PDF" }));
-        await waitFor(() => expect(downloads).toHaveLength(1));
+        await user.click(await screen.findByRole("button", { name: "Save PDF" }));
+        expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Royal_\d{4}-\d{2}-\d{2}\.pdf$/);
         const { sections, title, showTroop } = madeWith();
         expect(title).toBe("Royal Troop");
@@ -144,7 +153,8 @@ describe("choosing the troop", () => {
         if (babies.length === 0) return; // nothing to make yet this season
 
         await user.click(screen.getByRole("button", { name: "Create PDF" }));
-        await waitFor(() => expect(downloads).toHaveLength(1));
+        await user.click(await screen.findByRole("button", { name: "Save PDF" }));
+        expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Orphans_Babies_/);
         expect(madeWith()).toMatchObject({ title: `${season} Orphans/Babies`, showTroop: true });
     });
@@ -165,4 +175,17 @@ test("a download's address stays usable for a few minutes, then is freed", async
     } finally {
         vi.useRealTimers();
     }
+});
+
+test("choosing another troop after the book is ready goes back to Create PDF", async () => {
+    const { user, openPdfModal, troopSelect } = setup();
+    await user.selectOptions(troopSelect(), "D&D");
+    await openPdfModal();
+    await user.click(screen.getByRole("button", { name: "Create PDF" }));
+    await screen.findByRole("button", { name: "Save PDF" });
+
+    await user.selectOptions(within(screen.getByRole("dialog")).getByRole("combobox"), "Royal");
+    expect(screen.queryByRole("button", { name: "Save PDF" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
+    expect(downloads).toHaveLength(0);
 });

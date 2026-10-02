@@ -36,6 +36,8 @@ function Nav({
     pdfBook,
     pdfTroops,
     onChoosePdfBook,
+    pdfReady,
+    onSavePDF,
     isAccountOpen,
     toggleAccount,
     isAboutOpen,
@@ -317,6 +319,8 @@ function Nav({
                         book={pdfBook}
                         troops={pdfTroops}
                         onChooseBook={onChoosePdfBook}
+                        ready={pdfReady}
+                        onSave={onSavePDF}
                     />
                 </div>,
                 document.body

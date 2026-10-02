@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { IconSquareRoundedX } from "@tabler/icons-react";
+import { useEffect, useRef } from "react";
+import { IconCircleCheckFilled, IconDownload, IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { BABIES_BOOK, bookTitle } from "./profileBook";
@@ -22,6 +22,9 @@ function ModalPDF({
     book,
     troops,
     onChooseBook,
+    // The finished book ({ blob, filename }), waiting for Save PDF
+    ready,
+    onSave,
 }) {
     const plural = monkeyCount === 1 ? "monkey" : "monkeys";
     const troopNote = bookTitle(book);
@@ -36,6 +39,15 @@ function ModalPDF({
     // Escape closes; focus starts on the close button
     const closeButtonRef = useRef(null);
     useDialog(isPDFModalOpen, closeButtonRef, { onClose: closePDFModal });
+
+    // Book ready: Save PDF gets the focus, ready for Enter
+    const saveButtonRef = useRef(null);
+    useEffect(() => {
+        if (ready) saveButtonRef.current?.focus();
+    }, [ready]);
+    const readySize = ready
+        ? `${Math.max(0.1, Math.round((ready.blob.size / 1048576) * 10) / 10)} MB`
+        : "";
 
     return (
         <AnimatePresence>
@@ -141,6 +153,12 @@ function ModalPDF({
                                             </span>
                                         </p>
                                     )}
+                                    {ready && (
+                                        <p className="ModalPDF-ready" role="status">
+                                            <IconCircleCheckFilled size={18} aria-hidden="true" />
+                                            Your Profile Book is ready ({readySize})
+                                        </p>
+                                    )}
                                     {status && (
                                         <p
                                             className="ModalPDF-status"
@@ -159,17 +177,28 @@ function ModalPDF({
                                     )}
                                 </div>
                                 <div className="ModalPDF-Btns">
-                                    <button
-                                        disabled={
-                                            isGeneratingPDF || monkeyCount === 0
-                                        }
-                                        className="ModalPDF-createBtn"
-                                        onClick={createPDF}
-                                    >
-                                        {isGeneratingPDF
-                                            ? "Creating…"
-                                            : "Create PDF"}
-                                    </button>
+                                    {ready ? (
+                                        <button
+                                            ref={saveButtonRef}
+                                            className="ModalPDF-createBtn is-save"
+                                            onClick={onSave}
+                                        >
+                                            <IconDownload size={18} aria-hidden="true" />
+                                            Save PDF
+                                        </button>
+                                    ) : (
+                                        <button
+                                            disabled={
+                                                isGeneratingPDF || monkeyCount === 0
+                                            }
+                                            className="ModalPDF-createBtn"
+                                            onClick={createPDF}
+                                        >
+                                            {isGeneratingPDF
+                                                ? "Creating…"
+                                                : "Create PDF"}
+                                        </button>
+                                    )}
                                 </div>
                             </motion.div>
                         </div>

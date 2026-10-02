@@ -164,6 +164,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .ModalPDF-createBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background-color: transparent;
     color: #fe39a4;
     border: 1px solid #fe39a4;
@@ -195,6 +198,26 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
 .ModalPDF-warning {
     color: #B6B2A5;
+}
+
+/* Save PDF: filled pink, so the last step stands out */
+.ModalPDF-createBtn.is-save {
+    color: #1f1f1f;
+    background-color: #fe39a4;
+}
+
+.ModalPDF-createBtn.is-save:hover {
+    color: #1f1f1f;
+    background-color: #ff92ce;
+}
+
+/* "Your Profile Book is ready (1.2 MB)" */
+.ModalPDF-ready {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #47b028;
+    font-weight: 700;
 }
 
 .ModalPDF-status {

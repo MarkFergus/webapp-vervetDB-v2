@@ -153,6 +153,8 @@ function ShowPage({
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
+    // The finished book, waiting for Save PDF: { blob, filename }
+    const [pdfReady, setPdfReady] = useState(null);
     // Which Profile Book to make: a troop, or BABIES_BOOK
     const troopNames = troops.filter((t) => t !== "All Troops");
     const [pdfBook, setPdfBook] = useState(troopNames[0] ?? BABIES_BOOK);
@@ -309,8 +311,16 @@ function ShowPage({
         if (!isPDFModalOpen && troopNames.includes(troopFilter)) setPdfBook(troopFilter);
         setIsPDFModalOpen((open) => !open);
         setPdfError(null);
+        setPdfReady(null);
     }
-    // Builds the chosen Profile Book and downloads it
+    // Choosing another book: the finished one (if any) no longer applies
+    function choosePdfBook(book) {
+        setPdfBook(book);
+        setPdfReady(null);
+    }
+    // Builds the chosen Profile Book, then offers Save PDF. Saving needs its
+    // own tap: some browsers (Firefox on Android) only allow a download
+    // within a few seconds of a tap, and making a book takes longer.
     async function createPDF() {
         const monkeys = pdfSections.flatMap((s) => s.monkeys);
         setIsGeneratingPDF(true);
@@ -338,8 +348,7 @@ function ShowPage({
                     showTroop={pdfBook === BABIES_BOOK}
                 />
             ).toBlob();
-            downloadBlob(blob, pdfFilename(pdfBook));
-            setIsPDFModalOpen(false);
+            setPdfReady({ blob, filename: pdfFilename(pdfBook) });
         } catch (err) {
             console.error(err);
             setPdfError("Something went wrong creating the PDF. Please try again.");
@@ -455,7 +464,13 @@ function ShowPage({
                     pdfMonkeyCount={pdfMonkeyCount}
                     pdfBook={pdfBook}
                     pdfTroops={troopNames}
-                    onChoosePdfBook={setPdfBook}
+                    onChoosePdfBook={choosePdfBook}
+                    pdfReady={pdfReady}
+                    onSavePDF={() => {
+                        downloadBlob(pdfReady.blob, pdfReady.filename);
+                        setPdfReady(null);
+                        setIsPDFModalOpen(false);
+                    }}
                     searchValue={searchValue}
                     handleSearch={handleSearch}
                     handleDelete={handleDelete}
