@@ -6,8 +6,6 @@ import {
     IconFileTypePdf,
     IconHourglassLow,
     IconDeviceGamepad2,
-    IconLogin,
-    IconLogout,
     IconMenu2,
     IconPlus,
     IconUser,
@@ -40,7 +38,7 @@ function Nav({
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
     onHome, // the logo: back to the top, search and filters cleared
 }) {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const searchInputRef = useRef(null);
     const menuButtonRef = useRef(null);
     const menuRef = useRef(null);
@@ -85,11 +83,11 @@ function Nav({
         closeMenu();
         togglePDFModal();
     }
-    // Signed out: opens the sign-in pop-up. Signed in: signs straight out.
-    function signInOrOut() {
-        closeMenu({ returnFocus: true });
-        if (user) signOut();
-        else toggleAccount();
+    // Opens the account pop-up: sign in, or (signed in) Change password /
+    // Sign out, the same as the green circle on computers
+    function openAccount() {
+        closeMenu();
+        toggleAccount();
     }
     function addMonkey() {
         closeMenu();
@@ -207,7 +205,7 @@ function Nav({
                         className={user ? "Nav-account is-signed-in" : "Nav-account"}
                         onClick={toggleAccount}
                         aria-label={accountLabel}
-                        data-tooltip={user ? `Signed in as ${user.email}` : "Sign in"}
+                        data-tooltip={user ? "Account" : "Sign in"}
                         data-tooltip-align="end"
                     >
                         <span className="Nav-avatar" aria-hidden="true">
@@ -216,7 +214,7 @@ function Nav({
                     </button>
                 </div>
 
-                {/* Phones only: ☰ menu with the game, PDF, sign in/out and
+                {/* Phones only: ☰ menu with the game, PDF, account and
                     (editors) Add monkey */}
                 <div className="Nav-menuWrap">
                     <button
@@ -247,13 +245,15 @@ function Nav({
                                     Add New Monkey
                                 </button>
                             )}
-                            <button type="button" onClick={signInOrOut}>
-                                {user ? (
-                                    <IconLogout stroke={2} aria-hidden="true" />
-                                ) : (
-                                    <IconLogin stroke={2} aria-hidden="true" />
-                                )}
-                                {user ? "Sign Out" : "Sign In"}
+                            <button
+                                type="button"
+                                className={user ? "Nav-menuAccount is-signed-in" : "Nav-menuAccount"}
+                                onClick={openAccount}
+                            >
+                                <span className="Nav-avatar" aria-hidden="true">
+                                    <IconUser stroke={2} size={16} />
+                                </span>
+                                {user ? "Account" : "Sign In"}
                             </button>
                         </div>
                     )}

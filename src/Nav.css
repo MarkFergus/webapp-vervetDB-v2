@@ -304,6 +304,19 @@
     background-color: #343234;
 }
 
+/* Sign In / Account: the same circle as on computers, green (with a soft
+   green fill) when signed in */
+.Nav-menuAccount .Nav-avatar {
+    width: 22px;
+    height: 22px;
+    border-width: 1.5px;
+}
+
+.Nav-menuAccount.is-signed-in .Nav-avatar {
+    color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+}
+
 .Nav-menu button:disabled {
     opacity: 0.6;
     cursor: default;

@@ -78,14 +78,106 @@
 }
 
 .AccountModal-email {
-    font-size: 16px;
-    color: white;
+    font-size: 15px;
+    color: #d1cfc7;
     word-break: break-all;
 }
 
-.AccountModal-role.is-editor {
+/* Signed in: the title sits under the picture, so a bit smaller */
+.AccountModal-profile .AccountModal-title {
+    font-size: 20px;
+}
+
+.AccountModal-profile .AccountModal-role {
+    font-size: 13px;
+}
+
+/* Signed in: account picture, name, badge, as one centred block */
+.AccountModal-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #3a3839;
+}
+
+/* The nav's account circle, bigger: green with a soft green fill */
+.AccountModal-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 4px;
     color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+    border: 2px solid currentColor;
+    border-radius: 50%;
+}
+
+.AccountModal-avatar svg {
+    width: 36px;
+    height: 36px;
+}
+
+/* "Editor" / "Viewer": a small pill, green for editors, grey otherwise */
+.AccountModal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    padding: 3px 10px;
+    font-size: 12px;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #b6b2a5;
+    background-color: rgba(182, 178, 165, 0.12);
+    border-radius: 999px;
+}
+
+.AccountModal-badge.is-editor {
+    color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+}
+
+.AccountModal-badge svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Change password / Sign out: side by side under Continue */
+.AccountModal-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.AccountModal-actions .AccountModal-button {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.AccountModal-actions svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Change password: grey outline, like Clear all in the Filters panel */
+.AccountModal-button.is-quiet {
+    color: #d1cfc7;
+    background: none;
+    border-color: #5a5856;
+}
+
+.AccountModal-button.is-quiet:hover:not(:disabled) {
+    color: white;
+    background: none;
+    border-color: #d1cfc7;
 }
 
 .AccountModal-field {
@@ -138,6 +230,11 @@
     cursor: pointer;
 }
 
+.AccountModal-button:hover:not(:disabled) {
+    background-color: #6dd8fb;
+    border-color: #6dd8fb;
+}
+
 /* Sign out: the site's neon pink, outlined */
 .AccountModal-button.is-signOut {
     color: #fe39a4;
@@ -152,10 +249,6 @@
     filter: none;
 }
 
-.AccountModal-button:hover:not(:disabled) {
-    background-color: #6dd8fb;
-    border-color: #6dd8fb;
-}
 
 .AccountModal-button:disabled {
     opacity: 0.6;

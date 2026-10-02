@@ -106,7 +106,7 @@ test("the editor signs in: told they can edit, and the nav icon turns green", as
 
     await waitFor(() => expect(dialog()).toHaveAccessibleName("Signed in"));
     expect(within(dialog()).getByText(EDITOR.email)).toBeInTheDocument();
-    expect(within(dialog()).getByText("You can edit monkeys.")).toBeInTheDocument();
+    expect(within(dialog()).getByText("You can edit monkeys and upload photos.")).toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: "Account (signed in)" });
     expect(accountButton).toHaveClass("is-signed-in");
 });

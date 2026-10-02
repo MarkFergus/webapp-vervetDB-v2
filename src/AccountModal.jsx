@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { IconSquareRoundedX } from "@tabler/icons-react";
+import {
+    IconEye,
+    IconKey,
+    IconLogout,
+    IconPencil,
+    IconSquareRoundedX,
+    IconUser,
+} from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { useAuth, MIN_PASSWORD_LENGTH } from "./auth";
@@ -199,15 +206,29 @@ function AccountModal({ isOpen, onClose }) {
     } else if (user) {
         content = (
             <div className="AccountModal-content">
-                <h1 className="AccountModal-title" id="AccountModal-title">
-                    Signed in
-                </h1>
-                <p className="AccountModal-email">{user.email}</p>
-                <p className={isEditor ? "AccountModal-role is-editor" : "AccountModal-role"}>
-                    {isEditor
-                        ? "You can edit monkeys."
-                        : "This account can view but not edit monkeys."}
-                </p>
+                {/* Like an account page: picture, who you are, what you can do */}
+                <div className="AccountModal-profile">
+                    <span className="AccountModal-avatar" aria-hidden="true">
+                        <IconUser stroke={1.75} />
+                    </span>
+                    <h1 className="AccountModal-title" id="AccountModal-title">
+                        Signed in
+                    </h1>
+                    <p className="AccountModal-email">{user.email}</p>
+                    <span className={isEditor ? "AccountModal-badge is-editor" : "AccountModal-badge"}>
+                        {isEditor ? (
+                            <IconPencil stroke={2} aria-hidden="true" />
+                        ) : (
+                            <IconEye stroke={2} aria-hidden="true" />
+                        )}
+                        {isEditor ? "Editor" : "Viewer"}
+                    </span>
+                    <p className="AccountModal-role">
+                        {isEditor
+                            ? "You can edit monkeys and upload photos."
+                            : "This account can view but not edit monkeys."}
+                    </p>
+                </div>
                 {notice && (
                     <p className="AccountModal-notice" role="status">
                         {notice}
@@ -221,21 +242,25 @@ function AccountModal({ isOpen, onClose }) {
                 >
                     Continue
                 </button>
-                <button
-                    type="button"
-                    className="AccountModal-button is-signOut"
-                    onClick={handleSignOut}
-                    disabled={busy}
-                >
-                    {busy ? "Signing out…" : "Sign out"}
-                </button>
-                <button
-                    type="button"
-                    className="AccountModal-link"
-                    onClick={() => show("newPassword")}
-                >
-                    Change password
-                </button>
+                <div className="AccountModal-actions">
+                    <button
+                        type="button"
+                        className="AccountModal-button is-quiet"
+                        onClick={() => show("newPassword")}
+                    >
+                        <IconKey stroke={2} aria-hidden="true" />
+                        Change password
+                    </button>
+                    <button
+                        type="button"
+                        className="AccountModal-button is-signOut"
+                        onClick={handleSignOut}
+                        disabled={busy}
+                    >
+                        <IconLogout stroke={2} aria-hidden="true" />
+                        {busy ? "Signing out…" : "Sign out"}
+                    </button>
+                </div>
             </div>
         );
     } else if (view === "forgot") {

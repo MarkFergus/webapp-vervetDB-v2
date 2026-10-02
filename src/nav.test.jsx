@@ -66,11 +66,11 @@ describe("☰ menu (phones)", () => {
         expect(menu().querySelector("a")).toHaveFocus();
     });
 
-    test("signed in as an editor: Add New Monkey, then Sign Out at the end", async () => {
+    test("signed in as an editor: Add New Monkey, then Account at the end", async () => {
         const { user, menuButton, menuItems } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "Menu (signed in)" });
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Add New Monkey", "Sign Out"]);
+        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Add New Monkey", "Account"]);
     });
 
     test("Sign In opens the sign-in pop-up", async () => {
@@ -81,14 +81,17 @@ describe("☰ menu (phones)", () => {
         expect(await screen.findByRole("dialog", { name: "Sign in" })).toBeInTheDocument();
     });
 
-    test("Sign Out signs straight out, with no pop-up", async () => {
+    test("signed in: Account opens the account pop-up (Change password, Sign out)", async () => {
         const { user, menuButton, menu } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "Menu (signed in)" });
         await user.click(menuButton());
-        await user.click(within(menu()).getByRole("button", { name: "Sign Out" }));
+        await user.click(within(menu()).getByRole("button", { name: "Account" }));
 
+        expect(menu()).toBeNull();
+        const dialog = await screen.findByRole("dialog", { name: "Signed in" });
+        expect(within(dialog).getByRole("button", { name: "Change password" })).toBeInTheDocument();
+        await user.click(within(dialog).getByRole("button", { name: "Sign out" }));
         expect(supabase.auth.signOut).toHaveBeenCalled();
-        expect(screen.queryByRole("dialog")).toBeNull();
         await waitFor(() => expect(menuButton()).toHaveAccessibleName("Menu"));
     });
 
