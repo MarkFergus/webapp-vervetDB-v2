@@ -149,3 +149,20 @@ describe("choosing the troop", () => {
         expect(madeWith()).toMatchObject({ title: `${season} Orphans/Babies`, showTroop: true });
     });
 });
+
+// Firefox on Android opens a downloaded PDF in its own viewer and reads the
+// file a moment later: the download's address must still work then
+test("a download's address stays usable for a few minutes, then is freed", async () => {
+    const { downloadBlob, DOWNLOAD_KEEP_MS } = await import("./canvasHelpers");
+    vi.useFakeTimers();
+    try {
+        downloadBlob(new Blob(["pdf"]), "profile_book.pdf");
+        expect(downloads).toEqual(["profile_book.pdf"]);
+        vi.advanceTimersByTime(60_000);
+        expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(DOWNLOAD_KEEP_MS);
+        expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:test");
+    } finally {
+        vi.useRealTimers();
+    }
+});

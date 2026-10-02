@@ -41,7 +41,12 @@ export function canvasToPng(canvas) {
     );
 }
 
-// Downloads a Blob as a file
+// How long a download's temporary address stays usable. Firefox on Android
+// opens a downloaded PDF in its own viewer and only reads the file after a
+// moment; freeing the address sooner (it was 1 second) left a black screen.
+export const DOWNLOAD_KEEP_MS = 5 * 60 * 1000;
+
+// Downloads a Blob as a file (photos, pictures, Profile Books)
 export function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -50,5 +55,5 @@ export function downloadBlob(blob, filename) {
     document.body.append(link);
     link.click();
     link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_KEEP_MS);
 }

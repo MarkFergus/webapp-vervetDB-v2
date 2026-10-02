@@ -19,6 +19,7 @@ import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { SECTIONS, inSection } from "./sections";
 import { APP_VERSION } from "./changelog";
+import { downloadBlob } from "./canvasHelpers";
 import OfflineModal from "./OfflineModal";
 import "./ShowPage.css";
 
@@ -111,17 +112,6 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
 function pdfFilename(book) {
     const date = new Date().toISOString().slice(0, 10);
     return `profile_book_${book.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf`;
-}
-
-function downloadFile(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // monkeys / troops: the data to show (from the database, via App).
@@ -346,7 +336,7 @@ function ShowPage({
                     showTroop={pdfBook === BABIES_BOOK}
                 />
             ).toBlob();
-            downloadFile(blob, pdfFilename(pdfBook));
+            downloadBlob(blob, pdfFilename(pdfBook));
             setIsPDFModalOpen(false);
         } catch (err) {
             console.error(err);
