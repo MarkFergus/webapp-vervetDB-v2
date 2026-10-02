@@ -1,0 +1,63 @@
+/* "A new version is ready": a small card at the bottom of the screen */
+.UpdatePrompt {
+    position: fixed;
+    z-index: 20;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background-color: #2a282a;
+    border: 1px solid #434343;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.UpdatePrompt p {
+    margin: 0;
+    font-size: 14px;
+    color: #d1cfc7;
+}
+
+.UpdatePrompt-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.UpdatePrompt button {
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Later: grey outline, like Clear all in the Filters panel */
+.UpdatePrompt-later {
+    color: #d1cfc7;
+    background: none;
+    border: 1px solid #5a5856;
+}
+
+.UpdatePrompt-later:hover {
+    color: white;
+    border-color: #d1cfc7;
+}
+
+.UpdatePrompt-refresh {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: 1px solid #25c4f8;
+}
+
+.UpdatePrompt-refresh:hover {
+    background-color: #6dd8fb;
+    border-color: #6dd8fb;
+}

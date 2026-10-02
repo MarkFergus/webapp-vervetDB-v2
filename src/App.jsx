@@ -1,6 +1,7 @@
 import ShowPage from "./ShowPage";
 import Game from "./Game";
 import MonkeyIcon from "./MonkeyIcon";
+import UpdatePrompt from "./UpdatePrompt";
 import { AuthProvider } from "./auth";
 import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
@@ -42,6 +43,7 @@ function App() {
                         onMonkeyDeleted={monkeyDeleted}
                     />
                 )}
+                <UpdatePrompt />
             </div>
         </AuthProvider>
     );
