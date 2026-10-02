@@ -5,9 +5,8 @@ import { IconDotsVertical, IconStar, IconTrash } from "@tabler/icons-react";
 // "Make primary photo" (not for the one that already is) and "Delete photo".
 //   number:     the photo's place in the list (1, 2, …), for labels
 //   isPrimary:  it's the first photo (card and Profile Book photo)
-//   canBePrimary: false for a blank link
 //   open / onOpen / onClose: whether this photo's menu is showing
-function PhotoOptions({ number, isPrimary, canBePrimary, open, onOpen, onClose, onMakePrimary, onDelete }) {
+function PhotoOptions({ number, isPrimary, open, onOpen, onClose, onMakePrimary, onDelete }) {
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
     const menuId = `MonkeyForm-photoMenu-${number}`;
@@ -67,12 +66,7 @@ function PhotoOptions({ number, isPrimary, canBePrimary, open, onOpen, onClose, 
             {open && (
                 <div className="PhotoOptions-menu" id={menuId} role="menu" ref={menuRef} onKeyDown={handleKeyDown}>
                     {!isPrimary && (
-                        <button
-                            type="button"
-                            role="menuitem"
-                            onClick={onMakePrimary}
-                            disabled={!canBePrimary}
-                        >
+                        <button type="button" role="menuitem" onClick={onMakePrimary}>
                             <IconStar size={18} aria-hidden="true" />
                             Make primary photo
                         </button>

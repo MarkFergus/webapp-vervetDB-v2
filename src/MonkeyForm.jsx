@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { IconPlus, IconSquareRoundedX, IconStarFilled, IconUpload } from "@tabler/icons-react";
+import { IconSquareRoundedX, IconStarFilled, IconUpload } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { checkForm, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
@@ -42,7 +42,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
 
     const nameRef = useRef(null);
     const changed = JSON.stringify(form) !== JSON.stringify(initial);
-    // Photos (and link boxes) still allowed, up to MAX_PHOTOS
+    // Photos still allowed, up to MAX_PHOTOS
     const spaceLeft = Math.max(0, MAX_PHOTOS - form.photos.length);
     const photosFull = spaceLeft === 0;
     // Photos uploaded while this form is open (tidied up if not kept)
@@ -64,9 +64,6 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
 
-    function setPhoto(index, url) {
-        setForm({ ...form, photos: form.photos.map((p, i) => (i === index ? url : p)) });
-    }
     // Focus a photo's ⋮ button after the list changes (1 = first photo)
     const focusPhotoOptions = (number) =>
         requestAnimationFrame(() =>
@@ -89,10 +86,6 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
         // The chosen photo is now first: focus its ⋮
         focusPhotoOptions(1);
     }
-    function addPhoto() {
-        setForm({ ...form, photos: [...form.photos, ""] });
-    }
-
     // Chosen photo(s): each is framed in the crop screen, then uploaded and
     // added to the list, one at a time
     function handleFiles(event) {
@@ -278,9 +271,8 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                     <fieldset className="MonkeyForm-photos">
                         <legend>Photos</legend>
                         <p className="MonkeyForm-hint">
-                            Upload photos, or paste links (e.g. from ImgBB). The primary
-                            photo (★) is shown on the card and in the Profile Book; use
-                            ⋮ to change it or delete a photo.
+                            The primary photo (★) is shown on the card and in the
+                            Profile Book; use ⋮ to change it or delete a photo.
                             {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
                         </p>
                         {form.photos.map((url, i) => (
@@ -288,28 +280,19 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                                 {/* Small preview, to check it's the right monkey;
                                     a star marks the primary photo */}
                                 <span className="MonkeyForm-preview">
-                                    {/^https:\/\/\S+$/.test(url.trim()) ? (
-                                        <img src={url.trim()} alt="" />
-                                    ) : (
-                                        <span className="MonkeyForm-noPreview" aria-hidden="true" />
-                                    )}
+                                    <img src={url} alt={`Photo ${i + 1}`} />
                                     {i === 0 && (
                                         <span className="MonkeyForm-primaryStar" title="Primary photo">
                                             <IconStarFilled size={12} aria-hidden="true" />
                                         </span>
                                     )}
                                 </span>
-                                <input
-                                    type="url"
-                                    value={url}
-                                    onChange={(e) => setPhoto(i, e.target.value)}
-                                    aria-label={`Photo link ${i + 1}`}
-                                    placeholder="https://i.ibb.co/…"
-                                />
+                                <span className="MonkeyForm-photoLabel" aria-hidden="true">
+                                    {i === 0 ? "Primary photo" : `Photo ${i + 1}`}
+                                </span>
                                 <PhotoOptions
                                     number={i + 1}
                                     isPrimary={i === 0}
-                                    canBePrimary={Boolean(url.trim())}
                                     open={photoMenu === i}
                                     onOpen={() => setPhotoMenu(i)}
                                     onClose={() => setPhotoMenu(null)}
@@ -353,14 +336,6 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                                     disabled={uploading || photosFull}
                                 />
                             </label>
-                            <button
-                                type="button"
-                                className="MonkeyForm-addPhoto"
-                                onClick={addPhoto}
-                                disabled={photosFull}
-                            >
-                                <IconPlus size={18} aria-hidden="true" /> Add photo link
-                            </button>
                         </div>
                     </fieldset>
 

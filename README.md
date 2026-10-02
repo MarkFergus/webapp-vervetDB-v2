@@ -33,7 +33,7 @@ Press **Ctrl+C** in the terminal to stop it.
 
 Monkeys are edited on the website itself. Changes go straight into the database and everyone sees them immediately; no code change or deploy is needed.
 
-1. **Sign in** with the person icon at the top right (on phones: ☰ menu → **Sign In**). Only accounts listed as editors can make changes; the icon turns green once you're signed in.
+1. **Sign in** with the person icon at the top right (on phones: ☰ menu → **Sign In**, or **Account** once signed in). Only accounts listed as editors can make changes; the icon turns green once you're signed in.
 2. **To add a monkey:** click the **+** (**Add New Monkey**) at the top right (on phones: ☰ menu → **Add New Monkey**).
 3. **To edit one:** open the monkey's pop-up and click **Edit** at the bottom left. **Delete** is in the edit form, for admins only (see below), and asks you to confirm.
 4. Fill in the form and click **Save** (or **Add monkey**). The form tidies spaces and chip numbers for you (e.g. `1011 1604` becomes `1011 & 1604`) and explains anything it can't accept.
@@ -48,7 +48,7 @@ Monkeys are edited on the website itself. Changes go straight into the database 
 | Photos | Up to 5. The primary photo (★) is used on the card and in the Profile Book; each photo's **⋮** menu has **Make primary photo** and **Delete photo** |
 | Bio / Description | Optional |
 
-**Photos:** click **Upload photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match. You can also paste a link to a photo hosted elsewhere with **Add photo link**. Deleting a photo (**⋮ → Delete photo**) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
+**Photos:** click **Upload photo** and choose one or more photos. Each one opens in a crop screen: drag and zoom to frame it, then **Use photo**. Every photo is saved at the site's standard shape and size (5:4, 960 × 768), so they all match, along with a small thumbnail (480 × 384, under `thumbs/` in storage). Photos can only be uploaded, not linked from elsewhere. Deleting a photo (**⋮ → Delete photo**) also deletes it from storage once you save. A monkey without photos shows a "no photo yet" picture.
 
 Unknown values show as "Unknown" (or "?" on the cards), and an empty bio shows as "No bio yet." The pop-up shows each monkey's age from its birth year.
 
@@ -99,6 +99,12 @@ Run these in **Supabase → SQL Editor → New query**:
 - Summaries come from **vervetDB <updates@vervetdb.com>** (vervetdb.com is verified in Resend, so they can go to any address). Add someone: `update private.summary_settings set send_to = send_to || 'someone@example.com';`
 - Only changes made after the script was run are recorded.
 - The history and settings are in a `private` schema that the website can't reach.
+
+## Photo storage
+
+All photos live in the `monkey-photos` bucket in Supabase Storage, each with a small WebP thumbnail under `thumbs/` (same name). Until October 2026 most photos were links to ImgBB; [`scripts/move-photos.mjs`](scripts/move-photos.mjs) copied them across (exact copies, same order) and made the thumbnails. The ImgBB originals were left in place as a backup, and every old → new link is listed in [`scripts/photo-move-backup.json`](scripts/photo-move-backup.json). The move shows as a single line in the daily email ([`supabase/photo-move-summary.sql`](supabase/photo-move-summary.sql)).
+
+The script can be run again at any time: it only touches monkeys that still have ImgBB photos and uploaded photos missing a thumbnail. `node scripts/move-photos.mjs --dry-run` reports without changing anything; `--troop "Name"` limits it to one troop. It signs in as you (editor account).
 
 ## Deploying
 

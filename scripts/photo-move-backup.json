@@ -1,0 +1,5582 @@
+[
+  {
+    "id": 538,
+    "name": "Grover",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/nzWnzQX/Grover-Golith-21-02-2024-1-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/grover-1790924310955.webp"
+    ],
+    "at": "2026-10-02T06:58:33.837Z"
+  },
+  {
+    "id": 536,
+    "name": "Zoro",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/7QF57jD/Zoro-Goliath-Feb-2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/zoro-1790924310956.webp"
+    ],
+    "at": "2026-10-02T06:58:35.052Z"
+  },
+  {
+    "id": 537,
+    "name": "Foxy",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/j5NbM0z/Foxy-Goliath-Mar-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/foxy-1790924310953.webp"
+    ],
+    "at": "2026-10-02T06:58:35.121Z"
+  },
+  {
+    "id": 540,
+    "name": "Amy",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/RBKvNs2/Amy-Goliath-Sept-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/amy-1790924310958.webp"
+    ],
+    "at": "2026-10-02T06:58:35.876Z"
+  },
+  {
+    "id": 542,
+    "name": "Aurora",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/sHK226G/Aurora-Goliath-Apr-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/aurora-1790924310960.webp"
+    ],
+    "at": "2026-10-02T06:58:36.895Z"
+  },
+  {
+    "id": 539,
+    "name": "Sophie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/zfR3Bkn/Sophie-Goliath-Apr-2024-min.webp",
+      "https://i.ibb.co/GHdz2CK/Sophie-Goliath-April-24-min.webp",
+      "https://i.ibb.co/nDMdkPp/Sophie-Goliath-Aug-23-5-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/sophie-1790924310954.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/sophie-1790924310957.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/sophie-1790924310961.webp"
+    ],
+    "at": "2026-10-02T06:58:37.125Z"
+  },
+  {
+    "id": 541,
+    "name": "Angelica",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/xh0qtcC/Angelica-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/angelica-1790924310959.webp"
+    ],
+    "at": "2026-10-02T06:58:37.339Z"
+  },
+  {
+    "id": 543,
+    "name": "Bliss",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/SN920vm/Bliss-Goliath-Apr-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/bliss-1790924310962.webp"
+    ],
+    "at": "2026-10-02T06:58:38.177Z"
+  },
+  {
+    "id": 546,
+    "name": "Claudette Marie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/S0wwdLM/Claudette-Marie-Goliath-Apr-2023-3-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/claudette-marie-1790924310964.webp"
+    ],
+    "at": "2026-10-02T06:58:39.239Z"
+  },
+  {
+    "id": 544,
+    "name": "Boetie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/qM5XdHp/boetie-goliath-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/boetie-1790924310963.webp"
+    ],
+    "at": "2026-10-02T06:58:39.392Z"
+  },
+  {
+    "id": 547,
+    "name": "Dana",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/QpD7xCc/Dana-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/dana-1790924310965.webp"
+    ],
+    "at": "2026-10-02T06:58:40.525Z"
+  },
+  {
+    "id": 549,
+    "name": "Digit",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/Cz1tWsD/digit-goliath-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/digit-1790924310967.webp"
+    ],
+    "at": "2026-10-02T06:58:40.548Z"
+  },
+  {
+    "id": 548,
+    "name": "DD",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/T0SKYdJ/DD-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/dd-1790924310966.webp"
+    ],
+    "at": "2026-10-02T06:58:41.282Z"
+  },
+  {
+    "id": 550,
+    "name": "Edson",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/NmBMGHH/edson-goliath-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/edson-1790924310968.webp"
+    ],
+    "at": "2026-10-02T06:58:41.994Z"
+  },
+  {
+    "id": 551,
+    "name": "Elio",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/Nmvtdtd/elio-goliath-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/elio-1790924310969.webp"
+    ],
+    "at": "2026-10-02T06:58:42.288Z"
+  },
+  {
+    "id": 553,
+    "name": "Fritz",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/34D6ct5/fritz-goliath-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/fritz-1790924310971.webp"
+    ],
+    "at": "2026-10-02T06:58:42.932Z"
+  },
+  {
+    "id": 552,
+    "name": "Ellie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/RjMqP8q/ellie-goliath-april2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/ellie-1790924310970.webp"
+    ],
+    "at": "2026-10-02T06:58:43.378Z"
+  },
+  {
+    "id": 555,
+    "name": "Jerusalem",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/f09p0J1/Jerusalem-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/jerusalem-1790924310972.webp"
+    ],
+    "at": "2026-10-02T06:58:43.814Z"
+  },
+  {
+    "id": 556,
+    "name": "Keegie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/XWnQx6K/Keegie-Goliath-May-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/keegie-1790924310974.webp"
+    ],
+    "at": "2026-10-02T06:58:44.744Z"
+  },
+  {
+    "id": 557,
+    "name": "Kimbo",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/rHsQgfz/Kimbo-Goliath-Apr-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/kimbo-1790924310975.webp"
+    ],
+    "at": "2026-10-02T06:58:45.202Z"
+  },
+  {
+    "id": 558,
+    "name": "Korigan",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/cg6grV8/korigan-goliath-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/korigan-1790924310976.webp"
+    ],
+    "at": "2026-10-02T06:58:45.680Z"
+  },
+  {
+    "id": 554,
+    "name": "Gandalf",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/ScG0gFz/gandalf-goliath-mar2022-min.webp",
+      "https://i.ibb.co/Wfq924d/gandalf-goliath-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/gandalf-1790924310973.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/gandalf-1790924310977.webp"
+    ],
+    "at": "2026-10-02T06:58:45.683Z"
+  },
+  {
+    "id": 559,
+    "name": "Lottie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/GRcpDRY/lottie-goliath-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/lottie-1790924310978.webp"
+    ],
+    "at": "2026-10-02T06:58:47.656Z"
+  },
+  {
+    "id": 560,
+    "name": "Maddox",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/Yhtxp6Z/maddox-goliath-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/maddox-1790924310979.webp"
+    ],
+    "at": "2026-10-02T06:58:47.800Z"
+  },
+  {
+    "id": 561,
+    "name": "Maggie Mae",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/P4RMbZJ/maggie-mar-april-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/maggie-mae-1790924310980.webp"
+    ],
+    "at": "2026-10-02T06:58:47.983Z"
+  },
+  {
+    "id": 562,
+    "name": "Mandy",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/gmBV025/Mandy-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/mandy-1790924310981.webp"
+    ],
+    "at": "2026-10-02T06:58:48.254Z"
+  },
+  {
+    "id": 563,
+    "name": "Marja-Liisa",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/fvfxJJF/marja-liisa-october-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/marja-liisa-1790924310982.webp"
+    ],
+    "at": "2026-10-02T06:58:49.081Z"
+  },
+  {
+    "id": 565,
+    "name": "Maysie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/9qx5S19/maysie-goliath-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/maysie-1790924310983.webp"
+    ],
+    "at": "2026-10-02T06:58:49.582Z"
+  },
+  {
+    "id": 564,
+    "name": "Max",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/J5njyPQ/max-goliath-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/max-1790924310984.webp"
+    ],
+    "at": "2026-10-02T06:58:49.751Z"
+  },
+  {
+    "id": 566,
+    "name": "Mirabelle",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/0XWQ4g9/Mirabelle-Goliath-May-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/mirabelle-1790924310985.webp"
+    ],
+    "at": "2026-10-02T06:58:51.138Z"
+  },
+  {
+    "id": 567,
+    "name": "Mum",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/V9GrGZW/Mum-Goliath-May-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/mum-1790924310986.webp"
+    ],
+    "at": "2026-10-02T06:58:51.178Z"
+  },
+  {
+    "id": 568,
+    "name": "Nollie",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/7khBwy9/Nollie-Goliath-June-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/nollie-1790924310987.webp"
+    ],
+    "at": "2026-10-02T06:58:51.519Z"
+  },
+  {
+    "id": 569,
+    "name": "Pepsi",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/7NCfFtV/Pepsi-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/pepsi-1790924310988.webp"
+    ],
+    "at": "2026-10-02T06:58:51.901Z"
+  },
+  {
+    "id": 570,
+    "name": "Piglet",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/1zxPspz/piglet-goliath-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/piglet-1790924310989.webp"
+    ],
+    "at": "2026-10-02T06:58:52.636Z"
+  },
+  {
+    "id": 572,
+    "name": "Schlinkey",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/vs48X1r/schlinkey-goliath-setp2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/schlinkey-1790924310991.webp"
+    ],
+    "at": "2026-10-02T06:58:53.104Z"
+  },
+  {
+    "id": 571,
+    "name": "Pippin",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/nDfj9Yv/Pippin-Goliath-Apr-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/pippin-1790924310990.webp"
+    ],
+    "at": "2026-10-02T06:58:53.610Z"
+  },
+  {
+    "id": 573,
+    "name": "Smoky",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/BspshkQ/Smoky-Goliath-May-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/smoky-1790924310992.webp"
+    ],
+    "at": "2026-10-02T06:58:53.992Z"
+  },
+  {
+    "id": 574,
+    "name": "Tumbles",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/YQ5Pv1h/Tumbles-Goliath-Apr-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/tumbles-1790924310993.webp"
+    ],
+    "at": "2026-10-02T06:58:55.306Z"
+  },
+  {
+    "id": 575,
+    "name": "Vincent",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/sw1YBKC/Vincent-Goliath-May-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/vincent-1790924310994.webp"
+    ],
+    "at": "2026-10-02T06:58:55.352Z"
+  },
+  {
+    "id": 577,
+    "name": "Yma",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/1z2StXt/yma-goliath-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/yma-1790924310996.webp"
+    ],
+    "at": "2026-10-02T06:58:55.851Z"
+  },
+  {
+    "id": 576,
+    "name": "Waffles",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/yyvVmGZ/Waffles-Goliath-Feb-2023-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/waffles-1790924310995.webp"
+    ],
+    "at": "2026-10-02T06:58:56.382Z"
+  },
+  {
+    "id": 580,
+    "name": "Rowan",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/VY6XQxC/rowan-goliath-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/rowan-1790924310999.webp"
+    ],
+    "at": "2026-10-02T06:58:57.397Z"
+  },
+  {
+    "id": 581,
+    "name": "Wiz",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/yFFHTJ4/wiz-goliath-apr2024-2.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/wiz-1790924311000.webp"
+    ],
+    "at": "2026-10-02T06:58:57.877Z"
+  },
+  {
+    "id": 578,
+    "name": "Nugget",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/S0S16zY/nugget-goliath-mar2024-2.webp",
+      "https://i.ibb.co/VJ93TNJ/nugget-goliath-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/nugget-1790924310998.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/nugget-1790924311002.webp"
+    ],
+    "at": "2026-10-02T06:58:58.523Z"
+  },
+  {
+    "id": 579,
+    "name": "Mary Sunshine",
+    "troop": "Goliath",
+    "old": [
+      "https://i.ibb.co/4WtwV3f/marysunshine-goliath-feb2024.webp",
+      "https://i.ibb.co/vsYkV8N/mary-sunshine-goliath-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/mary-sunshine-1790924310997.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/goliath/mary-sunshine-1790924311001.webp"
+    ],
+    "at": "2026-10-02T06:58:58.533Z"
+  },
+  {
+    "id": 525,
+    "name": "Charlotte",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/71xD5xF/charlotte-james-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/charlotte-1790924807614.webp"
+    ],
+    "at": "2026-10-02T07:06:49.875Z"
+  },
+  {
+    "id": 522,
+    "name": "Aroha",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/smzxJ28/aroha-james-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/aroha-1790924807616.webp"
+    ],
+    "at": "2026-10-02T07:06:50.198Z"
+  },
+  {
+    "id": 523,
+    "name": "Ayeshe",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/vJTt5m1/ayeshe-james-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/ayeshe-1790924807615.webp"
+    ],
+    "at": "2026-10-02T07:06:50.239Z"
+  },
+  {
+    "id": 524,
+    "name": "Briyani",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/7r5RBFw/briyani-james-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/briyani-1790924807617.webp"
+    ],
+    "at": "2026-10-02T07:06:50.667Z"
+  },
+  {
+    "id": 527,
+    "name": "Eliza",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/G5Js3C0/eliza-james-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/eliza-1790924807619.webp"
+    ],
+    "at": "2026-10-02T07:06:51.470Z"
+  },
+  {
+    "id": 528,
+    "name": "Emblem",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/pfW96kb/emblem-james-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/emblem-1790924807620.webp"
+    ],
+    "at": "2026-10-02T07:06:52.080Z"
+  },
+  {
+    "id": 529,
+    "name": "Gimli",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/F6CJ2mZ/gimli-james-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/gimli-1790924807621.webp"
+    ],
+    "at": "2026-10-02T07:06:52.274Z"
+  },
+  {
+    "id": 526,
+    "name": "Darby",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/gyWCTvJ/darby-james-may2024-2-min.webp",
+      "https://i.ibb.co/TcByhLx/darby-james-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/darby-1790924807618.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/darby-1790924807622.webp"
+    ],
+    "at": "2026-10-02T07:06:52.684Z"
+  },
+  {
+    "id": 530,
+    "name": "Juno",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/NWt5mMr/juno-james-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/juno-1790924807623.webp"
+    ],
+    "at": "2026-10-02T07:06:53.393Z"
+  },
+  {
+    "id": 531,
+    "name": "Litchie",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/68CcM1P/litchi-james-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/litchie-1790924807624.webp"
+    ],
+    "at": "2026-10-02T07:06:53.630Z"
+  },
+  {
+    "id": 532,
+    "name": "Luna",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/YpRm2Pt/luna-james-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/luna-1790924807625.webp"
+    ],
+    "at": "2026-10-02T07:06:53.823Z"
+  },
+  {
+    "id": 533,
+    "name": "Ozge",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/GJV8Ppv/ozgo-james-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/ozge-1790924807626.webp"
+    ],
+    "at": "2026-10-02T07:06:54.394Z"
+  },
+  {
+    "id": 534,
+    "name": "Serala",
+    "troop": "James",
+    "old": [
+      "https://i.ibb.co/tD79SnN/serala-james-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/james/serala-1790924807627.webp"
+    ],
+    "at": "2026-10-02T07:06:55.076Z"
+  },
+  {
+    "id": 586,
+    "name": "Hocus",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/w4pqxwc/hocus-hb-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/hocus-1790924807628.webp"
+    ],
+    "at": "2026-10-02T07:06:55.232Z"
+  },
+  {
+    "id": 588,
+    "name": "Jinx",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/GCcS5Yt/jinx-hb-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/jinx-1790924807629.webp"
+    ],
+    "at": "2026-10-02T07:06:56.007Z"
+  },
+  {
+    "id": 589,
+    "name": "Skylar",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/sHL17VN/skylar-hb-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/skylar-1790924807630.webp"
+    ],
+    "at": "2026-10-02T07:06:56.694Z"
+  },
+  {
+    "id": 590,
+    "name": "Mofassa",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/sqGjD5B/mofassa-hb-apr-2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/mofassa-1790924807631.webp"
+    ],
+    "at": "2026-10-02T07:06:56.801Z"
+  },
+  {
+    "id": 587,
+    "name": "Jaintjie",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/CbdGvSp/jaintjie-hb-jul2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/jaintjie-1790924807632.webp"
+    ],
+    "at": "2026-10-02T07:06:56.911Z"
+  },
+  {
+    "id": 591,
+    "name": "Mara",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/rFTKV7j/mara-hb-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/mara-1790924807633.webp"
+    ],
+    "at": "2026-10-02T07:06:57.518Z"
+  },
+  {
+    "id": 593,
+    "name": "Millie",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/nb1pkqk/millie-hb-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/millie-1790924807635.webp"
+    ],
+    "at": "2026-10-02T07:06:58.108Z"
+  },
+  {
+    "id": 592,
+    "name": "Apollo",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/k3CPBc3/apollo-hb-june2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/apollo-1790924807634.webp"
+    ],
+    "at": "2026-10-02T07:06:58.353Z"
+  },
+  {
+    "id": 594,
+    "name": "Victoria",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/M6ynw4b/victoria-hb-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/victoria-1790924807636.webp"
+    ],
+    "at": "2026-10-02T07:06:58.651Z"
+  },
+  {
+    "id": 595,
+    "name": "Herbert",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/f9GfHrY/herbert-hb-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/herbert-1790924807637.webp"
+    ],
+    "at": "2026-10-02T07:06:58.958Z"
+  },
+  {
+    "id": 596,
+    "name": "Harmony",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/GtWbM0g/harmony-hb-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/harmony-1790924807638.webp"
+    ],
+    "at": "2026-10-02T07:06:59.811Z"
+  },
+  {
+    "id": 597,
+    "name": "Snow White",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/SQcN4HY/snow-white-hb-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/snow-white-1790924807639.webp"
+    ],
+    "at": "2026-10-02T07:06:59.899Z"
+  },
+  {
+    "id": 598,
+    "name": "Yoshi",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/zXZ9Zw0/yoshi-hb-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/yoshi-1790924807640.webp"
+    ],
+    "at": "2026-10-02T07:07:00.290Z"
+  },
+  {
+    "id": 599,
+    "name": "Priscilla",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/ygbnB3j/priscilla-hb-feb2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/priscilla-1790924807641.webp"
+    ],
+    "at": "2026-10-02T07:07:00.579Z"
+  },
+  {
+    "id": 600,
+    "name": "Fudge",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/HTwQRBr/fudge-hb-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/fudge-1790924807642.webp"
+    ],
+    "at": "2026-10-02T07:07:01.181Z"
+  },
+  {
+    "id": 601,
+    "name": "Pedro",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/tY8Fk2D/pedro-hb-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/pedro-1790924807643.webp"
+    ],
+    "at": "2026-10-02T07:07:01.384Z"
+  },
+  {
+    "id": 603,
+    "name": "Wanda",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/h7BJ648/wanda-hb-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/wanda-1790924807645.webp"
+    ],
+    "at": "2026-10-02T07:07:01.855Z"
+  },
+  {
+    "id": 602,
+    "name": "Thigpen",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/16n6PJw/Thigpen-hb-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/thigpen-1790924807644.webp"
+    ],
+    "at": "2026-10-02T07:07:01.862Z"
+  },
+  {
+    "id": 607,
+    "name": "Bluebell",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/YWpbwsx/bluebell-hb-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/bluebell-1790924807648.webp"
+    ],
+    "at": "2026-10-02T07:07:03.179Z"
+  },
+  {
+    "id": 606,
+    "name": "Tufty",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/MBTX88Q/tufty-hb-apr2024.webp",
+      "https://i.ibb.co/8myqv4z/tufyt-hb-feb2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/tufty-1790924807649.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/tufty-1790924807651.webp"
+    ],
+    "at": "2026-10-02T07:07:04.320Z"
+  },
+  {
+    "id": 605,
+    "name": "Kathleen",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/K7Jqcdw/kathleen-hb-feb2024.webp",
+      "https://i.ibb.co/FY4QZjX/kathleen-hb-mar2024-2.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/kathleen-1790924807647.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/kathleen-1790924807650.webp"
+    ],
+    "at": "2026-10-02T07:07:04.333Z"
+  },
+  {
+    "id": 616,
+    "name": "Harris",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/82Nps57/harris-saav-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/harris-1790924807652.webp"
+    ],
+    "at": "2026-10-02T07:07:04.675Z"
+  },
+  {
+    "id": 604,
+    "name": "Paulie",
+    "troop": "H&B",
+    "old": [
+      "https://i.ibb.co/s3644St/paulie-hb-mar2024-2.webp",
+      "https://i.ibb.co/CtH3Gjt/paulie-hb-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/paulie-1790924807646.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/h-b/paulie-1790924807653.webp"
+    ],
+    "at": "2026-10-02T07:07:05.446Z"
+  },
+  {
+    "id": 618,
+    "name": "Delilah",
+    "troop": "Lankora",
+    "old": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/delilah-1790870493807.webp",
+      "https://i.ibb.co/HdrQZwM/deliliah-saav-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/delilah-1790870493807.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/delilah-1790924807654.webp"
+    ],
+    "at": "2026-10-02T07:07:05.694Z"
+  },
+  {
+    "id": 619,
+    "name": "Nora",
+    "troop": "Lankora",
+    "old": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/nora-1790870573248.webp",
+      "https://i.ibb.co/BKL0Gkd/nora-saav-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/nora-1790870573248.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/nora-1790924807656.webp"
+    ],
+    "at": "2026-10-02T07:07:06.104Z"
+  },
+  {
+    "id": 617,
+    "name": "Berlioz",
+    "troop": "Lankora",
+    "old": [
+      "https://i.ibb.co/XJnXRWS/berlioz-saav-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/berlioz-1790924807655.webp"
+    ],
+    "at": "2026-10-02T07:07:06.527Z"
+  },
+  {
+    "id": 621,
+    "name": "Shemesh",
+    "troop": "Lankora",
+    "old": [
+      "https://i.ibb.co/NTDGKHW/shemesh-saav-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/lankora/shemesh-1790924807657.webp"
+    ],
+    "at": "2026-10-02T07:07:07.299Z"
+  },
+  {
+    "id": 626,
+    "name": "Apie",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/Bf0LXDj/apie-global-feb2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/apie-1790924807658.jpg"
+    ],
+    "at": "2026-10-02T07:07:07.777Z"
+  },
+  {
+    "id": 627,
+    "name": "Ayla",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/TMCLmLN/ayla-global-june2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/ayla-1790924807659.jpg"
+    ],
+    "at": "2026-10-02T07:07:07.894Z"
+  },
+  {
+    "id": 628,
+    "name": "Chicken",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/ccxZHKC/chicken-global-mar2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/chicken-1790924807660.jpg"
+    ],
+    "at": "2026-10-02T07:07:07.998Z"
+  },
+  {
+    "id": 629,
+    "name": "Kofi",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/bFyk2Yx/kofi-global-may2022-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/kofi-1790924807661.jpg"
+    ],
+    "at": "2026-10-02T07:07:08.936Z"
+  },
+  {
+    "id": 630,
+    "name": "Rahni",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/mHt37DL/rahni-global-sept2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/rahni-1790924807662.jpg"
+    ],
+    "at": "2026-10-02T07:07:09.630Z"
+  },
+  {
+    "id": 631,
+    "name": "Dumbo",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/gy7ZQ1r/dumbo-global-may2022-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/dumbo-1790924807663.jpg"
+    ],
+    "at": "2026-10-02T07:07:09.707Z"
+  },
+  {
+    "id": 632,
+    "name": "Meghan",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/94cJYvb/meghan-global-may2022-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/meghan-1790924807664.jpg"
+    ],
+    "at": "2026-10-02T07:07:10.428Z"
+  },
+  {
+    "id": 634,
+    "name": "Abby",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/VQbGM34/abby-global-sept2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/abby-1790924807666.jpg"
+    ],
+    "at": "2026-10-02T07:07:11.300Z"
+  },
+  {
+    "id": 633,
+    "name": "Tesha",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/VY8MNYd/tesha-global-feb2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/tesha-1790924807665.jpg"
+    ],
+    "at": "2026-10-02T07:07:11.309Z"
+  },
+  {
+    "id": 635,
+    "name": "Martini",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/dc99fmX/martini-global-feb2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/martini-1790924807667.jpg"
+    ],
+    "at": "2026-10-02T07:07:11.513Z"
+  },
+  {
+    "id": 636,
+    "name": "Hugo",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/XLNHrFR/hugo-global-sept2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/hugo-1790924807668.jpg"
+    ],
+    "at": "2026-10-02T07:07:12.074Z"
+  },
+  {
+    "id": 638,
+    "name": "Eamon",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/rFdbn3g/eamon-global-sept2023-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/eamon-1790924807669.jpg"
+    ],
+    "at": "2026-10-02T07:07:13.008Z"
+  },
+  {
+    "id": 637,
+    "name": "Pascall",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/s9w00SM/pascall-global-feb2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/pascall-1790924807670.jpg"
+    ],
+    "at": "2026-10-02T07:07:13.096Z"
+  },
+  {
+    "id": 639,
+    "name": "Mini Max",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/47mNWTx/mini-max-global-mar2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/mini-max-1790924807671.jpg"
+    ],
+    "at": "2026-10-02T07:07:13.177Z"
+  },
+  {
+    "id": 640,
+    "name": "Terri",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/YkkJnYm/terri-global-may2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/terri-1790924807672.jpg"
+    ],
+    "at": "2026-10-02T07:07:14.472Z"
+  },
+  {
+    "id": 642,
+    "name": "Danny",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/LgR5ZWD/danny-global-may2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/danny-1790924807673.jpg"
+    ],
+    "at": "2026-10-02T07:07:14.674Z"
+  },
+  {
+    "id": 643,
+    "name": "Lyyti",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/J35734k/lyyti-global-feb2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/lyyti-1790924807675.jpg"
+    ],
+    "at": "2026-10-02T07:07:14.952Z"
+  },
+  {
+    "id": 641,
+    "name": "Anya",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/qB3KkPH/anya-global-feb2024-min.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/anya-1790924807674.jpg"
+    ],
+    "at": "2026-10-02T07:07:15.033Z"
+  },
+  {
+    "id": 648,
+    "name": "Lili",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/5x0tXBh/lili-jalamango-may2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/lili-1790924807677.webp"
+    ],
+    "at": "2026-10-02T07:07:16.756Z"
+  },
+  {
+    "id": 650,
+    "name": "Nino",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/Cmp05WZ/nini-jalamango-may2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/nino-1790924807678.webp"
+    ],
+    "at": "2026-10-02T07:07:16.953Z"
+  },
+  {
+    "id": 644,
+    "name": "June",
+    "troop": "Global",
+    "old": [
+      "https://i.ibb.co/7jcS8Fp/june-global-mar2024-2.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/global/june-1790924807676.jpg"
+    ],
+    "at": "2026-10-02T07:07:17.300Z"
+  },
+  {
+    "id": 651,
+    "name": "Satchmo",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/NtKFqv1/satchmo-jalamango-mar2024.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/satchmo-1790924807680.webp"
+    ],
+    "at": "2026-10-02T07:07:18.382Z"
+  },
+  {
+    "id": 652,
+    "name": "Zayda",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/Dzfvp31/zayda-jalamango-aug2023.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/zayda-1790924807681.webp"
+    ],
+    "at": "2026-10-02T07:07:18.457Z"
+  },
+  {
+    "id": 649,
+    "name": "Mango",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/yXPQ7qX/mango-jalamango-may2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/mango-1790924807679.jpg"
+    ],
+    "at": "2026-10-02T07:07:18.698Z"
+  },
+  {
+    "id": 653,
+    "name": "Zea",
+    "troop": "Jalamango",
+    "old": [
+      "https://i.ibb.co/XSL2YxH/zea-jalamango-sep2023.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/jalamango/zea-1790924807682.webp"
+    ],
+    "at": "2026-10-02T07:07:19.210Z"
+  },
+  {
+    "id": 654,
+    "name": "Casanova",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/CsBvBxd/casanova-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/casanova-1790924807683.webp"
+    ],
+    "at": "2026-10-02T07:07:19.804Z"
+  },
+  {
+    "id": 655,
+    "name": "Long Arms",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/KKS3t4d/long-arms-koko-feb2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/long-arms-1790924807684.webp"
+    ],
+    "at": "2026-10-02T07:07:19.958Z"
+  },
+  {
+    "id": 656,
+    "name": "Schnitzel",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/MPwj1zJ/schnitzel-koko-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/schnitzel-1790924807685.webp"
+    ],
+    "at": "2026-10-02T07:07:20.319Z"
+  },
+  {
+    "id": 657,
+    "name": "Helmet",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/cg1xCwb/helmet-koko-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/helmet-1790924807686.webp"
+    ],
+    "at": "2026-10-02T07:07:21.157Z"
+  },
+  {
+    "id": 659,
+    "name": "Capie",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/8s1vg8g/capie-koko-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/capie-1790924807688.webp"
+    ],
+    "at": "2026-10-02T07:07:21.251Z"
+  },
+  {
+    "id": 658,
+    "name": "Mystery",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/VMZT2BN/mystery-koko-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/mystery-1790924807687.webp"
+    ],
+    "at": "2026-10-02T07:07:21.811Z"
+  },
+  {
+    "id": 662,
+    "name": "Luka",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/c8DFs9y/luka-koko-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/luka-1790924807690.webp"
+    ],
+    "at": "2026-10-02T07:07:22.569Z"
+  },
+  {
+    "id": 661,
+    "name": "Jacob",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/b7xtMct/jacob-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/jacob-1790924807691.webp"
+    ],
+    "at": "2026-10-02T07:07:23.110Z"
+  },
+  {
+    "id": 663,
+    "name": "Rosa",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/CwMTyyT/rosa-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/rosa-1790924807692.webp"
+    ],
+    "at": "2026-10-02T07:07:23.128Z"
+  },
+  {
+    "id": 660,
+    "name": "Irene",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/mS68zsh/irene-koko-may2023-min.webp",
+      "https://i.ibb.co/KzyqT2R/irene-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/irene-1790924807689.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/irene-1790924807693.webp"
+    ],
+    "at": "2026-10-02T07:07:23.199Z"
+  },
+  {
+    "id": 664,
+    "name": "Elena-Ann",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/VBJc35H/elena-ann-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/elena-ann-1790924807694.webp"
+    ],
+    "at": "2026-10-02T07:07:24.247Z"
+  },
+  {
+    "id": 666,
+    "name": "Patrick-Felis",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/QHTXbBB/patrick-felis-koko-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/patrick-felis-1790924807695.webp"
+    ],
+    "at": "2026-10-02T07:07:24.522Z"
+  },
+  {
+    "id": 665,
+    "name": "Kara",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/TckKRk3/kara-koko-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/kara-1790924807696.webp"
+    ],
+    "at": "2026-10-02T07:07:24.734Z"
+  },
+  {
+    "id": 667,
+    "name": "Smith",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/Dz2Xdn0/smith-koko-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/smith-1790924807697.webp"
+    ],
+    "at": "2026-10-02T07:07:24.866Z"
+  },
+  {
+    "id": 669,
+    "name": "Vainilla",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/jb5MPxv/vainilla-koko-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/vainilla-1790924807698.webp"
+    ],
+    "at": "2026-10-02T07:07:26.118Z"
+  },
+  {
+    "id": 671,
+    "name": "Joli",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/McdpP5G/joli-koko-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/joli-1790924807700.webp"
+    ],
+    "at": "2026-10-02T07:07:26.397Z"
+  },
+  {
+    "id": 670,
+    "name": "Mokey",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/PcNyrrj/mokey-koko-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/mokey-1790924807699.webp"
+    ],
+    "at": "2026-10-02T07:07:26.619Z"
+  },
+  {
+    "id": 672,
+    "name": "Panacur",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/F4r3X3V/panacur-koko-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/panacur-1790924807701.webp"
+    ],
+    "at": "2026-10-02T07:07:27.444Z"
+  },
+  {
+    "id": 673,
+    "name": "Peggy",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/pQKGwqq/peggy-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/peggy-1790924807702.webp"
+    ],
+    "at": "2026-10-02T07:07:28.096Z"
+  },
+  {
+    "id": 674,
+    "name": "Loustic",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/ypD4R2V/loustic-koko-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/loustic-1790924807703.webp"
+    ],
+    "at": "2026-10-02T07:07:28.182Z"
+  },
+  {
+    "id": 675,
+    "name": "Paloma",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/sgvGbB6/paloma-koko-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/paloma-1790924807704.webp"
+    ],
+    "at": "2026-10-02T07:07:29.154Z"
+  },
+  {
+    "id": 676,
+    "name": "Yllena",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/2vKKvNT/yllena-koko-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/yllena-1790924807705.webp"
+    ],
+    "at": "2026-10-02T07:07:29.780Z"
+  },
+  {
+    "id": 677,
+    "name": "Karla",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/hXrk5kV/karla-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/karla-1790924807706.webp"
+    ],
+    "at": "2026-10-02T07:07:30.115Z"
+  },
+  {
+    "id": 678,
+    "name": "Ducat",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/59T65QL/ducat-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/ducat-1790924807708.webp"
+    ],
+    "at": "2026-10-02T07:07:30.500Z"
+  },
+  {
+    "id": 668,
+    "name": "Biscuit",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/xJpdVc4/biscuit-koko-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/biscuit-1790924807707.webp"
+    ],
+    "at": "2026-10-02T07:07:30.685Z"
+  },
+  {
+    "id": 681,
+    "name": "Seeti",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/BcGTTJB/seeti-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/seeti-1790924807710.webp"
+    ],
+    "at": "2026-10-02T07:07:31.816Z"
+  },
+  {
+    "id": 679,
+    "name": "Yeliz",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/GCkWTNC/yeliz-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/yeliz-1790924807711.webp"
+    ],
+    "at": "2026-10-02T07:07:32.091Z"
+  },
+  {
+    "id": 680,
+    "name": "Oswald",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/txBkhX7/oswald-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/oswald-1790924807709.webp"
+    ],
+    "at": "2026-10-02T07:07:32.560Z"
+  },
+  {
+    "id": 684,
+    "name": "Yoda",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/s1zM2FL/yoda-koko-feb2024-2.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/yoda-1790924807712.jpg"
+    ],
+    "at": "2026-10-02T07:07:33.691Z"
+  },
+  {
+    "id": 682,
+    "name": "Taro",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/r2dMLXT/taro-koko-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/taro-1790924807713.webp"
+    ],
+    "at": "2026-10-02T07:07:33.774Z"
+  },
+  {
+    "id": 683,
+    "name": "Other Sub",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/cJhsf3f/other-sub-koko-mar2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/other-sub-1790924807714.webp"
+    ],
+    "at": "2026-10-02T07:07:34.822Z"
+  },
+  {
+    "id": 687,
+    "name": "Riccardo",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/hX8Zs3c/riccardo-koko-mar2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/riccardo-1790924807715.jpg"
+    ],
+    "at": "2026-10-02T07:07:35.499Z"
+  },
+  {
+    "id": 686,
+    "name": "Samber",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/Xy8Pn6y/samber-koko-mar2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/samber-1790924807716.jpg"
+    ],
+    "at": "2026-10-02T07:07:36.121Z"
+  },
+  {
+    "id": 685,
+    "name": "Atlas",
+    "troop": "Koko",
+    "old": [
+      "https://i.ibb.co/xD4brFX/atlas-koko-feb2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/koko/atlas-1790924807717.jpg"
+    ],
+    "at": "2026-10-02T07:07:36.280Z"
+  },
+  {
+    "id": 694,
+    "name": "Remy",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/Q90b47c/remy-engeltjie-may2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/remy-1790924807718.jpg"
+    ],
+    "at": "2026-10-02T07:07:36.848Z"
+  },
+  {
+    "id": 696,
+    "name": "Aer",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/23q5wTb/aer-engeltjie-sept2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/aer-1790924807719.webp"
+    ],
+    "at": "2026-10-02T07:07:37.769Z"
+  },
+  {
+    "id": 697,
+    "name": "April",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/xCLxPdb/april-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/april-1790924807720.webp"
+    ],
+    "at": "2026-10-02T07:07:37.845Z"
+  },
+  {
+    "id": 698,
+    "name": "Babetjie",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/m0dp5MS/babetjie-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/babetjie-1790924807722.webp"
+    ],
+    "at": "2026-10-02T07:07:38.364Z"
+  },
+  {
+    "id": 695,
+    "name": "Duimpie",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/chtSfPC/duimpie-engeltjie-apr2024-temp.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/duimpie-1790924807721.jpg"
+    ],
+    "at": "2026-10-02T07:07:38.947Z"
+  },
+  {
+    "id": 699,
+    "name": "Bisou",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/pKktvB7/bisou-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/bisou-1790924807723.webp"
+    ],
+    "at": "2026-10-02T07:07:39.557Z"
+  },
+  {
+    "id": 701,
+    "name": "Braveheart",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/RP9g3dV/braveheart-engeltjie-sep0223-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/braveheart-1790924807725.webp"
+    ],
+    "at": "2026-10-02T07:07:40.414Z"
+  },
+  {
+    "id": 700,
+    "name": "Bloem",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/FKy1rJR/bloem-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/bloem-1790924807724.webp"
+    ],
+    "at": "2026-10-02T07:07:40.666Z"
+  },
+  {
+    "id": 703,
+    "name": "Buckingham",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/4F4DXdL/buckingham-engeltjie-nodate-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/buckingham-1790924807727.webp"
+    ],
+    "at": "2026-10-02T07:07:41.018Z"
+  },
+  {
+    "id": 702,
+    "name": "Brunswick",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/p1WYJV9/brunswick-engeltjie-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/brunswick-1790924807726.webp"
+    ],
+    "at": "2026-10-02T07:07:41.220Z"
+  },
+  {
+    "id": 704,
+    "name": "Carolyn",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/3p1ZBfR/carolyn-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/carolyn-1790924807728.webp"
+    ],
+    "at": "2026-10-02T07:07:42.341Z"
+  },
+  {
+    "id": 706,
+    "name": "Coco",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/Jk8Ty8t/coco-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/coco-1790924807730.webp"
+    ],
+    "at": "2026-10-02T07:07:42.393Z"
+  },
+  {
+    "id": 705,
+    "name": "Cleo",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/Q6VGkVd/cleo-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/cleo-1790924807729.webp"
+    ],
+    "at": "2026-10-02T07:07:42.792Z"
+  },
+  {
+    "id": 707,
+    "name": "Elliot",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/jL9M0BT/elliot-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/elliot-1790924807731.webp"
+    ],
+    "at": "2026-10-02T07:07:42.984Z"
+  },
+  {
+    "id": 708,
+    "name": "Envi",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/86dGVV3/envi-engeltjie-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/envi-1790924807732.webp"
+    ],
+    "at": "2026-10-02T07:07:44.757Z"
+  },
+  {
+    "id": 709,
+    "name": "Finland",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/ZW5hwXf/finland-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/finland-1790924807733.webp"
+    ],
+    "at": "2026-10-02T07:07:44.761Z"
+  },
+  {
+    "id": 711,
+    "name": "Gordon",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/8j4xPfx/gordon-engeltjie-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/gordon-1790924807734.webp"
+    ],
+    "at": "2026-10-02T07:07:45.031Z"
+  },
+  {
+    "id": 710,
+    "name": "Freya",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/qgw2PtX/freya-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/freya-1790924807735.webp"
+    ],
+    "at": "2026-10-02T07:07:45.275Z"
+  },
+  {
+    "id": 713,
+    "name": "Hannah",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/hsNRqnB/hannah-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/hannah-1790924807736.webp"
+    ],
+    "at": "2026-10-02T07:07:46.549Z"
+  },
+  {
+    "id": 714,
+    "name": "Harry",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/VxJxn2V/harry-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/harry-1790924807738.webp"
+    ],
+    "at": "2026-10-02T07:07:46.721Z"
+  },
+  {
+    "id": 712,
+    "name": "Gremlin",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/xzBmfkp/gremlin-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/gremlin-1790924807737.webp"
+    ],
+    "at": "2026-10-02T07:07:47.060Z"
+  },
+  {
+    "id": 715,
+    "name": "Hawaii",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/58MgG2t/hawaii-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/hawaii-1790924807739.webp"
+    ],
+    "at": "2026-10-02T07:07:47.117Z"
+  },
+  {
+    "id": 716,
+    "name": "Howey",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/rsHPdXH/howey-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/howey-1790924807740.webp"
+    ],
+    "at": "2026-10-02T07:07:47.841Z"
+  },
+  {
+    "id": 717,
+    "name": "Joey",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/1sjzHsx/joey-engeltjie-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/joey-1790924807741.webp"
+    ],
+    "at": "2026-10-02T07:07:48.495Z"
+  },
+  {
+    "id": 719,
+    "name": "Kaz",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/Z1XSqvg/kaz-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/kaz-1790924807742.webp"
+    ],
+    "at": "2026-10-02T07:07:48.933Z"
+  },
+  {
+    "id": 718,
+    "name": "Jommy",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/SRvhFj0/jommy-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/jommy-1790924807743.webp"
+    ],
+    "at": "2026-10-02T07:07:49.055Z"
+  },
+  {
+    "id": 720,
+    "name": "Leo",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/C0DhM2S/leo-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/leo-1790924807744.webp"
+    ],
+    "at": "2026-10-02T07:07:49.260Z"
+  },
+  {
+    "id": 721,
+    "name": "Lexie",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/vC9snhP/lexi-engeltjie-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/lexie-1790924807745.webp"
+    ],
+    "at": "2026-10-02T07:07:50.301Z"
+  },
+  {
+    "id": 723,
+    "name": "Maggie",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/m64q6Nz/maggie-engeltjie-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/maggie-1790924807747.webp"
+    ],
+    "at": "2026-10-02T07:07:50.503Z"
+  },
+  {
+    "id": 724,
+    "name": "Mariella",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/XtwKsQD/mariella-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/mariella-1790924807748.webp"
+    ],
+    "at": "2026-10-02T07:07:50.649Z"
+  },
+  {
+    "id": 722,
+    "name": "Luigi",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/ynf2JZt/luigi-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/luigi-1790924807746.webp"
+    ],
+    "at": "2026-10-02T07:07:50.737Z"
+  },
+  {
+    "id": 725,
+    "name": "Marshall",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/w6hPDtd/marshall-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/marshall-1790924807749.webp"
+    ],
+    "at": "2026-10-02T07:07:51.734Z"
+  },
+  {
+    "id": 726,
+    "name": "Molly",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/41MjkPY/molly-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/molly-1790924807750.webp"
+    ],
+    "at": "2026-10-02T07:07:51.967Z"
+  },
+  {
+    "id": 728,
+    "name": "Nala",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/xsTHm57/nala-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/nala-1790924807751.webp"
+    ],
+    "at": "2026-10-02T07:07:52.343Z"
+  },
+  {
+    "id": 727,
+    "name": "Mr. Miyagi",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/fCNcrtd/mr-miyagi-engeltjie-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/mr-miyagi-1790924807752.webp"
+    ],
+    "at": "2026-10-02T07:07:52.526Z"
+  },
+  {
+    "id": 730,
+    "name": "Oprah",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/v16Gb01/oprah-engeltjie-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/oprah-1790924807754.webp"
+    ],
+    "at": "2026-10-02T07:07:53.637Z"
+  },
+  {
+    "id": 731,
+    "name": "Paddy",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/8ByByZz/paddy-engeltjie-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/paddy-1790924807755.webp"
+    ],
+    "at": "2026-10-02T07:07:53.683Z"
+  },
+  {
+    "id": 729,
+    "name": "Natsuki",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/FmvfvV0/natsuki-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/natsuki-1790924807753.webp"
+    ],
+    "at": "2026-10-02T07:07:53.718Z"
+  },
+  {
+    "id": 732,
+    "name": "Pickle",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/sqTwqg6/pic-engeltjie-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/pickle-1790924807756.webp"
+    ],
+    "at": "2026-10-02T07:07:54.134Z"
+  },
+  {
+    "id": 734,
+    "name": "Sky King",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/m4yfY33/sky-king-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/sky-king-1790924807757.webp"
+    ],
+    "at": "2026-10-02T07:07:55.180Z"
+  },
+  {
+    "id": 735,
+    "name": "Stick",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/dQtsk5m/stick-engeltjie-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/stick-1790924807758.webp"
+    ],
+    "at": "2026-10-02T07:07:55.464Z"
+  },
+  {
+    "id": 733,
+    "name": "Pointy Face",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/fQRsZ4J/pointy-face-engeltjie-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/pointy-face-1790924807759.webp"
+    ],
+    "at": "2026-10-02T07:07:55.748Z"
+  },
+  {
+    "id": 736,
+    "name": "Temper",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/VY6T0qz/temper-engeltjie-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/temper-1790924807760.webp"
+    ],
+    "at": "2026-10-02T07:07:56.090Z"
+  },
+  {
+    "id": 737,
+    "name": "Whisper",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/yVhy1fj/whisper-engeltjie-jan2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/whisper-1790924807761.webp"
+    ],
+    "at": "2026-10-02T07:07:56.603Z"
+  },
+  {
+    "id": 738,
+    "name": "Zebulon",
+    "troop": "Engeltjie",
+    "old": [
+      "https://i.ibb.co/bFTSLbQ/zebulon-engeltjie-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/engeltjie/zebulon-1790924807762.webp"
+    ],
+    "at": "2026-10-02T07:07:56.892Z"
+  },
+  {
+    "id": 744,
+    "name": "Chaunguito",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/HgJjzzv/changuito-skunkey-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/chaunguito-1790924807763.webp"
+    ],
+    "at": "2026-10-02T07:07:57.323Z"
+  },
+  {
+    "id": 745,
+    "name": "Greg",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/JryL9Jp/greg-skunkey-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/greg-1790924807764.webp"
+    ],
+    "at": "2026-10-02T07:07:58.142Z"
+  },
+  {
+    "id": 746,
+    "name": "Jambi",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/6spfngd/jambi-skunkey-july2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/jambi-1790924807765.webp"
+    ],
+    "at": "2026-10-02T07:07:58.383Z"
+  },
+  {
+    "id": 748,
+    "name": "Maggs",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/TBGHp3Q/maggs-skunkey-jan2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/maggs-1790924807767.webp"
+    ],
+    "at": "2026-10-02T07:07:58.998Z"
+  },
+  {
+    "id": 747,
+    "name": "Lee",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/YTCCJbp/lee-skunkey-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/lee-1790924807766.webp"
+    ],
+    "at": "2026-10-02T07:07:59.001Z"
+  },
+  {
+    "id": 750,
+    "name": "Martha",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/Sxqrqtf/martha-skunkey-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/martha-1790924807769.webp"
+    ],
+    "at": "2026-10-02T07:07:59.786Z"
+  },
+  {
+    "id": 749,
+    "name": "Malawi",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/Sf8tsjV/malawi-skunkey-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/malawi-1790924807768.webp"
+    ],
+    "at": "2026-10-02T07:08:00.121Z"
+  },
+  {
+    "id": 752,
+    "name": "Pan",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/B6NQhqV/pan-skunkey-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/pan-1790924807770.webp"
+    ],
+    "at": "2026-10-02T07:08:00.604Z"
+  },
+  {
+    "id": 751,
+    "name": "Morris",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/tHmx4tN/morris-skunkey-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/morris-1790924807771.webp"
+    ],
+    "at": "2026-10-02T07:08:00.837Z"
+  },
+  {
+    "id": 754,
+    "name": "Paranormal",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/84BF97y/paranormal-skunkey-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/paranormal-1790924807773.webp"
+    ],
+    "at": "2026-10-02T07:08:01.688Z"
+  },
+  {
+    "id": 753,
+    "name": "Paradise",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/DtbNKLS/paradise-skunkey-unknown-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/paradise-1790924807772.webp"
+    ],
+    "at": "2026-10-02T07:08:01.723Z"
+  },
+  {
+    "id": 756,
+    "name": "Reggae",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/r45FfBz/reggae-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/reggae-1790924807775.webp"
+    ],
+    "at": "2026-10-02T07:08:02.620Z"
+  },
+  {
+    "id": 755,
+    "name": "Pom",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/WKb6QSK/pom-skunkey-aug2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/pom-1790924807774.webp"
+    ],
+    "at": "2026-10-02T07:08:02.737Z"
+  },
+  {
+    "id": 757,
+    "name": "Richard",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/xfvxjmh/richard-skunkey-unknown-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/richard-1790924807776.webp"
+    ],
+    "at": "2026-10-02T07:08:03.307Z"
+  },
+  {
+    "id": 758,
+    "name": "Rockie",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/vDgGFry/rockie-skunkey-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/rockie-1790924807777.webp"
+    ],
+    "at": "2026-10-02T07:08:03.999Z"
+  },
+  {
+    "id": 761,
+    "name": "Wahoo",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/QPXXN1C/wahoo-skunkey-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/wahoo-1790924807780.webp"
+    ],
+    "at": "2026-10-02T07:08:04.908Z"
+  },
+  {
+    "id": 760,
+    "name": "Teddy",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/2vYZpnP/teddy-skunkey-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/teddy-1790924807779.webp"
+    ],
+    "at": "2026-10-02T07:08:04.919Z"
+  },
+  {
+    "id": 759,
+    "name": "Spock",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/wSZ0DmG/spock-skunkey-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/spock-1790924807778.webp"
+    ],
+    "at": "2026-10-02T07:08:05.042Z"
+  },
+  {
+    "id": 762,
+    "name": "Rene",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/KDC9Z9g/rene-skunkey-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/rene-1790924807781.webp"
+    ],
+    "at": "2026-10-02T07:08:06.130Z"
+  },
+  {
+    "id": 763,
+    "name": "Button",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/8sxZ4Td/button-skunkey-unknown-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/button-1790924807782.webp"
+    ],
+    "at": "2026-10-02T07:08:06.307Z"
+  },
+  {
+    "id": 764,
+    "name": "Rox",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/wdNVp93/rox-skunkey-aug2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/rox-1790924807783.webp"
+    ],
+    "at": "2026-10-02T07:08:06.776Z"
+  },
+  {
+    "id": 766,
+    "name": "Bru",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/Yf87V3m/bru-skunkey-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/bru-1790924807784.webp"
+    ],
+    "at": "2026-10-02T07:08:07.547Z"
+  },
+  {
+    "id": 767,
+    "name": "Roddy",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/72YGdyV/roddy-skunkey-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/roddy-1790924807785.webp"
+    ],
+    "at": "2026-10-02T07:08:07.632Z"
+  },
+  {
+    "id": 768,
+    "name": "Kappi",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/NtHqddx/kappi-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/kappi-1790924807786.webp"
+    ],
+    "at": "2026-10-02T07:08:08.341Z"
+  },
+  {
+    "id": 769,
+    "name": "Daisy Mae",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/6wJ3vcZ/daisy-mae-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/daisy-mae-1790924807787.webp"
+    ],
+    "at": "2026-10-02T07:08:08.866Z"
+  },
+  {
+    "id": 770,
+    "name": "Gio",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/qn056q7/gio-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/gio-1790924807788.webp"
+    ],
+    "at": "2026-10-02T07:08:09.295Z"
+  },
+  {
+    "id": 771,
+    "name": "Abu",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/74XvYLt/abu-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/abu-1790924807789.webp"
+    ],
+    "at": "2026-10-02T07:08:10.006Z"
+  },
+  {
+    "id": 765,
+    "name": "Punim",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/51q5zXC/punim-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/punim-1790924807790.webp"
+    ],
+    "at": "2026-10-02T07:08:10.177Z"
+  },
+  {
+    "id": 773,
+    "name": "Winona",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/j86sSS6/winona-skunkey-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/winona-1790924807792.webp"
+    ],
+    "at": "2026-10-02T07:08:10.702Z"
+  },
+  {
+    "id": 772,
+    "name": "Josephine",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/VpPw006/josephine-skunkey-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/josephine-1790924807791.webp"
+    ],
+    "at": "2026-10-02T07:08:10.735Z"
+  },
+  {
+    "id": 774,
+    "name": "Teft",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/D7kqWkP/teft-skunkey-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/teft-1790924807793.webp"
+    ],
+    "at": "2026-10-02T07:08:11.357Z"
+  },
+  {
+    "id": 775,
+    "name": "TK",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/jJCSQdx/tk-skunkey-mar2024.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/tk-1790924807794.jpg"
+    ],
+    "at": "2026-10-02T07:08:12.139Z"
+  },
+  {
+    "id": 786,
+    "name": "Ash",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/mB2TrSQ/ash-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/ash-1790924807797.webp"
+    ],
+    "at": "2026-10-02T07:08:12.946Z"
+  },
+  {
+    "id": 776,
+    "name": "Elora",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/C130wG9/elora-skunkey-mar2024-2.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/elora-1790924807795.jpg"
+    ],
+    "at": "2026-10-02T07:08:13.042Z"
+  },
+  {
+    "id": 777,
+    "name": "Anita",
+    "troop": "Skunkey",
+    "old": [
+      "https://i.ibb.co/JFD3PyW/anita-skunkey-mar2024-2.jpg"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skunkey/anita-1790924807796.jpg"
+    ],
+    "at": "2026-10-02T07:08:13.279Z"
+  },
+  {
+    "id": 788,
+    "name": "Bowie",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/LxJdJGw/bowie-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/bowie-1790924807799.webp"
+    ],
+    "at": "2026-10-02T07:08:14.506Z"
+  },
+  {
+    "id": 789,
+    "name": "Candi",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/TL5KC1k/candi-dd-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/candi-1790924807800.webp"
+    ],
+    "at": "2026-10-02T07:08:14.670Z"
+  },
+  {
+    "id": 787,
+    "name": "Barney",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/SnFVLsQ/barney-dd-may2024-min.webp",
+      "https://i.ibb.co/Nr1jsWZ/barney-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/barney-1790924807798.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/barney-1790924807802.webp"
+    ],
+    "at": "2026-10-02T07:08:15.623Z"
+  },
+  {
+    "id": 790,
+    "name": "Chane",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/qms5vwY/chane-dd-apr2024-min.webp",
+      "https://i.ibb.co/F0gtkNr/chane-dd-jan2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/chane-1790924807801.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/chane-1790924807804.webp"
+    ],
+    "at": "2026-10-02T07:08:16.296Z"
+  },
+  {
+    "id": 792,
+    "name": "Cheyenne",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/68bWBWR/cheyenne-dd-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/cheyenne-1790924807805.webp"
+    ],
+    "at": "2026-10-02T07:08:16.841Z"
+  },
+  {
+    "id": 793,
+    "name": "Cotton",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/9g3z2SY/cotton-dd-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/cotton-1790924807806.webp"
+    ],
+    "at": "2026-10-02T07:08:17.267Z"
+  },
+  {
+    "id": 791,
+    "name": "Chester",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/4Mg70vj/chester-dd-oct2023-min.webp",
+      "https://i.ibb.co/VC05dQd/chester-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/chester-1790924807803.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/chester-1790924807807.webp"
+    ],
+    "at": "2026-10-02T07:08:17.405Z"
+  },
+  {
+    "id": 794,
+    "name": "Crumpet",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/KzsFJdT/crumpet-dd-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/crumpet-1790924807808.webp"
+    ],
+    "at": "2026-10-02T07:08:17.696Z"
+  },
+  {
+    "id": 795,
+    "name": "Diddy Kong",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/4SGWgHv/diddy-kong-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/diddy-kong-1790924807809.webp"
+    ],
+    "at": "2026-10-02T07:08:18.686Z"
+  },
+  {
+    "id": 796,
+    "name": "Edgar",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/gMfPwLK/edgar-dd-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/edgar-1790924807810.webp"
+    ],
+    "at": "2026-10-02T07:08:18.806Z"
+  },
+  {
+    "id": 797,
+    "name": "Emmy",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/6HwhQwz/emmy-dd-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/emmy-1790924807811.webp"
+    ],
+    "at": "2026-10-02T07:08:19.073Z"
+  },
+  {
+    "id": 798,
+    "name": "Fiona",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/yNPT4vf/fiona-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/fiona-1790924807812.webp"
+    ],
+    "at": "2026-10-02T07:08:19.178Z"
+  },
+  {
+    "id": 800,
+    "name": "Frankie",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/YtjTc3p/frankie-dd-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/frankie-1790924807814.webp"
+    ],
+    "at": "2026-10-02T07:08:20.448Z"
+  },
+  {
+    "id": 801,
+    "name": "Giovanni",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/zhBDVry/giovanni-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/giovanni-1790924807815.webp"
+    ],
+    "at": "2026-10-02T07:08:20.684Z"
+  },
+  {
+    "id": 799,
+    "name": "Francis",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/P9ZrHVV/francis-dd-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/francis-1790924807813.webp"
+    ],
+    "at": "2026-10-02T07:08:20.889Z"
+  },
+  {
+    "id": 802,
+    "name": "Harold",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/ZxcpRjW/harold-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/harold-1790924807816.webp"
+    ],
+    "at": "2026-10-02T07:08:21.177Z"
+  },
+  {
+    "id": 804,
+    "name": "Helea",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/P9xxxj3/helea-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/helea-1790924807818.webp"
+    ],
+    "at": "2026-10-02T07:08:22.285Z"
+  },
+  {
+    "id": 805,
+    "name": "Hoppy",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/vBFqc09/hoppy-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/hoppy-1790924807819.webp"
+    ],
+    "at": "2026-10-02T07:08:22.484Z"
+  },
+  {
+    "id": 806,
+    "name": "Ildiko",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/SPX6NLJ/ildiko-dd-nov2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/ildiko-1790924807820.webp"
+    ],
+    "at": "2026-10-02T07:08:22.596Z"
+  },
+  {
+    "id": 803,
+    "name": "Hazel",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/ygWWQK4/hazel-dd-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/hazel-1790924807817.webp"
+    ],
+    "at": "2026-10-02T07:08:22.599Z"
+  },
+  {
+    "id": 807,
+    "name": "Isa-Maria",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/4Twzq4f/isa-maria-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/isa-maria-1790924807821.webp"
+    ],
+    "at": "2026-10-02T07:08:23.914Z"
+  },
+  {
+    "id": 808,
+    "name": "Jessie",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/qJ375QB/jessie-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/jessie-1790924807822.webp"
+    ],
+    "at": "2026-10-02T07:08:24.381Z"
+  },
+  {
+    "id": 810,
+    "name": "Kobe",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/K0Y777D/kobe-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/kobe-1790924807823.webp"
+    ],
+    "at": "2026-10-02T07:08:24.920Z"
+  },
+  {
+    "id": 811,
+    "name": "Lynda",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/Y863QcW/lynda-dd-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/lynda-1790924807824.webp"
+    ],
+    "at": "2026-10-02T07:08:25.776Z"
+  },
+  {
+    "id": 812,
+    "name": "Malandro",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/LPBNVMd/malandro-dd-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/malandro-1790924807826.webp"
+    ],
+    "at": "2026-10-02T07:08:25.924Z"
+  },
+  {
+    "id": 809,
+    "name": "Kikinette",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/MCd0s6X/kikinette-dd-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/kikinette-1790924807825.webp"
+    ],
+    "at": "2026-10-02T07:08:25.926Z"
+  },
+  {
+    "id": 815,
+    "name": "Merlin",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/RD4HFhm/merlin-dd-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/merlin-1790924807829.webp"
+    ],
+    "at": "2026-10-02T07:08:27.471Z"
+  },
+  {
+    "id": 816,
+    "name": "Mia",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/68B9Qb7/mia-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/mia-1790924807830.webp"
+    ],
+    "at": "2026-10-02T07:08:27.887Z"
+  },
+  {
+    "id": 813,
+    "name": "Mamba",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/zZfs2yK/mamba-dd-may2024-min.webp",
+      "https://i.ibb.co/4SFrm79/mamba-dd-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/mamba-1790924807827.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/mamba-1790924807831.webp"
+    ],
+    "at": "2026-10-02T07:08:28.143Z"
+  },
+  {
+    "id": 814,
+    "name": "Meggy",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/s6z48Zw/meggy-dd-may2024-min.webp",
+      "https://i.ibb.co/rHMZdBs/meggy-dd-may2024-2-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/meggy-1790924807828.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/meggy-1790924807832.webp"
+    ],
+    "at": "2026-10-02T07:08:28.260Z"
+  },
+  {
+    "id": 817,
+    "name": "Mistletoe",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/PW1bvGh/mistletoe-dd-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/mistletoe-1790924807833.webp"
+    ],
+    "at": "2026-10-02T07:08:29.011Z"
+  },
+  {
+    "id": 818,
+    "name": "Mortadelo",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/yYXgKDB/mortadelo-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/mortadelo-1790924807834.webp"
+    ],
+    "at": "2026-10-02T07:08:29.429Z"
+  },
+  {
+    "id": 819,
+    "name": "Nhala",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/JKbdzSp/nhala-dd-aug2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/nhala-1790924807835.webp"
+    ],
+    "at": "2026-10-02T07:08:29.557Z"
+  },
+  {
+    "id": 820,
+    "name": "Nils",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/4NQ3m4F/nils-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/nils-1790924807836.webp"
+    ],
+    "at": "2026-10-02T07:08:29.798Z"
+  },
+  {
+    "id": 821,
+    "name": "Okoye",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/7RcGMH6/okoye-dd-nov2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/okoye-1790924807837.webp"
+    ],
+    "at": "2026-10-02T07:08:30.705Z"
+  },
+  {
+    "id": 822,
+    "name": "Phylis",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/cb5mcYf/phylis-dd-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/phylis-1790924807838.webp"
+    ],
+    "at": "2026-10-02T07:08:31.303Z"
+  },
+  {
+    "id": 823,
+    "name": "Precious",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/GQwQ5tv/precious-dd-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/precious-1790924807839.webp"
+    ],
+    "at": "2026-10-02T07:08:31.625Z"
+  },
+  {
+    "id": 825,
+    "name": "Silver",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/QYWc1jd/silver-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/silver-1790924807841.webp"
+    ],
+    "at": "2026-10-02T07:08:32.250Z"
+  },
+  {
+    "id": 824,
+    "name": "Scritch",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/yPg17kW/scritch-dd-mar2023-min.webp",
+      "https://i.ibb.co/1s61DnL/scritch-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/scritch-1790924807840.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/scritch-1790924807842.webp"
+    ],
+    "at": "2026-10-02T07:08:32.671Z"
+  },
+  {
+    "id": 826,
+    "name": "Skollie",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/dtLPxqz/skollie-dd-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/skollie-1790924807843.webp"
+    ],
+    "at": "2026-10-02T07:08:32.932Z"
+  },
+  {
+    "id": 827,
+    "name": "Tammy",
+    "troop": "D&D",
+    "old": [
+      "https://i.ibb.co/QQk7YWS/tammy-dd-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/d-d/tammy-1790924807844.webp"
+    ],
+    "at": "2026-10-02T07:08:33.281Z"
+  },
+  {
+    "id": 834,
+    "name": "Bembel",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/JrHFKbT/bembel-gismo-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/bembel-1790924807845.webp"
+    ],
+    "at": "2026-10-02T07:08:33.903Z"
+  },
+  {
+    "id": 836,
+    "name": "Dottie",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/Z869Myx/dottie-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/dottie-1790924807847.webp"
+    ],
+    "at": "2026-10-02T07:08:34.649Z"
+  },
+  {
+    "id": 835,
+    "name": "Chloe",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/YcJNt7R/chloe-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/chloe-1790924807846.webp"
+    ],
+    "at": "2026-10-02T07:08:34.733Z"
+  },
+  {
+    "id": 837,
+    "name": "Eva",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/yW2BnGc/eva-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/eva-1790924807848.webp"
+    ],
+    "at": "2026-10-02T07:08:34.977Z"
+  },
+  {
+    "id": 838,
+    "name": "Helen",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/kSjxvcG/helen-gismo-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/helen-1790924807849.webp"
+    ],
+    "at": "2026-10-02T07:08:35.493Z"
+  },
+  {
+    "id": 840,
+    "name": "Keksie",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/825YnR6/keksie-gismo-aug2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/keksie-1790924807851.webp"
+    ],
+    "at": "2026-10-02T07:08:36.502Z"
+  },
+  {
+    "id": 839,
+    "name": "James",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/8rYTNb9/james-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/james-1790924807850.webp"
+    ],
+    "at": "2026-10-02T07:08:36.582Z"
+  },
+  {
+    "id": 842,
+    "name": "Marcy",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/6HW857Z/marcy-gismo-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/marcy-1790924807852.webp"
+    ],
+    "at": "2026-10-02T07:08:37.239Z"
+  },
+  {
+    "id": 843,
+    "name": "Matilda",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/x6WnB1W/matilda-gismo-unknown-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/matilda-1790924807854.webp"
+    ],
+    "at": "2026-10-02T07:08:38.167Z"
+  },
+  {
+    "id": 844,
+    "name": "Orchid",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/yhB9Ytb/orchid-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/orchid-1790924807855.webp"
+    ],
+    "at": "2026-10-02T07:08:38.598Z"
+  },
+  {
+    "id": 845,
+    "name": "Patchwork",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/3TpJgk8/patchword-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/patchwork-1790924807856.webp"
+    ],
+    "at": "2026-10-02T07:08:39.218Z"
+  },
+  {
+    "id": 846,
+    "name": "Plotty",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/8869BQw/plotty-gismo-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/plotty-1790924807858.webp"
+    ],
+    "at": "2026-10-02T07:08:39.631Z"
+  },
+  {
+    "id": 841,
+    "name": "Lolabean",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/jhZJ8Tc/lolabean-gismo-may2023-min.webp",
+      "https://i.ibb.co/Ln6h2r0/lolabean-gismo-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/lolabean-1790924807853.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/lolabean-1790924807857.webp"
+    ],
+    "at": "2026-10-02T07:08:39.662Z"
+  },
+  {
+    "id": 847,
+    "name": "Poppy",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/wyxzDHN/poppy-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/poppy-1790924807859.webp"
+    ],
+    "at": "2026-10-02T07:08:40.791Z"
+  },
+  {
+    "id": 848,
+    "name": "Pumpkin",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/w6Kx2N3/pumpkin-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/pumpkin-1790924807860.webp"
+    ],
+    "at": "2026-10-02T07:08:40.841Z"
+  },
+  {
+    "id": 850,
+    "name": "Schnapps",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/1TC3G4b/schnapps-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/schnapps-1790924807862.webp"
+    ],
+    "at": "2026-10-02T07:08:41.445Z"
+  },
+  {
+    "id": 849,
+    "name": "Ricky",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/7Sm9MMy/ricky-gismo-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/ricky-1790924807861.webp"
+    ],
+    "at": "2026-10-02T07:08:41.605Z"
+  },
+  {
+    "id": 851,
+    "name": "Trisha",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/7NKD9Rp/trisha-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/trisha-1790924807863.webp"
+    ],
+    "at": "2026-10-02T07:08:43.074Z"
+  },
+  {
+    "id": 852,
+    "name": "Uh-Oh",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/Ycc92tC/uh-oh-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/uh-oh-1790924807864.webp"
+    ],
+    "at": "2026-10-02T07:08:43.559Z"
+  },
+  {
+    "id": 854,
+    "name": "Alvin",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/XVZgZgP/alvin-gismo-aug-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/alvin-1790924807865.webp"
+    ],
+    "at": "2026-10-02T07:08:43.681Z"
+  },
+  {
+    "id": 853,
+    "name": "Abel",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/xF86qJ8/abel-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/abel-1790924807866.webp"
+    ],
+    "at": "2026-10-02T07:08:44.674Z"
+  },
+  {
+    "id": 857,
+    "name": "Chief Long Hair",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/4dZbbdg/chief-long-hair-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/chief-long-hair-1790924807869.webp"
+    ],
+    "at": "2026-10-02T07:08:45.482Z"
+  },
+  {
+    "id": 856,
+    "name": "Booger Big Ears",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/7z44sc7/booger-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/booger-big-ears-1790924807868.webp"
+    ],
+    "at": "2026-10-02T07:08:45.492Z"
+  },
+  {
+    "id": 858,
+    "name": "Cory",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/M8DfYgG/cory-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/cory-1790924807870.webp"
+    ],
+    "at": "2026-10-02T07:08:46.904Z"
+  },
+  {
+    "id": 859,
+    "name": "Denford",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/bbk4Zf6/denford-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/denford-1790924807872.webp"
+    ],
+    "at": "2026-10-02T07:08:47.263Z"
+  },
+  {
+    "id": 855,
+    "name": "Benjamin",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/bLYcv9y/benjamin-gismo-may2023-min.webp",
+      "https://i.ibb.co/1XHWZLr/benjamin-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/benjamin-1790924807867.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/benjamin-1790924807871.webp"
+    ],
+    "at": "2026-10-02T07:08:47.915Z"
+  },
+  {
+    "id": 860,
+    "name": "Dylan",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/KzQs1nx/dylan-gismo-aug2023-min.webp",
+      "https://i.ibb.co/D8vYm75/dylan-gismo-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/dylan-1790924807873.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/dylan-1790924807874.webp"
+    ],
+    "at": "2026-10-02T07:08:48.556Z"
+  },
+  {
+    "id": 862,
+    "name": "Gabriel",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/KyZXRmz/gabriel-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/gabriel-1790924807876.webp"
+    ],
+    "at": "2026-10-02T07:08:48.956Z"
+  },
+  {
+    "id": 861,
+    "name": "Felix",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/17hKswB/felix-gismo-feb2024-min.webp",
+      "https://i.ibb.co/GPYyq2q/felix-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/felix-1790924807875.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/felix-1790924807877.webp"
+    ],
+    "at": "2026-10-02T07:08:49.631Z"
+  },
+  {
+    "id": 863,
+    "name": "Josh",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/9g0Mvws/josh-gismo-apr2024-min.webp",
+      "https://i.ibb.co/W0HvNwy/josh-gismo-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/josh-1790924807878.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/josh-1790924807881.webp"
+    ],
+    "at": "2026-10-02T07:08:51.189Z"
+  },
+  {
+    "id": 866,
+    "name": "Pokie",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/4fnjSDW/pokie-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/pokie-1790924807882.webp"
+    ],
+    "at": "2026-10-02T07:08:51.323Z"
+  },
+  {
+    "id": 865,
+    "name": "Michael",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/d0Vswtx/michael-gismo-may2024-2-min.webp",
+      "https://i.ibb.co/LtBmgdm/michael-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/michael-1790924807880.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/michael-1790924807883.webp"
+    ],
+    "at": "2026-10-02T07:08:52.124Z"
+  },
+  {
+    "id": 864,
+    "name": "Lancelot",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/BBrLPnt/lancelot-gismo-apr2023-min.webp",
+      "https://i.ibb.co/d7ZcNqz/lancelot-gismo-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/lancelot-1790924807879.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/lancelot-1790924807884.webp"
+    ],
+    "at": "2026-10-02T07:08:52.155Z"
+  },
+  {
+    "id": 867,
+    "name": "Pye-wa-ket",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/v1k6BWs/pyewaket-gismo-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/pye-wa-ket-1790924807885.webp"
+    ],
+    "at": "2026-10-02T07:08:52.885Z"
+  },
+  {
+    "id": 868,
+    "name": "Ricky-Joe",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/h1Krqh7/ricky-joe-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/ricky-joe-1790924807886.webp"
+    ],
+    "at": "2026-10-02T07:08:53.221Z"
+  },
+  {
+    "id": 870,
+    "name": "Spirit",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/swYWMbz/spirit-gismo-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/spirit-1790924807887.webp"
+    ],
+    "at": "2026-10-02T07:08:54.159Z"
+  },
+  {
+    "id": 869,
+    "name": "Scooby",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/JvGGKMS/scooby-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/scooby-1790924807888.webp"
+    ],
+    "at": "2026-10-02T07:08:54.369Z"
+  },
+  {
+    "id": 872,
+    "name": "Tom-Tom",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/hdVsTjn/tom-tom-gismo-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/tom-tom-1790924807890.webp"
+    ],
+    "at": "2026-10-02T07:08:55.034Z"
+  },
+  {
+    "id": 876,
+    "name": "Amahle",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/p0x1TtQ/amahle-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/amahle-1790924807892.webp"
+    ],
+    "at": "2026-10-02T07:08:55.719Z"
+  },
+  {
+    "id": 871,
+    "name": "Timmy",
+    "troop": "Gismo",
+    "old": [
+      "https://i.ibb.co/8gTc2rf/timmy-gismo-mar2024-min.webp",
+      "https://i.ibb.co/N6VJQxP/timmy-gismo-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/timmy-1790924807889.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/gismo/timmy-1790924807891.webp"
+    ],
+    "at": "2026-10-02T07:08:55.753Z"
+  },
+  {
+    "id": 879,
+    "name": "Babje",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/wN0TDQ3/babje-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/babje-1790924807894.webp"
+    ],
+    "at": "2026-10-02T07:08:57.384Z"
+  },
+  {
+    "id": 880,
+    "name": "Bean",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/B3X2ByV/bean-royal-oct2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/bean-1790924807895.webp"
+    ],
+    "at": "2026-10-02T07:08:57.424Z"
+  },
+  {
+    "id": 878,
+    "name": "Ariel",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/9tdzxk8/ariel-royal-may2023-min.webp",
+      "https://i.ibb.co/0rqwz3m/ariel-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/ariel-1790924807893.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/ariel-1790924807896.webp"
+    ],
+    "at": "2026-10-02T07:08:57.951Z"
+  },
+  {
+    "id": 877,
+    "name": "Angus",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/LddbXTv/angus-royal-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/angus-1790924807897.webp"
+    ],
+    "at": "2026-10-02T07:08:58.648Z"
+  },
+  {
+    "id": 881,
+    "name": "Bobbie Anne",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/zHDTp5N/bobbie-anne-royal-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/bobbie-anne-1790924807898.webp"
+    ],
+    "at": "2026-10-02T07:08:59.186Z"
+  },
+  {
+    "id": 883,
+    "name": "Cecilia",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/BTNf8xD/cecilia-royal-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/cecilia-1790924807900.webp"
+    ],
+    "at": "2026-10-02T07:08:59.241Z"
+  },
+  {
+    "id": 882,
+    "name": "Butter",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/wp9hV2d/butter-royal-oct2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/butter-1790924807899.webp"
+    ],
+    "at": "2026-10-02T07:08:59.355Z"
+  },
+  {
+    "id": 884,
+    "name": "Construction",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/gTqcZxJ/construction-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/construction-1790924807901.webp"
+    ],
+    "at": "2026-10-02T07:09:00.190Z"
+  },
+  {
+    "id": 886,
+    "name": "Echo",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/T0QfQYH/echo-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/echo-1790924807903.webp"
+    ],
+    "at": "2026-10-02T07:09:00.573Z"
+  },
+  {
+    "id": 885,
+    "name": "Devlin",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/pKj9PBw/devlin-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/devlin-1790924807902.webp"
+    ],
+    "at": "2026-10-02T07:09:01.295Z"
+  },
+  {
+    "id": 887,
+    "name": "Elliot",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/wYDNd3q/elliot-royal-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/elliot-1790924807904.webp"
+    ],
+    "at": "2026-10-02T07:09:01.319Z"
+  },
+  {
+    "id": 888,
+    "name": "Elvis",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/0nxwb4t/elvis-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/elvis-1790924807905.webp"
+    ],
+    "at": "2026-10-02T07:09:01.924Z"
+  },
+  {
+    "id": 889,
+    "name": "Fergus Jr.",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/F7mL6C0/fergus-jr-royal-oct2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/fergus-jr-1790924807906.webp"
+    ],
+    "at": "2026-10-02T07:09:02.183Z"
+  },
+  {
+    "id": 890,
+    "name": "Franiel",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/Q6bnf26/franiel-royal-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/franiel-1790924807907.webp"
+    ],
+    "at": "2026-10-02T07:09:02.949Z"
+  },
+  {
+    "id": 893,
+    "name": "Gia",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/PTZ7Bfj/gia-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/gia-1790924807910.webp"
+    ],
+    "at": "2026-10-02T07:09:03.584Z"
+  },
+  {
+    "id": 894,
+    "name": "Hope",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/smCqbL7/hope-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/hope-1790924807911.webp"
+    ],
+    "at": "2026-10-02T07:09:04.317Z"
+  },
+  {
+    "id": 892,
+    "name": "Freddy",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/34QLBqS/freddy-royal-may2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/freddy-1790924807909.webp"
+    ],
+    "at": "2026-10-02T07:09:04.362Z"
+  },
+  {
+    "id": 891,
+    "name": "Frankles",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/Q8M7KhN/frankles-royal-feb2024-min.webp",
+      "https://i.ibb.co/SRCR4gF/frankles-royal-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/frankles-1790924807908.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/frankles-1790924807912.webp"
+    ],
+    "at": "2026-10-02T07:09:04.873Z"
+  },
+  {
+    "id": 896,
+    "name": "Hypnotic",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/kQTr9WJ/hypnotic-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/hypnotic-1790924807913.webp"
+    ],
+    "at": "2026-10-02T07:09:05.133Z"
+  },
+  {
+    "id": 897,
+    "name": "Jo",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/f2yhzWb/jo-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/jo-1790924807914.webp"
+    ],
+    "at": "2026-10-02T07:09:05.920Z"
+  },
+  {
+    "id": 898,
+    "name": "Lisa",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/QvDC787/lisa-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/lisa-1790924807915.webp"
+    ],
+    "at": "2026-10-02T07:09:05.966Z"
+  },
+  {
+    "id": 899,
+    "name": "Lochlan",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/sg2Y2sb/lochlan-royal-apr2024-min.webp",
+      "https://i.ibb.co/54bqLFQ/lochlan-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/lochlan-1790924807916.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/lochlan-1790924807918.webp"
+    ],
+    "at": "2026-10-02T07:09:07.402Z"
+  },
+  {
+    "id": 901,
+    "name": "Noam",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/rdHgDQm/noam-royal-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/noam-1790924807919.webp"
+    ],
+    "at": "2026-10-02T07:09:07.886Z"
+  },
+  {
+    "id": 900,
+    "name": "Marmalade",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/KD26pFK/marmalade-royal-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/marmalade-1790924807917.webp"
+    ],
+    "at": "2026-10-02T07:09:08.092Z"
+  },
+  {
+    "id": 903,
+    "name": "Onoda",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/PcqtN7N/onoda-royal-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/onoda-1790924807920.webp"
+    ],
+    "at": "2026-10-02T07:09:09.045Z"
+  },
+  {
+    "id": 905,
+    "name": "Peary",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/tYFcm9H/peary-royal-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/peary-1790924807923.webp"
+    ],
+    "at": "2026-10-02T07:09:09.766Z"
+  },
+  {
+    "id": 902,
+    "name": "Notch",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/GJR8tbW/notch-royal-feb2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/notch-1790924807921.webp"
+    ],
+    "at": "2026-10-02T07:09:09.840Z"
+  },
+  {
+    "id": 904,
+    "name": "Patch-Adams",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/7SSyqFQ/patch-adams-royal-mar2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/patch-adams-1790924807922.webp"
+    ],
+    "at": "2026-10-02T07:09:09.882Z"
+  },
+  {
+    "id": 907,
+    "name": "Rory",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/7WVtT3K/rory-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/rory-1790924807924.webp"
+    ],
+    "at": "2026-10-02T07:09:11.132Z"
+  },
+  {
+    "id": 908,
+    "name": "Sanchez",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/9Z3xF0m/sanchez-royal-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/sanchez-1790924807925.webp"
+    ],
+    "at": "2026-10-02T07:09:11.392Z"
+  },
+  {
+    "id": 909,
+    "name": "Sassie",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/Y09NLp9/sassie-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/sassie-1790924807926.webp"
+    ],
+    "at": "2026-10-02T07:09:11.404Z"
+  },
+  {
+    "id": 910,
+    "name": "Simba",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/0CZSR8W/simba-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/simba-1790924807927.webp"
+    ],
+    "at": "2026-10-02T07:09:11.981Z"
+  },
+  {
+    "id": 911,
+    "name": "Sollie",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/cN2TJ7d/sollie-royal-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/sollie-1790924807928.webp"
+    ],
+    "at": "2026-10-02T07:09:12.662Z"
+  },
+  {
+    "id": 912,
+    "name": "TuuDee",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/j443ghg/tuudee-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/tuudee-1790924807929.webp"
+    ],
+    "at": "2026-10-02T07:09:13.032Z"
+  },
+  {
+    "id": 914,
+    "name": "Winston",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/yP0mfmZ/winston-royal-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/winston-1790924807930.webp"
+    ],
+    "at": "2026-10-02T07:09:13.511Z"
+  },
+  {
+    "id": 913,
+    "name": "Twinky",
+    "troop": "Royal",
+    "old": [
+      "https://i.ibb.co/t3BPk9B/twinky-royal-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/royal/twinky-1790924807931.webp"
+    ],
+    "at": "2026-10-02T07:09:13.650Z"
+  },
+  {
+    "id": 920,
+    "name": "Alice",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/268GFdr/alice-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/alice-1790924807932.webp"
+    ],
+    "at": "2026-10-02T07:09:13.950Z"
+  },
+  {
+    "id": 922,
+    "name": "Baba-Cool",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/7VX12Jz/baba-cool-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/baba-cool-1790924807934.webp"
+    ],
+    "at": "2026-10-02T07:09:15.157Z"
+  },
+  {
+    "id": 924,
+    "name": "Boo",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/gF0r1nG/boo-skrow-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/boo-1790924807936.webp"
+    ],
+    "at": "2026-10-02T07:09:15.331Z"
+  },
+  {
+    "id": 921,
+    "name": "Andreas",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/nLtFt5M/andreas-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/andreas-1790924807933.webp"
+    ],
+    "at": "2026-10-02T07:09:15.888Z"
+  },
+  {
+    "id": 923,
+    "name": "Bertrand",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/jHf2rYH/bertrand-skrow-jun2024-min.webp",
+      "https://i.ibb.co/2ttryx1/bertrand-skrow-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/bertrand-1790924807935.webp",
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/bertrand-1790924807937.webp"
+    ],
+    "at": "2026-10-02T07:09:16.206Z"
+  },
+  {
+    "id": 925,
+    "name": "Boots",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/YdpKy4W/boots-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/boots-1790924807938.webp"
+    ],
+    "at": "2026-10-02T07:09:16.745Z"
+  },
+  {
+    "id": 926,
+    "name": "Buffy",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/rk3N770/buffy-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/buffy-1790924807939.webp"
+    ],
+    "at": "2026-10-02T07:09:16.750Z"
+  },
+  {
+    "id": 927,
+    "name": "Carleton",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/YXRr05f/carleton-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/carleton-1790924807940.webp"
+    ],
+    "at": "2026-10-02T07:09:17.452Z"
+  },
+  {
+    "id": 928,
+    "name": "Chaim",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/wckC4kt/chaim-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/chaim-1790924807941.webp"
+    ],
+    "at": "2026-10-02T07:09:17.707Z"
+  },
+  {
+    "id": 930,
+    "name": "Cosimo",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/SrMfbFp/cosimo-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/cosimo-1790924807943.webp"
+    ],
+    "at": "2026-10-02T07:09:18.284Z"
+  },
+  {
+    "id": 929,
+    "name": "Chef",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/5Yb9pGw/chef-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/chef-1790924807942.webp"
+    ],
+    "at": "2026-10-02T07:09:18.304Z"
+  },
+  {
+    "id": 931,
+    "name": "Diane",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/yqvBDtQ/diane-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/diane-1790924807944.webp"
+    ],
+    "at": "2026-10-02T07:09:18.932Z"
+  },
+  {
+    "id": 932,
+    "name": "Douglas",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/yWf2jKc/douglas-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/douglas-1790924807945.webp"
+    ],
+    "at": "2026-10-02T07:09:19.361Z"
+  },
+  {
+    "id": 934,
+    "name": "Epona",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/QQdQp11/epona-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/epona-1790924807947.webp"
+    ],
+    "at": "2026-10-02T07:09:19.715Z"
+  },
+  {
+    "id": 933,
+    "name": "Ellyn",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/Q92HWQk/ellyn-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/ellyn-1790924807946.webp"
+    ],
+    "at": "2026-10-02T07:09:19.837Z"
+  },
+  {
+    "id": 935,
+    "name": "Felicia",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/Qrx8Vdx/felicia-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/felicia-1790924807948.webp"
+    ],
+    "at": "2026-10-02T07:09:20.520Z"
+  },
+  {
+    "id": 936,
+    "name": "Finley",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/f94VDfP/finley-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/finley-1790924807949.webp"
+    ],
+    "at": "2026-10-02T07:09:21.011Z"
+  },
+  {
+    "id": 937,
+    "name": "Goon",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/R02YhBP/goon-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/goon-1790924807950.webp"
+    ],
+    "at": "2026-10-02T07:09:21.356Z"
+  },
+  {
+    "id": 939,
+    "name": "Haruki",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/dJZTvZs/haruki-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/haruki-1790924807951.webp"
+    ],
+    "at": "2026-10-02T07:09:21.889Z"
+  },
+  {
+    "id": 940,
+    "name": "Hayley",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/t4BfGqZ/hayley-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/hayley-1790924807952.webp"
+    ],
+    "at": "2026-10-02T07:09:22.722Z"
+  },
+  {
+    "id": 941,
+    "name": "Jake",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/BjCS6TY/jake-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/jake-1790924807953.webp"
+    ],
+    "at": "2026-10-02T07:09:23.016Z"
+  },
+  {
+    "id": 942,
+    "name": "Judi Bee",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/bb5cwc6/judi-bee-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/judi-bee-1790924807954.webp"
+    ],
+    "at": "2026-10-02T07:09:23.590Z"
+  },
+  {
+    "id": 938,
+    "name": "Groot",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/W6r3bn0/groot-skrow-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/groot-1790924807955.webp"
+    ],
+    "at": "2026-10-02T07:09:23.614Z"
+  },
+  {
+    "id": 944,
+    "name": "Leon",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/XDRF2Dw/leon-skrow-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/leon-1790924807956.webp"
+    ],
+    "at": "2026-10-02T07:09:24.737Z"
+  },
+  {
+    "id": 945,
+    "name": "Leonard",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/p2X6f4n/leonard-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/leonard-1790924807957.webp"
+    ],
+    "at": "2026-10-02T07:09:25.370Z"
+  },
+  {
+    "id": 943,
+    "name": "Kate",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/sbHQzJN/kate-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/kate-1790924807958.webp"
+    ],
+    "at": "2026-10-02T07:09:25.630Z"
+  },
+  {
+    "id": 946,
+    "name": "Lou",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/ZMkztX3/lou-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/lou-1790924807959.webp"
+    ],
+    "at": "2026-10-02T07:09:26.611Z"
+  },
+  {
+    "id": 947,
+    "name": "Louise",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/vJLnLXY/louis-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/louise-1790924807960.webp"
+    ],
+    "at": "2026-10-02T07:09:26.994Z"
+  },
+  {
+    "id": 948,
+    "name": "Mahodan (Mo)",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/R6MPZ18/mahodan-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/mahodan-mo-1790924807961.webp"
+    ],
+    "at": "2026-10-02T07:09:27.624Z"
+  },
+  {
+    "id": 949,
+    "name": "Mika",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/k4QmKWz/mika-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/mika-1790924807962.webp"
+    ],
+    "at": "2026-10-02T07:09:27.904Z"
+  },
+  {
+    "id": 951,
+    "name": "Mulan",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/WGz0rKF/mulan-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/mulan-1790924807964.webp"
+    ],
+    "at": "2026-10-02T07:09:28.897Z"
+  },
+  {
+    "id": 950,
+    "name": "Mopsie",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/LYz8d3k/mopsie-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/mopsie-1790924807963.webp"
+    ],
+    "at": "2026-10-02T07:09:28.914Z"
+  },
+  {
+    "id": 952,
+    "name": "Nemo",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/yPZXc92/nemo-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/nemo-1790924807965.webp"
+    ],
+    "at": "2026-10-02T07:09:29.936Z"
+  },
+  {
+    "id": 953,
+    "name": "Pakko",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/cb6sRKY/pakko-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/pakko-1790924807966.webp"
+    ],
+    "at": "2026-10-02T07:09:29.996Z"
+  },
+  {
+    "id": 954,
+    "name": "Pepe",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/wK1JnBz/pepe-skrow-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/pepe-1790924807968.webp"
+    ],
+    "at": "2026-10-02T07:09:30.621Z"
+  },
+  {
+    "id": 955,
+    "name": "Pocahontas",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/DkdYbZd/pocahontas-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/pocahontas-1790924807967.webp"
+    ],
+    "at": "2026-10-02T07:09:30.728Z"
+  },
+  {
+    "id": 956,
+    "name": "Polar",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/hWgfwW3/polar-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/polar-1790924807969.webp"
+    ],
+    "at": "2026-10-02T07:09:31.598Z"
+  },
+  {
+    "id": 959,
+    "name": "Sachi",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/VqPjHyh/sachi-skrow-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/sachi-1790924807971.webp"
+    ],
+    "at": "2026-10-02T07:09:32.046Z"
+  },
+  {
+    "id": 957,
+    "name": "Riley",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/VqXBbWt/riley-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/riley-1790924807970.webp"
+    ],
+    "at": "2026-10-02T07:09:32.154Z"
+  },
+  {
+    "id": 958,
+    "name": "Rush",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/w4Mzgvv/rush-skrow-apr2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/rush-1790924807972.webp"
+    ],
+    "at": "2026-10-02T07:09:32.640Z"
+  },
+  {
+    "id": 960,
+    "name": "Scottie",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/Zd3WYdJ/scottie-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/scottie-1790924807973.webp"
+    ],
+    "at": "2026-10-02T07:09:33.392Z"
+  },
+  {
+    "id": 961,
+    "name": "Shayna Maidel",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/rvxK8SB/shayna-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/shayna-maidel-1790924807974.webp"
+    ],
+    "at": "2026-10-02T07:09:33.526Z"
+  },
+  {
+    "id": 962,
+    "name": "Shosanna",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/ykVncSC/shosanna-skrow-jan2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/shosanna-1790924807975.webp"
+    ],
+    "at": "2026-10-02T07:09:34.000Z"
+  },
+  {
+    "id": 963,
+    "name": "Smudge",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/y5NYmwj/smudge-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/smudge-1790924807976.webp"
+    ],
+    "at": "2026-10-02T07:09:34.450Z"
+  },
+  {
+    "id": 964,
+    "name": "Susie Q",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/Yk3xP2v/susie-q-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/susie-q-1790924807977.webp"
+    ],
+    "at": "2026-10-02T07:09:34.683Z"
+  },
+  {
+    "id": 965,
+    "name": "Tweedle Dee",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/fxvm9KC/tweedle-dee-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/tweedle-dee-1790924807978.webp"
+    ],
+    "at": "2026-10-02T07:09:35.209Z"
+  },
+  {
+    "id": 966,
+    "name": "Tweedle Dum",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/yhP7npk/tweedle-dum-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/tweedle-dum-1790924807979.webp"
+    ],
+    "at": "2026-10-02T07:09:35.701Z"
+  },
+  {
+    "id": 967,
+    "name": "Vera",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/R78Qxy7/vera-skrow-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/vera-1790924807980.webp"
+    ],
+    "at": "2026-10-02T07:09:36.111Z"
+  },
+  {
+    "id": 968,
+    "name": "Yolanda",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/NssdGrg/yolanda-skrow-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/yolanda-1790924807981.webp"
+    ],
+    "at": "2026-10-02T07:09:36.168Z"
+  },
+  {
+    "id": 969,
+    "name": "Yonds",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/Wy0CDby/yonds-skrow-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/yonds-1790924807982.webp"
+    ],
+    "at": "2026-10-02T07:09:37.297Z"
+  },
+  {
+    "id": 970,
+    "name": "Zabana",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/zxC1cRD/zabana-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/zabana-1790924807983.webp"
+    ],
+    "at": "2026-10-02T07:09:37.721Z"
+  },
+  {
+    "id": 975,
+    "name": "Alexandria",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/bd1W18X/alexandria-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/alexandria-1790924807984.webp"
+    ],
+    "at": "2026-10-02T07:09:37.736Z"
+  },
+  {
+    "id": 971,
+    "name": "Zap",
+    "troop": "Skrow",
+    "old": [
+      "https://i.ibb.co/t3BSpJ4/zap-skrow-oct2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/skrow/zap-1790924807985.webp"
+    ],
+    "at": "2026-10-02T07:09:38.377Z"
+  },
+  {
+    "id": 976,
+    "name": "Alyson",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/X2Pnx9H/alyson-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/alyson-1790924807986.webp"
+    ],
+    "at": "2026-10-02T07:09:38.928Z"
+  },
+  {
+    "id": 977,
+    "name": "Aurelia",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/GR9BmfG/aurelia-robert-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/aurelia-1790924807988.webp"
+    ],
+    "at": "2026-10-02T07:09:39.550Z"
+  },
+  {
+    "id": 978,
+    "name": "Babysitter",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/LYjhqKY/babysitter-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/babysitter-1790924807987.webp"
+    ],
+    "at": "2026-10-02T07:09:39.558Z"
+  },
+  {
+    "id": 979,
+    "name": "Blue Nips",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/fp83g11/bluenips-robert-jul2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/blue-nips-1790924807989.webp"
+    ],
+    "at": "2026-10-02T07:09:40.133Z"
+  },
+  {
+    "id": 980,
+    "name": "Bounty",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/hsJDL1g/bounty-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/bounty-1790924807990.webp"
+    ],
+    "at": "2026-10-02T07:09:40.380Z"
+  },
+  {
+    "id": 982,
+    "name": "Brutis",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/7J29tQ6/brutis-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/brutis-1790924807991.webp"
+    ],
+    "at": "2026-10-02T07:09:41.277Z"
+  },
+  {
+    "id": 981,
+    "name": "Bowser",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/WGg4Hgv/bowser-robert-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/bowser-1790924807992.webp"
+    ],
+    "at": "2026-10-02T07:09:41.292Z"
+  },
+  {
+    "id": 984,
+    "name": "Cixi",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/Dz7zKk0/cixi-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/cixi-1790924807994.webp"
+    ],
+    "at": "2026-10-02T07:09:41.729Z"
+  },
+  {
+    "id": 983,
+    "name": "Chimera",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/6DC11pY/chimera-robert-2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/chimera-1790924807993.webp"
+    ],
+    "at": "2026-10-02T07:09:41.818Z"
+  },
+  {
+    "id": 986,
+    "name": "Curtis",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/WFp6xFM/curtis-robert-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/curtis-1790924807995.webp"
+    ],
+    "at": "2026-10-02T07:09:42.949Z"
+  },
+  {
+    "id": 987,
+    "name": "Danno",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/KwcdFg4/danno-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/danno-1790924807997.webp"
+    ],
+    "at": "2026-10-02T07:09:43.156Z"
+  },
+  {
+    "id": 985,
+    "name": "Croco",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/4FSg771/croco-robert-aug2020-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/croco-1790924807996.webp"
+    ],
+    "at": "2026-10-02T07:09:43.533Z"
+  },
+  {
+    "id": 988,
+    "name": "Darcy",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/TTVHYGK/darcy-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/darcy-1790924807998.webp"
+    ],
+    "at": "2026-10-02T07:09:43.780Z"
+  },
+  {
+    "id": 990,
+    "name": "Doreen",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/pr92ByN/doreen-robert-may2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/doreen-1790924808000.webp"
+    ],
+    "at": "2026-10-02T07:09:44.817Z"
+  },
+  {
+    "id": 989,
+    "name": "Diana",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/6bD6kk4/diana-robert-nov2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/diana-1790924807999.webp"
+    ],
+    "at": "2026-10-02T07:09:44.823Z"
+  },
+  {
+    "id": 991,
+    "name": "Elsie",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/tqxqF8h/elise-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/elsie-1790924808001.webp"
+    ],
+    "at": "2026-10-02T07:09:45.453Z"
+  },
+  {
+    "id": 992,
+    "name": "Enzo",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/Gt8091F/enzo-robert-aug2020-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/enzo-1790924808002.webp"
+    ],
+    "at": "2026-10-02T07:09:45.845Z"
+  },
+  {
+    "id": 994,
+    "name": "JD",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/QfxBBx8/jd-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/jd-1790924808003.webp"
+    ],
+    "at": "2026-10-02T07:09:46.230Z"
+  },
+  {
+    "id": 993,
+    "name": "Habibsi",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/gMM9DNz/habibsi-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/habibsi-1790924808004.webp"
+    ],
+    "at": "2026-10-02T07:09:46.682Z"
+  },
+  {
+    "id": 995,
+    "name": "Leakey",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/s3sjgt1/leakey-robert-aug2020-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/leakey-1790924808005.webp"
+    ],
+    "at": "2026-10-02T07:09:47.453Z"
+  },
+  {
+    "id": 996,
+    "name": "Mac",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/Bnd9sSw/mac-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/mac-1790924808006.webp"
+    ],
+    "at": "2026-10-02T07:09:47.619Z"
+  },
+  {
+    "id": 997,
+    "name": "Marley",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/1bGvzL3/marley-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/marley-1790924808007.webp"
+    ],
+    "at": "2026-10-02T07:09:47.784Z"
+  },
+  {
+    "id": 998,
+    "name": "Mousey",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/qFmJmtH/mousey-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/mousey-1790924808008.webp"
+    ],
+    "at": "2026-10-02T07:09:48.648Z"
+  },
+  {
+    "id": 1000,
+    "name": "Paxton",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/2FRmbXp/paxton-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/paxton-1790924808010.webp"
+    ],
+    "at": "2026-10-02T07:09:49.271Z"
+  },
+  {
+    "id": 999,
+    "name": "Parsley",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/bNGFPC5/parsley-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/parsley-1790924808009.webp"
+    ],
+    "at": "2026-10-02T07:09:49.355Z"
+  },
+  {
+    "id": 1001,
+    "name": "Penny",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/BGd41SN/penny-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/penny-1790924808011.webp"
+    ],
+    "at": "2026-10-02T07:09:49.746Z"
+  },
+  {
+    "id": 1002,
+    "name": "Queenie",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/2nbkpC9/queenie-robert-may2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/queenie-1790924808012.webp"
+    ],
+    "at": "2026-10-02T07:09:50.302Z"
+  },
+  {
+    "id": 1003,
+    "name": "Robin",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/PczznT1/robin-robert-jan2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/robin-1790924808013.webp"
+    ],
+    "at": "2026-10-02T07:09:50.923Z"
+  },
+  {
+    "id": 1004,
+    "name": "Scylla",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/94vnKdj/scylla-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/scylla-1790924808014.webp"
+    ],
+    "at": "2026-10-02T07:09:51.111Z"
+  },
+  {
+    "id": 1005,
+    "name": "Servilia",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/Kst4LFG/servilia-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/servilia-1790924808015.webp"
+    ],
+    "at": "2026-10-02T07:09:51.172Z"
+  },
+  {
+    "id": 1006,
+    "name": "William",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/wBkSfdw/william-robert-apr2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/william-1790924808016.webp"
+    ],
+    "at": "2026-10-02T07:09:51.930Z"
+  },
+  {
+    "id": 1007,
+    "name": "Zeus",
+    "troop": "Robert",
+    "old": [
+      "https://i.ibb.co/XF9qnmx/zeus-robert-oct2021-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/robert/zeus-1790924808017.webp"
+    ],
+    "at": "2026-10-02T07:09:52.695Z"
+  },
+  {
+    "id": 1008,
+    "name": "Amigo",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/bFFCcZ1/amigo-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/amigo-1790924808018.webp"
+    ],
+    "at": "2026-10-02T07:09:53.107Z"
+  },
+  {
+    "id": 1010,
+    "name": "Brewmaster",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/XV5YG97/brewmaster-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/brewmaster-1790924808019.webp"
+    ],
+    "at": "2026-10-02T07:09:53.649Z"
+  },
+  {
+    "id": 1011,
+    "name": "Bruce",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/THmB8M4/bruce-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/bruce-1790924808020.webp"
+    ],
+    "at": "2026-10-02T07:09:54.287Z"
+  },
+  {
+    "id": 1009,
+    "name": "Billy",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/RNRdP6W/billy-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/billy-1790924808021.webp"
+    ],
+    "at": "2026-10-02T07:09:54.538Z"
+  },
+  {
+    "id": 1012,
+    "name": "Caryl",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/q9WykWV/caryl-camelot-aug2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/caryl-1790924808022.webp"
+    ],
+    "at": "2026-10-02T07:09:54.915Z"
+  },
+  {
+    "id": 1013,
+    "name": "Casa",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/K66yV0C/casa-camelot-jun2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/casa-1790924808023.webp"
+    ],
+    "at": "2026-10-02T07:09:55.465Z"
+  },
+  {
+    "id": 1015,
+    "name": "Eyebrows",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/717GnxG/eyebrows-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/eyebrows-1790924808025.webp"
+    ],
+    "at": "2026-10-02T07:09:55.846Z"
+  },
+  {
+    "id": 1014,
+    "name": "Dipsticks",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/ncqqZwy/dipsticks-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/dipsticks-1790924808024.webp"
+    ],
+    "at": "2026-10-02T07:09:55.886Z"
+  },
+  {
+    "id": 1017,
+    "name": "Fuzz",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/YZyXPJP/fuzz-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/fuzz-1790924808027.webp"
+    ],
+    "at": "2026-10-02T07:09:57.075Z"
+  },
+  {
+    "id": 1016,
+    "name": "Finger",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/fqKTFY1/finger-camelot-jan2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/finger-1790924808026.webp"
+    ],
+    "at": "2026-10-02T07:09:57.078Z"
+  },
+  {
+    "id": 1018,
+    "name": "Galen",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/NmHPWXT/galen-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/galen-1790924808028.webp"
+    ],
+    "at": "2026-10-02T07:09:57.554Z"
+  },
+  {
+    "id": 1019,
+    "name": "Gentle",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/sPzwsRN/gentle-camelot-dec2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/gentle-1790924808029.webp"
+    ],
+    "at": "2026-10-02T07:09:57.572Z"
+  },
+  {
+    "id": 1021,
+    "name": "Goater",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/r01fDr6/goater-apr-2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/goater-1790924808030.webp"
+    ],
+    "at": "2026-10-02T07:09:58.555Z"
+  },
+  {
+    "id": 1020,
+    "name": "Gert",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/HHxBxyv/gert-feb-2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/gert-1790924808031.webp"
+    ],
+    "at": "2026-10-02T07:09:58.703Z"
+  },
+  {
+    "id": 1023,
+    "name": "Grumps",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/pxp0G1F/grumps-camelot-sep2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/grumps-1790924808033.webp"
+    ],
+    "at": "2026-10-02T07:09:59.215Z"
+  },
+  {
+    "id": 1022,
+    "name": "Gorri",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/nDn2Fw0/gorri-camelot-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/gorri-1790924808032.webp"
+    ],
+    "at": "2026-10-02T07:09:59.276Z"
+  },
+  {
+    "id": 1024,
+    "name": "Horns",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/WPZL4ch/horns-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/horns-1790924808034.webp"
+    ],
+    "at": "2026-10-02T07:10:00.396Z"
+  },
+  {
+    "id": 1025,
+    "name": "Jack",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/LxqDFZx/jack-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/jack-1790924808035.webp"
+    ],
+    "at": "2026-10-02T07:10:00.517Z"
+  },
+  {
+    "id": 1026,
+    "name": "Jofi",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/7zPf3pZ/jofi-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/jofi-1790924808036.webp"
+    ],
+    "at": "2026-10-02T07:10:01.086Z"
+  },
+  {
+    "id": 1027,
+    "name": "Junior",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/Q9dWkrd/junior-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/junior-1790924808037.webp"
+    ],
+    "at": "2026-10-02T07:10:01.352Z"
+  },
+  {
+    "id": 1028,
+    "name": "Keto",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/cTK9txD/keto-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/keto-1790924808038.webp"
+    ],
+    "at": "2026-10-02T07:10:02.029Z"
+  },
+  {
+    "id": 1030,
+    "name": "Loz",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/2skn5cD/loz-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/loz-1790924808039.webp"
+    ],
+    "at": "2026-10-02T07:10:02.426Z"
+  },
+  {
+    "id": 1031,
+    "name": "Matumbaman",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/m66XT43/matumbaman-camelot-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/matumbaman-1790924808040.webp"
+    ],
+    "at": "2026-10-02T07:10:03.125Z"
+  },
+  {
+    "id": 1032,
+    "name": "Mert",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/cvrgTnq/mert-camelot-mar2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/mert-1790924808041.webp"
+    ],
+    "at": "2026-10-02T07:10:03.433Z"
+  },
+  {
+    "id": 1033,
+    "name": "Mogli",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/0tHVCdQ/mogli-camelot-jan2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/mogli-1790924808042.webp"
+    ],
+    "at": "2026-10-02T07:10:04.388Z"
+  },
+  {
+    "id": 1034,
+    "name": "Pugetti",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/ZKMQXPd/pugetti-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/pugetti-1790924808043.webp"
+    ],
+    "at": "2026-10-02T07:10:04.583Z"
+  },
+  {
+    "id": 1029,
+    "name": "Lion-O",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/kqqD4gF/lion-o-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/lion-o-1790924808044.webp"
+    ],
+    "at": "2026-10-02T07:10:04.732Z"
+  },
+  {
+    "id": 1035,
+    "name": "Rerun",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/vH8Psb7/rerun-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/rerun-1790924808045.webp"
+    ],
+    "at": "2026-10-02T07:10:05.197Z"
+  },
+  {
+    "id": 1036,
+    "name": "Rooftrellen",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/KrYm3Xf/rooftrellen-camelot-jun2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/rooftrellen-1790924808046.webp"
+    ],
+    "at": "2026-10-02T07:10:05.960Z"
+  },
+  {
+    "id": 1038,
+    "name": "Significant",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/r6FRFbd/significant-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/significant-1790924808047.webp"
+    ],
+    "at": "2026-10-02T07:10:06.276Z"
+  },
+  {
+    "id": 1039,
+    "name": "Spike",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/0Y8XjdB/spike-camelot-nov2022-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/spike-1790924808048.webp"
+    ],
+    "at": "2026-10-02T07:10:07.026Z"
+  },
+  {
+    "id": 1040,
+    "name": "Uchi",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/ZmRxxqg/uchi-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/uchi-1790924808050.webp"
+    ],
+    "at": "2026-10-02T07:10:07.402Z"
+  },
+  {
+    "id": 1041,
+    "name": "Winky",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/DpMSSYg/winky-camelot-feb2023-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/winky-1790924808051.webp"
+    ],
+    "at": "2026-10-02T07:10:08.177Z"
+  },
+  {
+    "id": 1037,
+    "name": "Root",
+    "troop": "Camelot",
+    "old": [
+      "https://i.ibb.co/cys3txb/root-camelot-apr2024-min.webp"
+    ],
+    "new": [
+      "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/camelot/root-1790925462707.webp"
+    ],
+    "at": "2026-10-02T07:17:50.357Z"
+  }
+]

@@ -4,7 +4,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { supabase } from "./supabase";
-import { photoPath, slug, PHOTO_ASPECT, PHOTO_WIDTH, PHOTO_HEIGHT } from "./photoUpload";
+import { photoPath, slug, thumbPath, PHOTO_ASPECT, PHOTO_WIDTH, PHOTO_HEIGHT } from "./photoUpload";
 import * as photoUpload from "./photoUpload";
 import MonkeyForm from "./MonkeyForm";
 
@@ -82,6 +82,11 @@ describe("naming uploaded photos", () => {
         );
         expect(photoPath("", "", "jpg", 1)).toBe("unsorted/monkey-1.jpg");
     });
+
+    test("thumbnails: same name under thumbs/, always .webp", () => {
+        expect(thumbPath("goliath/maggie-mae-1.jpg")).toBe("thumbs/goliath/maggie-mae-1.webp");
+        expect(thumbPath("koko/joli-2.webp")).toBe("thumbs/koko/joli-2.webp");
+    });
 });
 
 describe("uploading", () => {
@@ -109,6 +114,33 @@ describe("uploading", () => {
         expect(url).toMatch(/^https:\/\/.*\/monkey-photos\/goliath\/nova-\d+\.webp$/);
     });
 
+    test("also saves a small WebP thumbnail under thumbs/, with the same name", async () => {
+        const upload = fakeStorage({ error: null });
+        const thumb = new Blob(["small"], { type: "image/webp" });
+        globalThis.createImageBitmap = vi.fn(async () => ({ close() {} }));
+        vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage() {} });
+        vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((done) => done(thumb));
+        try {
+            await realUploadPhoto(new Blob(["x"], { type: "image/jpeg" }), { troop: "Koko", name: "Joli" });
+        } finally {
+            delete globalThis.createImageBitmap;
+        }
+        const [photoPathUsed] = upload.mock.calls[0];
+        const [path, blob, options] = upload.mock.calls[1];
+        expect(path).toBe(`thumbs/${photoPathUsed.replace(/\.jpg$/, ".webp")}`);
+        expect(blob).toBe(thumb);
+        expect(options.contentType).toBe("image/webp");
+    });
+
+    test("no thumbnail possible (e.g. an old browser): the photo still uploads", async () => {
+        vi.spyOn(console, "warn").mockImplementation(() => {});
+        const upload = fakeStorage({ error: null });
+        const url = await realUploadPhoto(new Blob(["x"], { type: "image/webp" }), { troop: "Koko", name: "Joli" });
+        expect(upload).toHaveBeenCalledTimes(1);
+        expect(url).toMatch(/\/koko\/joli-\d+\.webp$/);
+        expect(console.warn).toHaveBeenCalled();
+    });
+
     test("a JPEG (from browsers that can't make WebP) is saved as .jpg", async () => {
         const upload = fakeStorage({ error: null });
         await realUploadPhoto(new Blob(["x"], { type: "image/jpeg" }), { troop: "Koko", name: "Joli" });
@@ -133,7 +165,9 @@ describe("Upload photo in the edit form", () => {
     };
     const photo = (name) => new File(["x"], name, { type: "image/jpeg" });
     const cropScreen = () => screen.queryByRole("dialog", { name: "Crop photo" });
-    const photoLinks = () => screen.queryAllByLabelText(/^Photo link \d/).map((input) => input.value);
+    // The photos listed in the form, in order (from their previews)
+    const photoLinks = () =>
+        screen.queryAllByRole("img", { name: /^Photo \d/ }).map((img) => img.getAttribute("src"));
     const fileInput = () => screen.getByLabelText("Upload photo");
 
     function setup() {
@@ -253,7 +287,12 @@ describe("tidying up photos in storage", () => {
         vi.spyOn(supabase.storage, "from").mockReturnValue({ remove });
         await realDeletePhotos([`${OURS}goliath/a.webp`, IMGBB, PLACEHOLDER, `${OURS}goliath/a.webp`, `${OURS}koko/b.webp`]);
         expect(supabase.storage.from).toHaveBeenCalledWith("monkey-photos");
-        expect(remove).toHaveBeenCalledWith(["goliath/a.webp", "koko/b.webp"]);
+        expect(remove).toHaveBeenCalledWith([
+            "goliath/a.webp",
+            "koko/b.webp",
+            "thumbs/goliath/a.webp",
+            "thumbs/koko/b.webp",
+        ]);
     });
 
     test("nothing of ours to delete: storage isn't contacted", async () => {
@@ -286,7 +325,9 @@ describe("tidying up photos in storage", () => {
             uploadPhoto.mockResolvedValueOnce(url);
             await user.upload(screen.getByLabelText("Upload photo"), new File(["x"], "p.jpg", { type: "image/jpeg" }));
             await user.click(within(screen.getByRole("dialog", { name: "Crop photo" })).getByRole("button", { name: "Use photo" }));
-            await waitFor(() => expect(screen.queryAllByLabelText(/^Photo link/).map((i) => i.value)).toContain(url));
+            await waitFor(() =>
+                expect(screen.queryAllByRole("img", { name: /^Photo \d/ }).map((i) => i.getAttribute("src"))).toContain(url)
+            );
         }
 
         test("saving deletes photos that were removed (and keeps the rest)", async () => {
@@ -349,12 +390,10 @@ describe("photo limit in the edit form", () => {
         const { user } = setup(withPhotos(5));
         expect(screen.getByText(/5 photos is the most a monkey can have/)).toBeInTheDocument();
         expect(screen.getByLabelText("Upload photo")).toBeDisabled();
-        expect(screen.getByRole("button", { name: /Add photo link/ })).toBeDisabled();
 
         await deletePhoto(user, 1);
         expect(screen.queryByText(/5 photos is the most/)).toBeNull();
         expect(screen.getByLabelText("Upload photo")).not.toBeDisabled();
-        expect(screen.getByRole("button", { name: /Add photo link/ })).not.toBeDisabled();
     });
 
     test("choosing more than fit: only the ones that fit go to the crop screen", async () => {

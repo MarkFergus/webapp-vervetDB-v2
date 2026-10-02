@@ -103,6 +103,8 @@ const form = () => screen.getByRole("dialog", { name: /^(Edit|Add)/ });
 const field = (label) => within(form()).getByLabelText(label, { exact: false });
 
 async function openEditFor(user, name) {
+    // Search first, in case the monkey isn't on the first page of cards
+    await user.type(await screen.findByLabelText("Search by name or chip number"), name);
     await user.click(await screen.findByRole("button", { name: new RegExp(`^${name},`) }));
     await user.click(await screen.findByRole("button", { name: "Edit" }));
 }
@@ -204,27 +206,33 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     expect(document.querySelector(".ShowPage-monkeys")).toHaveTextContent("Brand New");
 });
 
-test("photo links: add, preview and remove", async () => {
-    const { user } = setup();
-    await openEditFor(user, "Aroha");
-    const photoBox = (n) => within(form()).getByLabelText(`Photo link ${n}`);
-    expect(photoBox(1)).toHaveValue("https://i.ibb.co/smzxJ28/aroha-james-oct2023-min.webp");
+// The photos listed in the form, in order (from their previews)
+const formPhotos = () =>
+    within(form()).queryAllByRole("img", { name: /^Photo \d/ }).map((img) => img.getAttribute("src"));
+const DARBY_1 = "https://i.ibb.co/gyWCTvJ/darby-james-may2024-2-min.webp";
+const DARBY_2 = "https://i.ibb.co/TcByhLx/darby-james-may2024-min.webp";
 
-    await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
-    await user.type(photoBox(2), "https://i.ibb.co/new/aroha-2026.webp");
+test("photos: previews only (no link boxes), and ⋮ → Delete photo removes one", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Darby");
+    expect(formPhotos()).toEqual([DARBY_1, DARBY_2]);
+    expect(within(form()).getByText("Primary photo")).toBeInTheDocument();
+    expect(within(form()).queryByRole("textbox", { name: /Photo link/ })).toBeNull();
+    expect(within(form()).queryByRole("button", { name: /Add photo link/ })).toBeNull();
+
     await user.click(within(form()).getByRole("button", { name: /^Photo 1 options/ }));
     await user.click(within(form()).getByRole("menuitem", { name: "Delete photo" }));
+    expect(formPhotos()).toEqual([DARBY_2]);
     await user.click(within(form()).getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(saved.updates).toHaveLength(1));
-    expect(saved.updates[0].row.photos).toEqual(["https://i.ibb.co/new/aroha-2026.webp"]);
+    expect(saved.updates[0].row.photos).toEqual([DARBY_2]);
 });
 
 test("⋮ → Make primary photo moves it first (card and Profile Book photo)", async () => {
     const { user } = setup();
-    await openEditFor(user, "Aroha");
+    await openEditFor(user, "Darby");
     const options = (n) => within(form()).getByRole("button", { name: new RegExp(`^Photo ${n} options`) });
-    const original = screen.getByLabelText("Photo link 1").value;
     expect(options(1)).toHaveAccessibleName("Photo 1 options (primary photo)");
 
     // The primary photo's menu has only Delete
@@ -232,32 +240,22 @@ test("⋮ → Make primary photo moves it first (card and Profile Book photo)", 
     expect(within(form()).getAllByRole("menuitem").map((m) => m.textContent)).toEqual(["Delete photo"]);
     await user.keyboard("{Escape}");
 
-    // A new, still-blank link can't be made primary yet
-    await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
-    await user.click(options(2));
-    expect(within(form()).getByRole("menuitem", { name: "Make primary photo" })).toBeDisabled();
-    await user.keyboard("{Escape}");
-    await user.type(screen.getByLabelText("Photo link 2"), "https://i.ibb.co/new/aroha-best.webp");
-
     await user.click(options(2));
     const makePrimary = within(form()).getByRole("menuitem", { name: "Make primary photo" });
     expect(makePrimary).toHaveFocus(); // first item, ready for the keyboard
     await user.click(makePrimary);
     expect(within(form()).queryByRole("menu")).toBeNull();
-    expect(screen.getByLabelText("Photo link 1")).toHaveValue("https://i.ibb.co/new/aroha-best.webp");
-    expect(screen.getByLabelText("Photo link 2")).toHaveValue(original);
+    expect(formPhotos()).toEqual([DARBY_2, DARBY_1]);
     expect(options(1)).toHaveAccessibleName("Photo 1 options (primary photo)");
 
     await user.click(within(form()).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(saved.updates).toHaveLength(1));
-    expect(saved.updates[0].row.photos).toEqual(["https://i.ibb.co/new/aroha-best.webp", original]);
+    expect(saved.updates[0].row.photos).toEqual([DARBY_2, DARBY_1]);
 });
 
 test("the photo menu: arrow keys move, Escape closes just the menu, a click outside closes it", async () => {
     const { user } = setup();
-    await openEditFor(user, "Aroha");
-    await user.click(within(form()).getByRole("button", { name: /Add photo link/ }));
-    await user.type(screen.getByLabelText("Photo link 2"), "https://i.ibb.co/new/aroha-best.webp");
+    await openEditFor(user, "Darby");
     const options2 = within(form()).getByRole("button", { name: /^Photo 2 options/ });
 
     await user.click(options2);

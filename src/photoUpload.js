@@ -1,4 +1,7 @@
 import { supabase, SUPABASE_URL } from "./supabase";
+import { photoPath, thumbPath, THUMB_WIDTH, THUMB_HEIGHT, THUMB_QUALITY } from "./photoPaths";
+
+export { slug, photoPath, thumbPath } from "./photoPaths";
 
 // Uploading monkey photos to Supabase Storage (the "monkey-photos" bucket,
 // set up by supabase/storage.sql). Each photo is cropped to the site's
@@ -12,22 +15,6 @@ export const PHOTO_ASPECT = 5 / 4;
 export const PHOTO_WIDTH = 960;
 export const PHOTO_HEIGHT = 768;
 const QUALITY = 0.85;
-
-// "Maggie Mae" → "maggie-mae", "D&D" → "d-d"
-export function slug(text) {
-    const s = text
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-    return s || "monkey";
-}
-
-// Where a photo is stored, e.g. "goliath/maggie-mae-1759240000000.webp"
-export function photoPath(troop, name, extension, time = Date.now()) {
-    return `${slug(troop || "unsorted")}/${slug(name)}-${time}.${extension}`;
-}
 
 function loadImage(src) {
     return new Promise((resolve, reject) => {
@@ -71,11 +58,12 @@ export function storedPhotoPath(url) {
     return url.startsWith(OUR_PHOTOS) ? decodeURIComponent(url.slice(OUR_PHOTOS.length)) : null;
 }
 
-// Deletes photos from storage. Only ones uploaded here; anything else (ImgBB
-// links, the placeholder) is ignored. A tidy-up, so problems are only
-// logged: they never stop a save.
+// Deletes photos (and their thumbnails) from storage. Only ones uploaded
+// here; anything else (ImgBB links, the placeholder) is ignored. A tidy-up,
+// so problems are only logged: they never stop a save.
 export async function deletePhotos(urls) {
-    const paths = [...new Set(urls.map(storedPhotoPath).filter(Boolean))];
+    const photos = [...new Set(urls.map(storedPhotoPath).filter(Boolean))];
+    const paths = [...photos, ...photos.map(thumbPath)];
     if (!paths.length) return;
     const { error } = await supabase.storage.from(BUCKET).remove(paths);
     if (error) console.error("Couldn't delete old photos from storage:", error);
@@ -101,5 +89,32 @@ export async function uploadPhoto(blob, { troop, name }) {
                 : "Couldn't upload that photo. Please check your connection and try again."
         );
     }
+    // The thumbnail is a nice-to-have: without one the site uses the full photo
+    try {
+        const thumb = await makeThumbnail(blob);
+        const { error: thumbError } = await supabase.storage.from(BUCKET).upload(thumbPath(path), thumb, {
+            contentType: "image/webp",
+            cacheControl: "31536000",
+            upsert: true,
+        });
+        if (thumbError) throw thumbError;
+    } catch (thumbProblem) {
+        console.warn("Couldn't save a thumbnail for", path, thumbProblem);
+    }
     return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+// A small WebP copy of a prepared photo, for the cards and for offline use
+export async function makeThumbnail(blob) {
+    const bitmap = await createImageBitmap(blob);
+    const canvas = document.createElement("canvas");
+    canvas.width = THUMB_WIDTH;
+    canvas.height = THUMB_HEIGHT;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, THUMB_WIDTH, THUMB_HEIGHT);
+    bitmap.close?.();
+    const thumb = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", THUMB_QUALITY));
+    if (!thumb || thumb.type !== "image/webp") throw new Error("This browser can't make WebP thumbnails");
+    return thumb;
 }
