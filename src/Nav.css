@@ -19,11 +19,13 @@
     outline-offset: 4px;
 }
 
-/* The logo: about 70% of the search bar's height, like YouTube's */
+/* The logo: about 70% of the search bar's height, like YouTube's. Neon
+   blue, like the app icon; the "vervetDB" text beside it stays as it is. */
 .Nav-icon {
     display: flex;
     flex-shrink: 0;
     align-items: center;
+    color: #25c4f8;
 }
 
 .Nav-icon svg {
