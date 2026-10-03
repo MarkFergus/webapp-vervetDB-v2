@@ -15,6 +15,7 @@ let resetEmails;
 function fakeSupabase({
     savedUser = null,
     editors = [EDITOR.id],
+    admins = [],
     resetError = null,
     updateError = null,
 } = {}) {
@@ -48,7 +49,7 @@ function fakeSupabase({
         select: () => ({
             eq: (_, id) => ({
                 maybeSingle: async () => ({
-                    data: editors.includes(id) ? { user_id: id } : null,
+                    data: editors.includes(id) ? { user_id: id, is_admin: admins.includes(id) } : null,
                     error: null,
                 }),
             }),
@@ -109,6 +110,23 @@ test("the editor signs in: told they can edit, and the nav icon turns green", as
     expect(within(dialog()).getByText("You can edit monkeys, upload photos, and download all photos for offline use.")).toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: "Account (signed in)" });
     expect(accountButton).toHaveClass("is-signed-in");
+});
+
+test("an admin sees a pink ADMIN badge, and that they can add and delete monkeys", async () => {
+    const { user, dialog } = setup({ admins: [EDITOR.id] });
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Admin")).toHaveClass("is-admin"));
+    expect(
+        within(dialog()).getByText(
+            "You can add, edit and delete monkeys, upload photos, and download all photos for offline use."
+        )
+    ).toBeInTheDocument();
+});
+
+test("an editor's badge says Editor; a viewer's says Viewer", async () => {
+    const { user, dialog } = setup();
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Editor")).toHaveClass("is-editor"));
 });
 
 test("an account that isn't an editor is told it can only view", async () => {

@@ -142,6 +142,12 @@
     background-color: rgba(71, 176, 40, 0.15);
 }
 
+/* Admins: the site's neon pink */
+.AccountModal-badge.is-admin {
+    color: #fe39a4;
+    background-color: rgba(254, 57, 164, 0.15);
+}
+
 .AccountModal-badge svg {
     width: 14px;
     height: 14px;

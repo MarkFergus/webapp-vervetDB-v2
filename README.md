@@ -180,6 +180,7 @@ git push                         # publishes the site
 | `supabase/new-editors.sql` | Makes every account added in Supabase an editor |
 | `supabase/admins.sql` | Admins: only they can delete monkeys and troops |
 | `supabase/admins-add-monkeys.sql` | Only admins can add monkeys |
+| `supabase/make-admin.sql` | Make someone an admin (add and delete monkeys) |
 | `supabase/set-password.sql` | Set someone's password directly (when reset emails don't work) |
 | `.github/workflows/deploy.yml` | Tests, builds and publishes the site on every push to `master` |
 | `.github/workflows/keep-awake.yml` | Pings the database every 3 days so the free Supabase project isn't paused |

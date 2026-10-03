@@ -4,6 +4,7 @@ import {
     IconKey,
     IconLogout,
     IconPencil,
+    IconShieldCheck,
     IconSquareRoundedX,
     IconUser,
 } from "@tabler/icons-react";
@@ -15,6 +16,13 @@ import "./AccountModal.css";
 // Who to ask for an account
 const ACCESS_EMAIL = "mark@vervet.za.org";
 
+// What each kind of account can do, shown under its badge when signed in
+const ROLE_TEXT = {
+    admin: "You can add, edit and delete monkeys, upload photos, and download all photos for offline use.",
+    editor: "You can edit monkeys, upload photos, and download all photos for offline use.",
+    viewer: "This account can download all photos for offline use, but can't edit monkeys.",
+};
+
 // The account pop-up. Only accounts created in Supabase exist; there's no
 // public sign-up. What it shows:
 //   signed out:  sign in (email + password), or "Forgot password?"
@@ -25,6 +33,7 @@ function AccountModal({ isOpen, onClose }) {
     const {
         user,
         isEditor,
+        isAdmin,
         passwordSetup,
         signIn,
         signOut,
@@ -32,6 +41,7 @@ function AccountModal({ isOpen, onClose }) {
         updatePassword,
         clearPasswordSetup,
     } = useAuth();
+    const role = isAdmin ? "admin" : isEditor ? "editor" : "viewer";
     const [view, setView] = useState("main");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -215,19 +225,19 @@ function AccountModal({ isOpen, onClose }) {
                         Signed in
                     </h1>
                     <p className="AccountModal-email">{user.email}</p>
-                    <span className={isEditor ? "AccountModal-badge is-editor" : "AccountModal-badge"}>
-                        {isEditor ? (
+                    {/* What this account can do: Admin (pink), Editor (green)
+                        or Viewer (grey) */}
+                    <span className={`AccountModal-badge is-${role}`}>
+                        {role === "admin" ? (
+                            <IconShieldCheck stroke={2} aria-hidden="true" />
+                        ) : role === "editor" ? (
                             <IconPencil stroke={2} aria-hidden="true" />
                         ) : (
                             <IconEye stroke={2} aria-hidden="true" />
                         )}
-                        {isEditor ? "Editor" : "Viewer"}
+                        {role === "admin" ? "Admin" : role === "editor" ? "Editor" : "Viewer"}
                     </span>
-                    <p className="AccountModal-role">
-                        {isEditor
-                            ? "You can edit monkeys, upload photos, and download all photos for offline use."
-                            : "This account can download all photos for offline use, but can't edit monkeys."}
-                    </p>
+                    <p className="AccountModal-role">{ROLE_TEXT[role]}</p>
                 </div>
                 {notice && (
                     <p className="AccountModal-notice" role="status">
