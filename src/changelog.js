@@ -25,7 +25,7 @@ export const CHANGELOG = [
             "Fixed bug with Firefox app not downloading images, now offers a working option for Firefox users",
             "Improved Sort button, now tidier and shows the current order in words",
             "Improved About screen, now lists the changes in each version",
-            "Improved saved monkey pictures, now just the profile card",
+            "Improved saved monkey card design",
         ],
     },
     {

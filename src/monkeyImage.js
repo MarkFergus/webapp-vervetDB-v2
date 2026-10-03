@@ -2,17 +2,21 @@ import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } f
 import { ageText } from "./ages";
 
 // A monkey's profile as a picture: name, photo, details, bio and features,
-// on a card with rounded corners (see-through outside them). 1000
-// wide and at least 1270 tall (about the portrait shape phones show best),
-// growing taller for a long bio.
+// with "© Vervet Monkey Foundation" faintly at the bottom, on a card with
+// rounded corners (see-through outside them). 1000 wide and at least 1270
+// tall (about the portrait shape phones show best), growing taller for a
+// long bio.
 
 const WIDTH = 1080;
 const MIN_HEIGHT = 1350;
 const BLUE = "#25c4f8";
-const MARGIN = 80; // picture edge to content, before trimming the frame
 // The card used to sit on a dark background with this much around it; the
 // picture is now just the card, so everything is drawn this much up and left
 const FRAME = 40;
+const SIDE_PADDING = 20; // inside the card: its left / right edge to the content
+const MARGIN = FRAME + SIDE_PADDING; // picture edge to content, before trimming
+const FOOTER = "© Vervet Monkey Foundation";
+const FOOTER_SPACE = 70; // kept clear above the footer, so text never runs into it
 const LINE = 42; // bio / features line height
 const BIO_LINES = 6;
 const FEATURE_LINES = 5;
@@ -118,8 +122,8 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
 
     // Work out the layout first, so the picture can be as tall as it needs
     const measure = document.createElement("canvas").getContext("2d");
-    const nameY = 132; // the name, top left, above the photo
-    const photoTop = nameY + 36;
+    const nameY = 120; // the name, top left, above the photo
+    const photoTop = nameY + 26;
     const pillsTop = photoTop + photoHeight + 30;
     const { pills, height: pillsHeight } = layOutPills(measure, monkey, pillsTop);
     measure.font = `400 32px ${TEXT_FONT}`;
@@ -128,7 +132,7 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
     const bioTop = pillsTop + pillsHeight + 58;
     const featuresTop = bioTop + paragraphHeight(bio);
     const end = features.length ? featuresTop + paragraphHeight(features) : featuresTop;
-    const height = Math.max(MIN_HEIGHT, end + 40);
+    const height = Math.max(MIN_HEIGHT, end + FOOTER_SPACE + 40);
 
     const canvas = document.createElement("canvas");
     canvas.width = WIDTH - FRAME * 2;
@@ -169,6 +173,12 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
     if (features.length) {
         drawParagraph(ctx, "Distinctive features", features, { x: MARGIN, y: featuresTop });
     }
+
+    // Footer: faint, centred along the bottom of the card
+    ctx.textAlign = "center";
+    ctx.font = `600 24px ${TEXT_FONT}`;
+    ctx.fillStyle = "#6b6862";
+    ctx.fillText(FOOTER, WIDTH / 2, height - FRAME - 36);
 
     return canvasToPng(canvas);
 }
