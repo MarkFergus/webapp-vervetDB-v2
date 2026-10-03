@@ -163,30 +163,65 @@ describe("Location", () => {
         expect(choice("Enclosure", "Introcage")).toBeDisabled();
     });
 
+    // Section pills: "All sections" to start with; tapping others adds them
+    const sectionPill = (name) =>
+        within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
+    const troopList = () =>
+        within(screen.getByRole("combobox", { name: "Filter by troop" }))
+            .getAllByRole("option")
+            .map((o) => o.textContent);
+    const TOP = ["Goliath", "Gismo", "D&D", "Royal"];
+    const SICKBAY = ["James", "Global"];
+
     test("a section shows its troops' monkeys, and the troop list narrows to them", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        await user.click(choice("Section", "Top"));
-        const top = ["Goliath", "Gismo", "D&D", "Royal"];
-        expectShowing(monkeysArr.filter((m) => top.includes(m.troop)).length);
-        const troopOptions = within(screen.getByRole("combobox", { name: "Filter by troop" }))
-            .getAllByRole("option")
-            .map((o) => o.textContent);
-        expect(troopOptions).toEqual(["All Troops", ...top]);
+        expect(sectionPill("All sections")).toHaveAttribute("aria-pressed", "true");
+        await user.click(sectionPill("Top"));
+        expect(sectionPill("All sections")).toHaveAttribute("aria-pressed", "false");
+        expectShowing(monkeysArr.filter((m) => TOP.includes(m.troop)).length);
+        expect(troopList()).toEqual(["All Troops", ...TOP]);
     });
 
-    test("changing section drops a troop that isn't in it", async () => {
+    test("several sections at once; each a chip that removes just it", async () => {
+        const { user } = setup();
+        await user.click(filtersButton());
+        await user.click(sectionPill("Top"));
+        await user.click(sectionPill("Sickbay"));
+        expectShowing(monkeysArr.filter((m) => [...TOP, ...SICKBAY].includes(m.troop)).length);
+        expect(troopList().slice(1).sort()).toEqual([...TOP, ...SICKBAY].sort()); // in the usual troop order
+        const chips = () => [...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent);
+        expect(chips()).toEqual(["Top section", "Sickbay section"]);
+
+        await user.click(screen.getByRole("button", { name: "Remove filter: Top section" }));
+        expect(chips()).toEqual(["Sickbay section"]);
+        await user.click(filtersButton()); // tapping the chip closed the panel
+        expect(sectionPill("Top")).toHaveAttribute("aria-pressed", "false");
+
+        // "All sections" turns them all off again
+        await user.click(sectionPill("All sections"));
+        expect(chips()).toEqual([]);
+        expectShowing(monkeysArr.length);
+    });
+
+    test("changing sections drops a troop that isn't in them", async () => {
         const { user } = setup();
         await user.click(filtersButton());
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Skrow");
-        await user.click(choice("Section", "Bottom"));
+        await user.click(sectionPill("Bottom"));
         expect(screen.getByRole("combobox", { name: "Filter by troop" })).toHaveValue("Skrow"); // Skrow is Bottom
-        await user.click(choice("Section", "Sickbay"));
+        await user.click(sectionPill("Bottom")); // off: back to all sections
+        await user.click(sectionPill("Sickbay"));
         expect(screen.getByRole("combobox", { name: "Filter by troop" })).toHaveValue("All Troops");
-        expectShowing(monkeysArr.filter((m) => ["James", "Global"].includes(m.troop)).length);
-        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual([
-            "Sickbay section",
-        ]);
+        expectShowing(monkeysArr.filter((m) => SICKBAY.includes(m.troop)).length);
+    });
+
+    test("the Bandits (the wild troop) are a section of their own", async () => {
+        const { user } = setup();
+        await user.click(filtersButton());
+        await user.click(sectionPill("Bandits"));
+        expect(troopList()).toEqual(["All Troops"]); // none in the built-in copy of the data
+        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual(["Bandits"]);
     });
 
     test("every troop is in a section", () => {

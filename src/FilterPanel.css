@@ -135,6 +135,43 @@
     outline: none;
 }
 
+/* Section: pills like the game's troop picker; "All sections" dashed,
+   the chosen ones blue. Three to a row, all the same width */
+.FilterPanel-pills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.FilterPanel-pills button {
+    padding: 5px 6px;
+    white-space: nowrap;
+    font-family: inherit;
+    font-size: 13px;
+    color: #d1cfc7;
+    background: none;
+    border: 1px solid #434343;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.FilterPanel-pills button.is-all {
+    border-style: dashed;
+}
+
+.FilterPanel-pills button:hover {
+    color: white;
+    border-color: #d1cfc7;
+}
+
+.FilterPanel-pills button[aria-pressed="true"] {
+    font-weight: 700;
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border-color: #25c4f8;
+    border-style: solid;
+}
+
 /* Age / Sex: joined buttons, the chosen one blue */
 .FilterPanel-choice {
     display: flex;

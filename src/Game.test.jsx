@@ -931,3 +931,17 @@ test("the Ultimate Challenge: its own line, Start wording, and badge while playi
     await user.click(screen.getByRole("button", { name: "Start the Ultimate Challenge" }));
     expect(document.querySelector(".Game-mode")).toHaveTextContent("🔥 Ultimate Challenge");
 });
+
+// The Bandits (the sanctuary's wild troop) sit out of the game for now
+test("the Bandits aren't in the game: no troop to pick, never a photo", () => {
+    const bandit = {
+        ...monkeysArr.find((m) => m.img.some((url) => !url.includes("blank-image"))),
+        id: 9999,
+        name: "Wild One",
+        troop: "Bandits",
+    };
+    const troops = ["All Troops", ...new Set(monkeysArr.map((m) => m.troop)), "Bandits"];
+    render(<Game monkeys={[...monkeysArr, bandit]} troops={troops} />);
+    expect(screen.queryByRole("button", { name: /^Bandits/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /^Goliath/ })).toBeInTheDocument();
+});

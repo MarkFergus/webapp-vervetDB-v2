@@ -18,6 +18,14 @@ export const CHANGE_TYPES = ["New", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.1.0",
+        date: "2026-10-03",
+        changes: [
+            "New list view, with small photos and details in rows",
+            "New Bandits troop, with its own section in Filters",
+        ],
+    },
+    {
         version: "1.0.1",
         date: "2026-10-02",
         changes: [

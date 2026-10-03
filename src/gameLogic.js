@@ -168,6 +168,10 @@ export function checkTypedAnswer(typed, name) {
 
 const isRealPhoto = (url) => !url.includes("blank-image");
 
+// Troops left out of the game for now: the Bandits are the sanctuary's
+// wild troop (to be looked at in a 1.1.x update)
+export const NOT_IN_GAME = ["Bandits"];
+
 // Troops of samango monkeys, a different species from the vervets. In Hard
 // (and Expert), a samango's wrong names are other samangos and a vervet's
 // are other vervets, so the species doesn't give the answer away.

@@ -17,7 +17,6 @@ export const LOCATIONS = [
     { id: "troop", label: "Troop" },
     { id: "introcage", label: "Introcage", disabled: true, title: "Coming soon" },
 ];
-export const SECTION_CHOICES = [{ id: "all", label: "All" }, ...SECTIONS];
 export const SEXES = [
     { id: "all", label: "All" },
     { id: "female", label: "Female" },
@@ -78,6 +77,33 @@ function MultiChoice({ label, options, value, onChange }) {
                     <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
                         {o.label}
                         {o.hint && <small aria-hidden="true">{o.hint}</small>}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Pills where several can be on at once, like the game's troop picker:
+// "All sections" (dashed) is on when none are; tapping another adds or
+// removes it.
+//   value: the ids that are on ([] = all)
+function Pills({ label, allLabel, options, value, onChange }) {
+    const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
+    const toggle = (id) =>
+        onChange(value.includes(id) ? value.filter((v) => v !== id) : options.map((o) => o.id).filter((o) => o === id || value.includes(o)));
+    return (
+        <div className="FilterPanel-section">
+            <span className="FilterPanel-label" id={labelId}>
+                {label}
+            </span>
+            <div className="FilterPanel-pills" role="group" aria-labelledby={labelId}>
+                <button type="button" className="is-all" aria-pressed={value.length === 0} onClick={() => onChange([])}>
+                    {allLabel}
+                </button>
+                {options.map((o) => (
+                    <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
+                        {o.label}
                     </button>
                 ))}
             </div>
@@ -149,9 +175,10 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                         value={filters.location}
                         onChange={(v) => onChange("location", v)}
                     />
-                    <Choice
+                    <Pills
                         label="Section"
-                        options={SECTION_CHOICES}
+                        allLabel="All sections"
+                        options={SECTIONS}
                         value={filters.section}
                         onChange={(v) => onChange("section", v)}
                     />
@@ -163,7 +190,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                             value={filters.troop}
                             onChange={(e) => onChange("troop", e.target.value)}
                         >
-                            {/* Only the troops in the chosen section */}
+                            {/* Only the troops in the chosen sections */}
                             {troops
                                 .filter((t) => t === "All Troops" || inSection(t, filters.section))
                                 .map((t) => (

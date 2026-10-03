@@ -57,7 +57,7 @@ function inAgeGroups(monkey, groups) {
 
 const NO_FILTERS = {
     location: "troop",
-    section: "all",
+    section: [], // section ids picked ([] = all sections)
     troop: "All Troops",
     year: "All Years",
     age: [], // age categories picked ([] = all)
@@ -214,7 +214,7 @@ function ShowPage({
     function setFilter(field, value) {
         setFilters((f) => {
             const next = { ...f, [field]: value };
-            // A troop outside the newly chosen section: back to all troops
+            // A troop outside the newly chosen sections: back to all troops
             if (field === "section" && !inSection(next.troop, value)) next.troop = NO_FILTERS.troop;
             // A birth year or an age category, not both (a year already
             // decides the category): choosing one clears the other
@@ -409,10 +409,12 @@ function ShowPage({
     }
 
     const activeFilters = [
-        filters.section !== "all" && {
+        // One chip per section picked
+        ...SECTIONS.filter((s) => filters.section.includes(s.id)).map((s) => ({
             field: "section",
-            label: `${SECTIONS.find((x) => x.id === filters.section).label} section`,
-        },
+            id: s.id,
+            label: s.chip,
+        })),
         filters.troop !== NO_FILTERS.troop && { field: "troop", label: filters.troop },
         filters.year !== NO_FILTERS.year && { field: "year", label: `Born ${filters.year}` },
         // One chip per age category picked
@@ -554,8 +556,9 @@ function ShowPage({
                             type="button"
                             className="ShowPage-chip"
                             onClick={() =>
-                                f.field === "age"
-                                    ? setFilter("age", filters.age.filter((a) => a !== f.id))
+                                // Age categories and sections come off one at a time
+                                f.field === "age" || f.field === "section"
+                                    ? setFilter(f.field, filters[f.field].filter((x) => x !== f.id))
                                     : setFilter(f.field, NO_FILTERS[f.field])
                             }
                             aria-label={`Remove filter: ${f.label}`}
