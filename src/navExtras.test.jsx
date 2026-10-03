@@ -15,7 +15,7 @@ test("the logo goes home: search and filters cleared, back to the top", async ()
     render(<ShowPage />);
     await user.type(search(), "ab");
     await user.click(screen.getByRole("button", { name: "Filters" }));
-    await user.click(within(screen.getByRole("radiogroup", { name: "Sex" })).getByRole("radio", { name: "Female" }));
+    await user.click(within(screen.getByRole("group", { name: "Sex" })).getByRole("button", { name: "Male" })); // females only
     await user.keyboard("{Escape}");
 
     await user.click(screen.getByRole("link", { name: "vervetDB home" }));

@@ -499,12 +499,17 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
     );
 
     if (stage === "setup" || !round) {
-        // The hardest game possible: the screen turns fiery orange
-        const ultimate = isUltimate(draft);
-        const draftLevel = difficultyById(draft.difficulty);
-        const draftPhotos = roundLength(monkeys, draft);
-        const draftBest = loadBest(draft);
         const available = playableMonkeys(monkeys, draft.troops).length;
+        // Fewer than 10 photos in the chosen troops: "10 photos" is greyed
+        // out and "All N photos" is used instead (picking a bigger troop
+        // brings 10 photos back)
+        const tooFewForTen = available > 0 && available < QUESTIONS_PER_ROUND;
+        const chosen = tooFewForTen && draft.length === "ten" ? { ...draft, length: "all" } : draft;
+        // The hardest game possible: the screen turns fiery orange
+        const ultimate = isUltimate(chosen);
+        const draftLevel = difficultyById(chosen.difficulty);
+        const draftPhotos = roundLength(monkeys, chosen);
+        const draftBest = loadBest(chosen);
         return (
             <div
                 className="Game"
@@ -588,19 +593,23 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
                             {ROUND_LENGTHS.map((l) => {
                                 // "All 44 photos": how many the chosen troops have
                                 const label = l.id === "all" ? `All ${available} photos` : l.label;
+                                const greyedOut = l.id === "ten" && tooFewForTen;
                                 return (
                                     <button
                                         key={l.id}
                                         type="button"
                                         role="radio"
                                         className="Game-card is-round"
-                                        aria-checked={draft.length === l.id}
+                                        aria-checked={chosen.length === l.id}
+                                        disabled={greyedOut}
                                         aria-label={label}
                                         aria-describedby={`Game-length-${l.id}`}
                                         onClick={() => setDraft({ ...draft, length: l.id })}
                                     >
                                         <b>{label}</b>
-                                        <span id={`Game-length-${l.id}`}>{l.description}</span>
+                                        <span id={`Game-length-${l.id}`}>
+                                            {greyedOut ? `Only ${available} in these troops` : l.description}
+                                        </span>
                                     </button>
                                 );
                             })}
@@ -615,7 +624,7 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
                         className="Game-setup-start"
                         data-level={draftLevel.id}
                         ref={setupStartRef}
-                        onClick={() => startRound(draft)}
+                        onClick={() => startRound(chosen)}
                         disabled={available === 0}
                     >
                         {ultimate ? "Start the Ultimate Challenge" : "Start"}
@@ -734,6 +743,8 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
                         <button type="button" className="Game-next" onClick={changeSetup}>
                             Change settings
                         </button>
+                        {/* Share and Save image on a line of their own */}
+                        <span className="Game-end-break" aria-hidden="true" />
                         <button
                             type="button"
                             className="Game-share"

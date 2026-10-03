@@ -7,8 +7,9 @@ import { CHANGELOG, releaseDate } from "./changelog";
 import "./AboutModal.css";
 
 // The About pop-up: which version of vervetDB this is, and a running
-// changelog: each version's changes under its own heading (changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
-// phones, or the line at the bottom of the main page.
+// changelog: each version's changes under its own heading (changelog.js).
+// Opened from the ⓘ in the top bar, the ☰ menu on phones, or the line at
+// the bottom of the main page.
 function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
     useDialog(isOpen, closeRef, { onClose });

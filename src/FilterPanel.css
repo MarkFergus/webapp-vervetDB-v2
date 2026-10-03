@@ -155,8 +155,25 @@
     cursor: pointer;
 }
 
+.FilterPanel-pills.is-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The age range, after the name: "Babies <1" */
+.FilterPanel-pills button small {
+    margin-left: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.75;
+}
+
 .FilterPanel-pills button.is-all {
     border-style: dashed;
+}
+
+/* The only Sex pill still on: tapping it does nothing */
+.FilterPanel-pills button[aria-disabled="true"] {
+    cursor: default;
 }
 
 .FilterPanel-pills button:hover {

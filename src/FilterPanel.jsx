@@ -57,33 +57,6 @@ function Choice({ label, options, value, onChange, hideLabel = false }) {
     );
 }
 
-// Joined buttons where several can be on at once (e.g. Adults + Juveniles).
-// "All" is on when none are, and turns them all off.
-//   value: the ids that are on ([] = all)
-function MultiChoice({ label, options, value, onChange }) {
-    const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
-    const toggle = (id) =>
-        onChange(value.includes(id) ? value.filter((v) => v !== id) : options.map((o) => o.id).filter((o) => o === id || value.includes(o)));
-    return (
-        <div className="FilterPanel-section">
-            <span className="FilterPanel-label" id={labelId}>
-                {label}
-            </span>
-            <div className="FilterPanel-choice" role="group" aria-labelledby={labelId}>
-                <button type="button" aria-pressed={value.length === 0} onClick={() => onChange([])}>
-                    All
-                </button>
-                {options.map((o) => (
-                    <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
-                        {o.label}
-                        {o.hint && <small aria-hidden="true">{o.hint}</small>}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-}
-
 // Pills where several can be on at once, like the game's troop picker:
 // "All sections" (dashed) is on when none are; tapping another adds or
 // removes it.
@@ -104,6 +77,40 @@ function Pills({ label, allLabel, options, value, onChange }) {
                 {options.map((o) => (
                     <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
                         {o.label}
+                        {o.hint && <small aria-hidden="true">{o.hint}</small>}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Sex: Female and Male pills, both on to start with (everyone, including
+// monkeys whose sex isn't known). Tapping one off shows only the other; the
+// last one on can't be turned off (that would show nobody).
+//   value: "all", "female" or "male" (the one still on)
+function SexPills({ value, onChange }) {
+    const on = (id) => value === "all" || value === id;
+    function tap(id) {
+        if (value === "all") onChange(id === "female" ? "male" : "female"); // this one off
+        else if (value !== id) onChange("all"); // this one back on
+    }
+    return (
+        <div className="FilterPanel-section">
+            <span className="visually-hidden" id="FilterPanel-sex">
+                Sex
+            </span>
+            <div className="FilterPanel-pills is-two" role="group" aria-labelledby="FilterPanel-sex">
+                {SEXES.filter((s) => s.id !== "all").map((s) => (
+                    <button
+                        key={s.id}
+                        type="button"
+                        aria-pressed={on(s.id)}
+                        // The only one on: tapping it does nothing
+                        aria-disabled={value === s.id}
+                        onClick={() => tap(s.id)}
+                    >
+                        {s.label}
                     </button>
                 ))}
             </div>
@@ -233,8 +240,9 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                             ))}
                         </select>
                     </label>
-                    <MultiChoice
+                    <Pills
                         label="Category"
+                        allLabel="All ages"
                         options={AGE_GROUPS}
                         value={filters.age}
                         onChange={(v) => onChange("age", v)}
@@ -243,13 +251,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
 
                 <div className="FilterPanel-group">
                     <span className="FilterPanel-groupTitle">Sex</span>
-                    <Choice
-                        label="Sex"
-                        hideLabel
-                        options={SEXES}
-                        value={filters.sex}
-                        onChange={(v) => onChange("sex", v)}
-                    />
+                    <SexPills value={filters.sex} onChange={(v) => onChange("sex", v)} />
                 </div>
 
                 <div className="FilterPanel-footer">

@@ -945,3 +945,19 @@ test("the Bandits aren't in the game: no troop to pick, never a photo", () => {
     expect(screen.queryByRole("button", { name: /^Bandits/ })).toBeNull();
     expect(screen.getByRole("button", { name: /^Goliath/ })).toBeInTheDocument();
 });
+
+// A troop with fewer than 10 photos: "10 photos" is greyed out
+test("fewer than 10 photos in the chosen troops: 10 photos is greyed out, All N photos used", () => {
+    render(<Game />);
+    const jalamango = monkeysArr.filter((m) => m.troop === "Jalamango" && m.img.some((u) => !u.includes("blank-image")));
+    expect(jalamango.length).toBeLessThan(10);
+    fireEvent.click(troopChip(/^Jalamango/));
+    expect(roundCard("10 photos")).toBeDisabled();
+    expect(screen.getByText(`Only ${jalamango.length} in these troops`)).toBeInTheDocument();
+    expect(roundCard("All photos")).toHaveAttribute("aria-checked", "true");
+
+    // All troops again: 10 photos is back (and still the choice)
+    fireEvent.click(troopChip("All troops"));
+    expect(roundCard("10 photos")).not.toBeDisabled();
+    expect(roundCard("10 photos")).toHaveAttribute("aria-checked", "true");
+});

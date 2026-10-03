@@ -19,6 +19,8 @@ const shownNames = () =>
 // Age categories: toggle buttons (several can be on)
 const ageButton = (name) =>
     within(screen.getByRole("group", { name: "Category" })).getByRole("button", { name: new RegExp(`^${name}`) });
+// Sex: Female and Male pills, both on to start with
+const sexPill = (name) => within(screen.getByRole("group", { name: "Sex" })).getByRole("button", { name });
 const status = () => screen.getByText(/^Showing \d+ monkeys?$/);
 const expectShowing = (n) => expect(status()).toHaveTextContent(`Showing ${n} monkey`);
 
@@ -65,7 +67,7 @@ test.each([
     await user.click(filtersButton());
     await user.click(ageButton(group));
     expect(ageButton(group)).toHaveAttribute("aria-pressed", "true");
-    expect(ageButton("All")).toHaveAttribute("aria-pressed", "false");
+    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "false");
     const expected = monkeysArr.filter((m) => fits(ageInYears(m.year))).length;
     expectShowing(expected);
     expect(within(panel()).getByRole("button", { name: /^Show / })).toHaveTextContent(
@@ -92,16 +94,42 @@ test("several age categories together, e.g. Adults + Juveniles; All turns them o
     expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "true");
     expect(ageButton("Juveniles")).toHaveAttribute("aria-pressed", "false");
 
-    await user.click(ageButton("All"));
-    expect(ageButton("All")).toHaveAttribute("aria-pressed", "true");
+    await user.click(ageButton("All ages"));
+    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
     expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "false");
     expectShowing(monkeysArr.length);
+});
+
+test("Sex: both on to start with; tap one off, back on; the last one can't go off", async () => {
+    const { user } = setup();
+    await user.click(filtersButton());
+    expect(sexPill("Female")).toHaveAttribute("aria-pressed", "true");
+    expect(sexPill("Male")).toHaveAttribute("aria-pressed", "true");
+    expectShowing(monkeysArr.length); // everyone, unknown sex included
+
+    await user.click(sexPill("Female"));
+    expect(sexPill("Female")).toHaveAttribute("aria-pressed", "false");
+    expectShowing(monkeysArr.filter((m) => m.sex === "male").length);
+
+    await user.click(sexPill("Male")); // the only one on: nothing happens
+    expect(sexPill("Male")).toHaveAttribute("aria-pressed", "true");
+    expectShowing(monkeysArr.filter((m) => m.sex === "male").length);
+
+    await user.click(sexPill("Female")); // back on: everyone again
+    expectShowing(monkeysArr.length);
+});
+
+test("Category: pills with \"All ages\" to start with", async () => {
+    const { user } = setup();
+    await user.click(filtersButton());
+    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("All ages")).toHaveClass("is-all");
 });
 
 test("Sex, and filters combine", async () => {
     const { user } = setup();
     await user.click(filtersButton());
-    await user.click(choice("Sex", "Female"));
+    await user.click(sexPill("Male")); // Male off: females only
     expectShowing(monkeysArr.filter((m) => m.sex === "female").length);
 
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
@@ -113,7 +141,7 @@ test("filters in use show as chips: remove one, or Clear all", async () => {
     await user.click(filtersButton());
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
     await user.click(ageButton("Adults"));
-    await user.click(choice("Sex", "Male"));
+    await user.click(sexPill("Female")); // Female off: males only
     await user.click(within(panel()).getByRole("button", { name: /^Show / }));
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
 
@@ -239,7 +267,7 @@ test("a birth year or an age category, not both: choosing one clears the other",
 
     await user.click(ageButton("Adults"));
     await user.selectOptions(year(), "2019");
-    expect(ageButton("All")).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
     expectShowing(monkeysArr.filter((m) => Number(m.year) === 2019).length);
 
     await user.click(ageButton("Juveniles"));
@@ -262,9 +290,10 @@ test("Clear all in the panel is greyed out until a filter is on", async () => {
     await user.click(filtersButton());
     const clear = () => within(panel()).getByRole("button", { name: "Clear all" });
     expect(clear()).toBeDisabled();
-    await user.click(choice("Sex", "Female"));
+    await user.click(sexPill("Male"));
     expect(clear()).toBeEnabled();
     await user.click(clear());
-    expect(choice("Sex", "All")).toHaveAttribute("aria-checked", "true");
+    expect(sexPill("Female")).toHaveAttribute("aria-pressed", "true");
+    expect(sexPill("Male")).toHaveAttribute("aria-pressed", "true");
     expect(clear()).toBeDisabled();
 });

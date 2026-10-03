@@ -130,12 +130,18 @@
 
 /* Computers: a proper table: photo | Name | Troop | Sex | Born | Age | Chip */
 @media (min-width: 625px) {
+    /* Centred on the page, at most 940px wide (24px from the edges on
+       narrower windows) */
     .MonkeyList {
-        margin: 8px 24px;
+        width: calc(100% - 48px);
+        max-width: 940px;
+        margin: 8px auto;
     }
 
     .MonkeyRow {
-        grid-template-columns: 56px minmax(140px, 2fr) repeat(4, minmax(80px, 1fr)) minmax(90px, 1fr);
+        /* Name a set width; Troop, Sex, Born and Age share what's left; Chip
+           a set width at the end (the table itself is at most 940px wide) */
+        grid-template-columns: 56px minmax(130px, 150px) repeat(4, minmax(80px, 1fr)) 96px;
         gap: 16px;
         padding: 6px 12px;
         color: #d1cfc7;
@@ -176,7 +182,7 @@
 /* Narrower computer windows: no room for Born (Age is enough), so it goes */
 @media (min-width: 625px) and (max-width: 899px) {
     .MonkeyRow {
-        grid-template-columns: 56px minmax(120px, 2fr) repeat(3, minmax(70px, 1fr)) minmax(80px, 1fr);
+        grid-template-columns: 56px minmax(120px, 150px) repeat(3, minmax(70px, 1fr)) 96px;
     }
 
     .MonkeyRow-born,
