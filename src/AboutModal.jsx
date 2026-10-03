@@ -1,19 +1,41 @@
-import { useRef } from "react";
-import { IconSquareRoundedX } from "@tabler/icons-react";
+import { useEffect, useRef, useState } from "react";
+import { IconChevronDown, IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
-import { CHANGELOG, releaseDate } from "./changelog";
+import { CHANGELOG, currentSeries, releaseDate } from "./changelog";
 import "./AboutModal.css";
 
 // The About pop-up: which version of vervetDB this is, and a running
 // changelog: each version's changes under its own heading (changelog.js).
+// Every version in the current series shows (e.g. all the 1.1.x); older
+// series fold away under "Earlier versions" (see currentSeries).
 // Opened from the ⓘ in the top bar, the ☰ menu on phones, or the line at
 // the bottom of the main page.
+// One version: its heading (pink) and its changes
+function Release({ entry }) {
+    return (
+        <div className="AboutModal-release">
+            <h3>Version {entry.version}</h3>
+            <ul>
+                {entry.changes.map((change) => (
+                    <li key={change}>{change}</li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
 function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
     useDialog(isOpen, closeRef, { onClose });
     const latest = CHANGELOG[0];
+    const { current, earlier } = currentSeries(CHANGELOG);
+    const [showEarlier, setShowEarlier] = useState(false);
+    // Folded away again each time About opens
+    useEffect(() => {
+        if (isOpen) setShowEarlier(false);
+    }, [isOpen]);
 
     return (
         <AnimatePresence>
@@ -55,16 +77,28 @@ function AboutModal({ isOpen, onClose }) {
                                 </p>
                                 <section className="AboutModal-changes" aria-labelledby="AboutModal-changesTitle">
                                     <h2 id="AboutModal-changesTitle">Latest changes</h2>
-                                    {CHANGELOG.map((entry) => (
-                                        <div key={entry.version} className="AboutModal-release">
-                                            <h3>Version {entry.version}</h3>
-                                            <ul>
-                                                {entry.changes.map((change) => (
-                                                    <li key={change}>{change}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                    {current.map((entry) => (
+                                        <Release key={entry.version} entry={entry} />
                                     ))}
+                                    {earlier.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="AboutModal-earlier"
+                                            aria-expanded={showEarlier}
+                                            aria-controls="AboutModal-earlierList"
+                                            onClick={() => setShowEarlier((shown) => !shown)}
+                                        >
+                                            Earlier versions
+                                            <IconChevronDown size={16} aria-hidden="true" />
+                                        </button>
+                                    )}
+                                    {showEarlier && (
+                                        <div id="AboutModal-earlierList">
+                                            {earlier.map((entry) => (
+                                                <Release key={entry.version} entry={entry} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </section>
                             </div>
                         </div>

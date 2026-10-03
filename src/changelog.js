@@ -18,6 +18,14 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.1.1",
+        date: "2026-10-03",
+        changes: [
+            "New Admin user profile created",
+            "Improved filtering options and design",
+        ],
+    },
+    {
         version: "1.1.0",
         date: "2026-10-03",
         changes: [
@@ -50,6 +58,18 @@ export const CHANGELOG = [
 ];
 
 export const APP_VERSION = CHANGELOG[0].version;
+
+// About shows every version in the current series (same major.minor as the
+// latest, e.g. 1.1.1 and 1.1.0); older ones fold away under "Earlier
+// versions". So 1.2.0 starts a fresh list, and 1.1.x moves to "Earlier".
+export function currentSeries(changelog) {
+    const series = (version) => version.split(".").slice(0, 2).join(".");
+    const latest = series(changelog[0].version);
+    return {
+        current: changelog.filter((entry) => series(entry.version) === latest),
+        earlier: changelog.filter((entry) => series(entry.version) !== latest),
+    };
+}
 
 // "2 October 2026"
 export function releaseDate(date) {

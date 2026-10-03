@@ -115,8 +115,36 @@
 }
 
 /* Each version: a pink heading, then its changes */
-.AboutModal-release + .AboutModal-release {
+.AboutModal-release + .AboutModal-release,
+#AboutModal-earlierList .AboutModal-release {
     margin-top: 14px;
+}
+
+/* "Earlier versions ⌄": a quiet text button that opens the older ones */
+.AboutModal-earlier {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 14px;
+    padding: 4px 0;
+    font-family: inherit;
+    font-size: 14px;
+    color: #8a877e;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.AboutModal-earlier:hover {
+    color: #d1cfc7;
+}
+
+.AboutModal-earlier svg {
+    transition: transform 0.15s;
+}
+
+.AboutModal-earlier[aria-expanded="true"] svg {
+    transform: rotate(180deg);
 }
 
 .AboutModal-release h3 {

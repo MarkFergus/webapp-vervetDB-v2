@@ -219,7 +219,8 @@ function ShowPage({
             // A birth year or an age category, not both (a year already
             // decides the category): choosing one clears the other
             if (field === "year" && value !== NO_FILTERS.year) next.age = NO_FILTERS.age;
-            if (field === "age" && value.length > 0) next.year = NO_FILTERS.year;
+            // (including "All Ages", which also means no year)
+            if (field === "age") next.year = NO_FILTERS.year;
             return next;
         });
         setCurrentPage(1);

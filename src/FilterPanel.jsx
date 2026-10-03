@@ -58,10 +58,12 @@ function Choice({ label, options, value, onChange, hideLabel = false }) {
 }
 
 // Pills where several can be on at once, like the game's troop picker:
-// "All sections" (dashed) is on when none are; tapping another adds or
+// "All Sections" (dashed) is on when none are; tapping another adds or
 // removes it.
 //   value: the ids that are on ([] = all)
-function Pills({ label, allLabel, options, value, onChange }) {
+//   allOff: something else is doing the filtering (e.g. a birth year), so
+//           "All …" shows as off too
+function Pills({ label, allLabel, options, value, onChange, allOff = false }) {
     const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
     const toggle = (id) =>
         onChange(value.includes(id) ? value.filter((v) => v !== id) : options.map((o) => o.id).filter((o) => o === id || value.includes(o)));
@@ -71,7 +73,12 @@ function Pills({ label, allLabel, options, value, onChange }) {
                 {label}
             </span>
             <div className="FilterPanel-pills" role="group" aria-labelledby={labelId}>
-                <button type="button" className="is-all" aria-pressed={value.length === 0} onClick={() => onChange([])}>
+                <button
+                    type="button"
+                    className="is-all"
+                    aria-pressed={value.length === 0 && !allOff}
+                    onClick={() => onChange([])}
+                >
                     {allLabel}
                 </button>
                 {options.map((o) => (
@@ -184,15 +191,17 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                     />
                     <Pills
                         label="Section"
-                        allLabel="All sections"
+                        allLabel="All Sections"
                         options={SECTIONS}
                         value={filters.section}
                         onChange={(v) => onChange("section", v)}
                     />
                     <label className="FilterPanel-section">
                         <span className="FilterPanel-label">Troop</span>
+                        {/* Pink, so it stands out: most people go straight here */}
                         <select
                             id="troops"
+                            className="FilterPanel-troop"
                             aria-label="Filter by troop"
                             value={filters.troop}
                             onChange={(e) => onChange("troop", e.target.value)}
@@ -242,7 +251,10 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                     </label>
                     <Pills
                         label="Category"
-                        allLabel="All ages"
+                        allLabel="All Ages"
+                        // A birth year chosen: that's doing the filtering, so
+                        // "All Ages" isn't on either (back to its dotted outline)
+                        allOff={filters.year !== "All Years"}
                         options={AGE_GROUPS}
                         value={filters.age}
                         onChange={(v) => onChange("age", v)}

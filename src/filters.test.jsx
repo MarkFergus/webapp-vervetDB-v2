@@ -67,7 +67,7 @@ test.each([
     await user.click(filtersButton());
     await user.click(ageButton(group));
     expect(ageButton(group)).toHaveAttribute("aria-pressed", "true");
-    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "false");
+    expect(ageButton("All Ages")).toHaveAttribute("aria-pressed", "false");
     const expected = monkeysArr.filter((m) => fits(ageInYears(m.year))).length;
     expectShowing(expected);
     expect(within(panel()).getByRole("button", { name: /^Show / })).toHaveTextContent(
@@ -94,8 +94,8 @@ test("several age categories together, e.g. Adults + Juveniles; All turns them o
     expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "true");
     expect(ageButton("Juveniles")).toHaveAttribute("aria-pressed", "false");
 
-    await user.click(ageButton("All ages"));
-    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
+    await user.click(ageButton("All Ages"));
+    expect(ageButton("All Ages")).toHaveAttribute("aria-pressed", "true");
     expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "false");
     expectShowing(monkeysArr.length);
 });
@@ -119,11 +119,11 @@ test("Sex: both on to start with; tap one off, back on; the last one can't go of
     expectShowing(monkeysArr.length);
 });
 
-test("Category: pills with \"All ages\" to start with", async () => {
+test("Category: pills with \"All Ages\" to start with", async () => {
     const { user } = setup();
     await user.click(filtersButton());
-    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
-    expect(ageButton("All ages")).toHaveClass("is-all");
+    expect(ageButton("All Ages")).toHaveAttribute("aria-pressed", "true");
+    expect(ageButton("All Ages")).toHaveClass("is-all");
 });
 
 test("Sex, and filters combine", async () => {
@@ -191,7 +191,7 @@ describe("Location", () => {
         expect(choice("Enclosure", "Introcage")).toBeDisabled();
     });
 
-    // Section pills: "All sections" to start with; tapping others adds them
+    // Section pills: "All Sections" to start with; tapping others adds them
     const sectionPill = (name) =>
         within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
     const troopList = () =>
@@ -204,9 +204,9 @@ describe("Location", () => {
     test("a section shows its troops' monkeys, and the troop list narrows to them", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        expect(sectionPill("All sections")).toHaveAttribute("aria-pressed", "true");
+        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "true");
         await user.click(sectionPill("Top"));
-        expect(sectionPill("All sections")).toHaveAttribute("aria-pressed", "false");
+        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
         expectShowing(monkeysArr.filter((m) => TOP.includes(m.troop)).length);
         expect(troopList()).toEqual(["All Troops", ...TOP]);
     });
@@ -226,8 +226,8 @@ describe("Location", () => {
         await user.click(filtersButton()); // tapping the chip closed the panel
         expect(sectionPill("Top")).toHaveAttribute("aria-pressed", "false");
 
-        // "All sections" turns them all off again
-        await user.click(sectionPill("All sections"));
+        // "All Sections" turns them all off again
+        await user.click(sectionPill("All Sections"));
         expect(chips()).toEqual([]);
         expectShowing(monkeysArr.length);
     });
@@ -267,8 +267,17 @@ test("a birth year or an age category, not both: choosing one clears the other",
 
     await user.click(ageButton("Adults"));
     await user.selectOptions(year(), "2019");
-    expect(ageButton("All ages")).toHaveAttribute("aria-pressed", "true");
+    // The year is doing the filtering: no category, and "All Ages" off too
+    expect(ageButton("Adults")).toHaveAttribute("aria-pressed", "false");
+    expect(ageButton("All Ages")).toHaveAttribute("aria-pressed", "false");
     expectShowing(monkeysArr.filter((m) => Number(m.year) === 2019).length);
+
+    // "All Ages" clears the year: every age again
+    await user.click(ageButton("All Ages"));
+    expect(ageButton("All Ages")).toHaveAttribute("aria-pressed", "true");
+    expect(year()).toHaveValue("All Years");
+    expectShowing(monkeysArr.length);
+    await user.selectOptions(year(), "2019");
 
     await user.click(ageButton("Juveniles"));
     expect(year()).toHaveValue("All Years");

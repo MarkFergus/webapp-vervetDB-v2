@@ -135,7 +135,21 @@
     outline: none;
 }
 
-/* Section: pills like the game's troop picker; "All sections" dashed,
+/* Troop: the filter most people want, in the site's neon pink */
+.FilterPanel select.FilterPanel-troop {
+    border-color: #fe39a4;
+}
+
+.FilterPanel select.FilterPanel-troop:hover {
+    border-color: #ff92ce;
+}
+
+.FilterPanel select.FilterPanel-troop:focus {
+    border-color: #fe39a4;
+    box-shadow: 0 0 0 1px #fe39a4;
+}
+
+/* Section: pills like the game's troop picker; "All Sections" dashed,
    the chosen ones blue. Three to a row, all the same width */
 .FilterPanel-pills {
     display: grid;

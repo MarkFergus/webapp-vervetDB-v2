@@ -1,5 +1,5 @@
 // The sanctuary's sections and the troops in each. Used by the Filters
-// panel's Location filter. A troop added later shows under "All sections"
+// panel's Location filter. A troop added later shows under "All Sections"
 // until it's put in a section here.
 //   chip: how a chosen section reads in the filter chips under the toolbar
 export const SECTIONS = [
