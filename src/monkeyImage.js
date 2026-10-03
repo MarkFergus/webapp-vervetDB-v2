@@ -1,9 +1,8 @@
-import { MONKEY_ICON_PATH } from "./monkeyIconPath";
 import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
 import { ageText } from "./ages";
 
-// A monkey's profile as a picture: the logo, photo, name, details, bio and
-// features, on a card with rounded corners (see-through outside them). 1000
+// A monkey's profile as a picture: name, photo, details, bio and features,
+// on a card with rounded corners (see-through outside them). 1000
 // wide and at least 1270 tall (about the portrait shape phones show best),
 // growing taller for a long bio.
 
@@ -119,8 +118,9 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
 
     // Work out the layout first, so the picture can be as tall as it needs
     const measure = document.createElement("canvas").getContext("2d");
-    const nameY = 140 + photoHeight + 86;
-    const pillsTop = nameY + 26;
+    const nameY = 132; // the name, top left, above the photo
+    const photoTop = nameY + 36;
+    const pillsTop = photoTop + photoHeight + 30;
     const { pills, height: pillsHeight } = layOutPills(measure, monkey, pillsTop);
     measure.font = `400 32px ${TEXT_FONT}`;
     const bio = wrap(measure, monkey.bio || "No bio yet.", textWidth, BIO_LINES);
@@ -141,24 +141,13 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
     roundedRect(ctx, FRAME, FRAME, WIDTH - FRAME * 2, height - FRAME * 2, 36);
     ctx.fill();
 
-    // Brand, top left
-    ctx.save();
-    ctx.translate(MARGIN, 70);
-    ctx.scale(44 / 54, 44 / 54);
-    ctx.fillStyle = "#d1cfc7";
-    ctx.fill(new Path2D(MONKEY_ICON_PATH), "evenodd");
-    ctx.restore();
+    // Name, top left
     ctx.textAlign = "left";
-    ctx.font = `38px ${TITLE_FONT}`;
-    ctx.fillStyle = "#d1cfc7";
-    ctx.fillText("vervetDB", MARGIN + 56, 104);
-
-    drawPhoto(ctx, img, MARGIN, 140, textWidth, photoHeight);
-
-    // Name
     fitFont(ctx, monkey.name, { size: 64, family: TITLE_FONT, maxWidth: textWidth });
     ctx.fillStyle = "white";
     ctx.fillText(monkey.name, MARGIN, nameY);
+
+    drawPhoto(ctx, img, MARGIN, photoTop, textWidth, photoHeight);
 
     // Details
     ctx.font = `700 28px ${TEXT_FONT}`;
