@@ -104,6 +104,41 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     border-radius: 999px;
 }
 
+/* Grid / list switch, at the far right: two small joined buttons, the
+   chosen one raised */
+.ShowPage-view {
+    display: flex;
+    margin-left: auto;
+    padding: 2px;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+}
+
+.ShowPage-view button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 34px;
+    height: 22px;
+    padding: 0;
+    color: #8a877e;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.ShowPage-view button:hover {
+    color: white;
+}
+
+.ShowPage-view button[aria-pressed="true"] {
+    color: white;
+    background-color: #3f3d3f;
+}
+
 /* The filters in use, under the toolbar: tap one to remove it */
 .ShowPage-chips {
     display: flex;
@@ -158,7 +193,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
-/* Phones: Filters and Sort a little taller, easier to tap */
+/* Phones: Filters, Sort and the view switch a little taller, easier to tap */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
         gap: 8px;
@@ -166,6 +201,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
     .ShowPage-filtersButton {
         height: 32px;
+    }
+
+    .ShowPage-view button {
+        height: 26px;
     }
 }
 

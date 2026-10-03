@@ -3,10 +3,13 @@ import {
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
     IconChevronDown,
+    IconLayoutGrid,
+    IconList,
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
+import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
 import Modal from "./Modal";
 import MonkeyForm from "./MonkeyForm";
@@ -118,6 +121,8 @@ function pdfFilename(book) {
 // Defaults to the built-in copy, e.g. in tests.
 // editable: the data is live from the database, so editors may change it.
 // onMonkeySaved / onMonkeyDeleted: tell App about a change, to update the list.
+const VIEW_KEY = "vervetdb-view";
+
 function ShowPage({
     monkeys = BUILT_IN_DATA.monkeys,
     troops = BUILT_IN_DATA.troops,
@@ -137,6 +142,23 @@ function ShowPage({
     const [filtersOpen, setFiltersOpen] = useState(false);
     const filtersButtonRef = useRef(null);
     const [sort, setSort] = useState({ key: "name", ascending: true });
+    // Photo cards ("grid") or a table-style list ("list"), remembered on
+    // this device
+    const [view, setView] = useState(() => {
+        try {
+            return localStorage.getItem(VIEW_KEY) === "list" ? "list" : "grid";
+        } catch {
+            return "grid";
+        }
+    });
+    function chooseView(next) {
+        setView(next);
+        try {
+            localStorage.setItem(VIEW_KEY, next);
+        } catch {
+            // Not remembered this time
+        }
+    }
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedMonkey, setSelectedMonkey] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -501,6 +523,27 @@ function ShowPage({
                     />
                 </div>
                 <SortMenu sort={sort} onSort={sortBy} />
+                {/* Cards or list, at the far right */}
+                <div className="ShowPage-view" role="group" aria-label="View">
+                    <button
+                        type="button"
+                        aria-pressed={view === "grid"}
+                        aria-label="Grid view"
+                        title="Grid view"
+                        onClick={() => chooseView("grid")}
+                    >
+                        <IconLayoutGrid size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-pressed={view === "list"}
+                        aria-label="List view"
+                        title="List view"
+                        onClick={() => chooseView("list")}
+                    >
+                        <IconList size={16} aria-hidden="true" />
+                    </button>
+                </div>
             </div>
             {/* The filters in use: tap one to remove it */}
             {activeFilters.length > 0 && (
@@ -531,19 +574,37 @@ function ShowPage({
                 Showing {visibleMonkeys.length}{" "}
                 {visibleMonkeys.length === 1 ? "monkey" : "monkeys"}
             </p>
-            <div className="ShowPage-monkeys" inert={isAnyModalOpen}>
-                {currentMonkeys.map((m) => (
-                    <MonkeyCard
-                        key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
-                        onClick={() => openModal(m)}
-                        name={m.name}
-                        sex={m.sex}
-                        year={m.year}
-                        troop={m.troop}
-                        img={m.img[0]}
-                    />
-                ))}
-            </div>
+            {view === "list" ? (
+                <div className="MonkeyList" inert={isAnyModalOpen}>
+                    <MonkeyListHeader />
+                    {currentMonkeys.map((m) => (
+                        <MonkeyRow
+                            key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
+                            onClick={() => openModal(m)}
+                            name={m.name}
+                            sex={m.sex}
+                            year={m.year}
+                            troop={m.troop}
+                            chip={m.chip}
+                            img={m.img[0]}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div className="ShowPage-monkeys" inert={isAnyModalOpen}>
+                    {currentMonkeys.map((m) => (
+                        <MonkeyCard
+                            key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
+                            onClick={() => openModal(m)}
+                            name={m.name}
+                            sex={m.sex}
+                            year={m.year}
+                            troop={m.troop}
+                            img={m.img[0]}
+                        />
+                    ))}
+                </div>
+            )}
             {indexOfLastMonkey < visibleMonkeys.length && (
                 <div className="ShowPage-showMore" inert={isAnyModalOpen}>
                     <button

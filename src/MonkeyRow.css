@@ -1,0 +1,186 @@
+/* The list view: one slim row per monkey, the details in columns like a
+   table. Phones (the media query at the end): photo, name with the details
+   under it, and chip. */
+
+.MonkeyList {
+    display: flex;
+    flex-direction: column;
+    margin: 8px 12px;
+}
+
+.MonkeyRow {
+    box-sizing: border-box; /* the heading row (a div) the same width as the rows (buttons) */
+    display: grid;
+    /* chip a fixed width, so every row has the same room for the details
+       (and all drop the year together when tight) */
+    grid-template-columns: 56px minmax(0, 1fr) 52px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 6px 8px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    text-align: left;
+    color: #b6b2a5;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #2c2a2c;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.MonkeyRow:hover {
+    background-color: #262426;
+}
+
+.MonkeyRow:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -2px;
+    border-radius: 6px;
+}
+
+/* A small photo (the card thumbnail), 5:4 like every monkey photo */
+.MonkeyRow-photo {
+    display: block;
+    width: 56px;
+    aspect-ratio: 5 / 4;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #2a282a;
+}
+
+.MonkeyRow-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.MonkeyRow-main {
+    container-type: inline-size; /* so the details line can drop the year when tight */
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.MonkeyRow-name {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* "Troop · ♀ · 2018 · 7 yrs old" (phones) */
+.MonkeyRow-meta {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-size: 13px;
+    color: #8a877e;
+    white-space: nowrap;
+}
+
+.MonkeyRow-meta > span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.MonkeyRow-meta > span + span::before {
+    content: "·";
+    margin: 0 4px;
+}
+
+/* Not enough room for the year (every row has the same room, as the chip
+   column is a fixed width): drop it */
+@container (max-width: 204px) {
+    .MonkeyRow-metaYear {
+        display: none !important;
+    }
+}
+
+/* The table columns (computers) */
+.MonkeyRow-wide {
+    display: none;
+}
+
+.MonkeyRow-chip {
+    font-size: 13px;
+    color: #8a877e;
+    text-align: right; /* phones: a two-chip "1011 & 1604" wraps onto 2 lines */
+}
+
+/* Column headings */
+.MonkeyRow-header {
+    display: none;
+    cursor: default;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+    border-bottom-color: #3a3839;
+}
+
+.MonkeyRow-header:hover {
+    background: none;
+}
+
+/* Computers: a proper table: photo | Name | Troop | Sex | Born | Age | Chip */
+@media (min-width: 625px) {
+    .MonkeyList {
+        margin: 8px 24px;
+    }
+
+    .MonkeyRow {
+        grid-template-columns: 56px minmax(140px, 2fr) repeat(4, minmax(80px, 1fr)) minmax(90px, 1fr);
+        gap: 16px;
+        padding: 6px 12px;
+        color: #d1cfc7;
+    }
+
+    .MonkeyRow-header {
+        display: grid;
+        padding-top: 4px;
+        padding-bottom: 8px;
+        color: #8a877e;
+    }
+
+    .MonkeyRow-meta {
+        display: none;
+    }
+
+    .MonkeyRow-wide {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .MonkeyRow-chip {
+        font-size: 14px;
+        color: #d1cfc7;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .MonkeyRow-header .MonkeyRow-wide,
+    .MonkeyRow-header span {
+        color: #8a877e;
+        font-size: 12px;
+    }
+}
+
+/* Narrower computer windows: no room for Born (Age is enough), so it goes */
+@media (min-width: 625px) and (max-width: 899px) {
+    .MonkeyRow {
+        grid-template-columns: 56px minmax(120px, 2fr) repeat(3, minmax(70px, 1fr)) minmax(80px, 1fr);
+    }
+
+    .MonkeyRow-born,
+    .MonkeyRow-header .MonkeyRow-born {
+        display: none;
+    }
+}
