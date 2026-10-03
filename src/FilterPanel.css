@@ -293,14 +293,14 @@
     font-size: 14px;
     font-weight: 700;
     color: #1f1f1f;
-    background-color: #25c4f8;
+    background-color: #47b028;
     border: none;
     border-radius: 8px;
     cursor: pointer;
 }
 
 .FilterPanel-show:hover {
-    background-color: #6dd8fb;
+    background-color: #5fcc3d;
 }
 
 /* Phones: a sheet from the bottom of the screen, page dimmed behind */
