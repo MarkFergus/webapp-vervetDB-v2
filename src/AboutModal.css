@@ -121,7 +121,7 @@
 
 .AboutModal-release h3 {
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: 15px; /* the same size as the changes */
     font-weight: 700;
     color: #fe39a4;
 }
