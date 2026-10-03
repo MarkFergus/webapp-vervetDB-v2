@@ -114,6 +114,18 @@
     color: #8a877e;
 }
 
+/* Each version: a pink heading, then its changes */
+.AboutModal-release + .AboutModal-release {
+    margin-top: 14px;
+}
+
+.AboutModal-release h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fe39a4;
+}
+
 .AboutModal-changes ul {
     margin: 0;
     padding-left: 20px;

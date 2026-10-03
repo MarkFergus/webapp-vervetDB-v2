@@ -14,7 +14,8 @@ import useDialog from "./useDialog";
 import { drawMonkeyImage } from "./monkeyImage";
 import { ageLabel } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
-import { downloadBlob } from "./canvasHelpers";
+import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
+import ImagePreview from "./ImagePreview";
 import { thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import "./Modal.css";
@@ -34,6 +35,8 @@ function Modal({
     // After Share on a computer: "copied" or "failed"; Save image: "saving"
     // or "imageFailed"
     const [shareStatus, setShareStatus] = useState(null);
+    // Firefox's home-screen app: the picture shown here to press and hold
+    const [preview, setPreview] = useState(null);
     const closeButtonRef = useRef(null);
 
     // Phones open their share menu (e.g. WhatsApp) with a link to this
@@ -65,7 +68,8 @@ function Modal({
         setShareStatus("saving");
         try {
             const blob = await drawMonkeyImage(monkey, { photo: monkey.img[currentIndex] });
-            downloadBlob(blob, `vervetdb-${monkeyHash(monkey).split("/")[1]}.png`);
+            if (isFirefoxAndroidApp()) setPreview(blob);
+            else downloadBlob(blob, `vervetdb-${monkeyHash(monkey).split("/")[1]}.png`);
             setShareStatus(null);
         } catch (err) {
             console.error("Couldn't make the picture:", err);
@@ -289,6 +293,7 @@ function Modal({
                                         {shareStatus === "saving" ? "Saving…" : "Save image"}
                                     </button>
                                 </div>
+                                <ImagePreview image={preview} onClose={() => setPreview(null)} />
                                 <p className="Modal-shareStatus" role="status">
                                     {shareStatus === "copied" &&
                                         "Link copied. Paste it into a message to share this monkey."}

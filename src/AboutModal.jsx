@@ -3,11 +3,11 @@ import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
-import { CHANGELOG, LATEST_CHANGES, releaseDate } from "./changelog";
+import { CHANGELOG, releaseDate } from "./changelog";
 import "./AboutModal.css";
 
-// The About pop-up: which version of vervetDB this is, and a general list of
-// the latest changes (from changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
+// The About pop-up: which version of vervetDB this is, and a running
+// changelog: each version's changes under its own heading (changelog.js). Opened from the ⓘ in the top bar, the ☰ menu on
 // phones, or the line at the bottom of the main page.
 function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
@@ -54,11 +54,16 @@ function AboutModal({ isOpen, onClose }) {
                                 </p>
                                 <section className="AboutModal-changes" aria-labelledby="AboutModal-changesTitle">
                                     <h2 id="AboutModal-changesTitle">Latest changes</h2>
-                                    <ul>
-                                        {LATEST_CHANGES.map((change) => (
-                                            <li key={change}>{change}</li>
-                                        ))}
-                                    </ul>
+                                    {CHANGELOG.map((entry) => (
+                                        <div key={entry.version} className="AboutModal-release">
+                                            <h3>Version {entry.version}</h3>
+                                            <ul>
+                                                {entry.changes.map((change) => (
+                                                    <li key={change}>{change}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ))}
                                 </section>
                             </div>
                         </div>

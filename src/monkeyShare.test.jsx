@@ -147,6 +147,46 @@ test("Save image downloads a picture of the profile", async () => {
     expect(options.photo).toBe(aroha.img[0]); // the photo showing
 });
 
+// Firefox's home-screen app on Android can't download or save an opened
+// picture, but pressing and holding a picture on the page offers Save image
+test("Firefox's home-screen app: Save image shows the picture to press and hold", async () => {
+    const realAgent = navigator.userAgent;
+    Object.defineProperty(navigator, "userAgent", {
+        configurable: true,
+        get: () => "Mozilla/5.0 (Android 15; Mobile; rv:156.0) Gecko/156.0 Firefox/156.0",
+    });
+    window.matchMedia = (query) => ({ matches: query === "(display-mode: standalone)" });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click");
+    const open = vi.spyOn(window, "open");
+    try {
+        const user = userEvent.setup();
+        render(<ShowPage />);
+        await openAroha(user);
+        await user.click(within(popUp()).getByRole("button", { name: "Save image" }));
+
+        const preview = await screen.findByRole("dialog", { name: "Save image" });
+        expect(within(preview).getByText(/Press and hold the picture/)).toBeInTheDocument();
+        const picture = await within(preview).findByRole("img", { name: "Picture to save" });
+        expect(picture.getAttribute("src")).toMatch(/^data:image\/png;base64,/);
+        expect(click).not.toHaveBeenCalled();
+        expect(open).not.toHaveBeenCalled();
+
+        // Escape closes just the picture, not the monkey's pop-up
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog", { name: "Save image" })).toBeNull();
+        expect(popUp()).toBeInTheDocument();
+
+        await user.click(within(popUp()).getByRole("button", { name: "Save image" }));
+        await user.click(await screen.findByRole("button", { name: "Done" }));
+        expect(screen.queryByRole("dialog", { name: "Save image" })).toBeNull();
+    } finally {
+        Object.defineProperty(navigator, "userAgent", { configurable: true, get: () => realAgent });
+        delete window.matchMedia;
+        click.mockRestore();
+        open.mockRestore();
+    }
+});
+
 test("the pop-up shows where the monkey is in the list", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);

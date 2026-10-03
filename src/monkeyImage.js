@@ -3,13 +3,17 @@ import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } f
 import { ageText } from "./ages";
 
 // A monkey's profile as a picture: the logo, photo, name, details, bio and
-// features. 1080 wide and at least 1350 tall (the portrait shape phones show
-// best), growing taller for a long bio.
+// features, on a card with rounded corners (see-through outside them). 1000
+// wide and at least 1270 tall (about the portrait shape phones show best),
+// growing taller for a long bio.
 
 const WIDTH = 1080;
 const MIN_HEIGHT = 1350;
 const BLUE = "#25c4f8";
-const MARGIN = 80; // card edge to content
+const MARGIN = 80; // picture edge to content, before trimming the frame
+// The card used to sit on a dark background with this much around it; the
+// picture is now just the card, so everything is drawn this much up and left
+const FRAME = 40;
 const LINE = 42; // bio / features line height
 const BIO_LINES = 6;
 const FEATURE_LINES = 5;
@@ -127,15 +131,14 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
     const height = Math.max(MIN_HEIGHT, end + 40);
 
     const canvas = document.createElement("canvas");
-    canvas.width = WIDTH;
-    canvas.height = height;
+    canvas.width = WIDTH - FRAME * 2;
+    canvas.height = height - FRAME * 2;
     const ctx = canvas.getContext("2d");
+    ctx.translate(-FRAME, -FRAME);
 
-    // Background and card
-    ctx.fillStyle = "#1f1f1f";
-    ctx.fillRect(0, 0, WIDTH, height);
+    // The card (outside its rounded corners stays see-through)
     ctx.fillStyle = "#2a282a";
-    roundedRect(ctx, 40, 40, WIDTH - 80, height - 80, 36);
+    roundedRect(ctx, FRAME, FRAME, WIDTH - FRAME * 2, height - FRAME * 2, 36);
     ctx.fill();
 
     // Brand, top left

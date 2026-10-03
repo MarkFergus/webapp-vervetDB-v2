@@ -10,7 +10,8 @@ import {
 import { BUILT_IN_DATA } from "./monkeyData";
 import MonkeyIcon from "./MonkeyIcon";
 import { drawResultImage } from "./resultImage";
-import { downloadBlob } from "./canvasHelpers";
+import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
+import ImagePreview from "./ImagePreview";
 import { thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import {
@@ -133,6 +134,8 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
     // The results as a picture (a PNG File), made when the round ends so
     // Share and Save image respond straight away
     const [resultImage, setResultImage] = useState(null);
+    // Firefox's home-screen app: the picture shown here to press and hold
+    const [preview, setPreview] = useState(null);
     // Countdown for each photo; it only starts once the photo has loaded
     const [secondsLeft, setSecondsLeft] = useState(
         () => difficultyById(settings.difficulty).seconds ?? 0
@@ -270,9 +273,12 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
         }
     }
 
-    // Downloads the results picture
+    // Downloads the results picture (Firefox's home-screen app: shows it to
+    // press and hold instead, as it can't download)
     function saveImage() {
-        if (resultImage) downloadBlob(resultImage, resultImage.name);
+        if (!resultImage) return;
+        if (isFirefoxAndroidApp()) setPreview(resultImage);
+        else downloadBlob(resultImage, resultImage.name);
     }
 
     function finishQuestion(result) {
@@ -742,6 +748,7 @@ function Game({ monkeys = BUILT_IN_DATA.monkeys, troops = BUILT_IN_DATA.troops }
                             Save image
                         </button>
                     </div>
+                    <ImagePreview image={preview} onClose={() => setPreview(null)} />
                     <p className="Game-share-status" role="status">
                         {shareStatus === "copied" &&
                             "Copied! Paste it into a message to challenge your friends."}

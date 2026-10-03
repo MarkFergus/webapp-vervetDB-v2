@@ -1,7 +1,11 @@
 // vervetDB's version and what changed in each one. Newest first. Only things
 // people using the site will notice; behind-the-scenes work doesn't need a
-// line. The About pop-up shows the current version and a general list of the
-// latest changes (LATEST_CHANGES, across versions).
+// line. Each line starts with what kind of change it is, changelog-style:
+//   New …       a new feature
+//   Improved …  an existing feature works or looks better
+//   Fixed …     a bug fixed
+// The About pop-up shows the current version, then every version's changes
+// under its own heading, newest first: a running changelog.
 //
 // Version numbers: major.minor.patch
 //   major (1.0 → 2.0): a big milestone that changes how vervetDB works
@@ -10,34 +14,35 @@
 //
 // To release a new version: add an entry at the top AND change "version"
 // in package.json to match (a test checks they agree).
+export const CHANGE_TYPES = ["New", "Improved", "Fixed"];
+
 export const CHANGELOG = [
     {
         version: "1.0.1",
         date: "2026-10-02",
         changes: [
-            "Profile Books and pictures now save in Firefox's home-screen app on Android",
-            "Tidier Sort button: shows the current order in words",
+            "Fixed bug with Firefox app not downloading Profile Books",
+            "Fixed bug with Firefox app not downloading images, now offers a working option for Firefox users",
+            "Improved Sort button, now tidier and shows the current order in words",
+            "Improved About screen, now lists the changes in each version",
+            "Improved saved monkey pictures, now just the profile card",
         ],
     },
     {
         version: "1.0.0",
         date: "2026-10-02",
         changes: [
-            "Install vervetDB as an app on your phone or computer",
-            "Works offline: the monkeys and their photos are saved on your device",
-            "Download every photo to use without signal (Install & Use Offline)",
-            "Sharper photos on phones, with two monkeys per row",
-            "New, sharp vervetDB app icon",
-            "Change your password from the Account pop-up on any device",
+            "New installable app for your phone or computer",
+            "New offline use: the monkeys and their photos are saved on your device",
+            "New Download all photos, to use without signal (Install & Use Offline)",
+            "Improved photos on phones, now sharper with two monkeys per row",
+            "Improved vervetDB app icon, now sharp and clear",
+            "New Change password in the Account pop-up, on any device",
         ],
     },
 ];
 
 export const APP_VERSION = CHANGELOG[0].version;
-
-// About's "Latest changes": the newest changes, whichever version they came in
-const LATEST_COUNT = 8;
-export const LATEST_CHANGES = CHANGELOG.flatMap((entry) => entry.changes).slice(0, LATEST_COUNT);
 
 // "2 October 2026"
 export function releaseDate(date) {
