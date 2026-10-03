@@ -1,9 +1,9 @@
 // vervetDB's version and what changed in each one. Newest first. Only things
 // people using the site will notice; behind-the-scenes work doesn't need a
 // line. Each line starts with what kind of change it is, changelog-style:
-//   New …       a new feature
-//   Improved …  an existing feature works or looks better
-//   Fixed …     a bug fixed
+//   New / Added …  a new feature
+//   Improved …     an existing feature works or looks better
+//   Fixed …        a bug fixed
 // The About pop-up shows the current version, then every version's changes
 // under its own heading, newest first: a running changelog.
 //
@@ -14,15 +14,15 @@
 //
 // To release a new version: add an entry at the top AND change "version"
 // in package.json to match (a test checks they agree).
-export const CHANGE_TYPES = ["New", "Improved", "Fixed"];
+export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
         version: "1.1.0",
         date: "2026-10-03",
         changes: [
-            "New list view, with small photos and details in rows",
-            "New Bandits troop, with its own section in Filters",
+            "Added Bandits as their own troop and section",
+            "New list view with grid/list switch",
         ],
     },
     {
