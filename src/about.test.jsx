@@ -48,7 +48,10 @@ test("ⓘ in the top bar opens About: version, date and latest changes", async (
     expect(within(dialog()).getByRole("button", { name: "Close" })).toHaveFocus();
 
     expect(within(dialog()).getByText(`Version ${APP_VERSION} · ${releaseDate(CHANGELOG[0].date)}`)).toBeInTheDocument();
-    expect(within(dialog()).getByText(/web app for the Vervet Monkey Foundation's monkey records/)).toBeInTheDocument();
+    expect(within(dialog()).getByText(/web app for the Vervet Monkey Foundation's staff and volunteers/)).toBeInTheDocument();
+    expect(within(dialog()).getByText(/not intended for public use\./)).toBeInTheDocument();
+    expect(within(dialog()).getByText("– Built by Mark Fergus Ashcroft –")).toBeInTheDocument();
+    expect(within(dialog()).getByText(/^© \d{4} Vervet Monkey Foundation\.\s*All photos and records belong to the Foundation/)).toBeInTheDocument();
     // A running changelog: every version in the current series (e.g. 1.1.x)
     // and its changes; "Earlier versions" opens the rest, newest first
     const { current } = currentSeries(CHANGELOG);
@@ -84,4 +87,15 @@ test("phones: ☰ menu → About", async () => {
     await user.click(within(document.getElementById("Nav-menu")).getByRole("button", { name: "About" }));
     expect(document.getElementById("Nav-menu")).toBeNull();
     expect(dialog()).toBeInTheDocument();
+});
+
+test("while About is open the page behind can't scroll", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    const root = document.documentElement;
+    expect(root.style.overflow).toBe("");
+    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    expect(root.style.overflow).toBe("hidden");
+    await user.click(within(dialog()).getByRole("button", { name: "Close" }));
+    expect(root.style.overflow).toBe("");
 });

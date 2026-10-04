@@ -8,6 +8,7 @@ import {
     IconDownload,
     IconPencil,
     IconShare,
+    IconCameraPlus,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -16,7 +17,7 @@ import { ageLabel } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
 import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
 import ImagePreview from "./ImagePreview";
-import { thumbUrl } from "./photoPaths";
+import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import "./Modal.css";
 
@@ -204,6 +205,13 @@ function Modal({
                                                 : monkey.name
                                         }
                                     ></img>
+                                    {/* Still the grey placeholder: the same badge as the cards */}
+                                    {isPlaceholderPhoto(monkey.img[currentIndex]) && (
+                                        <span className="Modal-photoNeeded">
+                                            <IconCameraPlus size={16} aria-hidden="true" />
+                                            Photo Needed
+                                        </span>
+                                    )}
                                     {monkey.img.length > 1 && (
                                         <>
                                             {/* Round buttons over the photo's edges */}

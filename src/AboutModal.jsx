@@ -71,10 +71,17 @@ function AboutModal({ isOpen, onClose }) {
                                     Version {latest.version} · {releaseDate(latest.date)}
                                 </p>
                                 <p className="AboutModal-description">
-                                    vervetDB is a web app for the Vervet Monkey Foundation's monkey
-                                    records. It's built mainly for staff and volunteers, to help
-                                    identify monkeys and keep their information up to date.
+                                    vervetDB is a web app for the Vervet Monkey Foundation's staff
+                                    and volunteers to access and update monkey records. Although
+                                    anyone can view records, it is not intended for public use.
                                 </p>
+                                <p className="AboutModal-copyright">
+                                    © {new Date().getFullYear()} Vervet Monkey Foundation.
+                                    <br />
+                                    All photos and records belong to the Foundation and may not be
+                                    reused without permission.
+                                </p>
+                                <p className="AboutModal-credit">– Built by Mark Fergus Ashcroft –</p>
                                 <section className="AboutModal-changes" aria-labelledby="AboutModal-changesTitle">
                                     <h2 id="AboutModal-changesTitle">Latest changes</h2>
                                     {current.map((entry) => (

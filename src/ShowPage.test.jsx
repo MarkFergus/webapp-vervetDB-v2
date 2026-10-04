@@ -215,3 +215,53 @@ test("modal shows Unknown and 'No bio yet.' for missing details", async () => {
     await openCard(user, container, "Fuzz");
     expect(details()).toHaveTextContent("Sex unknown");
 });
+
+describe("no monkeys found", () => {
+    const empty = () => document.querySelector(".ShowPage-empty");
+
+    test("a search with no matches says so, and Clear search brings everyone back", async () => {
+        const { user, cardNames, search } = setup();
+        expect(empty()).toBeNull();
+        await user.type(search(), "zzqx");
+
+        expect(cardNames()).toHaveLength(0);
+        expect(screen.getByRole("heading", { name: "No monkeys found" })).toBeInTheDocument();
+        expect(empty()).toHaveTextContent("Nothing matches \u201czzqx\u201d.");
+        await user.click(within(empty()).getByRole("button", { name: "Clear Search" }));
+
+        expect(search()).toHaveValue("");
+        expect(empty()).toBeNull();
+        expect(cardNames().length).toBeGreaterThan(0);
+    });
+
+    test("with filters on too, one button clears the search and the filters", async () => {
+        const { user, cardTroops, search, troopSelect } = setup();
+        await user.selectOptions(troopSelect(), "Goliath");
+        await user.type(search(), "zzqx");
+
+        expect(empty()).toHaveTextContent("Nothing matches \u201czzqx\u201d with these filters.");
+        await user.click(within(empty()).getByRole("button", { name: "Clear Search and Filters" }));
+
+        expect(search()).toHaveValue("");
+        expect(new Set(cardTroops()).size).toBeGreaterThan(1);
+    });
+});
+
+
+test("monkeys still on the grey placeholder show a Photo Needed badge", async () => {
+    const { user, container } = setup();
+    // Show everyone, so the placeholder monkeys are on the page
+    while (screen.queryByRole("button", { name: "Show More" })) {
+        await user.click(screen.getByRole("button", { name: "Show More" }));
+    }
+    const needed = monkeysArr.filter((m) => m.img[0].includes("blank-image"));
+    expect(needed.length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".MonkeyCard-photoNeeded")).toHaveLength(needed.length);
+    const card = screen.getAllByRole("button", { name: new RegExp(`^${needed[0].name}, `) })[0];
+    expect(card).toHaveAccessibleName(/, photo needed$/);
+    expect(card).toHaveTextContent("Photo Needed");
+
+    // And in its pop-up
+    await user.click(card);
+    expect(within(screen.getByRole("dialog")).getByText("Photo Needed")).toBeInTheDocument();
+});

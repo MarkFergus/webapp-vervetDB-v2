@@ -41,6 +41,7 @@
 
 /* A small photo (the card thumbnail), 5:4 like every monkey photo */
 .MonkeyRow-photo {
+    position: relative; /* for the camera badge */
     display: block;
     width: 56px;
     aspect-ratio: 5 / 4;
@@ -189,4 +190,16 @@
     .MonkeyRow-header .MonkeyRow-born {
         display: none;
     }
+}
+
+/* No photo yet: a small camera in the corner of the thumbnail */
+.MonkeyRow-photoNeeded {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    display: flex;
+    padding: 2px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
 }

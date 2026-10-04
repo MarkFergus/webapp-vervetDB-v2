@@ -37,6 +37,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    odd-shaped photo can't upset the grid: it fills the frame, trimming any
    overflow. Rounded like YouTube's thumbnails. */
 .MonkeyCard-image {
+    position: relative; /* for the Photo Needed badge */
     display: block;
     width: 100%;
     aspect-ratio: 5 / 4;
@@ -170,4 +171,21 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     .MonkeyCard-ageShort {
         display: inline;
     }
+}
+
+/* "Photo Needed": bottom right of the photo, like YouTube's video length */
+.MonkeyCard-photoNeeded {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 6px;
 }

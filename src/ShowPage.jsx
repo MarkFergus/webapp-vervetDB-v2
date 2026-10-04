@@ -5,6 +5,7 @@ import {
     IconChevronDown,
     IconLayoutGrid,
     IconList,
+    IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
@@ -236,6 +237,11 @@ function ShowPage({
     function clearFilters() {
         setFilters(NO_FILTERS);
         setCurrentPage(1);
+    }
+    // "No monkeys found": clear the search and the filters together
+    function clearSearchAndFilters() {
+        setSearchValue("");
+        clearFilters();
     }
     function handleSearch(event) {
         setSearchValue(event.target.value);
@@ -569,7 +575,7 @@ function ShowPage({
                         </button>
                     ))}
                     <button type="button" className="ShowPage-clearChips" onClick={clearFilters}>
-                        Clear all
+                        Clear All
                     </button>
                 </div>
             )}
@@ -578,7 +584,25 @@ function ShowPage({
                 Showing {visibleMonkeys.length}{" "}
                 {visibleMonkeys.length === 1 ? "monkey" : "monkeys"}
             </p>
-            {view === "list" ? (
+            {visibleMonkeys.length === 0 ? (
+                <div className="ShowPage-empty" inert={isAnyModalOpen}>
+                    <IconSearchOff size={40} aria-hidden="true" />
+                    <h2>No monkeys found</h2>
+                    <p>
+                        {searchValue.trim()
+                            ? `Nothing matches “${searchValue.trim()}”`
+                            : "Nothing matches"}
+                        {activeFilters.length > 0 && (searchValue.trim() ? " with these filters" : " these filters")}.
+                    </p>
+                    <button type="button" className="ShowPage-emptyClear" onClick={clearSearchAndFilters}>
+                        {searchValue.trim() && activeFilters.length > 0
+                            ? "Clear Search and Filters"
+                            : searchValue.trim()
+                              ? "Clear Search"
+                              : "Clear Filters"}
+                    </button>
+                </div>
+            ) : view === "list" ? (
                 <div className="MonkeyList" inert={isAnyModalOpen}>
                     <MonkeyListHeader />
                     {currentMonkeys.map((m) => (

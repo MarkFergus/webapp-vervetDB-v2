@@ -130,7 +130,7 @@ function SexPills({ value, onChange }) {
 // "Show N monkeys" just closes it.
 //   filters: { location, section, troop, year, age, sex }; onChange(field, value)
 //   open / onClose; buttonRef: the Filters button (focus goes back to it)
-//   anyOn: some filter is in use (otherwise Clear all is greyed out)
+//   anyOn: some filter is in use (otherwise Clear All is greyed out)
 function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onClear, count, anyOn }) {
     const panelRef = useRef(null);
 
@@ -269,7 +269,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                 <div className="FilterPanel-footer">
                     <button type="button" className="FilterPanel-clear" onClick={onClear} disabled={!anyOn}>
                         <IconFilterOff size={16} aria-hidden="true" />
-                        Clear all
+                        Clear All
                     </button>
                     <button type="button" className="FilterPanel-show" onClick={close}>
                         Show {count} {count === 1 ? "monkey" : "monkeys"}

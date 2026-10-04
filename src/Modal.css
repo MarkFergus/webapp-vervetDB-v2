@@ -367,3 +367,20 @@
         margin: 16px 20px 0;
     }
 }
+
+/* "Photo Needed": bottom right of the photo, as on the cards */
+.Modal-photoNeeded {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 6px;
+}

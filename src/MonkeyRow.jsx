@@ -1,6 +1,6 @@
-import { IconMars, IconVenus } from "@tabler/icons-react";
+import { IconCameraPlus, IconMars, IconVenus } from "@tabler/icons-react";
 import { ageLabel } from "./ages";
-import { thumbUrl } from "./photoPaths";
+import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import "./MonkeyRow.css";
 
@@ -30,6 +30,7 @@ function MonkeyRow({ name, sex, year, troop, chip, img, onClick }) {
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
         `${troop} troop`,
+        ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
     ].join(", ");
     const sexWord = sex === "male" ? "Male" : sex === "female" ? "Female" : "–";
     const SexIcon = sex === "male" ? IconMars : sex === "female" ? IconVenus : null;
@@ -46,6 +47,12 @@ function MonkeyRow({ name, sex, year, troop, chip, img, onClick }) {
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 />
+                {/* Still the grey placeholder: a small camera badge */}
+                {isPlaceholderPhoto(img) && (
+                    <span className="MonkeyRow-photoNeeded" title="Photo needed">
+                        <IconCameraPlus size={12} aria-hidden="true" />
+                    </span>
+                )}
             </span>
             <span className="MonkeyRow-main">
                 <span className="MonkeyRow-name">{name}</span>

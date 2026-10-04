@@ -171,3 +171,18 @@
 .AboutModal-changes li::marker {
     color: #25c4f8;
 }
+
+/* © and credit lines under the description: smaller and quieter */
+.AboutModal-copyright,
+.AboutModal-credit {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #8a877e;
+    text-align: center;
+}
+
+.AboutModal-credit {
+    margin-top: 4px;
+    font-style: italic;
+}

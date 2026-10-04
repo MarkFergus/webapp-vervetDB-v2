@@ -136,7 +136,7 @@ test("Sex, and filters combine", async () => {
     expectShowing(monkeysArr.filter((m) => m.sex === "female" && m.troop === "Goliath").length);
 });
 
-test("filters in use show as chips: remove one, or Clear all", async () => {
+test("filters in use show as chips: remove one, or Clear All", async () => {
     const { user } = setup();
     await user.click(filtersButton());
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
@@ -153,7 +153,7 @@ test("filters in use show as chips: remove one, or Clear all", async () => {
     expect(chips()).toEqual(["Goliath", "Male"]);
     expectShowing(monkeysArr.filter((m) => m.sex === "male" && m.troop === "Goliath").length);
 
-    await user.click(screen.getByRole("button", { name: "Clear all" }));
+    await user.click(screen.getByRole("button", { name: "Clear All" }));
     expect(chips()).toEqual([]);
     expect(filtersButton()).toHaveAccessibleName("Filters");
     expectShowing(monkeysArr.length);
@@ -293,11 +293,11 @@ test("a birth year or an age category, not both: choosing one clears the other",
     expect(screen.getByText("Pick a birth year or a category")).toBeInTheDocument();
 });
 
-test("Clear all in the panel is greyed out until a filter is on", async () => {
+test("Clear All in the panel is greyed out until a filter is on", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
     await user.click(filtersButton());
-    const clear = () => within(panel()).getByRole("button", { name: "Clear all" });
+    const clear = () => within(panel()).getByRole("button", { name: "Clear All" });
     expect(clear()).toBeDisabled();
     await user.click(sexPill("Male"));
     expect(clear()).toBeEnabled();

@@ -8,6 +8,9 @@ export const THUMB_WIDTH = 480;
 export const THUMB_HEIGHT = 384;
 export const THUMB_QUALITY = 0.75;
 
+// The grey "no photo yet" placeholder (PLACEHOLDER_PHOTO in monkeyFormChecks.js)
+export const isPlaceholderPhoto = (url) => url.includes("blank-image");
+
 // "Maggie Mae" → "maggie-mae", "D&D" → "d-d"
 export function slug(text) {
     const s = text

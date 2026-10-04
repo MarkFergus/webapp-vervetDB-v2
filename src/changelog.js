@@ -18,6 +18,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.1.2",
+        date: "2026-10-04",
+        changes: [
+            "New Photo Needed badge on monkeys without a photo",
+            "New message when no monkeys are found, with a button to clear the search and filters",
+            "Added copyright and credits to About",
+        ],
+    },
+    {
         version: "1.1.1",
         date: "2026-10-03",
         changes: [
