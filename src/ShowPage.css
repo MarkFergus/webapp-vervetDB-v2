@@ -12,6 +12,12 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
 */
 
+/* Room below the last monkeys, so they don't sit on the screen's edge (or
+   under the Back to top button) */
+.ShowPage {
+    padding-bottom: 48px;
+}
+
 /* The header stays at the top while scrolling (like YouTube and X), on a
    softly blurred background */
 .ShowPage-nav {
@@ -208,6 +214,11 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 }
 
+/* Continuous scroll's invisible marker under the list */
+.ShowPage-loadMore {
+    height: 1px;
+}
+
 .ShowPage-showMore {
     display: flex;
     flex-direction: row;
@@ -307,29 +318,6 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         gap: 16px 10px;
         align-items: start;
     }
-}
-
-/* "vervetDB 1.0.0 · About": a quiet line at the very bottom of the page */
-.ShowPage-footer {
-    display: flex;
-    justify-content: center;
-    padding: 28px 16px 36px;
-}
-
-.ShowPage-footer button {
-    padding: 4px 8px;
-    font-family: inherit;
-    font-size: 13px;
-    color: #8a877e;
-    background: none;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.ShowPage-footer button:hover {
-    color: #d1cfc7;
-    text-decoration: underline;
 }
 
 /* "No monkeys found": in place of the cards / list when nothing matches */

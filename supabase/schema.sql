@@ -38,8 +38,8 @@ create table public.monkeys (
     -- '' = not recorded
     sex          text not null default ''
                  check (sex in ('male', 'female', '')),
-    -- '' = no chip; one number, or two written "1011 & 1604"
-    chip         text not null default ''
+    -- '' = no chip; null = unknown; one number, or two written "1011 & 1604"
+    chip         text default ''
                  check (chip ~ '^(\d+( & \d+)?)?$'),
     troop_id     bigint not null references public.troops (id),
     -- null = unknown

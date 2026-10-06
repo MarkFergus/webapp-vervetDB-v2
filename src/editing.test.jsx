@@ -155,6 +155,65 @@ test("editing: the form is filled in, and saving shows the new details", async (
     expect(details).toHaveTextContent("19806 & 1234");
 });
 
+test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chip", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    const unknown = () => within(form()).queryByRole("button", { name: "Unknown?" });
+    expect(unknown()).not.toBeInTheDocument();
+
+    expect(within(form()).queryByText("Leave blank if no chip")).not.toBeInTheDocument();
+
+    await user.click(field("Chip"));
+    expect(unknown()).toBeInTheDocument();
+    expect(within(form()).getByText("Leave blank if no chip")).toBeInTheDocument();
+    await user.click(field("Name"));
+    expect(unknown()).not.toBeInTheDocument();
+    expect(within(form()).queryByText("Leave blank if no chip")).not.toBeInTheDocument();
+
+    // Chosen: the box empties and shows "Unknown"; "Clear" takes its place
+    await user.click(field("Chip"));
+    await user.click(unknown());
+    expect(field("Chip")).toHaveValue("");
+    expect(field("Chip")).toHaveAttribute("placeholder", "Unknown");
+    await user.click(field("Chip"));
+    expect(unknown()).not.toBeInTheDocument();
+    expect(within(form()).getByRole("button", { name: "Clear" })).toBeInTheDocument();
+    expect(within(form()).getByText("Press Clear if no chip")).toBeInTheDocument();
+
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row.chip).toBeNull();
+    const details = await screen.findByRole("dialog", { name: "Aroha" });
+    expect(details).toHaveTextContent("Chip Unknown");
+});
+
+test("chip: \"Clear\" undoes Unknown, back to no chip", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    await user.click(field("Chip"));
+    await user.click(within(form()).getByRole("button", { name: "Unknown?" }));
+    await user.click(field("Chip"));
+    await user.click(within(form()).getByRole("button", { name: "Clear" }));
+    expect(field("Chip")).toHaveAttribute("placeholder", "No Chip");
+    expect(field("Chip")).not.toHaveFocus();
+    expect(within(form()).queryByRole("button", { name: /Unknown|Clear/ })).not.toBeInTheDocument();
+
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row.chip).toBe("");
+});
+
+test("chip: typing a number undoes Unknown", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    await user.click(field("Chip"));
+    await user.click(within(form()).getByRole("button", { name: "Unknown?" }));
+    expect(field("Chip")).toHaveAttribute("placeholder", "Unknown");
+    await user.type(field("Chip"), "1011,1604");
+    expect(field("Chip")).toHaveAttribute("placeholder", "No Chip");
+    expect(within(form()).getByRole("button", { name: "Unknown?" })).toBeInTheDocument();
+});
+
 test("problems are explained and nothing is saved until they're fixed", async () => {
     const { user } = setup();
     await openEditFor(user, "Aroha");

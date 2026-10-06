@@ -21,12 +21,12 @@ import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { SECTIONS, inSection } from "./sections";
-import { APP_VERSION } from "./changelog";
 import { downloadBlob } from "./canvasHelpers";
 import OfflineModal from "./OfflineModal";
 import SortMenu from "./SortMenu";
 import "./ShowPage.css";
 
+// Monkeys added at a time as the page scrolls (continuous scroll)
 const MONKEYS_PER_PAGE = 100;
 
 const byName = (a, b) => a.name.localeCompare(b.name);
@@ -83,7 +83,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         const matchesSearch =
             query === "" ||
             (isChipSearch
-                ? monkey.chip.toString().includes(query)
+                ? String(monkey.chip ?? "").includes(query)
                 : monkey.name.toLowerCase().includes(query));
         const matchesSex = sex === "all" || monkey.sex === sex;
         return (
@@ -390,6 +390,29 @@ function ShowPage({
         setCurrentPage((page) => page + 1);
     }
 
+    // Continuous scroll: an invisible marker under the list loads the next
+    // monkeys when it comes within 800px of the screen, before you reach the
+    // end. Watched afresh after each load, so a tall screen keeps filling.
+    // Browsers without IntersectionObserver get a Show More button instead.
+    const hasMore = indexOfLastMonkey < visibleMonkeys.length;
+    const canAutoLoad = typeof window.IntersectionObserver === "function";
+    const loadMoreRef = useRef(null);
+    useEffect(() => {
+        const marker = loadMoreRef.current;
+        if (!marker || !canAutoLoad) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    observer.disconnect();
+                    handleShowMore();
+                }
+            },
+            { rootMargin: "0px 0px 800px 0px" }
+        );
+        observer.observe(marker);
+        return () => observer.disconnect();
+    }, [currentPage, hasMore, canAutoLoad, view]);
+
     // "Back to top": shown once the Filters / sort row has scrolled out of
     // view (the header itself stays at the top)
     const toolbarRef = useRef(null);
@@ -633,7 +656,10 @@ function ShowPage({
                     ))}
                 </div>
             )}
-            {indexOfLastMonkey < visibleMonkeys.length && (
+            {hasMore && canAutoLoad && (
+                <div ref={loadMoreRef} className="ShowPage-loadMore" aria-hidden="true"></div>
+            )}
+            {hasMore && !canAutoLoad && (
                 <div className="ShowPage-showMore" inert={isAnyModalOpen}>
                     <button
                         type="button"
@@ -644,12 +670,6 @@ function ShowPage({
                     </button>
                 </div>
             )}
-            {/* A quiet line at the very bottom: the version, and About */}
-            <footer className="ShowPage-footer" inert={isAnyModalOpen}>
-                <button type="button" onClick={() => setIsAboutOpen(true)}>
-                    vervetDB {APP_VERSION} · About
-                </button>
-            </footer>
             {navOutOfView && !isAnyModalOpen && (
                 <button
                     type="button"

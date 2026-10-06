@@ -18,7 +18,9 @@ export function formFromMonkey(monkey) {
         troop: monkey.troop,
         sex: monkey.sex ?? "",
         year: monkey.year === "" ? "" : String(monkey.year),
+        // A chip of null means "unknown" (an empty chip means "no chip")
         chip: String(monkey.chip ?? ""),
+        chipUnknown: monkey.chip === null,
         // The placeholder isn't a real photo, so it isn't listed for editing
         photos: monkey.img.filter((url) => !isPlaceholder(url)),
         bio: monkey.bio ?? "",
@@ -28,18 +30,22 @@ export function formFromMonkey(monkey) {
 
 // An empty form for adding a monkey
 export function emptyForm(troop = "") {
-    return { name: "", troop, sex: "", year: "", chip: "", photos: [], bio: "", desc: "" };
+    return {
+        name: "", troop, sex: "", year: "", chip: "", chipUnknown: false,
+        photos: [], bio: "", desc: "",
+    };
 }
 
 // Spaces at the ends removed, runs of spaces made single
 const tidy = (text) => text.trim().replace(/ {2,}/g, " ");
 
-// "1011 1604", "1011,1604", "1011 & 1604" → "1011 & 1604"
+// "1011,1604", "1011.1604", "1011 1604", "1011 & 1604" → "1011 & 1604"
 function tidyChip(chip) {
     const text = chip.trim();
     if (text === "") return { chip: "" };
-    // Allowed: digits, plus spaces / , & / + / "and" between two numbers
-    if (/[^\d\s,&/+]/.test(text.replace(/and/gi, " "))) {
+    // Allowed: digits, plus spaces , . - & / + or "and" between two numbers
+    // (phone number pads have no space key, but have , or .)
+    if (/[^\d\s,.\-&/+]/.test(text.replace(/and/gi, " "))) {
         return { error: "Chip numbers can only contain digits." };
     }
     const numbers = text.match(/\d+/g) ?? [];
@@ -71,7 +77,8 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
         }
     }
 
-    const chipResult = tidyChip(form.chip);
+    // Unknown chip: saved as null, whatever's in the box
+    const chipResult = form.chipUnknown ? { chip: null } : tidyChip(form.chip);
     if (chipResult.error) errors.chip = chipResult.error;
 
     const photos = form.photos.map((url) => url.trim()).filter(Boolean);
@@ -91,7 +98,7 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
             troop: form.troop,
             sex,
             year,
-            chip: chipResult.chip ?? "",
+            chip: chipResult.error ? "" : chipResult.chip,
             // No photos yet: use the placeholder, like the other new monkeys
             img: photos.length ? photos : [PLACEHOLDER_PHOTO],
             bio: tidy(form.bio),

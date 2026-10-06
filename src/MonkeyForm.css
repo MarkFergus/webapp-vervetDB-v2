@@ -93,6 +93,36 @@
     font-weight: 400;
 }
 
+/* Chip: its name with the "Unknown?" button on the right */
+.MonkeyForm-labelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 15px;
+}
+
+/* Just blue text, no pill */
+.MonkeyForm-unknown {
+    margin: -4px 0;
+    padding: 2px 0;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #25c4f8;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.MonkeyForm-unknown:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
 .MonkeyForm-field em {
     font-style: normal;
     font-size: 12px;
@@ -133,6 +163,12 @@
     margin: 0;
     font-size: 12px;
     color: #8a877e;
+}
+
+/* Hints as small bullet points, one per line */
+.MonkeyForm-hintList {
+    padding-left: 16px;
+    line-height: 1.5;
 }
 
 .MonkeyForm-fieldError {

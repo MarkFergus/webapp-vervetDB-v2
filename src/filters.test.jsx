@@ -306,3 +306,24 @@ test("Clear All in the panel is greyed out until a filter is on", async () => {
     expect(sexPill("Male")).toHaveAttribute("aria-pressed", "true");
     expect(clear()).toBeDisabled();
 });
+
+test("phones: while the filter sheet is open the page behind can't scroll", async () => {
+    const realMatchMedia = window.matchMedia;
+    window.matchMedia = (query) => ({ matches: query === "(max-width: 624px)", media: query, addEventListener() {}, removeEventListener() {} });
+    try {
+        const { user } = setup();
+        const root = document.documentElement;
+        await user.click(filtersButton());
+        expect(root.style.overflow).toBe("hidden");
+        await user.keyboard("{Escape}");
+        expect(root.style.overflow).toBe("");
+    } finally {
+        window.matchMedia = realMatchMedia;
+    }
+});
+
+test("computers: the filter dropdown leaves the page scrollable", async () => {
+    const { user } = setup();
+    await user.click(filtersButton());
+    expect(document.documentElement.style.overflow).toBe("");
+});

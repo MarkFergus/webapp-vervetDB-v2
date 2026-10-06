@@ -211,7 +211,7 @@ function monkeyRow(monkey, showTroop) {
                 <Text style={styles.name}>{monkey.name}</Text>
                 <Text style={styles.chip}>
                     {showTroop ? `${monkey.troop} troop · ` : ""}
-                    Chip: {monkey.chip ? monkey.chip : "No chip"}
+                    Chip: {monkey.chip === null ? "Unknown" : monkey.chip ? monkey.chip : "No Chip"}
                 </Text>
                 <Text style={styles.bio}>
                     {bioIntro(monkey)} {monkey.bio || "No bio yet."}

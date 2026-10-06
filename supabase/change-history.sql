@@ -146,6 +146,12 @@ as $$
             select t.name from public.troops t where t.id = (r ->> 'troop_id')::bigint
         )
         when 'sex' then initcap(r ->> 'sex')
+        when 'chip' then case
+            when r is null then null
+            when r -> 'chip' = 'null'::jsonb then 'Unknown'
+            when r ->> 'chip' = '' then 'No Chip'
+            else r ->> 'chip'
+        end
         else r ->> field
     end
 $$;

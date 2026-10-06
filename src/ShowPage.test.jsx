@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -125,7 +125,7 @@ test("modal shows 'No Chip' when a monkey has no chip number", async () => {
     await openCard(user, container, "Bloem");
 
     expect(container.querySelector(".Modal-details")).toHaveTextContent(
-        "No chip"
+        "No Chip"
     );
 });
 
@@ -264,4 +264,52 @@ test("monkeys still on the grey placeholder show a Photo Needed badge", async ()
     // And in its pop-up
     await user.click(card);
     expect(within(screen.getByRole("dialog")).getByText("Photo Needed")).toBeInTheDocument();
+});
+
+describe("continuous scroll", () => {
+    // A pretend IntersectionObserver: reach() says the marker under the
+    // list has come into view, as when scrolling near the bottom
+    let watched;
+    beforeEach(() => {
+        watched = [];
+        window.IntersectionObserver = class {
+            constructor(callback) {
+                this.callback = callback;
+            }
+            observe(element) {
+                watched.push({ element, observer: this });
+            }
+            disconnect() {
+                watched = watched.filter((w) => w.observer !== this);
+            }
+        };
+    });
+    afterEach(() => {
+        delete window.IntersectionObserver;
+    });
+    const reach = () =>
+        act(() => {
+            for (const { element, observer } of [...watched]) {
+                observer.callback([{ isIntersecting: true, target: element }]);
+            }
+        });
+
+    test("more monkeys load when the bottom comes near, with no Show More button", async () => {
+        const { cardNames } = setup();
+        expect(cardNames()).toHaveLength(100);
+        expect(screen.queryByRole("button", { name: "Show More" })).not.toBeInTheDocument();
+
+        reach();
+        expect(cardNames()).toHaveLength(200);
+        reach();
+        expect(cardNames()).toHaveLength(300);
+    });
+
+    test("stops once every monkey is shown", async () => {
+        const { cardNames } = setup();
+        for (let i = 0; i < 10; i++) reach();
+        expect(cardNames()).toHaveLength(monkeysArr.length);
+        expect(watched).toHaveLength(0);
+        expect(document.querySelector(".ShowPage-loadMore")).toBeNull();
+    });
 });

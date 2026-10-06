@@ -12,7 +12,7 @@ let openDialogs = 0;
 
 // Stops the page behind scrolling. On computers the scrollbar's space is kept
 // as padding, so the page doesn't jump sideways when the scrollbar goes.
-function lockScroll() {
+export function lockScroll() {
     openDialogs += 1;
     if (openDialogs > 1) return;
     const root = document.documentElement;
@@ -21,7 +21,7 @@ function lockScroll() {
     if (scrollbar > 0) root.style.paddingRight = `${scrollbar}px`;
 }
 
-function unlockScroll() {
+export function unlockScroll() {
     openDialogs -= 1;
     if (openDialogs > 0) return;
     const root = document.documentElement;

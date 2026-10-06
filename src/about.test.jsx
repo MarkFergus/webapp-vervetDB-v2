@@ -71,15 +71,6 @@ test("ⓘ in the top bar opens About: version, date and latest changes", async (
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); // after its closing animation
 });
 
-test("the line at the bottom of the page shows the version and opens About", async () => {
-    const user = userEvent.setup();
-    render(<ShowPage />);
-    await user.click(screen.getByRole("button", { name: `vervetDB ${APP_VERSION} · About` }));
-    expect(dialog()).toBeInTheDocument();
-    await user.click(within(dialog()).getByRole("button", { name: "Close" }));
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); // after its closing animation
-});
-
 test("phones: ☰ menu → About", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
@@ -98,4 +89,19 @@ test("while About is open the page behind can't scroll", async () => {
     expect(root.style.overflow).toBe("hidden");
     await user.click(within(dialog()).getByRole("button", { name: "Close" }));
     expect(root.style.overflow).toBe("");
+});
+
+test("Open-Source Licences folds open: each project with a link, and the full texts", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    const toggle = within(dialog()).getByRole("button", { name: "Open-Source Licences" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(within(dialog()).queryByRole("link", { name: "React" })).not.toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(within(dialog()).getByRole("link", { name: "React" })).toHaveAttribute("href", "https://react.dev");
+    expect(within(dialog()).getByRole("link", { name: "Open Sans" })).toBeInTheDocument();
+    expect(within(dialog()).getByRole("link", { name: "Full Licence Texts" })).toHaveAttribute("href", "/licences.txt");
 });

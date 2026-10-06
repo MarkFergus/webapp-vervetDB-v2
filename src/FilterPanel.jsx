@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { IconFilterOff, IconX } from "@tabler/icons-react";
 import { SECTIONS, inSection } from "./sections";
+import { lockScroll, unlockScroll } from "./useDialog";
 import "./FilterPanel.css";
 
 // The choices in the Filters panel. Age categories (several can be picked)
@@ -155,6 +156,14 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
             document.removeEventListener("keydown", handleKeyDown);
             document.removeEventListener("pointerdown", handlePointerDown);
         };
+    }, [open]);
+
+    // Phones: the panel is a sheet covering the page, so the page behind
+    // can't scroll (on computers it's a small dropdown; scrolling is fine)
+    useEffect(() => {
+        if (!open || !window.matchMedia?.("(max-width: 624px)").matches) return;
+        lockScroll();
+        return unlockScroll;
     }, [open]);
 
     function close() {

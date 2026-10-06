@@ -75,7 +75,7 @@ function MonkeyRow({ name, sex, year, troop, chip, img, onClick }) {
             </span>
             <span className="MonkeyRow-wide MonkeyRow-born">{year || "–"}</span>
             <span className="MonkeyRow-wide">{age}</span>
-            <span className="MonkeyRow-chip">{chip || "No chip"}</span>
+            <span className="MonkeyRow-chip">{chip === null ? "Unknown" : chip || "No Chip"}</span>
         </button>
     );
 }

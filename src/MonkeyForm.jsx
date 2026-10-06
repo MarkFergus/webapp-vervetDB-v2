@@ -64,6 +64,19 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
 
+    // Chip unknown: empties the box and leaves it (closing the phone
+    // keyboard). "Clear" undoes it the same way; so does typing a number.
+    const [chipFocused, setChipFocused] = useState(false);
+    const chipRef = useRef(null);
+    function chooseChipUnknown() {
+        setForm({ ...form, chip: "", chipUnknown: true });
+        chipRef.current?.blur();
+    }
+    function clearChipUnknown() {
+        setForm({ ...form, chipUnknown: false });
+        chipRef.current?.blur();
+    }
+
     // Focus a photo's ⋮ button after the list changes (1 = first photo)
     const focusPhotoOptions = (number) =>
         requestAnimationFrame(() =>
@@ -250,22 +263,56 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                             </select>
                             {errorFor("year")}
                         </label>
-                        <label className="MonkeyForm-field">
-                            <span>Chip</span>
+                        {/* While the box (or the button) has focus, the name
+                            has "Unknown?" beside it, or "Clear" once chosen
+                            (back to blank: no chip) */}
+                        <div
+                            className="MonkeyForm-field"
+                            onFocus={() => setChipFocused(true)}
+                            onBlur={(event) => {
+                                if (!event.currentTarget.contains(event.relatedTarget)) {
+                                    setChipFocused(false);
+                                }
+                            }}
+                        >
+                            <span className="MonkeyForm-labelRow">
+                                <label htmlFor="MonkeyForm-chip">Chip</label>
+                                {chipFocused && (
+                                    <button
+                                        type="button"
+                                        className="MonkeyForm-unknown"
+                                        // Keeps focus in the box, so a tap
+                                        // doesn't hide the button first
+                                        onPointerDown={(event) => event.preventDefault()}
+                                        onClick={form.chipUnknown ? clearChipUnknown : chooseChipUnknown}
+                                    >
+                                        {form.chipUnknown ? "Clear" : "Unknown?"}
+                                    </button>
+                                )}
+                            </span>
                             <input
-                                inputMode="numeric"
-                                placeholder="None"
+                                id="MonkeyForm-chip"
+                                ref={chipRef}
+                                // Digits plus , or . to separate two chips
+                                inputMode="decimal"
+                                placeholder={form.chipUnknown ? "Unknown" : "No Chip"}
                                 value={form.chip}
-                                onChange={set("chip")}
+                                onChange={(event) =>
+                                    setForm({ ...form, chip: event.target.value, chipUnknown: false })
+                                }
                                 aria-invalid={Boolean(errors.chip)}
-                                aria-describedby={describedBy("chip") ?? "MonkeyForm-chip-hint"}
+                                aria-describedby={
+                                    describedBy("chip") ?? (chipFocused ? "MonkeyForm-chip-hint" : undefined)
+                                }
                             />
-                            {errorFor("chip") || (
-                                <span className="MonkeyForm-hint" id="MonkeyForm-chip-hint">
-                                    Two chips? e.g. 1011 1604
-                                </span>
-                            )}
-                        </label>
+                            {/* Hints only while typing; a problem always shows */}
+                            {errorFor("chip") || (chipFocused && (
+                                <ul className="MonkeyForm-hint MonkeyForm-hintList" id="MonkeyForm-chip-hint">
+                                    <li>{form.chipUnknown ? "Press Clear if no chip" : "Leave blank if no chip"}</li>
+                                    <li>Two chips? e.g. 1011,1604</li>
+                                </ul>
+                            ))}
+                        </div>
                     </div>
 
                     <fieldset className="MonkeyForm-photos">

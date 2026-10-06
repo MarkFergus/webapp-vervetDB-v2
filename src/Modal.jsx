@@ -257,7 +257,7 @@ function Modal({
                                         </li>
                                         <li>{monkey.year ? `Born ${monkey.year}` : "Birth year unknown"}</li>
                                         {monkey.year && <li>{ageLabel(monkey.year)}</li>}
-                                        <li>{monkey.chip ? `Chip ${monkey.chip}` : "No chip"}</li>
+                                        <li>{monkey.chip === null ? "Chip Unknown" : monkey.chip ? `Chip ${monkey.chip}` : "No Chip"}</li>
                                     </ul>
                                     <section className="Modal-section">
                                         <h2 className="Modal-label">Bio</h2>

@@ -186,3 +186,63 @@
     margin-top: 4px;
     font-style: italic;
 }
+
+/* Open-source licences: below a line, folded away like "Earlier versions" */
+.AboutModal-licences {
+    align-self: stretch;
+    margin-top: 16px;
+    padding-top: 6px;
+    border-top: 1px solid #3a3839;
+}
+
+.AboutModal-licences .AboutModal-earlier {
+    margin-top: 0;
+}
+
+.AboutModal-licences p {
+    margin: 6px 0 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #8a877e;
+}
+
+/* One line each: name (link) on the left, what it's for on the right */
+.AboutModal-licences ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.AboutModal-licences li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.AboutModal-licences li span {
+    color: #8a877e;
+    text-align: right;
+}
+
+.AboutModal-licences a {
+    color: #d1cfc7;
+    text-decoration: none;
+}
+
+.AboutModal-licences a:hover {
+    color: #25c4f8;
+    text-decoration: underline;
+}
+
+.AboutModal-licences .AboutModal-fullLicences {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #25c4f8;
+}

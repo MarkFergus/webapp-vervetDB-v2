@@ -18,6 +18,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.1.3",
+        date: "2026-10-06",
+        changes: [
+            "Added Unknown as an option for chip numbers, alongside No Chip",
+            "Improved chip entry on phones: separate two chips with a comma or full stop",
+            "Added open-source licences to About",
+            "Fixed the page scrolling behind the Filters panel on phones",
+        ],
+    },
+    {
         version: "1.1.2",
         date: "2026-10-04",
         changes: [

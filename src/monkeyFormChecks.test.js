@@ -22,7 +22,7 @@ describe("filling the form from a monkey", () => {
         });
         expect(form).toEqual({
             name: "Aroha", troop: "H&B", sex: "male", year: "2016", chip: "19806",
-            photos: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: "",
+            chipUnknown: false, photos: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: "",
         });
     });
 
@@ -33,6 +33,12 @@ describe("filling the form from a monkey", () => {
         });
         expect(form.year).toBe("");
         expect(form.photos).toEqual([]);
+    });
+
+    test("a chip of null means unknown; an empty chip means no chip", () => {
+        const base = { name: "Kai", troop: "Goliath", sex: "", year: "", img: [], bio: "", desc: "" };
+        expect(formFromMonkey({ ...base, chip: null })).toMatchObject({ chip: "", chipUnknown: true });
+        expect(formFromMonkey({ ...base, chip: "" })).toMatchObject({ chip: "", chipUnknown: false });
     });
 
     test("a new monkey starts empty, in the chosen troop", () => {
@@ -83,10 +89,18 @@ describe("checking the form", () => {
         ["1011,1604", "1011 & 1604"],
         ["1011 and 1604", "1011 & 1604"],
         ["1011/1604", "1011 & 1604"],
+        ["1011.1604", "1011 & 1604"],
+        ["1011-1604", "1011 & 1604"],
     ])("chip %j is saved as %j", (chip, saved) => {
         const { errors, values } = check({ chip });
         expect(errors.chip).toBeUndefined();
         expect(values.chip).toBe(saved);
+    });
+
+    test("an unknown chip is saved as null", () => {
+        const { errors, values } = check({ chip: "", chipUnknown: true });
+        expect(errors.chip).toBeUndefined();
+        expect(values.chip).toBeNull();
     });
 
     test("chips with letters, or more than two, are refused", () => {

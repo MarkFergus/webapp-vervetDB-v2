@@ -34,7 +34,8 @@ export function toDatabaseRow(monkey, troopIds) {
     return {
         name: monkey.name,
         sex: monkey.sex,
-        chip: String(monkey.chip),
+        // null = unknown, "" = no chip
+        chip: monkey.chip === null ? null : String(monkey.chip),
         troop_id: troopIds[monkey.troop],
         birth_year: monkey.year === "" ? null : Number(monkey.year),
         photos: monkey.img,

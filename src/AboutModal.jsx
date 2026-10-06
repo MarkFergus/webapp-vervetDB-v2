@@ -4,14 +4,15 @@ import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
 import { CHANGELOG, currentSeries, releaseDate } from "./changelog";
+import { CREDITS, LICENCES_FILE } from "./credits";
 import "./AboutModal.css";
 
 // The About pop-up: which version of vervetDB this is, and a running
 // changelog: each version's changes under its own heading (changelog.js).
 // Every version in the current series shows (e.g. all the 1.1.x); older
-// series fold away under "Earlier versions" (see currentSeries).
-// Opened from the ⓘ in the top bar, the ☰ menu on phones, or the line at
-// the bottom of the main page.
+// series fold away under "Earlier versions" (see currentSeries). Below that,
+// the open-source software and fonts used fold away too (credits.js).
+// Opened from the ⓘ in the top bar, or the ☰ menu on phones.
 // One version: its heading (pink) and its changes
 function Release({ entry }) {
     return (
@@ -32,9 +33,13 @@ function AboutModal({ isOpen, onClose }) {
     const latest = CHANGELOG[0];
     const { current, earlier } = currentSeries(CHANGELOG);
     const [showEarlier, setShowEarlier] = useState(false);
+    const [showLicences, setShowLicences] = useState(false);
     // Folded away again each time About opens
     useEffect(() => {
-        if (isOpen) setShowEarlier(false);
+        if (isOpen) {
+            setShowEarlier(false);
+            setShowLicences(false);
+        }
     }, [isOpen]);
 
     return (
@@ -104,6 +109,43 @@ function AboutModal({ isOpen, onClose }) {
                                             {earlier.map((entry) => (
                                                 <Release key={entry.version} entry={entry} />
                                             ))}
+                                        </div>
+                                    )}
+                                </section>
+                                <section className="AboutModal-licences" aria-label="Open-source licences">
+                                    <button
+                                        type="button"
+                                        className="AboutModal-earlier"
+                                        aria-expanded={showLicences}
+                                        aria-controls="AboutModal-licenceList"
+                                        onClick={() => setShowLicences((shown) => !shown)}
+                                    >
+                                        Open-Source Licences
+                                        <IconChevronDown size={16} aria-hidden="true" />
+                                    </button>
+                                    {showLicences && (
+                                        <div id="AboutModal-licenceList">
+                                            <p>vervetDB is built with these open-source projects. Thank you to their makers.</p>
+                                            <ul>
+                                                {CREDITS.map((credit) => (
+                                                    <li key={credit.name}>
+                                                        <a href={credit.url} target="_blank" rel="noreferrer">
+                                                            {credit.name}
+                                                        </a>
+                                                        <span>
+                                                            {credit.use} · {credit.licence}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <a
+                                                className="AboutModal-fullLicences"
+                                                href={LICENCES_FILE}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Full Licence Texts
+                                            </a>
                                         </div>
                                     )}
                                 </section>
