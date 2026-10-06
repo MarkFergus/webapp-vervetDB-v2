@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import ShowPage from "./ShowPage";
 import Game from "./Game";
 import MonkeyIcon from "./MonkeyIcon";
+import LoadingSkeleton from "./LoadingSkeleton";
 import UpdatePrompt from "./UpdatePrompt";
 import { AuthProvider, useAuth } from "./auth";
 import useHashRoute from "./useHashRoute";
@@ -32,6 +33,8 @@ function App() {
     const online = useOnline();
     const { status, savedAt, monkeys, troops, troopIds, monkeySaved, monkeyDeleted } = useMonkeyData();
 
+    // Loading: grey shapes of the page; the game keeps the simple logo + message
+    if (status === "loading" && route !== "game") return <LoadingSkeleton />;
     if (status === "loading") {
         return (
             <div className="App App-loading" role="status">

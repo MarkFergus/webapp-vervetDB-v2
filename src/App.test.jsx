@@ -8,13 +8,14 @@ afterEach(() => vi.mocked(loadMonkeyData).mockReset().mockImplementation(async (
 test("shows 'Loading monkeys…' until the data arrives", async () => {
     render(<App />);
     expect(screen.getByRole("status")).toHaveTextContent("Loading monkeys…");
-    expect(await screen.findByText("vervetDB")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "vervetDB home" })).toBeInTheDocument();
     expect(screen.queryByText("Loading monkeys…")).toBeNull();
 });
 
 test("renders the vervetDB title and logo", async () => {
     render(<App />);
-    expect(await screen.findByText("vervetDB")).toBeInTheDocument();
+    await screen.findByRole("link", { name: "vervetDB home" });
+    expect(screen.getByText("vervetDB")).toBeInTheDocument();
     // The logo and name together are a link back home
     const home = screen.getByRole("link", { name: "vervetDB home" });
     expect(home.querySelector("svg")).not.toBeNull();
@@ -57,4 +58,12 @@ test("if the database can't be reached, shows the built-in copy with a notice", 
         "Couldn't reach the database, so this is a saved copy"
     );
     expect(screen.getByRole("button", { name: /^Aroha/ })).toBeInTheDocument();
+});
+
+test("while loading, grey placeholder shapes show where the monkeys will be", async () => {
+    const { container } = render(<App />);
+    expect(screen.getByRole("status")).toHaveTextContent("Loading monkeys…");
+    expect(container.querySelectorAll(".LoadingSkeleton-card").length).toBeGreaterThan(0);
+    await screen.findByRole("link", { name: "vervetDB home" });
+    expect(container.querySelector(".LoadingSkeleton")).toBeNull();
 });

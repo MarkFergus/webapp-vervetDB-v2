@@ -204,6 +204,9 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                         options={SECTIONS}
                         value={filters.section}
                         onChange={(v) => onChange("section", v)}
+                        // A troop chosen: that's what's filtering, so "All
+                        // Sections" shows as off
+                        allOff={filters.troop !== "All Troops"}
                     />
                     <label className="FilterPanel-section">
                         <span className="FilterPanel-label">Troop</span>

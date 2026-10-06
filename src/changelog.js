@@ -18,6 +18,17 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.1.4",
+        date: "2026-10-06",
+        changes: [
+            "Added swiping between photos in a monkey's pop-up on phones",
+            "Added a monkey count beside Filters and Sort",
+            "Added link previews when sharing vervetDB",
+            "Improved loading with placeholders while the monkeys load",
+            "Improved the top bar on tablets and narrow windows",
+        ],
+    },
+    {
         version: "1.1.3",
         date: "2026-10-06",
         changes: [

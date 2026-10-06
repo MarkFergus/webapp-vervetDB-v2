@@ -18,9 +18,9 @@ export default defineConfig({
             includeAssets: ["favicon.ico", "favicon.svg", "apple-touch-icon.png"],
             manifest: {
                 id: "/",
-                name: "VervetDB",
-                short_name: "VervetDB",
-                description: "The VMF monkey database: profiles and photos of every monkey",
+                name: "vervetDB",
+                short_name: "vervetDB",
+                description: "A web app for the Vervet Monkey Foundation's staff and volunteers to access and update monkey records",
                 start_url: "/",
                 scope: "/",
                 display: "standalone",
@@ -43,7 +43,8 @@ export default defineConfig({
                 // maker and its fonts are big, so they're saved the first time
                 // someone makes a Profile Book instead (below)
                 globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js"],
+                // (preview.png is only for link previews, not the app)
+                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js", "preview.png"],
                 navigateFallback: "/index.html",
                 // Other files opened directly (a test page, a PDF) open as
                 // themselves, not as the app

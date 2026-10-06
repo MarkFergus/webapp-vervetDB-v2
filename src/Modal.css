@@ -215,6 +215,49 @@
     position: relative;
     margin: 0 8px;
     text-align: center;
+    overflow: hidden; /* the photo slides within its frame */
+    border-radius: 5px;
+}
+
+/* More than one photo: sideways swipes are ours, up and down still scrolls */
+.Modal-img.is-swipeable {
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* After a swipe, or the arrows: the new photo slides in from that side */
+.Modal-img img {
+    transition: transform 0.2s ease-out;
+}
+
+.Modal-img img.is-from-next {
+    animation: Modal-slideFromRight 0.22s ease-out;
+}
+
+.Modal-img img.is-from-prev {
+    animation: Modal-slideFromLeft 0.22s ease-out;
+}
+
+@keyframes Modal-slideFromRight {
+    from {
+        transform: translateX(35%);
+        opacity: 0.4;
+    }
+}
+
+@keyframes Modal-slideFromLeft {
+    from {
+        transform: translateX(-35%);
+        opacity: 0.4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Modal-img img.is-from-next,
+    .Modal-img img.is-from-prev {
+        animation: none;
+    }
 }
 
 /* Same 5:4 frame as the cards: any photo fills it, trimming overflow */

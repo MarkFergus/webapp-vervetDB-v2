@@ -1,0 +1,220 @@
+/* The loading page's grey shapes (LoadingSkeleton.jsx). Sizes match the
+   real top bar, pills, cards and list rows. */
+
+.LoadingSkeleton {
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Every shape: a soft grey, with a lighter band sweeping across */
+.LoadingSkeleton-shape,
+.LoadingSkeleton-pill,
+.LoadingSkeleton-search,
+.LoadingSkeleton-menu {
+    display: block;
+    background: linear-gradient(90deg, #2a282a 0%, #343234 40%, #2a282a 80%) 0 0 / 300% 100%;
+    animation: LoadingSkeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes LoadingSkeleton-shimmer {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: 0 0;
+    }
+}
+
+/* Top bar: the real logo (dimmed), a search bar and the menu */
+.LoadingSkeleton-nav {
+    display: flex;
+    align-items: center;
+    column-gap: 6px;
+}
+
+.LoadingSkeleton-logo {
+    display: flex;
+    align-items: center;
+    color: #25c4f8;
+}
+
+/* "vervetDB" beside the logo: computers only, like the real top bar */
+.LoadingSkeleton-title {
+    display: none;
+    margin-left: 6px;
+    font-family: "Russo One", sans-serif;
+    font-size: 24px;
+    line-height: 1;
+    color: #d1cfc7;
+}
+
+.LoadingSkeleton-logo svg {
+    display: block;
+    width: 30px;
+    height: 28px;
+}
+
+.LoadingSkeleton-search {
+    flex: 1;
+    height: 40px;
+    border-radius: 999px;
+}
+
+.LoadingSkeleton-icons {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+.LoadingSkeleton-menu {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+/* Phones show just one (the ☰ menu) */
+.LoadingSkeleton-menu + .LoadingSkeleton-menu {
+    display: none;
+}
+
+/* Filters, Sort, count and (far right) the view switch */
+.LoadingSkeleton-pill {
+    flex-shrink: 0;
+    height: 28px;
+    border-radius: 999px;
+}
+
+.LoadingSkeleton-pill.is-filters {
+    width: 96px;
+}
+
+.LoadingSkeleton-pill.is-sort {
+    width: 118px;
+}
+
+.LoadingSkeleton-pill.is-count {
+    width: 72px;
+}
+
+.LoadingSkeleton-view {
+    width: 74px;
+    margin-left: auto;
+}
+
+/* A card: photo (the site's 5:4), name, details */
+.LoadingSkeleton-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.LoadingSkeleton-photo {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    border-radius: 12px;
+}
+
+.LoadingSkeleton-name {
+    width: 45%;
+    height: 14px;
+    margin: 10px 2px 0;
+    border-radius: 4px;
+}
+
+.LoadingSkeleton-details {
+    width: 70%;
+    height: 11px;
+    margin: 7px 2px 0;
+    border-radius: 4px;
+}
+
+/* A list row: small photo, then name and details */
+.LoadingSkeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+}
+
+.LoadingSkeleton-rowPhoto {
+    flex-shrink: 0;
+    width: 56px;
+    aspect-ratio: 5 / 4;
+    border-radius: 6px;
+}
+
+.LoadingSkeleton-lines {
+    flex: 1;
+}
+
+.LoadingSkeleton-lines .LoadingSkeleton-name {
+    width: 30%;
+    margin-top: 0;
+}
+
+.LoadingSkeleton-lines .LoadingSkeleton-details {
+    width: 55%;
+}
+
+/* Phones: the same sizes as the real (tighter) pills */
+@media (max-width: 624px) {
+    .LoadingSkeleton-pill {
+        height: 32px;
+    }
+
+    .LoadingSkeleton-pill.is-filters {
+        width: 94px;
+    }
+
+    .LoadingSkeleton-pill.is-sort {
+        width: 104px;
+    }
+
+    .LoadingSkeleton-pill.is-count {
+        width: 62px;
+    }
+
+    .LoadingSkeleton-view {
+        width: 66px;
+    }
+}
+
+/* Wider screens: logo left, search in the middle, icons right; the name
+   from 820px (the same switch points as the real top bar, Nav.css) */
+@media (min-width: 640px) {
+    .LoadingSkeleton-nav {
+        display: grid;
+        grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
+        column-gap: 16px;
+    }
+
+    .LoadingSkeleton-search {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .LoadingSkeleton-icons {
+        justify-self: end;
+    }
+
+    .LoadingSkeleton-menu + .LoadingSkeleton-menu {
+        display: block;
+    }
+}
+
+@media (min-width: 820px) {
+    .LoadingSkeleton-title {
+        display: block;
+    }
+}
+
+/* No sweeping band for people who've asked for less motion */
+@media (prefers-reduced-motion: reduce) {
+    .LoadingSkeleton-shape,
+    .LoadingSkeleton-pill,
+    .LoadingSkeleton-search,
+    .LoadingSkeleton-menu {
+        animation: none;
+    }
+}

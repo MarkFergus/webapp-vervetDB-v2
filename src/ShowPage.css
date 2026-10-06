@@ -24,7 +24,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     position: sticky;
     top: 0;
     z-index: 1;
-    padding: 8px;
+    /* 12px from the edges on phones, like the cards (24px from 625px) */
+    padding: 8px 12px;
     background-color: rgba(31, 31, 31, 0.86);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -48,7 +49,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 12px 8px 4px;
+    margin: 12px 12px 4px;
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
 }
@@ -60,6 +61,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 
 .ShowPage-filtersButton {
     display: flex;
+    flex-shrink: 0;
+    white-space: nowrap;
     align-items: center;
     gap: 6px;
     height: 28px;
@@ -77,6 +80,27 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 .ShowPage-filtersButton[aria-expanded="true"] {
     color: white;
     border-color: #6b6862;
+}
+
+/* How many monkeys match: a quiet pill beside Filters and Sort (not a button) */
+.ShowPage-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    color: #8a877e;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Its icon as bright as the Filters icon; the number stays quieter */
+.ShowPage-count svg {
+    color: #d1cfc7;
 }
 
 /* The ⌄ at the end of Filters and Sort: they open a panel / menu */
@@ -114,6 +138,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    chosen one raised */
 .ShowPage-view {
     display: flex;
+    flex-shrink: 0;
     margin-left: auto;
     padding: 2px;
     background-color: #262426;
@@ -151,7 +176,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    margin: 6px 8px 0;
+    margin: 6px 12px 0;
     font-family: "Nunito Sans", sans-serif;
 }
 
@@ -205,8 +230,49 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         gap: 8px;
     }
 
-    .ShowPage-filtersButton {
+    .ShowPage-filtersButton,
+    .ShowPage-count {
         height: 32px;
+    }
+
+    /* Room for Filters, Sort, the count and the view switch on one line */
+    .ShowPage-filtersButton {
+        padding: 0 12px;
+    }
+
+    .ShowPage-count {
+        gap: 4px;
+        padding: 0 10px;
+    }
+}
+
+/* Narrow phones: a little tighter still, so the view switch stays on screen
+   (even with the Filters count showing) */
+@media (max-width: 420px) {
+    .ShowPage-toolbar {
+        gap: 6px;
+    }
+
+    .ShowPage-filtersButton {
+        gap: 4px;
+        padding: 0 9px;
+    }
+
+    .ShowPage-count {
+        padding: 0 8px;
+    }
+}
+
+/* The narrowest phones: the count's just the number, no ⌄ on Filters and
+   Sort, and the view switch slimmer */
+@media (max-width: 380px) {
+    .ShowPage-count svg,
+    .ShowPage-toolbar .ShowPage-chevron {
+        display: none;
+    }
+
+    .ShowPage-view button {
+        width: 28px;
     }
 
     .ShowPage-view button {
@@ -242,7 +308,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     border: 1px solid #86e1ff;
 }
 
-@media (min-width: 500px) {
+/* Wider than phones: 24px from the edges (top bar, Filters row, chips and
+   cards all line up) */
+@media (min-width: 625px) {
     .ShowPage-toolbar {
         margin: 14px 24px 6px;
     }
@@ -254,7 +322,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     .ShowPage-monkeys {
         margin: 8px 24px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        /* Cards 280px+, but never fewer than 2 a row (just above phone
+           width, two 280px cards don't quite fit) */
+        grid-template-columns: repeat(auto-fill, minmax(min(280px, calc(50% - 8px)), 1fr));
     }
 
     .ShowPage-nav {

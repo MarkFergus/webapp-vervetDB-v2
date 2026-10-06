@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
+    IconUsersGroup,
     IconChevronDown,
     IconLayoutGrid,
     IconList,
@@ -555,6 +556,16 @@ function ShowPage({
                     />
                 </div>
                 <SortMenu sort={sort} onSort={sortBy} />
+                {/* How many monkeys match (screen readers hear it from the
+                    status line below, so this is for the eyes only) */}
+                <span
+                    className="ShowPage-count"
+                    title={`${visibleMonkeys.length} ${visibleMonkeys.length === 1 ? "monkey" : "monkeys"}`}
+                    aria-hidden="true"
+                >
+                    <IconUsersGroup size={16} aria-hidden="true" />
+                    {visibleMonkeys.length}
+                </span>
                 {/* Cards or list, at the far right */}
                 <div className="ShowPage-view" role="group" aria-label="View">
                     <button

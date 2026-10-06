@@ -201,6 +201,16 @@ describe("Location", () => {
     const TOP = ["Goliath", "Gismo", "D&D", "Royal"];
     const SICKBAY = ["James", "Global"];
 
+    test("choosing a troop turns \"All Sections\" off (dashed), and All Troops turns it back on", async () => {
+        const { user } = setup();
+        await user.click(filtersButton());
+        const troop = screen.getByRole("combobox", { name: "Filter by troop" });
+        await user.selectOptions(troop, "Goliath");
+        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
+        await user.selectOptions(troop, "All Troops");
+        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "true");
+    });
+
     test("a section shows its troops' monkeys, and the troop list narrows to them", async () => {
         const { user } = setup();
         await user.click(filtersButton());

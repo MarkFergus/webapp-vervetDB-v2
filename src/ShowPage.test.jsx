@@ -313,3 +313,53 @@ describe("continuous scroll", () => {
         expect(document.querySelector(".ShowPage-loadMore")).toBeNull();
     });
 });
+
+describe("swiping the pop-up's photo (phones)", () => {
+    // A monkey with 2+ photos and a name no other monkey shares
+    const multiPhoto = monkeysArr.find(
+        (m) => m.img.length > 1 && monkeysArr.filter((x) => x.name === m.name).length === 1
+    );
+    const photo = (container) => container.querySelector(".Modal-img img");
+    // A finger moving sideways (dx) and/or up-down (dy) over the photo
+    function swipe(container, dx, dy = 0, pointerType = "touch") {
+        const frame = container.querySelector(".Modal-img");
+        const at = (x, y) => ({ pointerId: 1, isPrimary: true, pointerType, clientX: x, clientY: y });
+        fireEvent.pointerDown(frame, at(200, 200));
+        fireEvent.pointerMove(frame, at(200 + dx / 2, 200 + dy / 2));
+        fireEvent.pointerMove(frame, at(200 + dx, 200 + dy));
+        fireEvent.pointerUp(frame, at(200 + dx, 200 + dy));
+    }
+
+    test("left shows the next photo, right the previous (wrapping round)", async () => {
+        const { user, container } = setup();
+        await openCard(user, container, multiPhoto.name);
+        expect(photo(container)).toHaveAttribute("src", multiPhoto.img[0]);
+
+        swipe(container, -120);
+        expect(photo(container)).toHaveAttribute("src", multiPhoto.img[1]);
+        swipe(container, 120);
+        expect(photo(container)).toHaveAttribute("src", multiPhoto.img[0]);
+        swipe(container, 120);
+        expect(photo(container)).toHaveAttribute("src", multiPhoto.img.at(-1));
+    });
+
+    test("small moves, up-and-down scrolling and the mouse don't change the photo", async () => {
+        const { user, container } = setup();
+        await openCard(user, container, multiPhoto.name);
+        swipe(container, -12);
+        swipe(container, -40, 160);
+        swipe(container, -120, 0, "mouse");
+        expect(photo(container)).toHaveAttribute("src", multiPhoto.img[0]);
+    });
+});
+
+test("the count pill beside Filters and Sort shows how many monkeys match", async () => {
+    const { user, container, troopSelect } = setup();
+    const count = () => container.querySelector(".ShowPage-count");
+    expect(count()).toHaveTextContent(String(monkeysArr.length));
+    expect(count()).toHaveAttribute("title", `${monkeysArr.length} monkeys`);
+
+    await user.selectOptions(troopSelect(), "James");
+    const james = monkeysArr.filter((m) => m.troop === "James").length;
+    expect(count()).toHaveTextContent(String(james));
+});

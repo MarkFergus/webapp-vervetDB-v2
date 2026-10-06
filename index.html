@@ -9,22 +9,41 @@
         <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
         <!-- The app manifest link is added by vite-plugin-pwa (vite.config.js) -->
-        <meta name="apple-mobile-web-app-title" content="VervetDB" />
+        <meta name="apple-mobile-web-app-title" content="vervetDB" />
         <!-- interactive-widget: the on-screen keyboard covers the page instead of
              shrinking it, so sizes set from the screen height stay put -->
         <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-visual" />
         <meta name="theme-color" content="#161616" />
+        <!-- Dark from the very first moment, before the styles load (no white flash) -->
+        <meta name="color-scheme" content="dark" />
+        <!-- Already dark: tells the Dark Reader extension not to recolour it
+             (it turned the faint hover circles on the top bar icons invisible) -->
+        <meta name="darkreader-lock" />
         <meta
             name="description"
-            content="A web interface for the VMF monkey database"
+            content="A web app for the Vervet Monkey Foundation's staff and volunteers to access and update monkey records"
         />
+        <!-- Link previews: the card shown when a vervetDB link is shared in
+             WhatsApp, Teams, email… The same card for every link (monkey
+             links too: what's after the # never reaches the apps that make
+             previews). Picture made by scripts/make-preview-image.mjs -->
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="vervetDB" />
+        <meta property="og:title" content="vervetDB" />
+        <meta property="og:description" content="A web app for the Vervet Monkey Foundation's staff and volunteers to access and update monkey records" />
+        <meta property="og:url" content="https://vervetdb.com/" />
+        <meta property="og:image" content="https://vervetdb.com/preview.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="The vervetDB monkey logo" />
+        <meta name="twitter:card" content="summary_large_image" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&family=Russo+One&family=Syne:wght@400..800&display=swap"
             rel="stylesheet"
         />
-        <title>VervetDB</title>
+        <title>vervetDB</title>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>

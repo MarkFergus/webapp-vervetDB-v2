@@ -19,6 +19,7 @@ import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
 import ImagePreview from "./ImagePreview";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
+import useSwipe from "./useSwipe";
 import "./Modal.css";
 
 function Modal({
@@ -33,6 +34,9 @@ function Modal({
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
+    // Which way the new photo slides in: "next" (from the right), "prev"
+    // (from the left), or null (no slide, e.g. a new monkey)
+    const [slideFrom, setSlideFrom] = useState(null);
     // After Share on a computer: "copied" or "failed"; Save image: "saving"
     // or "imageFailed"
     const [shareStatus, setShareStatus] = useState(null);
@@ -86,16 +90,20 @@ function Modal({
     function handleClick(direction) {
         handlePrevNext(direction);
         setCurrentIndex(0);
+        setSlideFrom(null);
         setShareStatus(null);
     }
     function handleImgClick(direction) {
         const count = monkey.img.length;
+        setSlideFrom(direction);
         if (direction === "prev") {
             setCurrentIndex((i) => (i - 1 + count) % count);
         } else if (direction === "next") {
             setCurrentIndex((i) => (i + 1) % count);
         }
     }
+
+    const photoSwipe = useSwipe(handleImgClick, (monkey?.img.length ?? 0) > 1);
 
     // Escape closes; left/right arrow keys move between monkeys
     useDialog(isModalOpen, closeButtonRef, {
@@ -192,10 +200,22 @@ function Modal({
                                         <IconChevronRight size={22} stroke={2} aria-hidden="true" />
                                     </button>
                                 </div>
-                                <div className="Modal-img">
+                                {/* Phones: swipe the photo left / right for the next /
+                                    previous one; it follows the finger */}
+                                <div
+                                    className={`Modal-img${monkey.img.length > 1 ? " is-swipeable" : ""}`}
+                                    {...photoSwipe.handlers}
+                                >
                                     {/* Offline and never opened: its saved thumbnail instead */}
                                     <img
                                         key={monkey.img[currentIndex]}
+                                        className={slideFrom ? `is-from-${slideFrom}` : undefined}
+                                        style={
+                                            photoSwipe.dragX
+                                                ? { transform: `translateX(${photoSwipe.dragX}px)`, transition: "none" }
+                                                : undefined
+                                        }
+                                        draggable={false}
                                         src={monkey.img[currentIndex]}
                                         crossOrigin="anonymous"
                                         onError={fallbackTo(thumbUrl(monkey.img[currentIndex]))}

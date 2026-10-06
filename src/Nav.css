@@ -7,6 +7,7 @@
 .Nav {
     display: flex;
     align-items: center;
+    column-gap: 6px;
 }
 
 /* ---- Logo: a link back home ---- */
@@ -52,11 +53,11 @@
 .Nav-searchbar {
     box-sizing: border-box; /* 540px wide includes the padding and border */
     flex: 1;
-    max-width: 540px;
+    /* ☰ menu sizes: fills the room between the logo and the menu */
     height: 40px;
     display: flex;
     align-items: center;
-    margin: 0 6px 0 4px;
+    margin: 0;
     padding: 0 6px;
     background-color: #161616;
     border: 1px solid #3f3d3f;
@@ -321,19 +322,21 @@
 /* Three columns, so the search bar sits in the middle of the page (not just
    the middle of the space between logo and icons). The side columns share
    what's left equally; on tight screens they still grow to fit. */
-@media (min-width: 625px) {
+/* Like Reddit's top bar, as the window narrows: first the "vervetDB" name
+   goes (below 820px) and the search bar takes its room; then, once the
+   search bar would be under 240px, the icons fold into the ☰ menu (below
+   640px; room for editors' extra + icon too) */
+@media (min-width: 640px) {
     .Nav {
         display: grid;
-        grid-template-columns: 1fr minmax(0, 540px) 1fr;
+        /* The search bar grows first (up to 540px), then the sides share
+           what's left, so it stays centred; the sides never squash */
+        grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
         column-gap: 16px;
     }
 
     .Nav-home {
         justify-self: start;
-    }
-
-    .Nav-title {
-        display: block;
     }
 
     .Nav-searchbar {
@@ -348,5 +351,11 @@
 
     .Nav-menuWrap {
         display: none;
+    }
+}
+
+@media (min-width: 820px) {
+    .Nav-title {
+        display: block;
     }
 }
