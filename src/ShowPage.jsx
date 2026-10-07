@@ -553,6 +553,8 @@ function ShowPage({
                     editing={{
                         // (only once the database has enclosures, and online)
                         canEdit: canEdit && enclosuresLive,
+                        // enclosure details: admins only, for now
+                        canEditDetails: canEdit && enclosuresLive && isAdmin,
                         canDelete: canEdit && enclosuresLive && isAdmin,
                         live: enclosuresLive && editable,
                         onSaved: onEnclosureSaved,

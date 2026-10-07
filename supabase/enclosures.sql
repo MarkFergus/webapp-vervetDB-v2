@@ -197,9 +197,10 @@ create policy "Anyone can read enclosures"
 create policy "Admins can add enclosures"
     on public.enclosures for insert to authenticated
     with check ((select public.is_admin()));
-create policy "Editors can change enclosures"
+-- (changing an enclosure's details: admins only, for now)
+create policy "Admins can change enclosures"
     on public.enclosures for update to authenticated
-    using ((select public.is_editor())) with check ((select public.is_editor()));
+    using ((select public.is_admin())) with check ((select public.is_admin()));
 create policy "Admins can delete enclosures"
     on public.enclosures for delete to authenticated
     using ((select public.is_admin()));

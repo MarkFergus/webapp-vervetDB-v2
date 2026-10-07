@@ -209,7 +209,8 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, place }) {
 }
 
 // One enclosure or introcage
-// editing: { canEdit (editors, with the database live), canDelete (admins),
+// editing: { canEdit (editors, with the database live: maintenance log),
+//   canEditDetails (admins: About, Features, Size, Established), canDelete (admins),
 //   onSaved(enclosure) }
 function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -234,7 +235,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     <div className="Enclosures-summary">
                         <div className="Enclosures-titleRow">
                             <h1 className="Enclosures-recordTitle">{enclosure.name}</h1>
-                            {editing.canEdit && (
+                            {editing.canEditDetails && (
                                 <button type="button" className="Enclosures-edit" onClick={() => setIsEditing(true)}>
                                     <IconPencil size={16} aria-hidden="true" />
                                     Edit
@@ -262,7 +263,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                         <dd>{troop.length}</dd>
                                     </div>
                                     <div>
-                                        <dt>In introcages</dt>
+                                        <dt>Introcage monkeys</dt>
                                         <dd>{inIntrocages.length}</dd>
                                     </div>
                                     <div>
@@ -326,6 +327,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                             enclosure={parent ?? enclosure}
                             section={enclosure.section}
                             introcage={isIntrocage ? enclosure.name : null}
+                            introcages={introcagesOf(parent ?? enclosure, enclosures).map((e) => e.name)}
                         />
                     </section>
                 </div>
@@ -382,7 +384,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     );
 }
 
-const NO_EDITING = { canEdit: false, canDelete: false, live: false, onSaved: () => {} };
+const NO_EDITING = { canEdit: false, canEditDetails: false, canDelete: false, live: false, onSaved: () => {} };
 
 // editing: see EnclosureRecord (plus live: the database has enclosures)
 function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, inert, editing = NO_EDITING }) {

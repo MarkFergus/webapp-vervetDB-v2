@@ -3,7 +3,7 @@
    version="1.1"
    viewBox="0 0 595.3 841.9"
    xml:space="preserve"
-   sodipodi:docname="VMF Map Open File (Updated Sep 2026).svg"
+   sodipodi:docname="VMF_Sanctuary_Map.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    width="210mm"
    height="297mm"
@@ -14,7 +14,9 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><title
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:c2pa="http://c2pa.org/manifest"><metadata
+   id="metadata1"><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTowODMxNjg0Ny1lNTcxLTQxN2UtOTA1MS1hZTU3YzdiMTE1NzAAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaN79ruoR+RmxI9Z0vV7CmFIAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDphMzFmOGNiOS1lZWY5LTQ5YzQtYTQ0NC0zNTcxZTlmM2E0YmVscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNofFQSWB4JUy4ra7JXEljl4wAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggzxagCJyCxUYaW/ZO4zEO8RaH3whDxvi9xMaQS3plejakZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaEyTqNcp+kp65jRTbiKTFeQAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIEcwzPeyU5v00dRsfHB99A5IA+ekXiQCQnVFRn90GouhZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GQKkZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjA4MzE2ODQ3LWU1NzEtNDE3ZS05MDUxLWFlNTdjN2IxMTU3MC9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjY2ZWQzNTYzLWMwMDgtNGQyOS1iZDhlLWI1NzYwMWYyMzBhMnJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCDPFqAInILFRhpb9k7jMQ7xFoffCEPG+L3ExpBLemV6NqJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggggzZN7rA26dvLN6cbnmy+WNeE8XUVLA6KMpQxDC0JYSiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggGkqFyrreyzJlWsoJ7kJROOjqUeOZkyzfL9EX7GxfDnd0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQGMryFki3STwFN00XiLvSvz5yDNlW+6s/wqWgIUZNeOoOXm1uwh3oNbZD6mfX6pvHSs4Uyuuy2dbAXXGpD5lu+0=</c2pa:manifest></metadata><title
    id="title1">Vervet Monkey Foundation – sanctuary map</title><defs
    id="defs15" />
 <sodipodi:namedview
@@ -23,23 +25,23 @@
    gridtolerance="10"
    guidetolerance="10"
    id="namedview14775"
-   inkscape:cx="161.96835"
-   inkscape:cy="477.8827"
+   inkscape:cx="459.34832"
+   inkscape:cy="632.65861"
    inkscape:pagecheckerboard="0"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-height="1009"
-   inkscape:window-maximized="1"
-   inkscape:window-width="1920"
-   inkscape:window-x="-8"
-   inkscape:window-y="-8"
+   inkscape:window-height="1000"
+   inkscape:window-maximized="0"
+   inkscape:window-width="1219"
+   inkscape:window-x="-7"
+   inkscape:window-y="0"
    inkscape:zoom="3.6149038"
    objecttolerance="10"
    pagecolor="#ffffff"
    showgrid="false"
    inkscape:showpageshadow="2"
    inkscape:deskcolor="#d1d1d1"
-   inkscape:current-layer="layer-toilets-showers"
+   inkscape:current-layer="layer-middle-section-blue"
    inkscape:document-units="mm">
 	</sodipodi:namedview>
 <g
@@ -72,7 +74,7 @@
    id="rect9496-3"
    points="270.1,559.8 266.9,554.4 277.9,548.5 281.1,553.9 "
    style="fill:none;stroke:#000000;stroke-width:1.0148;stroke-miterlimit:10"
-   inkscape:label="Gate"
+   inkscape:label="James B"
    transform="translate(-1.3750757,26.189612)" />
 <rect
    id="rect9330"
@@ -82,7 +84,7 @@
    width="4.70016"
    height="4.70016"
    style="fill:none;stroke:#000000;stroke-width:0.750026;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath A" />
 <rect
    id="rect9332"
    x="71.339134"
@@ -91,12 +93,12 @@
    width="4.70016"
    height="4.70016"
    style="fill:none;stroke:#000000;stroke-width:0.750026;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath B" />
 <polygon
    id="rect9332-9"
    points="265.4,249.7 261.1,243 268,238.9 272.3,245.5 "
    style="fill:none;stroke:#000000;stroke-width:1.2781;stroke-miterlimit:10"
-   inkscape:label="Gate"
+   inkscape:label="Goliath B1"
    transform="translate(-1.3750757,26.189612)" />
 <rect
    id="rect9334"
@@ -106,7 +108,7 @@
    width="4.6999073"
    height="4.6999073"
    style="fill:none;stroke:#000000;stroke-width:0.749985;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath D" />
 <rect
    id="rect9336"
    x="-276.96887"
@@ -115,7 +117,7 @@
    width="4.6999073"
    height="4.6999073"
    style="fill:none;stroke:#000000;stroke-width:0.749985;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath E" />
 <rect
    id="rect9338"
    x="-289.18619"
@@ -124,7 +126,7 @@
    width="4.6999073"
    height="4.6999073"
    style="fill:none;stroke:#000000;stroke-width:0.749985;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath F" />
 <rect
    id="rect9340"
    x="-294.89056"
@@ -133,7 +135,7 @@
    width="4.6999073"
    height="4.6999073"
    style="fill:none;stroke:#000000;stroke-width:0.749985;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath F1" />
 <rect
    id="rect9342"
    x="90.050392"
@@ -142,7 +144,7 @@
    width="4.6997972"
    height="4.6997972"
    style="fill:none;stroke:#000000;stroke-width:0.749968;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath J" />
 <rect
    id="rect9344"
    x="83.702553"
@@ -151,11 +153,11 @@
    width="4.6997972"
    height="4.6997972"
    style="fill:none;stroke:#000000;stroke-width:0.749968;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath I" />
 <g
    id="g9362"
    transform="translate(0.81391261,21.797946)"
-   inkscape:label="Gate">
+   inkscape:label="Royal A1">
 	<line
    id="line9346"
    x1="334.5"
@@ -217,7 +219,7 @@
    width="4.7000785"
    height="4.7000785"
    style="fill:none;stroke:#000000;stroke-width:0.750013;stroke-miterlimit:10.0002"
-   inkscape:label="Gate" />
+   inkscape:label="Gismo D" />
 <rect
    id="rect9366"
    x="71.631233"
@@ -226,7 +228,7 @@
    width="4.7000785"
    height="4.7000785"
    style="fill:none;stroke:#000000;stroke-width:0.750013;stroke-miterlimit:10.0002"
-   inkscape:label="Gate" />
+   inkscape:label="Gismo C" />
 <rect
    id="rect9368"
    x="-390.2323"
@@ -235,7 +237,7 @@
    width="4.7000666"
    height="4.7000666"
    style="fill:none;stroke:#000000;stroke-width:0.750011;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="Gismo A" />
 <rect
    id="rect9370"
    x="60.29287"
@@ -244,7 +246,7 @@
    width="5.6997609"
    height="5.6997609"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D A" />
 <rect
    id="rect9372"
    x="54.393055"
@@ -253,7 +255,7 @@
    width="4.6998029"
    height="4.6998029"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D A1" />
 <rect
    id="rect9374"
    x="48.789028"
@@ -262,7 +264,7 @@
    width="4.6998029"
    height="4.6998029"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D D" />
 <rect
    id="rect9376"
    x="72.813133"
@@ -271,7 +273,7 @@
    width="4.6998029"
    height="4.6998029"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D C" />
 <rect
    id="rect9378"
    x="67.017014"
@@ -280,7 +282,7 @@
    width="4.6998029"
    height="4.6998029"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D B" />
 <rect
    id="rect9380"
    x="-265.52756"
@@ -289,7 +291,7 @@
    width="4.699945"
    height="4.699945"
    style="fill:none;stroke:#000000;stroke-width:0.749991;stroke-miterlimit:9.9999"
-   inkscape:label="Gate" />
+   inkscape:label="D&amp;D E" />
 <rect
    id="rect9382"
    x="-65.410919"
@@ -298,7 +300,7 @@
    width="4.6999545"
    height="4.6999545"
    style="fill:none;stroke:#000000;stroke-width:0.749993;stroke-miterlimit:9.9999"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 5" />
 <rect
    id="rect9384"
    x="-64.89399"
@@ -307,7 +309,7 @@
    width="4.6999545"
    height="4.6999545"
    style="fill:none;stroke:#000000;stroke-width:0.749993;stroke-miterlimit:9.9999"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 7" />
 <rect
    id="rect9386"
    x="236.87898"
@@ -316,7 +318,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global A" />
 <rect
    id="rect9388"
    x="243.31561"
@@ -325,7 +327,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global B" />
 <rect
    id="rect9390"
    x="250.34985"
@@ -334,7 +336,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global C" />
 <rect
    id="rect9392"
    x="258.26266"
@@ -343,7 +345,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global D" />
 <rect
    id="rect9394"
    x="271.01874"
@@ -352,7 +354,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global E" />
 <rect
    id="rect9396"
    x="282.76074"
@@ -361,7 +363,7 @@
    width="4.6998281"
    height="4.6998281"
    style="fill:none;stroke:#000000;stroke-width:0.749973;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Global F" />
 <rect
    id="rect9398"
    x="279.12228"
@@ -379,7 +381,7 @@
    width="4.700088"
    height="4.700088"
    style="fill:none;stroke:#000000;stroke-width:0.750014;stroke-miterlimit:10.0002"
-   inkscape:label="Gate" />
+   inkscape:label="James A" />
 <polygon
    id="rect9400-4"
    points="274.6,550 273.4,548.1 275.5,547.2 276.7,549 "
@@ -394,7 +396,7 @@
    width="4.6998053"
    height="4.6998053"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Lankora A" />
 <rect
    id="rect9404"
    x="-32.251205"
@@ -403,7 +405,7 @@
    width="4.6999102"
    height="4.6999102"
    style="fill:none;stroke:#000000;stroke-width:0.749986;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Lankora B" />
 <rect
    id="rect9406"
    x="-14.917113"
@@ -412,7 +414,7 @@
    width="4.6999102"
    height="4.6999102"
    style="fill:none;stroke:#000000;stroke-width:0.749986;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Lankora C" />
 <rect
    id="rect9408"
    x="-296.87823"
@@ -421,7 +423,7 @@
    width="4.6997957"
    height="4.2998137"
    style="fill:none;stroke:#000000;stroke-width:0.749967;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Koko B" />
 <rect
    id="rect9410"
    x="-290.45282"
@@ -430,7 +432,7 @@
    width="4.6997957"
    height="4.2998137"
    style="fill:none;stroke:#000000;stroke-width:0.749967;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Koko C" />
 <rect
    id="rect9422"
    x="130.87447"
@@ -439,7 +441,7 @@
    width="4.6999955"
    height="4.6999955"
    style="fill:none;stroke:#000000;stroke-width:0.75;stroke-miterlimit:10"
-   inkscape:label="Gate" />
+   inkscape:label="Skrow B" />
 <rect
    id="rect9424"
    x="131.03619"
@@ -448,7 +450,7 @@
    width="4.6999955"
    height="4.6999955"
    style="fill:none;stroke:#000000;stroke-width:0.75;stroke-miterlimit:10"
-   inkscape:label="Gate" />
+   inkscape:label="Skrow C" />
 <rect
    id="rect9438"
    x="-18.545774"
@@ -457,7 +459,7 @@
    width="4.7000279"
    height="4.7000279"
    style="fill:none;stroke:#000000;stroke-width:0.750005;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 1" />
 <rect
    id="rect9440"
    x="-18.572544"
@@ -466,7 +468,7 @@
    width="4.7000279"
    height="4.7000279"
    style="fill:none;stroke:#000000;stroke-width:0.750005;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 1A" />
 <rect
    id="rect9442"
    x="-18.598581"
@@ -475,7 +477,7 @@
    width="4.7000279"
    height="4.7000279"
    style="fill:none;stroke:#000000;stroke-width:0.750005;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 2" />
 <rect
    id="rect9446"
    x="-56.925865"
@@ -484,7 +486,7 @@
    width="4.700141"
    height="4.700141"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Robert B2" />
 <rect
    id="rect9448"
    x="-51.109779"
@@ -493,7 +495,7 @@
    width="4.700141"
    height="4.700141"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Robert B1" />
 <rect
    id="rect9450"
    x="-60.964657"
@@ -502,7 +504,7 @@
    width="2.8000839"
    height="3.5001051"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Robert B3" />
 <rect
    id="rect9452"
    x="66.840675"
@@ -511,7 +513,7 @@
    width="4.7000699"
    height="4.7000699"
    style="fill:none;stroke:#000000;stroke-width:0.750011;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="H&amp;B C2" />
 <rect
    id="rect9454"
    x="66.816696"
@@ -520,7 +522,7 @@
    width="4.7000699"
    height="4.7000699"
    style="fill:none;stroke:#000000;stroke-width:0.750011;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="H&amp;B C1" />
 <rect
    id="rect9456"
    x="66.815727"
@@ -529,7 +531,7 @@
    width="4.7000699"
    height="4.7000699"
    style="fill:none;stroke:#000000;stroke-width:0.750011;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="H&amp;B B" />
 <rect
    id="rect9458"
    x="66.840027"
@@ -538,7 +540,7 @@
    width="4.7000699"
    height="4.7000699"
    style="fill:none;stroke:#000000;stroke-width:0.750011;stroke-miterlimit:10.0001"
-   inkscape:label="Gate" />
+   inkscape:label="H&amp;B A" />
 <rect
    id="rect9462"
    x="145.32095"
@@ -547,7 +549,7 @@
    width="9.0995531"
    height="4.6997685"
    style="fill:none;stroke:#000000;stroke-width:0.749963;stroke-miterlimit:9.9995"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey A" />
 <rect
    id="rect9464"
    x="181.52843"
@@ -556,7 +558,7 @@
    width="4.6997685"
    height="4.6997685"
    style="fill:none;stroke:#000000;stroke-width:0.749963;stroke-miterlimit:9.9995"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey B2" />
 <rect
    id="rect9466"
    x="-79.424446"
@@ -565,7 +567,7 @@
    width="4.7000203"
    height="4.7000203"
    style="fill:none;stroke:#000000;stroke-width:0.750003;stroke-miterlimit:10"
-   inkscape:label="Gate" />
+   inkscape:label="Robert C" />
 <rect
    id="rect9468"
    x="-113.75625"
@@ -574,7 +576,7 @@
    width="4.6999559"
    height="4.6999559"
    style="fill:none;stroke:#000000;stroke-width:0.749993;stroke-miterlimit:9.9999"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey D" />
 <rect
    id="rect9470"
    x="-576.33685"
@@ -583,7 +585,7 @@
    width="4.700141"
    height="4.700141"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey E" />
 <rect
    id="rect9472"
    x="-582.5343"
@@ -592,7 +594,7 @@
    width="4.700141"
    height="4.700141"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey F" />
 <rect
    id="rect9474"
    x="-595.74841"
@@ -601,7 +603,7 @@
    width="4.700141"
    height="4.700141"
    style="fill:none;stroke:#000000;stroke-width:0.750023;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey F2" />
 <rect
    id="rect9476"
    x="-611.50482"
@@ -610,7 +612,7 @@
    width="4.6999278"
    height="4.6999278"
    style="fill:none;stroke:#000000;stroke-width:0.749988;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Robert D" />
 <rect
    id="rect9478"
    x="-113.30051"
@@ -619,7 +621,7 @@
    width="4.6999097"
    height="4.6999097"
    style="fill:none;stroke:#000000;stroke-width:0.749986;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Koko A1" />
 
 <rect
    id="rect9480"
@@ -629,7 +631,7 @@
    width="4.6999097"
    height="4.6999097"
    style="fill:none;stroke:#000000;stroke-width:0.749986;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Koko A" />
 <rect
    id="rect9482"
    x="-435.25671"
@@ -638,7 +640,7 @@
    width="6.7002602"
    height="6.7002602"
    style="fill:none;stroke:#000000;stroke-width:0.750029;stroke-miterlimit:10.0004"
-   inkscape:label="Gate" />
+   inkscape:label="Robert A" />
 <rect
    id="rect9482-5"
    x="-435.23157"
@@ -647,7 +649,7 @@
    width="6.7002602"
    height="6.7002602"
    style="fill:none;stroke:#000000;stroke-width:0.749929;stroke-miterlimit:10.0004"
-   inkscape:label="Gate" />
+   inkscape:label="Robert A" />
 <rect
    id="rect9484"
    x="-405.69559"
@@ -656,7 +658,7 @@
    width="6.3997326"
    height="6.3997326"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Camelot D" />
 <rect
    id="rect9486"
    x="-428.71515"
@@ -665,7 +667,7 @@
    width="6.3997326"
    height="6.3997326"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Camelot C" />
 <rect
    id="rect9488"
    x="-452.12408"
@@ -674,7 +676,7 @@
    width="6.3997326"
    height="6.3997326"
    style="fill:none;stroke:#000000;stroke-width:0.749969;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Camelot A" />
 <rect
    id="rect9490"
    x="-328.15894"
@@ -683,7 +685,7 @@
    width="4.6998858"
    height="4.6998858"
    style="fill:none;stroke:#000000;stroke-width:0.749982;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Royal A3" />
 <rect
    id="rect9492"
    x="-321.99561"
@@ -692,7 +694,7 @@
    width="4.6998858"
    height="4.6998858"
    style="fill:none;stroke:#000000;stroke-width:0.749982;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Royal A4" />
 <rect
    id="rect9494"
    x="-315.64801"
@@ -701,7 +703,7 @@
    width="4.6998858"
    height="4.6998858"
    style="fill:none;stroke:#000000;stroke-width:0.749982;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Royal C" />
 <rect
    id="rect9496"
    x="165.68108"
@@ -710,12 +712,12 @@
    width="9.0995531"
    height="4.6997685"
    style="fill:none;stroke:#000000;stroke-width:0.749963;stroke-miterlimit:9.9995"
-   inkscape:label="Gate" />
+   inkscape:label="Skunkey B1" />
 <polygon
    id="rect9560"
    points="318.7,410.5 315.2,406.9 318.7,403.4 322.3,406.9 "
    style="fill:none;stroke:#000000;stroke-width:0.803;stroke-miterlimit:10"
-   inkscape:label="Gate"
+   inkscape:label="Engeltjie 8"
    transform="translate(-1.3750757,26.189612)" />
 <rect
    id="rect11944"
@@ -725,7 +727,7 @@
    width="4.70016"
    height="4.70016"
    style="fill:none;stroke:#000000;stroke-width:0.750026;stroke-miterlimit:10.0003"
-   inkscape:label="Gate" />
+   inkscape:label="Goliath C" />
 <rect
    id="rect12242"
    x="17.799707"
@@ -734,7 +736,7 @@
    width="4.6998825"
    height="4.6998825"
    style="fill:none;stroke:#000000;stroke-width:0.749981;stroke-miterlimit:9.9998"
-   inkscape:label="Gate" />
+   inkscape:label="Robert E" />
 <rect
    id="rect12270"
    x="46.820496"
@@ -743,7 +745,7 @@
    width="4.6998343"
    height="4.6998343"
    style="fill:none;stroke:#000000;stroke-width:0.749974;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 4" />
 <rect
    id="rect12272"
    x="35.354004"
@@ -752,7 +754,7 @@
    width="4.6998343"
    height="4.6998343"
    style="fill:none;stroke:#000000;stroke-width:0.749974;stroke-miterlimit:9.9996"
-   inkscape:label="Gate" />
+   inkscape:label="Engeltjie 3" />
 <rect
    id="rect14426"
    x="3.4754014"
@@ -761,18 +763,18 @@
    width="4.7001085"
    height="4.7001085"
    style="fill:none;stroke:#000000;stroke-width:0.750017;stroke-miterlimit:10.0002"
-   inkscape:label="Gate" />
+   inkscape:label="Jalamango A" />
 <polygon
    id="rect9560-0"
    points="323.2,406 319.7,402.4 323.2,398.9 326.8,402.4 "
    style="fill:none;stroke:#000000;stroke-width:0.803;stroke-miterlimit:10"
-   inkscape:label="Gate"
+   inkscape:label="Engeltjie 9"
    transform="translate(-1.3750757,26.189612)" />
 <polygon
    id="rect9560-9"
    points="327.6,401.6 324.1,398 327.6,394.3 331.2,398 "
    style="fill:none;stroke:#000000;stroke-width:0.8129;stroke-miterlimit:10"
-   inkscape:label="Gate"
+   inkscape:label="Engeltjie 9"
    transform="translate(-1.3750757,26.189612)" />
 <rect
    id="rect9466-9"
@@ -782,7 +784,7 @@
    width="5.2620192"
    height="5.2620192"
    style="fill:none;stroke:#000000;stroke-width:0.839684;stroke-miterlimit:10"
-   inkscape:label="Gate" /></g><g
+   inkscape:label="Camelot E" /></g><g
    inkscape:label="Enclosures"
    inkscape:groupmode="layer"
    id="layer-enclosures"
@@ -849,7 +851,7 @@
 <g
    id="g9420"
    transform="translate(0.81391261,21.797946)"
-   inkscape:label="Lankora B1 annex">
+   inkscape:label="Koko D">
 	<line
    id="line9412"
    x1="366.10001"
@@ -9640,7 +9642,7 @@
    id="text14519"
    style="font-size:6px;font-family:'Calibri Light';fill:#1d1d1b"
    inkscape:label="D"
-   x="163.57123"
+   x="200.08823"
    y="401.52692">D</text>
 <text
    id="text14521"
@@ -9835,7 +9837,7 @@
    style="font-size:6px;font-family:'Calibri Light';fill:#1d1d1b"
    inkscape:label="B1"
    x="361.81021"
-   y="546.49963">B1</text>
+   y="546.49963">D</text>
 <text
    id="text14571-8"
    inkscape:transform-center-x="-2.3473049"

@@ -424,9 +424,11 @@
 
 /* The numbers, as a row of tiles */
 /* (three tiles fit side by side even on a narrow phone) */
+/* (each label on one line: the tiles share the width by how long their
+   label is, so "Introcage monkeys" gets a little more) */
 .Enclosures-stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, auto);
     gap: 8px;
     margin: 16px 0 0;
 }
@@ -447,7 +449,23 @@
 
 .Enclosures-stats dt {
     font-size: 12px;
+    white-space: nowrap;
     color: #8a877e;
+}
+
+/* The narrowest phones: a little tighter, so the labels still fit */
+@media (max-width: 400px) {
+    .Enclosures-stats {
+        gap: 6px;
+    }
+
+    .Enclosures-stats div {
+        padding: 9px 9px;
+    }
+
+    .Enclosures-stats dt {
+        font-size: 11px;
+    }
 }
 
 .Enclosures-stats dd {

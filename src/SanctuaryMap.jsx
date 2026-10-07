@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
-import { IconMap2 } from "@tabler/icons-react";
-import { INTROCAGE_GATES } from "./mapIntrocages";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { IconArrowsMaximize, IconMap2, IconSquareRoundedX } from "@tabler/icons-react";
+import useDialog from "./useDialog";
 import "./SanctuaryMap.css";
 
-// The sanctuary map (public/VMF Sanctuary Map.svg, drawn in Inkscape) on an
+// The sanctuary map (public/VMF_Sanctuary_Map.svg, drawn in Inkscape) on an
 // enclosure's page: in greyscale, zoomed in around the enclosure, with its
 // outline picked out in its section's neon colour.
 // Each troop enclosure is a shape in the map named "<troop> troop" (its
-// Inkscape label). Each introcage is a small gate box beside its enclosure,
-// found by its id (mapIntrocages.js).
+// Inkscape label). Each introcage is a small gate box beside its enclosure
+// (sometimes two), in the "Enclosure gates" layer, labelled with the
+// introcage's full name (e.g. "H&B C1").
 
-export const MAP_URL = "/VMF%20Sanctuary%20Map.svg";
+export const MAP_URL = "/VMF_Sanctuary_Map.svg";
 // The map's own size (its viewBox): A4 portrait
 const MAP_WIDTH = 595.3;
 const MAP_HEIGHT = 841.9;
@@ -30,7 +32,22 @@ export const SECTION_COLOURS = {
 
 // The map is loaded once, then each enclosure's outline is worked out once
 let mapDocument = null;
+let mapMarkup = null;
 const outlines = new Map();
+
+// The whole map's drawing, as SVG markup to put straight into the page (not
+// as a picture: drawn in the page, its labels can use the site's font)
+function wholeMap(doc) {
+    if (mapMarkup === null) {
+        const serializer = new XMLSerializer();
+        mapMarkup = [...doc.documentElement.children]
+            // (no title: it would pop up as a tooltip)
+            .filter((el) => el.localName !== "title" && el.localName !== "namedview")
+            .map((el) => serializer.serializeToString(el))
+            .join("");
+    }
+    return mapMarkup;
+}
 
 function loadMap() {
     mapDocument ??= fetch(MAP_URL)
@@ -42,22 +59,38 @@ function loadMap() {
     return mapDocument;
 }
 
-// A part of the map (a shape or a whole layer), in the map's own
-// coordinates: { markup (as SVG), transform, box: { x, y, width, height } },
-// or null if the map hasn't got it. Found by its Inkscape label, or by id.
-//   key: "label:Robert troop" or "id:rect9454"
+// A part of the map (a shape, a whole layer, or an introcage's gate
+// boxes), in the map's own coordinates: { markup (as SVG), transform,
+// box: { x, y, width, height } }, or null if the map hasn't got it.
+//   key: "label:Robert troop" (the first shape with that Inkscape label),
+//   or "gate:H&B C1" (every box with that label in the "Enclosure gates"
+//   layer: some introcages have two; or, if none, the shape with that label
+//   elsewhere, e.g. Koko D, an annex drawn with the enclosures)
 function findPart(doc, key) {
     if (outlines.has(key)) return outlines.get(key);
     const split = key.indexOf(":");
     const kind = key.slice(0, split);
     const value = key.slice(split + 1);
-    const matches = (el) =>
-        kind === "id" ? el.getAttribute("id") === value : el.getAttributeNS(LABEL, "label") === value;
+    const labelled = (el, label) => el.getAttributeNS(LABEL, "label") === label;
+    // The matching elements in a copy of the map
+    function pick(root) {
+        const all = [...root.getElementsByTagName("*")];
+        if (kind !== "gate") {
+            const first = all.find((el) => labelled(el, value));
+            return first ? [first] : [];
+        }
+        const layer = all.find((el) => labelled(el, "Enclosure gates"));
+        const boxes = layer ? [...layer.children].filter((el) => labelled(el, value)) : [];
+        if (boxes.length) return boxes;
+        // Not a gate box: a shape of its own elsewhere (e.g. Koko D, an annex)
+        const shape = all.find((el) => labelled(el, value));
+        return shape ? [shape] : [];
+    }
     let found = null;
-    const shape = [...doc.getElementsByTagName("*")].find(matches);
-    if (shape) {
-        // Measure it on a hidden copy of the map, drawn at its own size so the
-        // measurements come out in the map's coordinates
+    const shapes = pick(doc);
+    if (shapes.length) {
+        // Measure them on a hidden copy of the map, drawn at its own size so
+        // the measurements come out in the map's coordinates
         const holder = document.createElement("div");
         holder.style.cssText = "position:absolute;left:-10000px;top:0;width:0;height:0;overflow:hidden";
         const svg = document.importNode(doc.documentElement, true);
@@ -66,25 +99,33 @@ function findPart(doc, key) {
         holder.appendChild(svg);
         document.body.appendChild(holder);
         try {
-            const placed = [...svg.getElementsByTagName("*")].find(matches);
-            const m = placed.getCTM();
-            const b = placed.getBBox();
-            const corners = [
-                [b.x, b.y],
-                [b.x + b.width, b.y],
-                [b.x, b.y + b.height],
-                [b.x + b.width, b.y + b.height],
-            ].map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
-            const xs = corners.map(([x]) => x);
-            const ys = corners.map(([, y]) => y);
-            // The part keeps its own transform (if any) in its markup, so it's
-            // placed with its parent's: the layers it sits in
+            const placed = pick(svg);
+            const xs = [];
+            const ys = [];
+            for (const el of placed) {
+                const m = el.getCTM();
+                const b = el.getBBox();
+                for (const [x, y] of [
+                    [b.x, b.y],
+                    [b.x + b.width, b.y],
+                    [b.x, b.y + b.height],
+                    [b.x + b.width, b.y + b.height],
+                ]) {
+                    xs.push(m.a * x + m.c * y + m.e);
+                    ys.push(m.b * x + m.d * y + m.f);
+                }
+            }
+            // Each keeps its own transform (if any) in its markup, so they're
+            // placed with their parent's: the layers they sit in (the same
+            // for an introcage's boxes, all in the gates layer)
+            const parent = placed[0].parentNode;
             const p =
-                placed.parentNode instanceof SVGGraphicsElement && placed.parentNode !== svg
-                    ? placed.parentNode.getCTM()
+                parent instanceof SVGGraphicsElement && parent !== svg
+                    ? parent.getCTM()
                     : { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+            const serializer = new XMLSerializer();
             found = {
-                markup: new XMLSerializer().serializeToString(shape),
+                markup: shapes.map((el) => serializer.serializeToString(el)).join(""),
                 transform: `matrix(${p.a} ${p.b} ${p.c} ${p.d} ${p.e} ${p.f})`,
                 box: {
                     x: Math.min(...xs),
@@ -104,14 +145,15 @@ function findPart(doc, key) {
 }
 
 // A part of the map drawn over the top (in the map's greys, or picked out)
-//   mask: only drawn inside this mask (an id)
-function Part({ part, className, grey = false, mask }) {
+//   filter: drawn through this filter (an id); mask: only drawn inside this
+//   mask (an id)
+function Part({ part, className, filter, mask }) {
     if (!part) return null;
     return (
         <g
             className={className}
             transform={part.transform}
-            filter={grey ? "url(#SanctuaryMap-grey)" : undefined}
+            filter={filter ? `url(#${filter})` : undefined}
             mask={mask ? `url(#${mask})` : undefined}
             dangerouslySetInnerHTML={{ __html: part.markup }}
         />
@@ -133,14 +175,37 @@ function zoomBox(box, spread, smallest = 100) {
     return `${x} ${y} ${width} ${height}`;
 }
 
-//   enclosure: the troop enclosure to pick out (an introcage's page passes
-//   its enclosure); section: for the colour
-//   introcage: on an introcage's page, its name: its gate box is picked out
-//   too, and the map zooms in on it (with its enclosure around it)
-function SanctuaryMap({ enclosure, section, introcage = null }) {
+// The small icons, hidden on the map and shown in the map pop-up when
+// chosen. Found by their Inkscape labels: hide (the icons in the whole map)
+// and show (the layer to show in the copy drawn on top). The misters are
+// drawn inside the Key layer; the fire pits share a layer with the rocks
+// (which stay, as landmarks), as do the cabins with the other icons.
+const byLabel = (name) => `[inkscape\\:label="${name}"]`;
+const FIRE_PITS = '[inkscape\\:label^="Fire pit"]';
+export const MAP_ICONS = [
+    { id: "taps", label: "Water Taps", hide: byLabel("Water taps"), show: byLabel("Water taps") },
+    { id: "misters", label: "Misters", hide: byLabel("Mister icon"), show: byLabel("Mister icon") },
+    {
+        id: "fences",
+        label: "Fence Switches",
+        hide: byLabel("Electric fence switches"),
+        show: byLabel("Electric fence switches"),
+    },
+    {
+        id: "toilets",
+        label: "Toilets & Showers",
+        hide: byLabel("Toilets & showers"),
+        show: byLabel("Toilets & showers"),
+    },
+    { id: "firePits", label: "Fire Pits", hide: FIRE_PITS, show: byLabel("Rocks & fire pits") },
+];
+
+// The parts of the map for one enclosure (undefined while loading, null if
+// it isn't on the map). See SanctuaryMap for what's passed in.
+function useMapParts(enclosure, introcage, introcages) {
     const label = mapLabel(enclosure.name);
-    const gateId = introcage ? INTROCAGE_GATES[introcage] : null;
-    const [parts, setParts] = useState(undefined); // undefined = loading
+    const introcageKey = introcages.join("|");
+    const [parts, setParts] = useState(undefined);
     useEffect(() => {
         let cancelled = false;
         loadMap()
@@ -149,11 +214,20 @@ function SanctuaryMap({ enclosure, section, introcage = null }) {
                 const outline = findPart(doc, `label:${label}`);
                 setParts(
                     outline && {
+                        map: wholeMap(doc),
                         outline,
                         // drawn again on top, so they show over the colour
                         gates: findPart(doc, "label:Enclosure gates"),
                         labels: findPart(doc, "label:Labels"),
-                        gate: gateId ? findPart(doc, `id:${gateId}`) : null,
+                        // the icons, on top too (in the pop-up, when shown)
+                        icons: findPart(doc, "label:Icons"),
+                        key: findPart(doc, "label:Key"),
+                        gate: introcage ? findPart(doc, `gate:${introcage}`) : null,
+                        ownGates: introcageKey
+                            .split("|")
+                            .filter(Boolean)
+                            .map((name) => findPart(doc, `gate:${name}`))
+                            .filter(Boolean),
                     }
                 );
             })
@@ -163,7 +237,127 @@ function SanctuaryMap({ enclosure, section, introcage = null }) {
         return () => {
             cancelled = true;
         };
-    }, [label, gateId]);
+    }, [label, introcage, introcageKey]);
+    return parts;
+}
+
+// The map itself: faded, with the enclosure in colour.
+//   viewBox: the part to show; shownIcons: the icon ids to show (MAP_ICONS)
+function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
+    // Ids for this copy's filters and mask (the card and the pop-up can both
+    // be on the page), and a class to scope its icon rules to
+    const id = useId().replace(/[^a-zA-Z0-9]/g, "");
+    const grey = `${id}-grey`;
+    const faded = `${id}-faded`;
+    const inside = `${id}-inside`;
+    const { map, outline, gates, labels, icons, key, gate, ownGates } = parts;
+    // The whole map: no small icons, no legend. Drawn on top: only the
+    // chosen icons (from the legend, only the misters; from the rocks and
+    // fire pits layer, only the fire pits)
+    const iconRules = [
+        `.${id} .SanctuaryMap-base :is(${MAP_ICONS.map((icon) => icon.hide).join(", ")}, ${byLabel("Key")}) { display: none; }`,
+        `.${id} .SanctuaryMap-icons > g > g { display: none; }`,
+        `.${id} .SanctuaryMap-key ${byLabel("Key")} ${byLabel("Key")} > :not(${byLabel("Mister icon")}) { display: none; }`,
+        `.${id} .SanctuaryMap-icons ${byLabel("Rocks & fire pits")} > :not(${FIRE_PITS}) { display: none; }`,
+        ...MAP_ICONS.map(
+            (icon) =>
+                `.${id} :is(.SanctuaryMap-icons, .SanctuaryMap-key) ${icon.show} { display: ${
+                    shownIcons.includes(icon.id) ? "inline" : "none"
+                } !important; }`
+        ),
+    ].join("\n");
+    return (
+        <svg className={id} viewBox={viewBox} preserveAspectRatio="xMidYMid slice" role="img" aria-label={label}>
+            <style>{iconRules}</style>
+            {/* Grey: no colour. Faded: grey, and washed towards white */}
+            <filter id={grey}>
+                <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <filter id={faded}>
+                <feColorMatrix type="saturate" values="0" />
+                <feComponentTransfer>
+                    <feFuncR type="linear" slope="0.78" intercept="0.22" />
+                    <feFuncG type="linear" slope="0.78" intercept="0.22" />
+                    <feFuncB type="linear" slope="0.78" intercept="0.22" />
+                </feComponentTransfer>
+            </filter>
+            {/* The enclosure's shape, and around its introcages' boxes: the
+                names and letters there are drawn again, not faded */}
+            <mask id={inside} maskUnits="userSpaceOnUse" x="0" y="0" width={MAP_WIDTH} height={MAP_HEIGHT}>
+                <Part part={outline} className="SanctuaryMap-maskShape" />
+                {ownGates.map((part, i) => (
+                    <Part key={i} part={part} className="SanctuaryMap-maskShape is-around" />
+                ))}
+            </mask>
+            {/* The whole map, faded */}
+            <g className="SanctuaryMap-base" filter={`url(#${faded})`} dangerouslySetInnerHTML={{ __html: map }} />
+            {/* The enclosure in its section's colour (paler on an
+                introcage's page, so the introcage stands out) */}
+            <Part part={outline} className="SanctuaryMap-highlight" />
+            {/* Gates on top of the colour (faded like the rest), the
+                introcage's own box, and the enclosure's names in black */}
+            <Part part={gates} filter={faded} />
+            {ownGates.map((part, i) => (
+                <Part key={i} part={part} filter={grey} />
+            ))}
+            <Part part={gate} className="SanctuaryMap-introcage" />
+            <Part part={labels} filter={grey} mask={inside} />
+            {/* The chosen icons, on top of everything */}
+            {shownIcons.length > 0 && (
+                <>
+                    <Part part={icons} className="SanctuaryMap-icons" />
+                    <Part part={key} className="SanctuaryMap-key" />
+                </>
+            )}
+        </svg>
+    );
+}
+
+// Shown in the pop-up: all of the small icons, for now (later: pills to
+// choose, for the ones that matter for monkey care, once each icon is linked
+// to its enclosure in the map file)
+const ALL_ICONS = MAP_ICONS.map((icon) => icon.id);
+
+// The map in a pop-up, closer in (the enclosure almost fills it), with the
+// small icons showing
+function MapPopup({ parts, colour, enclosure, onClose }) {
+    const closeRef = useRef(null);
+    useDialog(true, closeRef, { onClose });
+    return createPortal(
+        <div className="MapPopup" role="dialog" aria-modal="true" aria-labelledby="MapPopup-title">
+            <div className="MapPopup-overlay" onClick={onClose} />
+            <div className="MapPopup-window">
+                <div className="MapPopup-header">
+                    <h2 id="MapPopup-title">{enclosure.name} on the map</h2>
+                    <button type="button" className="MapPopup-close" ref={closeRef} onClick={onClose} aria-label="Close">
+                        <IconSquareRoundedX />
+                    </button>
+                </div>
+                <div className="SanctuaryMap is-large" style={{ "--highlight": colour }}>
+                    <MapView
+                        parts={parts}
+                        colour={colour}
+                        viewBox={zoomBox(parts.outline.box, 1.15, 60)}
+                        label={`Sanctuary map, close up on ${enclosure.name}`}
+                        shownIcons={ALL_ICONS}
+                    />
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+}
+
+//   enclosure: the troop enclosure to pick out (an introcage's page passes
+//   its enclosure); section: for the colour
+//   introcage: on an introcage's page, its name: its gate box is picked out
+//   too, and the map zooms in on it (with its enclosure around it)
+//   introcages: the names of the enclosure's introcages: their boxes and
+//   letters aren't faded (they're part of the enclosure)
+// On an enclosure's page, tapping the map opens it in a pop-up.
+function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] }) {
+    const parts = useMapParts(enclosure, introcage, introcages);
+    const [popupOpen, setPopupOpen] = useState(false);
 
     if (!parts) {
         return (
@@ -175,34 +369,40 @@ function SanctuaryMap({ enclosure, section, introcage = null }) {
     }
 
     const colour = SECTION_COLOURS[section] ?? SECTION_COLOURS.Middle;
-    const { outline, gates, labels, gate } = parts;
+    const { outline, gate } = parts;
+    const view = (
+        <MapView
+            parts={parts}
+            colour={colour}
+            viewBox={gate ? zoomBox(gate.box, 4, 100) : zoomBox(outline.box, introcage ? 1.4 : 2.6)}
+            label={`Sanctuary map, with ${introcage && gate ? introcage : enclosure.name} picked out`}
+        />
+    );
+    if (introcage) {
+        return (
+            <div className={`SanctuaryMap${gate ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
+                {view}
+            </div>
+        );
+    }
     return (
-        <div className={`SanctuaryMap${gate ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
-            <svg
-                viewBox={gate ? zoomBox(gate.box, 14, 70) : zoomBox(outline.box, introcage ? 1.4 : 2.6)}
-                preserveAspectRatio="xMidYMid slice"
-                role="img"
-                aria-label={`Sanctuary map, with ${introcage && gate ? introcage : enclosure.name} picked out`}
+        <>
+            <button
+                type="button"
+                className="SanctuaryMap is-button"
+                style={{ "--highlight": colour }}
+                onClick={() => setPopupOpen(true)}
+                aria-label={`Open the map of ${enclosure.name}`}
             >
-                <filter id="SanctuaryMap-grey">
-                    <feColorMatrix type="saturate" values="0" />
-                </filter>
-                {/* The enclosure's shape, to redraw the names inside it only
-                    (redrawn names elsewhere wouldn't sit exactly on the map's) */}
-                <mask id="SanctuaryMap-inside" maskUnits="userSpaceOnUse" x="0" y="0" width={MAP_WIDTH} height={MAP_HEIGHT}>
-                    <Part part={outline} className="SanctuaryMap-maskShape" />
-                </mask>
-                {/* The whole map, in greyscale */}
-                <image href={MAP_URL} width={MAP_WIDTH} height={MAP_HEIGHT} filter="url(#SanctuaryMap-grey)" />
-                {/* The enclosure in its section's colour (paler on an
-                    introcage's page, so the introcage stands out) */}
-                <Part part={outline} className="SanctuaryMap-highlight" />
-                {/* Gates and the enclosure's names back on top: names stay black */}
-                <Part part={gates} grey />
-                <Part part={gate} className="SanctuaryMap-introcage" />
-                <Part part={labels} grey mask="SanctuaryMap-inside" />
-            </svg>
-        </div>
+                {view}
+                <span className="SanctuaryMap-expand" aria-hidden="true">
+                    <IconArrowsMaximize size={16} />
+                </span>
+            </button>
+            {popupOpen && (
+                <MapPopup parts={parts} colour={colour} enclosure={enclosure} onClose={() => setPopupOpen(false)} />
+            )}
+        </>
     );
 }
 

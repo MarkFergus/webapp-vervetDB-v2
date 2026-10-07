@@ -46,7 +46,7 @@ export default defineConfig({
                 // (preview.png is only for link previews, not the app)
                 // (the sanctuary map is big: saved the first time it's
                 // shown instead, see runtimeCaching)
-                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js", "preview.png", "VMF Sanctuary Map.svg"],
+                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js", "preview.png", "VMF_Sanctuary_Map.svg"],
                 navigateFallback: "/index.html",
                 // Other files opened directly (a test page, a PDF) open as
                 // themselves, not as the app
@@ -104,7 +104,7 @@ export default defineConfig({
                     {
                         // The sanctuary map (Enclosures pages)
                         urlPattern: ({ url, sameOrigin }) =>
-                            sameOrigin && url.pathname === "/VMF%20Sanctuary%20Map.svg",
+                            sameOrigin && url.pathname === "/VMF_Sanctuary_Map.svg",
                         handler: "StaleWhileRevalidate",
                         options: { cacheName: "vervetdb-map" },
                     },

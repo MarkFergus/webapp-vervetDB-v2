@@ -102,7 +102,7 @@ describe("an enclosure's record", () => {
         expect(screen.getByText("Size").closest("div")).toHaveTextContent("Not recorded");
         const stat = (label) => screen.getByText(label, { selector: "dt" }).nextSibling.textContent;
         expect(stat("Troop monkeys")).toBe(String(hbTroop.length));
-        expect(stat("In introcages")).toBe("1");
+        expect(stat("Introcage monkeys")).toBe("1");
         expect(stat("Introcages")).toBe("4");
         expect(document.querySelector(".Enclosures-back")).toHaveAttribute("href", "#enclosures");
         // The top bar's page button switches to Monkeys while here
@@ -193,25 +193,34 @@ describe("the sanctuary map", () => {
         expect(Object.keys(SECTION_COLOURS)).toEqual(["Top", "Middle", "Bottom", "Sickbay"]);
         // Every troop enclosure has a shape by that name in the map
         const fs = await import("node:fs");
-        const svg = fs.readFileSync("public/VMF Sanctuary Map.svg", "utf8").replace(/&amp;/g, "&");
+        const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
         for (const e of enclosuresArr.filter((x) => x.type === "troop")) {
             expect(svg, e.name).toContain(`inkscape:label="${mapLabel(e.name)}"`);
         }
     });
 
-    test("each introcage's gate box is in the map", async () => {
-        const { INTROCAGE_GATES } = await import("./mapIntrocages");
+    test("each introcage has its gate box(es) (or its own shape) in the map, named after it", async () => {
         const fs = await import("node:fs");
-        const svg = fs.readFileSync("public/VMF Sanctuary Map.svg", "utf8");
-        expect(Object.keys(INTROCAGE_GATES).length).toBeGreaterThan(60);
-        for (const [name, id] of Object.entries(INTROCAGE_GATES)) {
-            expect(svg, name).toContain(`id="${id}"`);
+        const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
+        for (const e of enclosuresArr.filter((x) => x.type === "introcage")) {
+            expect(svg, e.name).toContain(`inkscape:label="${e.name}"`);
         }
-        expect(INTROCAGE_GATES["H&B C1"]).toBe("rect9454");
     });
 
     test("a record shows the map card", () => {
         showPage(`enclosure/${HB.id}`);
         expect(screen.getByRole("heading", { name: "Map" })).toBeInTheDocument();
+    });
+});
+
+describe("the map's small icons", () => {
+    test("five kinds can be shown in the pop-up, each found in the map file", async () => {
+        const { MAP_ICONS } = await import("./SanctuaryMap");
+        expect(MAP_ICONS.map((i) => i.label)).toEqual(["Water Taps", "Misters", "Fence Switches", "Toilets & Showers", "Fire Pits"]);
+        const fs = await import("node:fs");
+        const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
+        for (const name of ["Water taps", "Mister icon", "Electric fence switches", "Toilets & showers", "Rocks & fire pits"]) {
+            expect(svg, name).toContain(`inkscape:label="${name}"`);
+        }
     });
 });

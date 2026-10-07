@@ -14,7 +14,7 @@ const ROBERT_B1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "Robert B1");
 
 let saved; // what the pretend database was asked to do
 let log; // the pretend maintenance table
-function fakeSupabase({ signedIn = true, admin = false } = {}) {
+function fakeSupabase({ signedIn = true, admin = true } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     log = [
         { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", details: "Cleared the drain", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
@@ -171,6 +171,15 @@ describe("editing an enclosure", () => {
         await user.click(within(form).getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
         expect(saved.updates[0].row).toEqual({ features: "Shade net", size: null });
+    });
+
+    test("editors who aren't admins can't edit an enclosure's details (they can still log maintenance)", async () => {
+        const { user } = setup({ admin: false });
+        await screen.findByRole("heading", { level: 1, name: "Robert" });
+        await screen.findByText("Section");
+        expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+        await openMaintenance(user);
+        expect(await screen.findByRole("button", { name: "Add Entry" })).toBeInTheDocument();
     });
 
     test("not signed in, or before the database has enclosures: no Edit", async () => {
