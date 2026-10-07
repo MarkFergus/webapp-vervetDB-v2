@@ -17,7 +17,7 @@ const troopName = (id) => troopNames[id - 1];
 const startingMonkeys = () => BUILT_IN_DATA.monkeys.map((m, i) => ({ ...m, id: i + 1 }));
 
 let saved; // what the pretend database was asked to do
-function fakeSupabase({ signedIn = true, refuse = false, admin = true } = {}) {
+function fakeSupabase({ signedIn = true, refuse = false, admin = true, role } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({
         data: { session: signedIn ? { user: EDITOR } : null },
@@ -32,7 +32,7 @@ function fakeSupabase({ signedIn = true, refuse = false, admin = true } = {}) {
     const refusal = { data: null, error: { code: "PGRST116", message: "0 rows" } };
     vi.spyOn(supabase, "from").mockImplementation((table) => {
         if (table === "editors") {
-            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin }, error: null }) }) }) };
+            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin, ...(role && { role }) }, error: null }) }) }) };
         }
         return {
             update: (row) => ({
@@ -112,6 +112,14 @@ async function openEditFor(user, name) {
 
 test("visitors see no Edit or Add buttons", async () => {
     const { user } = setup({ signedIn: false });
+    await user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Add (New )?Monkey/i })).toBeNull();
+});
+
+test("maintenance accounts can't edit or add monkeys", async () => {
+    const { user } = setup({ role: "maintenance", admin: false });
+    await waitFor(() => expect(supabase.from).toHaveBeenCalledWith("editors"));
     await user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Add (New )?Monkey/i })).toBeNull();

@@ -77,6 +77,15 @@
     color: #b6b2a5;
 }
 
+/* Their full name (set by admins), above the email */
+.AccountModal-name {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+}
+
 .AccountModal-email {
     font-size: 15px;
     color: #d1cfc7;
@@ -140,6 +149,12 @@
 .AccountModal-badge.is-editor {
     color: #47b028;
     background-color: rgba(71, 176, 40, 0.15);
+}
+
+/* Maintenance accounts: amber */
+.AccountModal-badge.is-maintenance {
+    color: #f5a524;
+    background-color: rgba(245, 165, 36, 0.15);
 }
 
 /* Admins: the site's neon pink */

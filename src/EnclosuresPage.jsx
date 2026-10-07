@@ -312,7 +312,8 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, place, ...fold }) {
 }
 
 // One enclosure or introcage
-// editing: { canEdit (editors, with the database live: maintenance log),
+// editing: { canEdit (editors, with the database live), canLog (any role:
+//   adding to the maintenance log),
 //   canEditDetails (admins: About, Features, Size, Established), canDelete (admins),
 //   onSaved(enclosure) }
 function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing }) {
@@ -367,7 +368,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
             <MaintenanceLog
                 enclosure={enclosure}
                 live={editing.live}
-                canAdd={editing.canEdit}
+                canAdd={editing.canLog}
                 canDelete={editing.canDelete}
             />
         </Fold>
@@ -548,7 +549,9 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     );
 }
 
-const NO_EDITING = { canEdit: false, canEditDetails: false, canDelete: false, live: false, onSaved: () => {} };
+const NO_EDITING = {
+    canEdit: false, canLog: false, canEditDetails: false, canDelete: false, live: false, onSaved: () => {},
+};
 
 // editing: see EnclosureRecord (plus live: the database has enclosures)
 function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, inert, editing = NO_EDITING }) {

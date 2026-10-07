@@ -3,14 +3,22 @@ import { supabase } from "./supabase";
 
 // Who's signed in, shared with every page through <AuthProvider>.
 //   user:          the signed-in account (null when signed out)
-//   isEditor:      whether that account may change monkeys (in the `editors` table)
-//   isAdmin:       whether it may also delete them (an admin editor)
+//   role:          "admin", "editor", "maintenance", or null (signed out, or
+//                  an account without a role: view only). See supabase/roles.sql.
+//   isEditor:      whether that account may change monkeys (admins and editors)
+//   isAdmin:       whether it may also add and delete them, and change
+//                  enclosure details
+//   canLogMaintenance: whether it may add to the maintenance log (any role)
+//   name:          the account's full name (set by admins), or null
 //   ready:         false until we've checked for a saved sign-in
 //   passwordSetup: why the account pop-up should open by itself (see below)
 const AuthContext = createContext({
     user: null,
+    role: null,
     isEditor: false,
     isAdmin: false,
+    canLogMaintenance: false,
+    name: null,
     ready: true,
     passwordSetup: null,
     signIn: async () => {},
@@ -44,27 +52,42 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
-// Is this account listed as an editor, and is it an admin? (The database
-// only lets people see their own entry, so a row coming back means editor.)
-const NOT_EDITOR = { isEditor: false, isAdmin: false };
-async function checkEditor(user) {
-    if (!user) return NOT_EDITOR;
-    const { data, error } = await supabase
-        .from("editors")
-        .select("user_id, is_admin")
-        .eq("user_id", user.id)
-        .maybeSingle();
+// The account's full name (set by admins, supabase/set-name.sql), or null:
+// none set yet, or the database hasn't got names (names.sql not run)
+async function loadName(user) {
+    try {
+        const { data, error } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+        return error ? null : data?.full_name ?? null;
+    } catch {
+        return null; // a name is a nice-to-have: never stops signing in
+    }
+}
+
+// This account's role: its entry in the editors table (the database only
+// lets people see their own entry). No entry: view only. All columns, so it
+// works before roles.sql too (no role column: an editor, or an admin).
+const NO_ROLE = { role: null, isEditor: false, isAdmin: false, canLogMaintenance: false, name: null };
+async function checkRole(user) {
+    if (!user) return NO_ROLE;
+    const { data, error } = await supabase.from("editors").select("*").eq("user_id", user.id).maybeSingle();
     if (error) {
         console.error("Couldn't check editor status:", error);
-        return NOT_EDITOR;
+        return NO_ROLE;
     }
-    return { isEditor: Boolean(data), isAdmin: Boolean(data?.is_admin) };
+    if (!data) return NO_ROLE;
+    const role = data.role ?? (data.is_admin ? "admin" : "editor");
+    return {
+        name: await loadName(user),
+        role,
+        isEditor: role === "admin" || role === "editor",
+        isAdmin: role === "admin",
+        canLogMaintenance: true,
+    };
 }
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-    const [isEditor, setIsEditor] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [roles, setRoles] = useState(NO_ROLE);
     const [ready, setReady] = useState(false);
     const [passwordSetup, setPasswordSetup] = useState(ARRIVED_FROM_LINK);
 
@@ -78,11 +101,10 @@ export function AuthProvider({ children }) {
 
         async function update(session) {
             const nextUser = session?.user ?? null;
-            const roles = await checkEditor(nextUser);
+            const nextRoles = await checkRole(nextUser);
             if (cancelled) return;
             setUser(nextUser);
-            setIsEditor(roles.isEditor);
-            setIsAdmin(roles.isAdmin);
+            setRoles(nextRoles);
             setReady(true);
         }
 
@@ -161,8 +183,7 @@ export function AuthProvider({ children }) {
         <AuthContext.Provider
             value={{
                 user,
-                isEditor,
-                isAdmin,
+                ...roles,
                 ready,
                 passwordSetup,
                 signIn,

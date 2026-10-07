@@ -14,7 +14,7 @@ const ROBERT_B1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "Robert B1");
 
 let saved; // what the pretend database was asked to do
 let log; // the pretend maintenance table
-function fakeSupabase({ signedIn = true, admin = true } = {}) {
+function fakeSupabase({ signedIn = true, admin = true, role } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     log = [
         { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", details: "Cleared the drain", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
@@ -28,7 +28,7 @@ function fakeSupabase({ signedIn = true, admin = true } = {}) {
     });
     vi.spyOn(supabase, "from").mockImplementation((table) => {
         if (table === "editors") {
-            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin }, error: null }) }) }) };
+            return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { user_id: EDITOR.id, is_admin: admin, ...(role && { role }) }, error: null }) }) }) };
         }
         if (table === "enclosures") {
             return {
@@ -182,6 +182,22 @@ describe("editing an enclosure", () => {
         expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
         await openMaintenance(user);
         expect(await screen.findByRole("button", { name: "Add Entry" })).toBeInTheDocument();
+    });
+
+    test("maintenance accounts: no Edit, but they can log maintenance", async () => {
+        const { user } = setup({ role: "maintenance", admin: false });
+        await screen.findByRole("heading", { level: 1, name: "Robert" });
+        await openMaintenance(user);
+        expect(await screen.findByRole("button", { name: "Add Entry" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    });
+
+    test("not signed in: no Edit, and no Add Entry", async () => {
+        const { user } = setup({ signedIn: false });
+        await screen.findByRole("heading", { level: 1, name: "Robert" });
+        await openMaintenance(user);
+        await screen.findByText("Section");
+        expect(screen.queryByRole("button", { name: "Add Entry" })).toBeNull();
     });
 
     test("not signed in, or before the database has enclosures: no Edit", async () => {

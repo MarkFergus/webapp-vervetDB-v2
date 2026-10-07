@@ -16,6 +16,9 @@ function fakeSupabase({
     savedUser = null,
     editors = [EDITOR.id],
     admins = [],
+    maintenance = [],
+    noRoleColumn = false,
+    names = {},
     resetError = null,
     updateError = null,
 } = {}) {
@@ -44,12 +47,27 @@ function fakeSupabase({
         authListener("SIGNED_OUT", null);
         return { error: null };
     });
-    // The editors table: a row comes back only for editors
-    vi.spyOn(supabase, "from").mockImplementation(() => ({
+    // The editors table: a row comes back only for editors. profiles: the
+    // names given.
+    vi.spyOn(supabase, "from").mockImplementation((table) => table === "profiles" ? ({
+        select: () => ({
+            eq: (_, id) => ({
+                maybeSingle: async () => ({ data: names[id] ? { full_name: names[id] } : null, error: null }),
+            }),
+        }),
+    }) : ({
         select: () => ({
             eq: (_, id) => ({
                 maybeSingle: async () => ({
-                    data: editors.includes(id) ? { user_id: id, is_admin: admins.includes(id) } : null,
+                    data: editors.includes(id)
+                        ? {
+                              user_id: id,
+                              is_admin: admins.includes(id),
+                              ...(!noRoleColumn && {
+                                  role: admins.includes(id) ? "admin" : maintenance.includes(id) ? "maintenance" : "editor",
+                              }),
+                          }
+                        : null,
                     error: null,
                 }),
             }),
@@ -107,7 +125,7 @@ test("the editor signs in: told they can edit, and the nav icon turns green", as
 
     await waitFor(() => expect(dialog()).toHaveAccessibleName("Signed in"));
     expect(within(dialog()).getByText(EDITOR.email)).toBeInTheDocument();
-    expect(within(dialog()).getByText("You can edit monkeys, upload photos, and download all photos for offline use.")).toBeInTheDocument();
+    expect(within(dialog()).getByText("You can edit monkeys, upload photos, log maintenance, and download all photos for offline use.")).toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: "Account (signed in)" });
     expect(accountButton).toHaveClass("is-signed-in");
 });
@@ -118,9 +136,40 @@ test("an admin sees a pink ADMIN badge, and that they can add and delete monkeys
     await waitFor(() => expect(within(dialog()).getByText("Admin")).toHaveClass("is-admin"));
     expect(
         within(dialog()).getByText(
-            "You can add, edit and delete monkeys, upload photos, and download all photos for offline use."
+            "You can add, edit and delete monkeys, upload photos, edit enclosures, log maintenance, and download all photos for offline use."
         )
     ).toBeInTheDocument();
+});
+
+test("a maintenance account: an amber MAINTENANCE badge, and that it can log maintenance", async () => {
+    const { user, dialog } = setup({ maintenance: [EDITOR.id] });
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Maintenance")).toHaveClass("is-maintenance"));
+    expect(
+        within(dialog()).getByText(
+            "You can log maintenance on enclosures and introcages, and download all photos for offline use."
+        )
+    ).toBeInTheDocument();
+});
+
+test("before roles.sql (no role column): an editor, or an admin from is_admin", async () => {
+    const { user, dialog } = setup({ admins: [EDITOR.id], noRoleColumn: true });
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Admin")).toHaveClass("is-admin"));
+});
+
+test("an account with a name: shown above the email", async () => {
+    const { user, dialog } = setup({ names: { [EDITOR.id]: "Mark Fergus Ashcroft" } });
+    await signIn(user, EDITOR.email, PASSWORD);
+    expect(await within(dialog()).findByText("Mark Fergus Ashcroft")).toHaveClass("AccountModal-name");
+    expect(within(dialog()).getByText(EDITOR.email)).toBeInTheDocument();
+});
+
+test("no name yet: just the email", async () => {
+    const { user, dialog } = setup();
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Editor")).toBeInTheDocument());
+    expect(dialog().querySelector(".AccountModal-name")).toBeNull();
 });
 
 test("an editor's badge says Editor; a viewer's says Viewer", async () => {

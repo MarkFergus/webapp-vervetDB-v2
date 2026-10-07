@@ -144,7 +144,7 @@ function ShowPage({
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
-    const { isEditor, isAdmin, passwordSetup } = useAuth();
+    const { isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
@@ -553,6 +553,8 @@ function ShowPage({
                     editing={{
                         // (only once the database has enclosures, and online)
                         canEdit: canEdit && enclosuresLive,
+                        // the maintenance log: any role, maintenance accounts too
+                        canLog: editable && canLogMaintenance && enclosuresLive,
                         // enclosure details: admins only, for now
                         canEditDetails: canEdit && enclosuresLive && isAdmin,
                         canDelete: canEdit && enclosuresLive && isAdmin,
