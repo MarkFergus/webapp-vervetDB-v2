@@ -3,12 +3,15 @@ import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { saveEnclosure } from "./monkeyData";
+import { deletePhotos } from "./photoUpload";
+import { MAX_PHOTOS } from "./monkeyFormChecks";
+import PhotosField from "./PhotosField";
 import "./MonkeyForm.css";
 import "./EnclosureForm.css";
 
 // Editing an enclosure's or introcage's details (editors only), in the same
-// window as the monkey form: About (troop enclosures), Features, Size and
-// Established (troop enclosures, month and year).
+// window as the monkey form: Photos, About (troop enclosures), Features,
+// Size and Established (troop enclosures, month and year).
 //   onSaved(savedEnclosure) after a successful save
 
 const MONTHS = [
@@ -32,16 +35,25 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
         size: enclosure.size == null ? "" : String(enclosure.size),
         year,
         month,
+        photos: enclosure.photos ?? [],
     });
     const [form, setForm] = useState(initial);
     const [problem, setProblem] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const firstRef = useRef(null);
+    const photosRef = useRef(null);
+    // Photos uploaded while this form is open (tidied up if not kept)
+    const uploadedHere = useRef([]);
     const changed = JSON.stringify(form) !== JSON.stringify(initial);
 
+    // Escape while cropping just closes the crop screen. Photos uploaded but
+    // not saved are deleted.
     function requestClose() {
+        if (photosRef.current?.cancelCrop()) return;
         if (busy) return;
         if (changed && !window.confirm("Discard your changes?")) return;
+        deletePhotos(uploadedHere.current);
         onClose();
     }
     useDialog(true, firstRef, { onClose: requestClose });
@@ -66,13 +78,18 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
         }
         setBusy(true);
         setProblem(null);
-        const changes = { features: form.features.trim(), size };
+        const changes = { features: form.features.trim(), size, photos: form.photos };
         if (!isIntrocage) {
             changes.description = form.description.trim();
             changes.established = form.year ? `${form.year}-${form.month}` : null;
         }
         try {
-            onSaved(await saveEnclosure(enclosure, changes));
+            const saved = await saveEnclosure(enclosure, changes);
+            // Tidy up: uploaded photos it had, or that were uploaded here,
+            // but that aren't kept
+            const before = [...(enclosure.photos ?? []), ...uploadedHere.current];
+            deletePhotos(before.filter((url) => !saved.photos.includes(url)));
+            onSaved(saved);
         } catch (error) {
             setProblem(error.message);
             setBusy(false);
@@ -98,6 +115,24 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                 </div>
 
                 <div className="MonkeyForm-body">
+                    <PhotosField
+                        ref={photosRef}
+                        photos={form.photos}
+                        onChange={(update) => setForm((f) => ({ ...f, photos: update(f.photos) }))}
+                        uploadTo={() => ({ troop: "enclosures", name: enclosure.name })}
+                        uploadedHere={uploadedHere}
+                        uploading={uploading}
+                        onUploadingChange={setUploading}
+                        hint={
+                            <>
+                                The primary photo (★) is shown on the card and first on
+                                the page; use ⋮ to change it or delete a photo.
+                                {form.photos.length === 0 && " None yet: its monkeys' photos are shown instead."}
+                            </>
+                        }
+                        full={`${MAX_PHOTOS} photos is the most. Delete one (⋮ → Delete photo) to add another.`}
+                    />
+
                     {!isIntrocage && (
                         <label className="MonkeyForm-field">
                             <span>About</span>
@@ -183,7 +218,8 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                     <button type="button" className="MonkeyForm-button is-quiet" onClick={requestClose} disabled={busy}>
                         Cancel
                     </button>
-                    <button type="submit" className="MonkeyForm-button is-save" disabled={busy}>
+                    {/* Not while a photo is still uploading */}
+                    <button type="submit" className="MonkeyForm-button is-save" disabled={busy || uploading}>
                         {busy ? "Saving…" : "Save"}
                     </button>
                 </div>

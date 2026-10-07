@@ -3,6 +3,8 @@ import {
     IconArrowLeft,
     IconCalendar,
     IconChevronDown,
+    IconChevronLeft,
+    IconChevronRight,
     IconFence,
     IconMapPin,
     IconPencil,
@@ -14,6 +16,7 @@ import EnclosureForm from "./EnclosureForm";
 import MaintenanceLog from "./MaintenanceLog";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
+import useSwipe from "./useSwipe";
 import { inIntrocage, placeName } from "./places";
 import {
     bySection,
@@ -27,6 +30,7 @@ import {
     sizeText,
     troopMonkeys,
 } from "./enclosures";
+import "./Modal.css"; // the photo arrows and dots
 import "./EnclosuresPage.css";
 
 // The Enclosures pages, shown under the site's top bar (ShowPage): every
@@ -48,14 +52,68 @@ function BackLink({ href, label }) {
     );
 }
 
-// The enclosure's own photo, or until it has one, up to four of its monkeys
-// in a 2 × 2 grid, or a fence icon if it's empty
+// An enclosure's photos on its record: one at a time, with round previous /
+// next buttons and a dot per photo (like a monkey's pop-up); on phones, swipe
+// sideways
+function PhotoSlides({ photos, name }) {
+    const [index, setIndex] = useState(0);
+    // Slid in from this side after a change ("next" / "prev"), or null
+    const [slideFrom, setSlideFrom] = useState(null);
+    const count = photos.length;
+    // Fewer photos after an edit: stay within them
+    const current = Math.min(index, count - 1);
+    function go(direction) {
+        setSlideFrom(direction);
+        setIndex((current + (direction === "next" ? 1 : -1) + count) % count);
+    }
+    const swipe = useSwipe(go, count > 1);
+    return (
+        <span className={`Enclosures-picture is-large is-slides${count > 1 ? " is-swipeable" : ""}`} {...swipe.handlers}>
+            <img
+                key={photos[current]}
+                className={slideFrom ? `is-from-${slideFrom}` : undefined}
+                style={swipe.dragX ? { transform: `translateX(${swipe.dragX}px)`, transition: "none" } : undefined}
+                draggable={false}
+                src={photos[current]}
+                alt={count > 1 ? `${name}, photo ${current + 1} of ${count}` : name}
+                crossOrigin="anonymous"
+                onError={fallbackTo(thumbUrl(photos[current]))}
+            />
+            {count > 1 && (
+                <>
+                    <button type="button" className="Modal-imageButton is-prev" onClick={() => go("prev")} aria-label="Previous photo">
+                        <IconChevronLeft stroke={2.5} aria-hidden="true" />
+                    </button>
+                    <button type="button" className="Modal-imageButton is-next" onClick={() => go("next")} aria-label="Next photo">
+                        <IconChevronRight stroke={2.5} aria-hidden="true" />
+                    </button>
+                    <span className="Modal-photoDots" aria-hidden="true">
+                        {photos.map((url, i) => (
+                            <span key={url} className={i === current ? "is-current" : undefined} />
+                        ))}
+                    </span>
+                </>
+            )}
+        </span>
+    );
+}
+
+// The enclosure's own photos (cards: the primary one, small), or until it
+// has some, up to four of its monkeys in a 2 × 2 grid, or a fence icon if
+// it's empty
 function Picture({ enclosure, monkeys, large = false }) {
     const className = `Enclosures-picture${large ? " is-large" : ""}`;
     if (enclosure.photos.length) {
+        if (large) return <PhotoSlides key={enclosure.id} photos={enclosure.photos} name={enclosure.name} />;
         return (
             <span className={className}>
-                <img src={enclosure.photos[0]} alt="" crossOrigin="anonymous" />
+                <img
+                    src={thumbUrl(enclosure.photos[0])}
+                    alt=""
+                    loading="lazy"
+                    crossOrigin="anonymous"
+                    onError={fallbackTo(enclosure.photos[0])}
+                />
             </span>
         );
     }
@@ -108,24 +166,26 @@ function Fold({ title, count, children }) {
 }
 
 // A troop enclosure's introcages, as rows like the monkey list: a small
-// picture (someone living there, or a fence if it's empty), the name, who's
-// in it and how many. Each opens that introcage.
+// picture (its own photo, someone living there, or a fence if it's empty),
+// the name, who's in it and how many. Each opens that introcage.
 function IntrocageList({ introcages, monkeys }) {
     return (
         <div className="IntrocageList">
             {introcages.map((introcage) => {
                 const living = residents(introcage, monkeys);
+                // Its own primary photo, or someone living there
                 const face = living.find((m) => !isPlaceholderPhoto(m.img[0]));
+                const photo = introcage.photos?.[0] ?? face?.img[0];
                 return (
                     <a key={introcage.id} href={enclosureHash(introcage)} className="IntrocageRow">
                         <span className="IntrocageRow-photo">
-                            {face ? (
+                            {photo ? (
                                 <img
-                                    src={thumbUrl(face.img[0])}
+                                    src={thumbUrl(photo)}
                                     alt=""
                                     loading="lazy"
                                     crossOrigin="anonymous"
-                                    onError={fallbackTo(face.img[0])}
+                                    onError={fallbackTo(photo)}
                                 />
                             ) : (
                                 <IconFence size={22} stroke={1.5} aria-hidden="true" />

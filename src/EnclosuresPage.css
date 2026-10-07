@@ -150,6 +150,36 @@
     margin-top: 14px;
 }
 
+/* A record's own photos: one at a time, sliding in from the side */
+.Enclosures-picture.is-slides {
+    position: relative;
+}
+
+.Enclosures-picture.is-swipeable {
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.Enclosures-picture.is-slides img {
+    transition: transform 0.2s ease-out;
+}
+
+.Enclosures-picture.is-slides img.is-from-next {
+    animation: Modal-slideFromRight 0.22s ease-out;
+}
+
+.Enclosures-picture.is-slides img.is-from-prev {
+    animation: Modal-slideFromLeft 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Enclosures-picture.is-slides img.is-from-next,
+    .Enclosures-picture.is-slides img.is-from-prev {
+        animation: none;
+    }
+}
+
 /* ---- An enclosure's introcages, as rows like the monkey list ---- */
 
 .IntrocageList {

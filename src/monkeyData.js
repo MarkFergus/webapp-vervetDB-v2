@@ -229,20 +229,21 @@ export async function deleteMonkey(id) {
 // ---- Enclosures: editing their details, and the maintenance log ----
 
 // Saves an enclosure's details. changes: any of { description, features,
-// size (square metres, or null), established ("2014-03" or null) }.
+// size (square metres, or null), established ("2014-03" or null), photos }.
 // Returns the enclosure with them.
 export async function saveEnclosure(enclosure, changes) {
     const row = {};
     if ("description" in changes) row.description = changes.description;
     if ("features" in changes) row.features = changes.features;
     if ("size" in changes) row.size = changes.size;
+    if ("photos" in changes) row.photos = changes.photos;
     // stored as the 1st of the month
     if ("established" in changes) row.established = changes.established ? `${changes.established}-01` : null;
     const { data, error } = await supabase
         .from("enclosures")
         .update(row)
         .eq("id", enclosure.id)
-        .select("description, features, size, established")
+        .select("description, features, size, established, photos")
         .single();
     if (error) {
         console.error("Saving enclosure failed:", error);
@@ -254,6 +255,7 @@ export async function saveEnclosure(enclosure, changes) {
         features: data.features,
         size: data.size == null ? null : Number(data.size),
         established: data.established ? data.established.slice(0, 7) : null,
+        photos: data.photos ?? enclosure.photos,
     };
 }
 

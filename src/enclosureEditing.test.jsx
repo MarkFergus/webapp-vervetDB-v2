@@ -81,8 +81,8 @@ function fakeSupabase({ signedIn = true, admin = true } = {}) {
 }
 
 // ShowPage on an enclosure's page, with its own enclosures list, like App
-function Harness({ route, enclosuresLive }) {
-    const [enclosures, setEnclosures] = useState(BUILT_IN_DATA.enclosures);
+function Harness({ route, enclosuresLive, startingEnclosures = BUILT_IN_DATA.enclosures }) {
+    const [enclosures, setEnclosures] = useState(startingEnclosures);
     return (
         <AuthProvider>
             <ShowPage
@@ -96,10 +96,10 @@ function Harness({ route, enclosuresLive }) {
     );
 }
 
-function setup({ route = `enclosure/${ROBERT.id}`, enclosuresLive = true, ...options } = {}) {
+function setup({ route = `enclosure/${ROBERT.id}`, enclosuresLive = true, startingEnclosures, ...options } = {}) {
     fakeSupabase(options);
     const user = userEvent.setup();
-    render(<Harness route={route} enclosuresLive={enclosuresLive} />);
+    render(<Harness route={route} enclosuresLive={enclosuresLive} startingEnclosures={startingEnclosures} />);
     return { user };
 }
 const openMaintenance = (user) => user.click(screen.getByRole("button", { name: "Maintenance" }));
@@ -126,6 +126,7 @@ describe("editing an enclosure", () => {
                 features: "Pool, two shelters",
                 size: 1200,
                 established: "2014-03-01",
+                photos: [],
             },
         });
         await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit Robert" })).toBeNull());
@@ -170,7 +171,7 @@ describe("editing an enclosure", () => {
         await user.type(within(form).getByRole("textbox", { name: "Features" }), "Shade net");
         await user.click(within(form).getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
-        expect(saved.updates[0].row).toEqual({ features: "Shade net", size: null });
+        expect(saved.updates[0].row).toEqual({ features: "Shade net", size: null, photos: [] });
     });
 
     test("editors who aren't admins can't edit an enclosure's details (they can still log maintenance)", async () => {
@@ -251,5 +252,53 @@ describe("the maintenance log", () => {
         await openMaintenance(user);
         await screen.findByText("Fixed the gate latch");
         expect(screen.queryByRole("button", { name: /^Delete the entry/ })).toBeNull();
+    });
+});
+
+describe("enclosure photos", () => {
+    const PHOTOS = ["https://example.com/robert-1.webp", "https://example.com/robert-2.webp"];
+    const withPhotos = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT.id ? { ...e, photos: PHOTOS } : e));
+
+    test("the record shows them one at a time, with previous / next", async () => {
+        const { user } = setup({ startingEnclosures: withPhotos });
+        expect(await screen.findByRole("img", { name: "Robert, photo 1 of 2" })).toHaveAttribute("src", PHOTOS[0]);
+        await user.click(screen.getByRole("button", { name: "Next photo" }));
+        expect(screen.getByRole("img", { name: "Robert, photo 2 of 2" })).toHaveAttribute("src", PHOTOS[1]);
+        await user.click(screen.getByRole("button", { name: "Next photo" }));
+        expect(screen.getByRole("img", { name: "Robert, photo 1 of 2" })).toBeInTheDocument();
+    });
+
+    test("one photo: no previous / next", async () => {
+        const one = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT.id ? { ...e, photos: [PHOTOS[0]] } : e));
+        setup({ startingEnclosures: one });
+        expect(await screen.findByRole("img", { name: "Robert" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Next photo" })).toBeNull();
+    });
+
+    test("the edit form lists them; making one primary and deleting one are saved", async () => {
+        const { user } = setup({ startingEnclosures: withPhotos });
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        const form = screen.getByRole("dialog", { name: "Edit Robert" });
+        expect(within(form).getByText("Primary photo")).toBeInTheDocument();
+        expect(within(form).getByText(/Upload new photo/)).toBeInTheDocument();
+
+        await user.click(within(form).getByRole("button", { name: /Photo 2 options/ }));
+        await user.click(screen.getByRole("menuitem", { name: /Make primary/i }));
+        await user.click(within(form).getByRole("button", { name: /Photo 2 options/ }));
+        await user.click(screen.getByRole("menuitem", { name: /Delete/i }));
+        await user.click(within(form).getByRole("button", { name: "Save" }));
+
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row.photos).toEqual([PHOTOS[1]]);
+        expect(await screen.findByRole("img", { name: "Robert" })).toHaveAttribute("src", PHOTOS[1]);
+    });
+
+    test("an introcage's own photo is its picture in the enclosure's Introcages list", async () => {
+        const b1Photo = "https://example.com/robert-b1.webp";
+        const list = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT_B1.id ? { ...e, photos: [b1Photo] } : e));
+        const { user } = setup({ startingEnclosures: list });
+        await user.click(await screen.findByRole("button", { name: /^Introcages/ }));
+        const row = screen.getByRole("link", { name: /Robert B1/ });
+        expect(row.querySelector("img")).toHaveAttribute("src", b1Photo);
     });
 });
