@@ -1,0 +1,68 @@
+/* The sanctuary map on an enclosure's page (SanctuaryMap.jsx) */
+
+.SanctuaryMap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: #e8e8e8;
+    border: 1px solid #343234;
+}
+
+.SanctuaryMap svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* The enclosure: filled with its section's neon colour, keeping the map's
+   black outline */
+.SanctuaryMap-highlight,
+.SanctuaryMap-highlight * {
+    fill: var(--highlight) !important;
+    fill-opacity: 1 !important;
+}
+
+/* An introcage's page: the enclosure paler, the introcage's box solid */
+.SanctuaryMap.has-introcage .SanctuaryMap-highlight,
+.SanctuaryMap.has-introcage .SanctuaryMap-highlight * {
+    /* (a solid light tint, not see-through, so the map's own name under it
+       doesn't show through beside the one drawn on top) */
+    fill: color-mix(in srgb, var(--highlight) 38%, #e8e8e8) !important;
+}
+
+/* The introcage's gate box: solid colour, dark outline */
+.SanctuaryMap-introcage,
+.SanctuaryMap-introcage * {
+    fill: var(--highlight) !important;
+    fill-opacity: 1 !important;
+    stroke: #111 !important;
+    stroke-width: 0.9px !important;
+}
+
+/* A gate drawn with lines (e.g. Royal A1): the lines in colour, thicker */
+.SanctuaryMap-introcage line,
+.SanctuaryMap-introcage polyline {
+    stroke: var(--highlight) !important;
+    stroke-width: 2.4px !important;
+}
+
+/* (the mask: the enclosure's shape, all white) */
+.SanctuaryMap-maskShape,
+.SanctuaryMap-maskShape * {
+    fill: #fff !important;
+    fill-opacity: 1 !important;
+    stroke: #fff !important;
+}
+
+/* Loading, or not on the map */
+.SanctuaryMap.is-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-style: italic;
+    color: #6b6862;
+    background-color: #262426;
+}

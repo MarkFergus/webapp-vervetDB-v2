@@ -5,15 +5,19 @@
 
 const KEY = "vervetdb-saved-data";
 
-export function saveCopy({ monkeys, troops, troopIds }) {
+export function saveCopy({ monkeys, troops, troopIds, enclosures, sections }) {
     try {
-        localStorage.setItem(KEY, JSON.stringify({ savedAt: Date.now(), monkeys, troops, troopIds }));
+        localStorage.setItem(
+            KEY,
+            JSON.stringify({ savedAt: Date.now(), monkeys, troops, troopIds, enclosures, sections })
+        );
     } catch {
         // Not saved this time; the previous copy (if any) stays
     }
 }
 
-// The saved copy: { savedAt, monkeys, troops, troopIds }, or null if there isn't one
+// The saved copy: { savedAt, monkeys, troops, troopIds, enclosures, sections }
+// (copies saved before enclosures existed have none), or null if there isn't one
 export function loadSavedCopy() {
     try {
         const copy = JSON.parse(localStorage.getItem(KEY));

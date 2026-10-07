@@ -12,8 +12,9 @@ import { loadSavedCopy, saveCopy } from "./savedData";
 // reloading everything.
 function fallbackData() {
     const saved = loadSavedCopy();
+    // (a copy saved before enclosures existed: the built-in ones)
     return saved
-        ? { status: "saved", savedAt: saved.savedAt, ...saved }
+        ? { status: "saved", ...BUILT_IN_DATA, ...saved, savedAt: saved.savedAt }
         : { status: "built-in", ...BUILT_IN_DATA };
 }
 
@@ -69,9 +70,14 @@ export default function useMonkeyData() {
         });
     }
 
+    // An enclosure's details were saved (replaced in place)
+    function enclosureSaved(saved) {
+        setData((d) => ({ ...d, enclosures: d.enclosures.map((e) => (e.id === saved.id ? saved : e)) }));
+    }
+
     function monkeyDeleted(id) {
         setData((d) => ({ ...d, monkeys: d.monkeys.filter((m) => m.id !== id) }));
     }
 
-    return { ...data, monkeySaved, monkeyDeleted };
+    return { ...data, monkeySaved, monkeyDeleted, enclosureSaved };
 }

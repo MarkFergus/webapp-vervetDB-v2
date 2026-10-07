@@ -5,12 +5,13 @@ import { fallbackTo } from "./photoFallback";
 import "./MonkeyRow.css";
 
 // The list view's column headings (computers; phones have no room for them)
-export function MonkeyListHeader() {
+//   place: the heading for where they live ("Introcage" for introcage monkeys)
+export function MonkeyListHeader({ place = "Troop" }) {
     return (
         <div className="MonkeyRow MonkeyRow-header" aria-hidden="true">
             <span />
             <span>Name</span>
-            <span className="MonkeyRow-wide">Troop</span>
+            <span className="MonkeyRow-wide">{place}</span>
             <span className="MonkeyRow-wide">Sex</span>
             <span className="MonkeyRow-wide MonkeyRow-born">Born</span>
             <span className="MonkeyRow-wide">Age</span>
@@ -23,13 +24,15 @@ export function MonkeyListHeader() {
 // On phones: photo, name with "Troop · ♀ · 2018 · 7 yrs old" under it (the
 // year dropped if there isn't room), and chip.
 // A button, so it can be reached with Tab and opened with Enter or Space.
-function MonkeyRow({ name, sex, year, troop, chip, img, onClick }) {
+//   troop: where it lives, its troop or introcage; inIntrocage: true for
+//   introcage monkeys (see MonkeyCard)
+function MonkeyRow({ name, sex, year, troop, inIntrocage = false, chip, img, onClick }) {
     // The same as the cards, e.g. "Abby, female, born 2018, Global troop"
     const label = [
         name,
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
-        `${troop} troop`,
+        inIntrocage ? `in ${troop}` : `${troop} troop`,
         ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
     ].join(", ");
     const sexWord = sex === "male" ? "Male" : sex === "female" ? "Female" : "–";

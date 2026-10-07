@@ -299,6 +299,12 @@
     cursor: pointer;
 }
 
+.Nav-menu a > svg {
+    width: 24px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
 .Nav-menu a:hover,
 .Nav-menu button:hover:not(:disabled) {
     color: white;
@@ -323,10 +329,10 @@
    the middle of the space between logo and icons). The side columns share
    what's left equally; on tight screens they still grow to fit. */
 /* Like Reddit's top bar, as the window narrows: first the "vervetDB" name
-   goes (below 820px) and the search bar takes its room; then, once the
+   goes (below 870px) and the search bar takes its room; then, once the
    search bar would be under 240px, the icons fold into the ☰ menu (below
-   640px; room for editors' extra + icon too) */
-@media (min-width: 640px) {
+   690px; room for editors' extra + icon too) */
+@media (min-width: 690px) {
     .Nav {
         display: grid;
         /* The search bar grows first (up to 540px), then the sides share
@@ -354,7 +360,7 @@
     }
 }
 
-@media (min-width: 820px) {
+@media (min-width: 870px) {
     .Nav-title {
         display: block;
     }

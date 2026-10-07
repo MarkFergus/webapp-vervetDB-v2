@@ -152,6 +152,21 @@
     font-size: 15px; /* the same size as the changes */
     font-weight: 700;
     color: #fe39a4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* "Major Update": a pill in the version's pink, beside it */
+.AboutModal-major {
+    padding: 1px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #fe39a4;
+    background-color: rgba(254, 57, 164, 0.12);
+    border: 1px solid #fe39a4;
+    border-radius: 999px;
 }
 
 .AboutModal-changes ul {

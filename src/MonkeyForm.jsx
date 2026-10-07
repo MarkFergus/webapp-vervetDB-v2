@@ -128,7 +128,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
         setUploading(true);
         setUploadProblem(null);
         try {
-            const url = await uploadPhoto(blob, { troop: form.troop, name: form.name });
+            const url = await uploadPhoto(blob, { troop: form.troop || form.introcage, name: form.name });
             uploadedHere.current.push(url);
             setForm((f) => ({ ...f, photos: [...f.photos, url] }));
         } catch (error) {
@@ -218,6 +218,14 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                     </label>
 
                     <div className="MonkeyForm-row">
+                        {/* Introcage monkeys: where they are, for now not
+                            changed here (the Location field comes next) */}
+                        {form.introcage ? (
+                            <div className="MonkeyForm-field">
+                                <span>Introcage</span>
+                                <p className="MonkeyForm-fixed">{form.introcage}</p>
+                            </div>
+                        ) : (
                         <label className="MonkeyForm-field">
                             <span>Troop <em>(required)</em></span>
                             <select
@@ -233,6 +241,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                             </select>
                             {errorFor("troop")}
                         </label>
+                        )}
                         <label className="MonkeyForm-field">
                             <span>Sex</span>
                             <select value={form.sex} onChange={set("sex")}>

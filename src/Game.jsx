@@ -118,7 +118,12 @@ let nextRoundId = 1;
 // Defaults to the built-in copy, e.g. in tests.
 function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops = BUILT_IN_DATA.troops }) {
     // Some troops sit out of the game (see NOT_IN_GAME)
-    const monkeys = useMemo(() => allMonkeys.filter((m) => !NOT_IN_GAME.includes(m.troop)), [allMonkeys]);
+    // (introcage monkeys have no troop: left out until the game is set up
+    // for them)
+    const monkeys = useMemo(
+        () => allMonkeys.filter((m) => m.troop && !NOT_IN_GAME.includes(m.troop)),
+        [allMonkeys]
+    );
     const troops = useMemo(() => allTroops.filter((t) => !NOT_IN_GAME.includes(t)), [allTroops]);
     const troopNames = troops.filter((t) => t !== "All Troops");
     // "setup" (choosing troops, difficulty and round length) or "playing"

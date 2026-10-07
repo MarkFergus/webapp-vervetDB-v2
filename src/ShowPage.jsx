@@ -18,6 +18,9 @@ import MonkeyForm from "./MonkeyForm";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
+import { homeName, inIntrocage, placeName } from "./places";
+import { isEnclosuresRoute } from "./enclosures";
+import EnclosuresPage from "./EnclosuresPage";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
@@ -36,7 +39,7 @@ const byName = (a, b) => a.name.localeCompare(b.name);
 const SEX_ORDER = { female: 0, male: 1 };
 const compareBy = {
     name: byName,
-    troop: (a, b) => a.troop.localeCompare(b.troop) || byName(a, b),
+    troop: (a, b) => placeName(a).localeCompare(placeName(b)) || byName(a, b),
     // Age: youngest first (the latest birth year)
     age: (a, b) => b.year - a.year || byName(a, b),
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
@@ -76,7 +79,8 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
     const results = monkeys.filter((monkey) => {
         const matchesTroop =
             troopFilter === "All Troops" ||
-            monkey.troop.toLowerCase().includes(troopFilter.toLowerCase());
+            // (introcage monkeys aren't in a troop)
+            (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase());
         const matchesYear =
             yearFilter === "All Years" ||
             // Number() on both sides in case a year is entered as text
@@ -89,7 +93,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         const matchesSex = sex === "all" || monkey.sex === sex;
         return (
             matchesTroop &&
-            inSection(monkey.troop, section) &&
+            inSection(homeName(monkey), section) &&
             matchesYear &&
             matchesSearch &&
             matchesSex &&
@@ -125,10 +129,17 @@ function pdfFilename(book) {
 // onMonkeySaved / onMonkeyDeleted: tell App about a change, to update the list.
 const VIEW_KEY = "vervetdb-view";
 
+// route: "enclosures" or "enclosure/<id>" shows the Enclosures pages under
+// the same top bar, in place of the monkey list (see EnclosuresPage)
 function ShowPage({
     monkeys = BUILT_IN_DATA.monkeys,
     troops = BUILT_IN_DATA.troops,
     troopIds = BUILT_IN_DATA.troopIds,
+    enclosures = BUILT_IN_DATA.enclosures,
+    sections = BUILT_IN_DATA.sections,
+    route = "",
+    enclosuresLive = false,
+    onEnclosureSaved = () => {},
     editable = false,
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
@@ -196,11 +207,16 @@ function ShowPage({
         [monkeys, searchValue, filters, sort]
     );
 
-    const selectedIndex = visibleMonkeys.indexOf(selectedMonkey);
+    // The pop-up steps through the monkey list, or (opened from an
+    // enclosure's page) that group of monkeys
+    const onEnclosures = isEnclosuresRoute(route);
+    const [modalList, setModalList] = useState(null);
+    const neighbours = modalList ?? visibleMonkeys;
+    const selectedIndex = neighbours.indexOf(selectedMonkey);
     const prevMonkey =
-        selectedIndex === -1 ? null : visibleMonkeys[selectedIndex - 1] || null;
+        selectedIndex === -1 ? null : neighbours[selectedIndex - 1] || null;
     const nextMonkey =
-        selectedIndex === -1 ? null : visibleMonkeys[selectedIndex + 1] || null;
+        selectedIndex === -1 ? null : neighbours[selectedIndex + 1] || null;
 
     const indexOfLastMonkey = currentPage * MONKEYS_PER_PAGE;
     const currentMonkeys = visibleMonkeys.slice(0, indexOfLastMonkey);
@@ -229,6 +245,7 @@ function ShowPage({
     }
     // The logo: back to the top, with the search and filters cleared
     function goHome() {
+        if (onEnclosures) window.location.hash = "";
         setSearchValue("");
         setFilters(NO_FILTERS);
         setCurrentPage(1);
@@ -245,6 +262,8 @@ function ShowPage({
         clearFilters();
     }
     function handleSearch(event) {
+        // Searching from the Enclosures pages: the results are on the list
+        if (onEnclosures) window.location.hash = "";
         setSearchValue(event.target.value);
         setCurrentPage(1);
     }
@@ -260,6 +279,8 @@ function ShowPage({
     const pageAddress = () => window.location.pathname + window.location.search;
 
     function showInAddress(m) {
+        // (on the Enclosures pages the address stays on the enclosure)
+        if (onEnclosures) return;
         const hash = monkeyHash(m);
         if (window.location.hash === hash) return;
         if (isMonkeyHash(window.location.hash)) {
@@ -302,7 +323,10 @@ function ShowPage({
         return () => window.removeEventListener("hashchange", showFromAddress);
     }, [monkeys]);
 
-    function openModal(m) {
+    // list: the monkeys to step through with previous / next (default: the
+    // monkey list as searched, filtered and sorted)
+    function openModal(m, list = null) {
+        setModalList(list);
         showInAddress(m);
         setSelectedMonkey(m);
         setIsModalOpen(true);
@@ -329,7 +353,7 @@ function ShowPage({
     function handleSaved(saved) {
         onMonkeySaved(saved);
         setEditing(null);
-        openModal(saved);
+        openModal(saved, modalList && modalList.map((m) => (m.id === saved.id ? saved : m)));
     }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
@@ -478,7 +502,7 @@ function ShowPage({
                     position={
                         selectedIndex === -1
                             ? null
-                            : { number: selectedIndex + 1, total: visibleMonkeys.length }
+                            : { number: selectedIndex + 1, total: neighbours.length }
                     }
                     onEdit={canEdit ? startEdit : undefined}
                 />
@@ -515,8 +539,27 @@ function ShowPage({
                     onAddMonkey={canAdd ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
+                    page={onEnclosures ? "enclosures" : "monkeys"}
                 />
             </div>
+            {onEnclosures ? (
+                <EnclosuresPage
+                    route={route}
+                    monkeys={monkeys}
+                    enclosures={enclosures}
+                    sections={sections}
+                    onOpenMonkey={openModal}
+                    inert={isAnyModalOpen}
+                    editing={{
+                        // (only once the database has enclosures, and online)
+                        canEdit: canEdit && enclosuresLive,
+                        canDelete: canEdit && enclosuresLive && isAdmin,
+                        live: enclosuresLive && editable,
+                        onSaved: onEnclosureSaved,
+                    }}
+                />
+            ) : (
+            <>
             {/* Filters (pills, blue when active), sort (segmented control)
                 and, for editors, Add monkey */}
             <div className="ShowPage-toolbar" ref={toolbarRef} inert={isAnyModalOpen}>
@@ -641,12 +684,13 @@ function ShowPage({
                     <MonkeyListHeader />
                     {currentMonkeys.map((m) => (
                         <MonkeyRow
-                            key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
+                            key={m.id ?? `${m.name}-${m.chip}-${placeName(m)}`}
                             onClick={() => openModal(m)}
                             name={m.name}
                             sex={m.sex}
                             year={m.year}
-                            troop={m.troop}
+                            troop={placeName(m)}
+                            inIntrocage={inIntrocage(m)}
                             chip={m.chip}
                             img={m.img[0]}
                         />
@@ -656,12 +700,13 @@ function ShowPage({
                 <div className="ShowPage-monkeys" inert={isAnyModalOpen}>
                     {currentMonkeys.map((m) => (
                         <MonkeyCard
-                            key={m.id ?? `${m.name}-${m.chip}-${m.troop}`}
+                            key={m.id ?? `${m.name}-${m.chip}-${placeName(m)}`}
                             onClick={() => openModal(m)}
                             name={m.name}
                             sex={m.sex}
                             year={m.year}
-                            troop={m.troop}
+                            troop={placeName(m)}
+                            inIntrocage={inIntrocage(m)}
                             img={m.img[0]}
                         />
                     ))}
@@ -680,6 +725,8 @@ function ShowPage({
                         Show More
                     </button>
                 </div>
+            )}
+            </>
             )}
             {navOutOfView && !isAnyModalOpen && (
                 <button

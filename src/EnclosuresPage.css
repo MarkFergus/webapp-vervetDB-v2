@@ -1,0 +1,530 @@
+/* The Enclosures pages (EnclosuresPage.jsx). The same dark look as the
+   monkey list: rounded 5:4 pictures, a bold name and a quieter line under it. */
+
+/* The same edges as the monkey list (12px on phones, 24px wider) */
+.Enclosures {
+    padding: 0 12px 64px;
+    font-family: "Nunito Sans", sans-serif;
+    color: #d1cfc7;
+}
+
+/* ---- "← Enclosures": back up a level ---- */
+
+.Enclosures-back {
+    display: inline-flex;
+    margin-top: 14px;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 14px;
+    color: #d1cfc7;
+    text-decoration: none;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+}
+
+.Enclosures-back:hover {
+    color: white;
+    border-color: #6b6862;
+}
+
+/* ---- The list ---- */
+
+.Enclosures-title,
+.Enclosures-recordTitle {
+    margin: 16px 0 0;
+    font-family: "Russo One", sans-serif;
+    font-weight: normal;
+    font-size: 28px;
+    color: white;
+}
+
+.Enclosures-subtitle {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #8a877e;
+}
+
+/* Headings on a record: small grey capitals, like the field names in forms */
+.Enclosures-block h2 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+/* Cards: 2 a row on phones, more on wider screens */
+.Enclosures-grid {
+    display: grid;
+    margin-top: 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 10px;
+}
+
+@media (min-width: 625px) {
+    .Enclosures {
+        padding: 0 24px 64px;
+    }
+
+    .Enclosures-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(240px, calc(50% - 8px)), 1fr));
+        gap: 24px 16px;
+    }
+}
+
+.EnclosureCard-link {
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 12px;
+}
+
+.EnclosureCard-link:hover .EnclosureCard-name {
+    color: #25c4f8;
+}
+
+.EnclosureCard-name {
+    margin-top: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+}
+
+.EnclosureCard-meta {
+    font-size: 13px;
+    color: #8a877e;
+}
+
+/* ---- Pictures: the enclosure's photo, or a mosaic of its monkeys ---- */
+
+.Enclosures-picture {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: #2a282a;
+}
+
+.Enclosures-picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.Enclosures-picture.is-mosaic {
+    gap: 2px;
+}
+
+.Enclosures-picture.is-2,
+.Enclosures-picture.is-4 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.Enclosures-picture.is-3 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+/* Three: one tall on the left, two stacked on the right */
+.Enclosures-picture.is-3 img:first-child {
+    grid-row: span 2;
+}
+
+.Enclosures-picture.is-4 {
+    grid-template-rows: 1fr 1fr;
+}
+
+.Enclosures-picture.is-empty {
+    place-items: center;
+    color: #4a474a;
+}
+
+/* A record's picture (it'll be a photo of the enclosure itself) */
+.Enclosures-picture.is-large {
+    margin-top: 14px;
+}
+
+/* ---- An enclosure's introcages, as rows like the monkey list ---- */
+
+.IntrocageList {
+    display: flex;
+    flex-direction: column;
+    max-width: 940px;
+}
+
+.IntrocageRow {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid #2c2a2c;
+}
+
+.IntrocageRow:hover {
+    background-color: #262426;
+}
+
+.IntrocageRow:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -2px;
+    border-radius: 6px;
+}
+
+.IntrocageRow-photo {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    aspect-ratio: 5 / 4;
+    overflow: hidden;
+    border-radius: 6px;
+    color: #4a474a;
+    background-color: #2a282a;
+}
+
+.IntrocageRow-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.IntrocageRow-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.IntrocageRow-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+}
+
+/* Who's in it (or "Empty"), on one line */
+.IntrocageRow-who {
+    overflow: hidden;
+    font-size: 13px;
+    color: #8a877e;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.IntrocageRow-count {
+    min-width: 24px;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    color: #b6b2a5;
+}
+
+/* ---- One enclosure's record ---- */
+
+/* A record: centred, at most 940px wide, the same as the monkey list view */
+.Enclosures-record {
+    max-width: 940px;
+    margin: 0 auto;
+}
+
+/* ---- The top of a record: picture beside the summary (computers) ---- */
+
+/* Phones: picture, summary, About / Features, map */
+.Enclosures-hero {
+    display: grid;
+    grid-template-areas: "picture" "summary" "text" "map";
+    gap: 0 28px;
+}
+
+.Enclosures-hero > .Enclosures-picture {
+    grid-area: picture;
+}
+
+.Enclosures-summary {
+    grid-area: summary;
+}
+
+.Enclosures-text {
+    grid-area: text;
+}
+
+.Enclosures-mapBlock {
+    grid-area: map;
+}
+
+.Enclosures-summary {
+    min-width: 0;
+}
+
+/* The name, with Edit (editors) on the right */
+.Enclosures-titleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.Enclosures-edit {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #d1cfc7;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Enclosures-edit:hover {
+    color: white;
+    border-color: #6b6862;
+}
+
+/* "Introcage at H&B" under the name */
+.Enclosures-parent {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.Enclosures-parent svg {
+    color: #8a877e;
+}
+
+.Enclosures-parent a {
+    color: #25c4f8;
+    text-decoration: none;
+}
+
+.Enclosures-parent a:hover {
+    text-decoration: underline;
+}
+
+/* Section / Established / Size: label on the left, value on the right */
+.Enclosures-details {
+    margin: 16px 0 0;
+    border-top: 1px solid #2c2a2c;
+}
+
+.Enclosures-details div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 2px;
+    border-bottom: 1px solid #2c2a2c;
+}
+
+.Enclosures-details dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #8a877e;
+}
+
+.Enclosures-details dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+    color: #d1cfc7;
+}
+
+.Enclosures-unset {
+    font-weight: 400;
+    font-style: italic;
+    color: #6b6862;
+}
+
+.Enclosures-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    background-color: #262426;
+    border: 1px solid #343234;
+}
+
+.Enclosures-map.is-empty {
+    font-size: 13px;
+    font-style: italic;
+    color: #6b6862;
+}
+
+/* Computers: two columns (picture | summary, then text | map) */
+/* Computers: the picture spans the summary's rows, so About / Features start
+   right under it and the map right under the details: no gaps */
+@media (min-width: 760px) {
+    .Enclosures-hero {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        grid-template-areas:
+            "picture summary"
+            "picture map"
+            "text map";
+        grid-template-rows: auto auto 1fr;
+        align-items: start;
+    }
+
+    .Enclosures-mapBlock {
+        margin-top: 22px;
+    }
+
+    .Enclosures-summary .Enclosures-recordTitle {
+        margin-top: 10px;
+    }
+}
+
+.Enclosures-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.Enclosures-facts li {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.Enclosures-facts svg {
+    color: #8a877e;
+}
+
+.Enclosures-facts a {
+    color: #25c4f8;
+    text-decoration: none;
+}
+
+.Enclosures-facts a:hover {
+    text-decoration: underline;
+}
+
+/* The numbers, as a row of tiles */
+/* (three tiles fit side by side even on a narrow phone) */
+.Enclosures-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 16px 0 0;
+}
+
+.Enclosures-stats.is-single {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 50%;
+}
+
+.Enclosures-stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 10px 12px;
+    background-color: #262426;
+    border: 1px solid #343234;
+    border-radius: 10px;
+}
+
+.Enclosures-stats dt {
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.Enclosures-stats dd {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+}
+
+.Enclosures-block {
+    margin-top: 28px;
+}
+
+.Enclosures-block > p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* A heading that folds its monkey list open and shut */
+.Enclosures-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Enclosures-toggle:hover {
+    color: #d1cfc7;
+}
+
+.Enclosures-toggle svg {
+    margin-left: 2px;
+    transition: transform 0.15s;
+}
+
+.Enclosures-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.Enclosures-count {
+    margin-left: 4px;
+    color: #6b6862;
+}
+
+/* Free-text features: kept as typed, line breaks and all */
+.Enclosures-features {
+    white-space: pre-line;
+}
+
+/* "No description yet." and the like */
+.Enclosures-none,
+.Enclosures-block > p.Enclosures-none {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-style: italic;
+    color: #6b6862;
+}
+
+/* The monkeys living there: the main list view, lined up with the rest of
+   the record (not centred like the main page's table) */
+.Enclosures .MonkeyList {
+    width: auto;
+    max-width: 940px;
+    margin: 0;
+}
+
+.Enclosures-missing {
+    margin: 48px 0;
+    text-align: center;
+    color: #8a877e;
+}

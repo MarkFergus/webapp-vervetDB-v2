@@ -1,0 +1,214 @@
+/* The maintenance log on an enclosure's page (MaintenanceLog.jsx) */
+
+.MaintenanceLog {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 940px;
+}
+
+/* "+ Add Entry": a quiet pill, like the page's other buttons */
+.MaintenanceLog-add {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #25c4f8;
+    background: none;
+    border: 1px solid #25c4f8;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.MaintenanceLog-add:hover {
+    color: #86e1ff;
+    border-color: #86e1ff;
+}
+
+/* Adding an entry: date, details, buttons */
+.MaintenanceLog-form {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    background-color: #262426;
+    border: 1px solid #343234;
+    border-radius: 12px;
+}
+
+.MaintenanceLog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.MaintenanceLog-field span {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+.MaintenanceLog-field input,
+.MaintenanceLog-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 9px 10px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px; /* 16px stops phones zooming in on the box */
+    color: white;
+    background-color: #1f1f1f;
+    border: 2px solid #434343;
+    border-radius: 8px;
+    outline: none;
+    color-scheme: dark;
+}
+
+.MaintenanceLog-field textarea {
+    resize: vertical;
+    line-height: 1.4;
+}
+
+.MaintenanceLog-field input:focus,
+.MaintenanceLog-field textarea:focus {
+    border-color: #25c4f8;
+}
+
+.MaintenanceLog-field.is-date {
+    max-width: 200px;
+}
+
+.MaintenanceLog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.MaintenanceLog-button {
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.MaintenanceLog-button.is-quiet {
+    color: #d1cfc7;
+    background: none;
+    border: 1px solid #3a3839;
+}
+
+.MaintenanceLog-button.is-save {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+    border: 1px solid #25c4f8;
+}
+
+.MaintenanceLog-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.MaintenanceLog-problem {
+    margin: 0;
+    font-size: 14px;
+    color: #ff4d4f;
+}
+
+/* The entries: date on the left, details, who logged it underneath */
+.MaintenanceLog-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid #2c2a2c;
+}
+
+.MaintenanceLog-entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 2px 16px;
+    padding: 12px 40px 12px 2px;
+    border-bottom: 1px solid #2c2a2c;
+}
+
+.MaintenanceLog-entry time {
+    grid-row: span 2;
+    font-size: 14px;
+    font-weight: 700;
+    color: #d1cfc7;
+}
+
+.MaintenanceLog-entry p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    white-space: pre-line;
+    color: #d1cfc7;
+}
+
+.MaintenanceLog-who {
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.MaintenanceLog-delete {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    padding: 4px;
+    color: #6b6862;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.MaintenanceLog-delete:hover {
+    color: #ff4d4f;
+}
+
+.MaintenanceLog-confirm {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #d1cfc7;
+}
+
+.MaintenanceLog-confirm button {
+    padding: 3px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #d1cfc7;
+    background: none;
+    border: 1px solid #3a3839;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.MaintenanceLog-confirm button.is-danger {
+    color: #1f1f1f;
+    background-color: #ff4d4f;
+    border-color: #ff4d4f;
+}
+
+/* Phones: the date above the details */
+@media (max-width: 624px) {
+    .MaintenanceLog-entry {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .MaintenanceLog-entry time {
+        grid-row: auto;
+    }
+
+    .MaintenanceLog-confirm {
+        grid-column: 1;
+    }
+}

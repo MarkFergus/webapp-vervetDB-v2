@@ -20,6 +20,7 @@ import ImagePreview from "./ImagePreview";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
+import { placeLabel } from "./places";
 import "./Modal.css";
 
 function Modal({
@@ -52,7 +53,7 @@ function Modal({
             try {
                 await navigator.share({
                     title: `${monkey.name} · vervetDB`,
-                    text: `${monkey.name} (${monkey.troop} troop) on vervetDB`,
+                    text: `${monkey.name} (${placeLabel(monkey)}) on vervetDB`,
                     url,
                 });
                 return;
@@ -269,7 +270,7 @@ function Modal({
                                     picture), then the bio and features */}
                                 <div className="Modal-details">
                                     <ul className="Modal-pills" aria-label="Details">
-                                        <li className="is-troop">{monkey.troop} troop</li>
+                                        <li className="is-troop">{placeLabel(monkey)}</li>
                                         <li>
                                             {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}
                                             {monkey.sex === "female" && <IconVenus size={15} stroke={2} aria-hidden="true" />}

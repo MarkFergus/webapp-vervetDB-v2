@@ -8,9 +8,11 @@ import {
     IconInfoCircle,
     IconDeviceMobileDown,
     IconDeviceGamepad2,
+    IconFence,
     IconMenu2,
     IconPlus,
     IconUser,
+    IconUsersGroup,
 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
@@ -46,6 +48,7 @@ function Nav({
     toggleOffline,
     onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
     onHome, // the logo: back to the top, search and filters cleared
+    page = "monkeys", // the page showing: "monkeys" or "enclosures"
 }) {
     const { user } = useAuth();
     const searchInputRef = useRef(null);
@@ -192,6 +195,18 @@ function Nav({
                             <IconPlus stroke={1.75} size={26} />
                         </button>
                     )}
+                    {/* Switch page: Enclosures from the monkeys, Monkeys from
+                        the enclosures */}
+                    {page === "enclosures" ? (
+                        <a href="#" className="Nav-pageLink" aria-label="Monkeys" data-tooltip="Monkeys">
+                            {/* (the group icon, as on the monkey count) */}
+                            <IconUsersGroup stroke={1.75} size={26} />
+                        </a>
+                    ) : (
+                        <a href="#enclosures" className="Nav-pageLink" aria-label="Enclosures" data-tooltip="Enclosures">
+                            <IconFence stroke={1.75} size={26} />
+                        </a>
+                    )}
                     <a
                         href="#game"
                         className="Nav-gameLink"
@@ -272,6 +287,18 @@ function Nav({
                                     <IconPlus stroke={2} aria-hidden="true" />
                                     Add New Monkey
                                 </button>
+                            )}
+                            {/* The other main page (as in the top bar) */}
+                            {page === "enclosures" ? (
+                                <a href="#" onClick={() => closeMenu()}>
+                                    <IconUsersGroup stroke={2} aria-hidden="true" />
+                                    Monkeys
+                                </a>
+                            ) : (
+                                <a href="#enclosures" onClick={() => closeMenu()}>
+                                    <IconFence stroke={2} aria-hidden="true" />
+                                    Enclosures
+                                </a>
                             )}
                             <a href="#game" onClick={() => closeMenu()}>
                                 <IconDeviceGamepad2 stroke={2} aria-hidden="true" />

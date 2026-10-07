@@ -12,11 +12,26 @@
 //   minor (1.0 → 1.1): new features people will notice
 //   patch (1.0.0 → 1.0.1): small fixes and tweaks
 //
+// A significant release can have major: true, shown as a "Major Update"
+// pill beside its version in About.
+//
 // To release a new version: add an entry at the top AND change "version"
 // in package.json to match (a test checks they agree).
 export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
+    {
+        version: "1.2.0",
+        date: "2026-10-07",
+        // a significant release: "Major Update" beside it in About
+        major: true,
+        changes: [
+            "New Enclosures pages: every troop enclosure and introcage",
+            "New sanctuary map on every enclosure and introcage page",
+            "New maintenance log for each enclosure and introcage",
+            "Added an Enclosures button to the top bar",
+        ],
+    },
     {
         version: "1.1.4",
         date: "2026-10-06",

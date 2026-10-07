@@ -1,12 +1,15 @@
 import { slug } from "./photoUpload";
+import { homeName } from "./places";
 
 // Links to one monkey, e.g. https://vervetdb.com/#monkey/aroha-h-b.
-// Name + troop, as no two monkeys share both (and it reads well in a message).
+// Name + enclosure (its troop's, or the one its introcage is beside), as no
+// two monkeys share both, and a move between a troop and its introcages
+// keeps the same link.
 
 const PREFIX = "#monkey/";
 
 export function monkeyHash(monkey) {
-    return `${PREFIX}${slug(monkey.name)}-${slug(monkey.troop)}`;
+    return `${PREFIX}${slug(monkey.name)}-${slug(homeName(monkey))}`;
 }
 
 // The full web address to share

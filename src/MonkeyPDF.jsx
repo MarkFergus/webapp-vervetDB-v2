@@ -14,6 +14,7 @@ import OpenSansItalic from "./fonts/OpenSans-Italic.ttf";
 import OpenSansBold from "./fonts/OpenSans-Bold.ttf";
 import RussoOne from "./fonts/RussoOne-Regular.ttf";
 import { MONKEY_ICON_PATH, MONKEY_ICON_VIEWBOX } from "./monkeyIconPath";
+import { placeLabel, placeName } from "./places";
 
 Font.register({
     family: "OpenSans",
@@ -194,7 +195,7 @@ function formatDate(date) {
     return `${date.getDate()} ${month} ${date.getFullYear()}`;
 }
 
-const monkeyKey = (monkey) => `${monkey.name}-${monkey.troop}`;
+const monkeyKey = (monkey) => `${monkey.name}-${placeName(monkey)}`;
 
 // One monkey: photo on the left, details on the right
 function monkeyRow(monkey, showTroop) {
@@ -210,7 +211,7 @@ function monkeyRow(monkey, showTroop) {
             <View style={styles.detailsContainer}>
                 <Text style={styles.name}>{monkey.name}</Text>
                 <Text style={styles.chip}>
-                    {showTroop ? `${monkey.troop} troop · ` : ""}
+                    {showTroop ? `${placeLabel(monkey)} · ` : ""}
                     Chip: {monkey.chip === null ? "Unknown" : monkey.chip ? monkey.chip : "No Chip"}
                 </Text>
                 <Text style={styles.bio}>

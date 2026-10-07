@@ -180,8 +180,8 @@
 }
 
 /* Wider screens: logo left, search in the middle, icons right; the name
-   from 820px (the same switch points as the real top bar, Nav.css) */
-@media (min-width: 640px) {
+   from 870px (the same switch points as the real top bar, Nav.css) */
+@media (min-width: 690px) {
     .LoadingSkeleton-nav {
         display: grid;
         grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
@@ -203,7 +203,7 @@
     }
 }
 
-@media (min-width: 820px) {
+@media (min-width: 870px) {
     .LoadingSkeleton-title {
         display: block;
     }

@@ -14,14 +14,16 @@ function SexIcon({ sex }) {
 // name, and a quieter line of details ("H&B · ♂ Male · 9 yrs old").
 // A button, so it can be reached with Tab and opened with Enter or Space.
 // Buttons may only contain inline elements, hence spans rather than divs.
-function MonkeyCard({ name, sex, year, troop, img, onClick }) {
+//   troop: where it lives, its troop or introcage ("Goliath", "H&B C1")
+//   inIntrocage: true for introcage monkeys
+function MonkeyCard({ name, sex, year, troop, inIntrocage = false, img, onClick }) {
     const photoNeeded = isPlaceholderPhoto(img);
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
     const label = [
         name,
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
-        `${troop} troop`,
+        inIntrocage ? `in ${troop}` : `${troop} troop`,
         ...(photoNeeded ? ["photo needed"] : []),
     ].join(", ");
 

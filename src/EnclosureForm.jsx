@@ -1,0 +1,195 @@
+import { useRef, useState } from "react";
+import { IconSquareRoundedX } from "@tabler/icons-react";
+import { motion } from "motion/react";
+import useDialog from "./useDialog";
+import { saveEnclosure } from "./monkeyData";
+import "./MonkeyForm.css";
+import "./EnclosureForm.css";
+
+// Editing an enclosure's or introcage's details (editors only), in the same
+// window as the monkey form: About (troop enclosures), Features, Size and
+// Established (troop enclosures, month and year).
+//   onSaved(savedEnclosure) after a successful save
+
+const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+];
+
+// Years to choose from: this year back to 1990 (or further, for an older one)
+function years(current) {
+    const thisYear = new Date().getFullYear();
+    const oldest = Math.min(1990, Number(current) || 1990);
+    return Array.from({ length: thisYear - oldest + 1 }, (_, i) => String(thisYear - i));
+}
+
+function EnclosureForm({ enclosure, onClose, onSaved }) {
+    const isIntrocage = enclosure.type === "introcage";
+    const [year, month] = enclosure.established ? enclosure.established.split("-") : ["", ""];
+    const [initial] = useState({
+        description: enclosure.description ?? "",
+        features: enclosure.features ?? "",
+        size: enclosure.size == null ? "" : String(enclosure.size),
+        year,
+        month,
+    });
+    const [form, setForm] = useState(initial);
+    const [problem, setProblem] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const firstRef = useRef(null);
+    const changed = JSON.stringify(form) !== JSON.stringify(initial);
+
+    function requestClose() {
+        if (busy) return;
+        if (changed && !window.confirm("Discard your changes?")) return;
+        onClose();
+    }
+    useDialog(true, firstRef, { onClose: requestClose });
+
+    const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
+    // A year without a month (or the other way round) can't be saved
+    const halfDate = Boolean(form.year) !== Boolean(form.month);
+    // Size: a whole number of square metres, or blank (commas and spaces ignored)
+    const sizeText = form.size.replace(/[\s,]/g, "");
+    const size = sizeText === "" ? null : Number(sizeText);
+    const badSize = size !== null && !(/^\d+$/.test(sizeText) && size > 0 && size < 1e9);
+
+    async function handleSave(event) {
+        event.preventDefault();
+        if (halfDate) {
+            setProblem("Please choose both a month and a year, or neither.");
+            return;
+        }
+        if (badSize) {
+            setProblem("Size should be a whole number of square metres, e.g. 600, or left blank.");
+            return;
+        }
+        setBusy(true);
+        setProblem(null);
+        const changes = { features: form.features.trim(), size };
+        if (!isIntrocage) {
+            changes.description = form.description.trim();
+            changes.established = form.year ? `${form.year}-${form.month}` : null;
+        }
+        try {
+            onSaved(await saveEnclosure(enclosure, changes));
+        } catch (error) {
+            setProblem(error.message);
+            setBusy(false);
+        }
+    }
+
+    return (
+        <div className="MonkeyForm" role="dialog" aria-modal="true" aria-labelledby="EnclosureForm-title">
+            {/* Clicking outside does nothing, so a stray tap can't lose changes */}
+            <div className="MonkeyForm-overlay"></div>
+            <motion.form
+                className="MonkeyForm-window"
+                onSubmit={handleSave}
+                noValidate
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1, transition: { duration: 0.2 } }}
+            >
+                <div className="MonkeyForm-header">
+                    <h1 id="EnclosureForm-title">Edit {enclosure.name}</h1>
+                    <button type="button" className="MonkeyForm-close" onClick={requestClose} aria-label="Close">
+                        <IconSquareRoundedX />
+                    </button>
+                </div>
+
+                <div className="MonkeyForm-body">
+                    {!isIntrocage && (
+                        <label className="MonkeyForm-field">
+                            <span>About</span>
+                            <textarea
+                                ref={firstRef}
+                                rows={5}
+                                value={form.description}
+                                onChange={set("description")}
+                                placeholder="What it's like, its history, anything worth knowing"
+                            />
+                        </label>
+                    )}
+
+                    <label className="MonkeyForm-field">
+                        <span>Features</span>
+                        <textarea
+                            ref={isIntrocage ? firstRef : undefined}
+                            rows={4}
+                            value={form.features}
+                            onChange={set("features")}
+                            placeholder="e.g. Pool, two shelters, climbing frame"
+                        />
+                    </label>
+
+                    <div className="MonkeyForm-row">
+                        <label className="MonkeyForm-field">
+                            <span>Size</span>
+                            {/* Just the number: shown as "600 m²" */}
+                            <span className="EnclosureForm-unitBox">
+                                <input
+                                    inputMode="numeric"
+                                    value={form.size}
+                                    onChange={set("size")}
+                                    placeholder="e.g. 600"
+                                    aria-invalid={badSize}
+                                    aria-describedby="EnclosureForm-sizeUnit"
+                                />
+                                <span className="EnclosureForm-unit" id="EnclosureForm-sizeUnit" aria-hidden="true">
+                                    m²
+                                </span>
+                            </span>
+                        </label>
+                        {!isIntrocage && (
+                            <fieldset className="EnclosureForm-date">
+                                <legend>Established</legend>
+                                <select
+                                    value={form.month}
+                                    onChange={set("month")}
+                                    aria-label="Established month"
+                                    aria-invalid={halfDate && !form.month}
+                                >
+                                    <option value="">Month…</option>
+                                    {MONTHS.map((name, i) => (
+                                        <option key={name} value={String(i + 1).padStart(2, "0")}>
+                                            {name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={form.year}
+                                    onChange={set("year")}
+                                    aria-label="Established year"
+                                    aria-invalid={halfDate && !form.year}
+                                >
+                                    <option value="">Year…</option>
+                                    {years(form.year).map((y) => (
+                                        <option key={y} value={y}>
+                                            {y}
+                                        </option>
+                                    ))}
+                                </select>
+                            </fieldset>
+                        )}
+                    </div>
+                </div>
+
+                <p className="MonkeyForm-problem" role="alert">
+                    {problem}
+                </p>
+
+                <div className="MonkeyForm-footer">
+                    <span className="MonkeyForm-spacer" />
+                    <button type="button" className="MonkeyForm-button is-quiet" onClick={requestClose} disabled={busy}>
+                        Cancel
+                    </button>
+                    <button type="submit" className="MonkeyForm-button is-save" disabled={busy}>
+                        {busy ? "Saving…" : "Save"}
+                    </button>
+                </div>
+            </motion.form>
+        </div>
+    );
+}
+
+export default EnclosureForm;

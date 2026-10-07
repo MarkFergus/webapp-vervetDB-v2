@@ -44,7 +44,9 @@ export default defineConfig({
                 // someone makes a Profile Book instead (below)
                 globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
                 // (preview.png is only for link previews, not the app)
-                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js", "preview.png"],
+                // (the sanctuary map is big: saved the first time it's
+                // shown instead, see runtimeCaching)
+                globIgnores: ["**/react-pdf*.js", "**/MonkeyPDF*.js", "preview.png", "VMF Sanctuary Map.svg"],
                 navigateFallback: "/index.html",
                 // Other files opened directly (a test page, a PDF) open as
                 // themselves, not as the app
@@ -98,6 +100,13 @@ export default defineConfig({
                             cacheName: "vervetdb-assets",
                             expiration: { maxEntries: 30 },
                         },
+                    },
+                    {
+                        // The sanctuary map (Enclosures pages)
+                        urlPattern: ({ url, sameOrigin }) =>
+                            sameOrigin && url.pathname === "/VMF%20Sanctuary%20Map.svg",
+                        handler: "StaleWhileRevalidate",
+                        options: { cacheName: "vervetdb-map" },
                     },
                     {
                         urlPattern: ({ url }) => url.origin === "https://fonts.googleapis.com",

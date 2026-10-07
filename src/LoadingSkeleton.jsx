@@ -31,7 +31,7 @@ function LoadingSkeleton() {
                     <span className="LoadingSkeleton-search" />
                     {/* Phones: the ☰ menu; computers: the row of icons */}
                     <span className="LoadingSkeleton-icons">
-                        {Array.from({ length: 5 }, (_, i) => (
+                        {Array.from({ length: 6 }, (_, i) => (
                             <span className="LoadingSkeleton-menu" key={i} />
                         ))}
                     </span>

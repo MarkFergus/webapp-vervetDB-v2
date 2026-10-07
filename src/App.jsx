@@ -31,7 +31,19 @@ function SaveThumbnails({ live, monkeys }) {
 function App() {
     const route = useHashRoute();
     const online = useOnline();
-    const { status, savedAt, monkeys, troops, troopIds, monkeySaved, monkeyDeleted } = useMonkeyData();
+    const {
+        status,
+        savedAt,
+        monkeys,
+        troops,
+        troopIds,
+        enclosures,
+        sections,
+        enclosuresLive,
+        monkeySaved,
+        monkeyDeleted,
+        enclosureSaved,
+    } = useMonkeyData();
 
     // Loading: grey shapes of the page; the game keeps the simple logo + message
     if (status === "loading" && route !== "game") return <LoadingSkeleton />;
@@ -68,6 +80,11 @@ function App() {
                     <Game monkeys={monkeys} troops={troops} />
                 ) : (
                     <ShowPage
+                        route={route}
+                        enclosures={enclosures}
+                        sections={sections}
+                        enclosuresLive={status === "live" && Boolean(enclosuresLive)}
+                        onEnclosureSaved={enclosureSaved}
                         monkeys={monkeys}
                         troops={troops}
                         troopIds={troopIds}

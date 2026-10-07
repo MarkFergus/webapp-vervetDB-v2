@@ -159,6 +159,17 @@
     border-color: #ff4d4f;
 }
 
+/* A detail shown but not changed here (an introcage monkey's introcage) */
+.MonkeyForm-fixed {
+    margin: 0;
+    padding: 11px 12px;
+    font-size: 16px;
+    color: #d1cfc7;
+    background-color: #242224;
+    border: 2px solid #343234;
+    border-radius: 8px;
+}
+
 .MonkeyForm-hint {
     margin: 0;
     font-size: 12px;

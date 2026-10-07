@@ -55,7 +55,7 @@ test("ⓘ in the top bar opens About: version, date and latest changes", async (
     // A running changelog: every version in the current series (e.g. 1.1.x)
     // and its changes; "Earlier versions" opens the rest, newest first
     const { current } = currentSeries(CHANGELOG);
-    const headings = () => within(dialog()).getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    const headings = () => within(dialog()).getAllByRole("heading", { level: 3 }).map((h) => h.textContent.replace("Major Update", ""));
     const changes = () => within(dialog()).getAllByRole("listitem").map((li) => li.textContent);
     expect(headings()).toEqual(current.map((entry) => `Version ${entry.version}`));
     expect(changes()).toEqual(current.flatMap((entry) => entry.changes));
@@ -104,4 +104,16 @@ test("Open-Source Licences folds open: each project with a link, and the full te
     expect(within(dialog()).getByRole("link", { name: "React" })).toHaveAttribute("href", "https://react.dev");
     expect(within(dialog()).getByRole("link", { name: "Open Sans" })).toBeInTheDocument();
     expect(within(dialog()).getByRole("link", { name: "Full Licence Texts" })).toHaveAttribute("href", "/licences.txt");
+});
+
+test("a major release has a Major Update pill beside its version", async () => {
+    const user = userEvent.setup();
+    render(<ShowPage />);
+    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    const major = CHANGELOG.find((e) => e.major);
+    const heading = within(dialog()).getByRole("heading", { name: new RegExp(`^Version ${major.version.replace(/\./g, "\.")}`) });
+    expect(heading).toHaveTextContent(`Version ${major.version}Major Update`);
+    // Ordinary releases have none
+    const minor = CHANGELOG.find((e) => !e.major && currentSeries(CHANGELOG).current.includes(e));
+    if (minor) expect(within(dialog()).getByRole("heading", { name: `Version ${minor.version}` })).not.toHaveTextContent("Major Update");
 });

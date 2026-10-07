@@ -22,7 +22,8 @@ describe("filling the form from a monkey", () => {
         });
         expect(form).toEqual({
             name: "Aroha", troop: "H&B", sex: "male", year: "2016", chip: "19806",
-            chipUnknown: false, photos: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: "",
+            chipUnknown: false, introcage: null, introcageId: undefined,
+            photos: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: "",
         });
     });
 

@@ -1,0 +1,42 @@
+/* Bits of the enclosure form and maintenance log not in MonkeyForm.css */
+
+/* Established: month and year side by side, named like the other fields */
+.EnclosureForm-date {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.EnclosureForm-date legend {
+    margin-bottom: 5px;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+/* Size: the number box with "m²" inside it, on the right */
+.EnclosureForm-unitBox {
+    position: relative;
+    display: block;
+}
+
+.EnclosureForm-unitBox input {
+    padding-right: 44px;
+}
+
+.EnclosureForm-unit {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #8a877e;
+    pointer-events: none;
+}

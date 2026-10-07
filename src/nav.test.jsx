@@ -61,16 +61,18 @@ describe("☰ menu (phones)", () => {
 
         await user.click(menuButton());
         expect(menuButton()).toHaveAttribute("aria-expanded", "true");
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign In"]);
+        expect(menuItems()).toEqual(["Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign In"]);
         expect(within(menu()).getByRole("link", { name: "Monkey Guesser Game" })).toHaveAttribute("href", "#game");
         expect(menu().querySelector("a")).toHaveFocus();
+        // The other main page comes first: Enclosures (from the monkeys)
+        expect(within(menu()).getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
     });
 
     test("signed in as an editor: no Add New Monkey (admins only), Account at the end", async () => {
         const { user, menuButton, menuItems } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "Menu (signed in)" });
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
+        expect(menuItems()).toEqual(["Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 
@@ -81,7 +83,7 @@ describe("☰ menu (phones)", () => {
         // First in the top bar too
         expect(document.querySelector(".Nav-buttons > :first-child")).toHaveAccessibleName("Add New Monkey");
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Add New Monkey", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
+        expect(menuItems()).toEqual(["Add New Monkey", "Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
     });
 
     test("Sign In opens the sign-in pop-up", async () => {

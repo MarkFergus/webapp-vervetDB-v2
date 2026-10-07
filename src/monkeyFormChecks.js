@@ -15,7 +15,11 @@ const isPlaceholder = (url) => url === PLACEHOLDER_PHOTO;
 export function formFromMonkey(monkey) {
     return {
         name: monkey.name,
-        troop: monkey.troop,
+        // Introcage monkeys have no troop: their introcage stays as it is
+        // (choosing where a monkey lives comes with the Location field)
+        troop: monkey.troop ?? "",
+        introcage: monkey.introcage ?? null,
+        introcageId: monkey.introcageId,
         sex: monkey.sex ?? "",
         year: monkey.year === "" ? "" : String(monkey.year),
         // A chip of null means "unknown" (an empty chip means "no chip")
@@ -64,7 +68,7 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
     const name = tidy(form.name);
     if (!name) errors.name = "Please enter a name.";
 
-    if (!troops.includes(form.troop)) errors.troop = "Please choose a troop.";
+    if (!form.introcage && !troops.includes(form.troop)) errors.troop = "Please choose a troop.";
 
     const sex = ["male", "female", ""].includes(form.sex) ? form.sex : "";
 
@@ -95,7 +99,9 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
         errors,
         values: {
             name,
-            troop: form.troop,
+            troop: form.introcage ? null : form.troop,
+            introcage: form.introcage ?? null,
+            introcageId: form.introcageId,
             sex,
             year,
             chip: chipResult.error ? "" : chipResult.chip,

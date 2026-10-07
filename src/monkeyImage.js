@@ -1,5 +1,6 @@
 import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
 import { ageText } from "./ages";
+import { placeLabel } from "./places";
 
 // A monkey's profile as a picture: name, photo, details, bio and features,
 // with "© Vervet Monkey Foundation" faintly at the bottom, on a card with
@@ -91,7 +92,7 @@ const paragraphHeight = (lines) => 44 + lines.length * LINE + 22;
 // Returns each pill's text and position, and the height they take.
 function layOutPills(ctx, monkey, top) {
     const pills = [
-        { text: `${monkey.troop} troop`, fill: BLUE, color: "#1f1f1f" },
+        { text: placeLabel(monkey), fill: BLUE, color: "#1f1f1f" },
         monkey.sex && { text: monkey.sex[0].toUpperCase() + monkey.sex.slice(1) },
         { text: monkey.year ? `Born ${monkey.year}` : "Birth year unknown" },
         // "10 years old", without the brackets used in the pop-up

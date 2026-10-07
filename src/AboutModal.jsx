@@ -17,7 +17,10 @@ import "./AboutModal.css";
 function Release({ entry }) {
     return (
         <div className="AboutModal-release">
-            <h3>Version {entry.version}</h3>
+            <h3>
+                Version {entry.version}
+                {entry.major && <span className="AboutModal-major">Major Update</span>}
+            </h3>
             <ul>
                 {entry.changes.map((change) => (
                     <li key={change}>{change}</li>
