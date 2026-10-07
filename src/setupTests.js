@@ -1,5 +1,11 @@
-// Adds DOM matchers like toBeInTheDocument() to expect
-import "@testing-library/jest-dom/vitest";
+// Adds DOM matchers like toBeInTheDocument() to expect. Added straight to the
+// global expect the tests use: "@testing-library/jest-dom/vitest" adds them
+// to whichever copy of vitest it finds, which while the preview server is
+// re-bundling packages can be a different one (then about 200 tests fail
+// with "Invalid Chai property").
+import * as matchers from "@testing-library/jest-dom/matchers";
+
+expect.extend(matchers);
 
 // Tests never contact the real database: "loading" it just returns the
 // built-in copy of the data. (monkeyData.test.js checks the real loader.)

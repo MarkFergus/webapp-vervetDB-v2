@@ -147,13 +147,14 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                     )}
 
                     <label className="MonkeyForm-field">
-                        <span>Features</span>
+                        {/* Introcages: their one description */}
+                        <span>{isIntrocage ? "Description" : "Features"}</span>
                         <textarea
                             ref={isIntrocage ? firstRef : undefined}
                             rows={4}
                             value={form.features}
                             onChange={set("features")}
-                            placeholder="e.g. Pool, two shelters, climbing frame"
+                            placeholder={isIntrocage ? "What it's like, anything worth knowing" : "e.g. Pool, two shelters, climbing frame"}
                         />
                     </label>
 

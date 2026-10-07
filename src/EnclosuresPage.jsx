@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import {
+    IconArrowDown,
     IconArrowLeft,
     IconCalendar,
     IconChevronDown,
     IconChevronLeft,
     IconChevronRight,
     IconFence,
+    IconMap,
     IconMapPin,
     IconPencil,
     IconRuler2,
+    IconTool,
+    IconUsersGroup,
 } from "@tabler/icons-react";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import SanctuaryMap from "./SanctuaryMap";
@@ -27,8 +31,12 @@ import {
     introcageMonkeys,
     introcagesOf,
     residents,
+    averageAge,
+    ordinal,
+    sizeRank,
     sizeText,
     troopMonkeys,
+    troopRank,
 } from "./enclosures";
 import "./Modal.css"; // the photo arrows and dots
 import "./EnclosuresPage.css";
@@ -141,27 +149,62 @@ function Picture({ enclosure, monkeys, large = false }) {
     );
 }
 
-// A heading that folds its list open and shut (folded to start with)
-function Fold({ title, count, children }) {
-    const [shown, setShown] = useState(false);
+// A heading that folds its list open and shut. The record keeps which are
+// open (so the jump buttons can open one). jumpId: the section's id, to
+// scroll to.
+function Fold({ title, count, open, onToggle, jumpId, children }) {
     const id = `Enclosures-${title.toLowerCase().replace(/\s+/g, "-")}`;
     return (
-        <section className="Enclosures-block">
+        <section className="Enclosures-block" id={jumpId}>
             <h2>
                 <button
                     type="button"
                     className="Enclosures-toggle"
-                    aria-expanded={shown}
+                    aria-expanded={open}
                     aria-controls={id}
-                    onClick={() => setShown((open) => !open)}
+                    onClick={onToggle}
                 >
                     {title}
                     {count !== undefined && <span className="Enclosures-count">{count}</span>}
                     <IconChevronDown size={16} aria-hidden="true" />
                 </button>
             </h2>
-            {shown && <div id={id}>{children}</div>}
+            {open && <div id={id}>{children}</div>}
         </section>
+    );
+}
+
+// The jump buttons' sections: section id on the page
+const jumpId = (key) => `Enclosures-jump-${key}`;
+
+// A number tile for a ranking among the troop enclosures: "3rd" / "Largest
+// troop", or a dash with unknown (e.g. "Size not recorded") below it
+function Ranking({ label, rank, unknown = "Not known" }) {
+    return (
+        <div>
+            <dt>{rank === null ? unknown : label}</dt>
+            <dd>{rank === null ? "–" : ordinal(rank)}</dd>
+        </div>
+    );
+}
+
+// Buttons that scroll down to a part of the page (opening it if it's
+// folded away): a row across the page under the details on computers, a
+// list on phones.
+//   jumps: [{ key, label, icon }]; onJump(key)
+function JumpList({ jumps, onJump }) {
+    return (
+        // Three or fewer (an introcage's): kept in one row on all but the
+        // narrowest phones
+        <nav className={`Enclosures-jumps${jumps.length <= 3 ? " is-few" : ""}`} aria-label="On this page">
+            {jumps.map(({ key, label, icon: Icon }) => (
+                <button key={key} type="button" className="Enclosures-jump" onClick={() => onJump(key)}>
+                    <Icon size={18} stroke={1.75} aria-hidden="true" />
+                    <span className="Enclosures-jumpLabel">{label}</span>
+                    <IconArrowDown size={16} className="Enclosures-jumpArrow" aria-hidden="true" />
+                </button>
+            ))}
+        </nav>
     );
 }
 
@@ -241,9 +284,9 @@ function EnclosureList({ enclosures, sections, monkeys }) {
 
 // A group of monkeys on a record, folded away, in the same list view as
 // the monkey list. Tapping a monkey opens its pop-up.
-function MonkeyGroup({ title, monkeys, onOpen, empty, place }) {
+function MonkeyGroup({ title, monkeys, onOpen, empty, place, ...fold }) {
     return (
-        <Fold title={title} count={monkeys.length}>
+        <Fold title={title} count={monkeys.length} {...fold}>
             {monkeys.length ? (
                 <div className="MonkeyList">
                     <MonkeyListHeader place={place} />
@@ -281,6 +324,54 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     const inIntrocages = isIntrocage ? [] : introcageMonkeys(enclosure, monkeys);
     const living = isIntrocage ? residents(enclosure, monkeys) : troop;
     const established = establishedText(enclosure.established);
+    // The troop's average age
+    const age = isIntrocage ? null : averageAge(troop);
+
+    // Which folding parts are open: all but the troop's monkeys to start with
+    const [open, setOpen] = useState({
+        introcages: true, maintenance: true, troop: false, inIntrocages: true, residents: true,
+    });
+    const foldProps = (key) => ({
+        open: open[key],
+        onToggle: () => setOpen((o) => ({ ...o, [key]: !o[key] })),
+        jumpId: jumpId(key),
+    });
+    // Scroll down to a part, opening it first if it's folded away
+    function jump(key) {
+        if (key in open) setOpen((o) => ({ ...o, [key]: true }));
+        requestAnimationFrame(() => {
+            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+            document.getElementById(jumpId(key))?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        });
+    }
+    // In the page's order (an introcage: its monkeys before Maintenance)
+    const maintenanceJump = { key: "maintenance", label: "Maintenance", icon: IconTool };
+    const jumps = isIntrocage
+        ? [
+              { key: "map", label: "Map", icon: IconMap },
+              { key: "residents", label: "Monkeys", icon: IconUsersGroup },
+              maintenanceJump,
+          ]
+        : [
+              { key: "map", label: "Map", icon: IconMap },
+              ...(introcages.length
+                  ? [{ key: "introcages", label: "Introcages", icon: IconFence }]
+                  : []),
+              maintenanceJump,
+              { key: "troop", label: "Troop Monkeys", icon: IconUsersGroup },
+          ];
+
+    // Enclosures: before the monkeys; introcages: at the bottom
+    const maintenance = (
+        <Fold title="Maintenance" {...foldProps("maintenance")}>
+            <MaintenanceLog
+                enclosure={enclosure}
+                live={editing.live}
+                canAdd={editing.canEdit}
+                canDelete={editing.canDelete}
+            />
+        </Fold>
+    );
 
     return (
         <>
@@ -291,8 +382,8 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     Features on the left; name, numbers, details, then the map
                     on the right. Phones: one after another. */}
                 <div className="Enclosures-hero">
-                    <Picture enclosure={enclosure} monkeys={living} large />
-                    <div className="Enclosures-summary">
+                    {/* The name (phones: above the picture; computers: beside it) */}
+                    <div className="Enclosures-heading">
                         <div className="Enclosures-titleRow">
                             <h1 className="Enclosures-recordTitle">{enclosure.name}</h1>
                             {editing.canEditDetails && (
@@ -308,12 +399,14 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                 Introcage at <a href={enclosureHash(parent)}>{parent.name}</a>
                             </p>
                         )}
-
+                    </div>
+                    <Picture enclosure={enclosure} monkeys={living} large />
+                    <div className="Enclosures-summary">
                         {/* The numbers, worked out from the monkeys */}
                         <dl className={`Enclosures-stats${isIntrocage ? " is-single" : ""}`}>
                             {isIntrocage ? (
                                 <div>
-                                    <dt>{living.length === 1 ? "Resident" : "Residents"}</dt>
+                                    <dt>{living.length === 1 ? "Monkey" : "Monkeys"}</dt>
                                     <dd>{living.length}</dd>
                                 </div>
                             ) : (
@@ -329,6 +422,12 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <div>
                                         <dt>Introcages</dt>
                                         <dd>{introcages.length}</dd>
+                                    </div>
+                                    <Ranking label="Largest enclosure" rank={sizeRank(enclosure, enclosures)} unknown="Size not recorded" />
+                                    <Ranking label="Largest troop" rank={troopRank(enclosure, enclosures, monkeys)} />
+                                    <div>
+                                        <dt>Average age</dt>
+                                        <dd>{age === null ? "–" : age}</dd>
                                     </div>
                                 </>
                             )}
@@ -362,6 +461,8 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         </dl>
                     </div>
 
+                    <JumpList jumps={jumps} onJump={jump} />
+
                     <div className="Enclosures-text">
                         {!isIntrocage && (
                             <section className="Enclosures-block">
@@ -372,16 +473,17 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                             </section>
                         )}
                         <section className="Enclosures-block">
-                            <h2>Features</h2>
+                            {/* (introcages: their one field, so "Description") */}
+                            <h2>{isIntrocage ? "Description" : "Features"}</h2>
                             <p className={enclosure.features ? "Enclosures-features" : "Enclosures-none"}>
-                                {enclosure.features || "No features listed yet."}
+                                {enclosure.features || (isIntrocage ? "No description yet." : "No features listed yet.")}
                             </p>
                         </section>
                     </div>
 
                     {/* The sanctuary map with this enclosure picked out (an
                         introcage: its enclosure) */}
-                    <section className="Enclosures-block Enclosures-mapBlock">
+                    <section className="Enclosures-block Enclosures-mapBlock" id={jumpId("map")}>
                         <h2>Map</h2>
                         <SanctuaryMap
                             enclosure={parent ?? enclosure}
@@ -393,42 +495,44 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                 </div>
 
                 {!isIntrocage && introcages.length > 0 && (
-                    <Fold title="Introcages" count={introcages.length}>
+                    <Fold title="Introcages" count={introcages.length} {...foldProps("introcages")}>
                         <IntrocageList introcages={introcages} monkeys={monkeys} />
                     </Fold>
                 )}
 
-                <Fold title="Maintenance">
-                    <MaintenanceLog
-                        enclosure={enclosure}
-                        live={editing.live}
-                        canAdd={editing.canEdit}
-                        canDelete={editing.canDelete}
-                    />
-                </Fold>
+                {!isIntrocage && maintenance}
 
                 {isIntrocage ? (
                     <MonkeyGroup
-                        title="Residents"
+                        title="Monkeys"
                         monkeys={living}
                         onOpen={onOpenMonkey}
                         empty="Nobody's in here at the moment."
                         place="Introcage"
+                        {...foldProps("residents")}
                     />
                 ) : (
                     <>
-                        <MonkeyGroup title="Troop Monkeys" monkeys={troop} onOpen={onOpenMonkey} empty="No troop monkeys." />
+                        <MonkeyGroup
+                            title="Troop Monkeys"
+                            monkeys={troop}
+                            onOpen={onOpenMonkey}
+                            empty="No troop monkeys."
+                            {...foldProps("troop")}
+                        />
                         {inIntrocages.length > 0 && (
                             <MonkeyGroup
                                 title="In introcages"
                                 monkeys={inIntrocages}
                                 onOpen={onOpenMonkey}
                                 place="Introcage"
+                                {...foldProps("inIntrocages")}
                             />
                         )}
                     </>
                 )}
 
+                {isIntrocage && maintenance}
             </article>
             {isEditing && (
                 <EnclosureForm
@@ -459,7 +563,7 @@ function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, in
         <div className="Enclosures" inert={inert}>
             {enclosure ? (
                 <EnclosureRecord
-                    // (a fresh record each time: lists folded away again)
+                    // (a fresh record each time: lists back as they start)
                     key={enclosure.id}
                     editing={editing}
                     enclosure={enclosure}

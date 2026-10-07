@@ -36,7 +36,8 @@
     margin: 16px 0 0;
     font-family: "Russo One", sans-serif;
     font-weight: normal;
-    font-size: 28px;
+    font-size: 32px;
+    line-height: 1.15;
     color: white;
 }
 
@@ -147,7 +148,7 @@
 
 /* A record's picture (it'll be a photo of the enclosure itself) */
 .Enclosures-picture.is-large {
-    margin-top: 14px;
+    margin-top: 7px; /* phones: just under the name */
 }
 
 /* A record's own photos: one at a time, sliding in from the side */
@@ -269,12 +270,16 @@
 /* Phones: picture, summary, About / Features, map */
 .Enclosures-hero {
     display: grid;
-    grid-template-areas: "picture" "summary" "text" "map";
+    grid-template-areas: "heading" "picture" "summary" "jumps" "text" "map";
     gap: 0 28px;
 }
 
 .Enclosures-hero > .Enclosures-picture {
     grid-area: picture;
+}
+
+.Enclosures-heading {
+    grid-area: heading;
 }
 
 .Enclosures-summary {
@@ -399,26 +404,41 @@
     color: #6b6862;
 }
 
-/* Computers: two columns (picture | summary, then text | map) */
-/* Computers: the picture spans the summary's rows, so About / Features start
-   right under it and the map right under the details: no gaps */
+/* Computers: two columns (picture | summary), the jump buttons across
+   both, then text | map */
 @media (min-width: 760px) {
     .Enclosures-hero {
         grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
         grid-template-areas:
+            "picture heading"
             "picture summary"
-            "picture map"
-            "text map";
-        grid-template-rows: auto auto 1fr;
+            "jumps jumps"
+            "text text"
+            "map map";
+        /* The name's row only as tall as the name: the numbers right under */
+        grid-template-rows: auto 1fr;
         align-items: start;
     }
 
-    .Enclosures-mapBlock {
-        margin-top: 22px;
+    /* The map across the page, as tall as it was in its column (it zooms
+       in a little to fill the width) */
+    .Enclosures-mapBlock .SanctuaryMap {
+        aspect-ratio: auto;
+        height: 223px;
     }
 
-    .Enclosures-summary .Enclosures-recordTitle {
-        margin-top: 10px;
+    .Enclosures-heading .Enclosures-recordTitle {
+        margin-top: 6px;
+        font-size: 38px;
+    }
+
+    .Enclosures-summary .Enclosures-stats {
+        margin-top: 5px;
+    }
+
+    /* Level with the name beside it */
+    .Enclosures-picture.is-large {
+        margin-top: 14px;
     }
 }
 
@@ -478,9 +498,32 @@
 }
 
 .Enclosures-stats dt {
-    font-size: 12px;
+    font-size: 13px;
     white-space: nowrap;
     color: #8a877e;
+}
+
+/* Narrow computer windows: the summary column is too narrow for the labels
+   on one line, so the tiles share it equally and long labels wrap */
+@media (min-width: 760px) and (max-width: 959px) {
+    .Enclosures-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .Enclosures-stats div {
+        padding: 9px 10px;
+    }
+
+    .Enclosures-stats dt {
+        white-space: normal;
+        line-height: 1.25;
+    }
+
+    /* Numbers lined up along the top, whatever the labels' lengths */
+    .Enclosures-stats div {
+        justify-content: flex-end;
+    }
 }
 
 /* The narrowest phones: a little tighter, so the labels still fit */
@@ -500,13 +543,152 @@
 
 .Enclosures-stats dd {
     margin: 0;
-    font-size: 24px;
+    font-size: 21px;
     font-weight: 800;
     color: white;
 }
 
 .Enclosures-block {
     margin-top: 28px;
+    /* Jumped to: clear of the top bar */
+    scroll-margin-top: 84px;
+}
+
+/* ---- Jump buttons: a list under the numbers that scrolls down to a part
+   of the page ---- */
+
+.Enclosures-jumps {
+    grid-area: jumps;
+    display: flex;
+    flex-direction: column;
+    margin-top: 14px;
+    overflow: hidden;
+    border: 1px solid #343234;
+    border-radius: 10px;
+    background-color: #232123;
+}
+
+.Enclosures-jump {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.Enclosures-jump + .Enclosures-jump {
+    border-top: 1px solid #343234;
+}
+
+.Enclosures-jump svg {
+    flex-shrink: 0;
+    color: #8a877e;
+}
+
+.Enclosures-jumpLabel {
+    flex: 1;
+}
+
+.Enclosures-jump:hover {
+    background-color: #2c2a2c;
+}
+
+.Enclosures-jump:hover .Enclosures-jumpArrow {
+    color: #25c4f8;
+}
+
+.Enclosures-jump:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Enclosures-jump {
+        transition: none;
+    }
+}
+
+/* Three (an introcage's): one row whenever they fit (from 380px; a little
+   tighter on narrow phones) */
+@media (min-width: 380px) {
+    .Enclosures-jumps.is-few {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jump {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 11px 10px;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jump + .Enclosures-jump {
+        border-top: none;
+        border-left: 1px solid #343234;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jumpLabel {
+        flex: none;
+    }
+}
+
+@media (min-width: 380px) and (max-width: 459px) {
+    .Enclosures-jumps.is-few .Enclosures-jump {
+        gap: 6px;
+        padding: 11px 6px;
+    }
+}
+
+/* Small tablets and big phones: two per row (an odd one out takes the
+   whole last row) */
+@media (min-width: 550px) and (max-width: 759px) {
+    .Enclosures-jumps:not(.is-few) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .Enclosures-jumps:not(.is-few) .Enclosures-jump + .Enclosures-jump {
+        border-top: none;
+    }
+
+    .Enclosures-jumps:not(.is-few) .Enclosures-jump:nth-child(n + 3) {
+        border-top: 1px solid #343234;
+    }
+
+    .Enclosures-jumps:not(.is-few) .Enclosures-jump:nth-child(even) {
+        border-left: 1px solid #343234;
+    }
+}
+
+/* Computers: one row across the page, the buttons side by side */
+@media (min-width: 760px) {
+    .Enclosures-jumps {
+        flex-direction: row;
+        margin-top: 24px;
+    }
+
+    .Enclosures-jump {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .Enclosures-jump + .Enclosures-jump {
+        border-top: none;
+        border-left: 1px solid #343234;
+    }
+
+    .Enclosures-jumpLabel {
+        flex: none;
+    }
 }
 
 .Enclosures-block > p {

@@ -102,7 +102,8 @@ function setup({ route = `enclosure/${ROBERT.id}`, enclosuresLive = true, starti
     render(<Harness route={route} enclosuresLive={enclosuresLive} startingEnclosures={startingEnclosures} />);
     return { user };
 }
-const openMaintenance = (user) => user.click(screen.getByRole("button", { name: "Maintenance" }));
+// The Maintenance log is open to start with: wait for its heading
+const openMaintenance = () => screen.findByRole("heading", { level: 2, name: "Maintenance" });
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -162,13 +163,13 @@ describe("editing an enclosure", () => {
         expect(saved.updates).toHaveLength(0);
     });
 
-    test("an introcage: Features and Size only (no About or Established)", async () => {
+    test("an introcage: Description and Size only (no About or Established)", async () => {
         const { user } = setup({ route: `enclosure/${ROBERT_B1.id}` });
         await user.click(await screen.findByRole("button", { name: "Edit" }));
         const form = screen.getByRole("dialog", { name: "Edit Robert B1" });
         expect(within(form).queryByRole("textbox", { name: "About" })).toBeNull();
         expect(within(form).queryByRole("combobox", { name: "Established month" })).toBeNull();
-        await user.type(within(form).getByRole("textbox", { name: "Features" }), "Shade net");
+        await user.type(within(form).getByRole("textbox", { name: "Description" }), "Shade net");
         await user.click(within(form).getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
         expect(saved.updates[0].row).toEqual({ features: "Shade net", size: null, photos: [] });
@@ -297,7 +298,6 @@ describe("enclosure photos", () => {
         const b1Photo = "https://example.com/robert-b1.webp";
         const list = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT_B1.id ? { ...e, photos: [b1Photo] } : e));
         const { user } = setup({ startingEnclosures: list });
-        await user.click(await screen.findByRole("button", { name: /^Introcages/ }));
         const row = screen.getByRole("link", { name: /Robert B1/ });
         expect(row.querySelector("img")).toHaveAttribute("src", b1Photo);
     });

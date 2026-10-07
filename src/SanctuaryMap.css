@@ -1,11 +1,16 @@
 /* The sanctuary map on an enclosure's page (SanctuaryMap.jsx) */
 
+/* The card: a wide strip (4:3 made 30% shorter); the pop-up stays 4:3 */
 .SanctuaryMap {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 40 / 21;
     overflow: hidden;
     border-radius: 12px;
     background-color: #e8e8e8;
     border: 1px solid #343234;
+}
+
+.SanctuaryMap.is-large {
+    aspect-ratio: 4 / 3;
 }
 
 .SanctuaryMap svg {

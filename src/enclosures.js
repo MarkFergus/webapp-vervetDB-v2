@@ -2,6 +2,7 @@
 // twice: counts and residents always match the monkeys' records).
 // An enclosure is { id, name, type, parentId, section, … } (enclosuresArr.js).
 import { homeName, inIntrocage } from "./places";
+import { ageInYears } from "./ages";
 
 const byName = (a, b) => a.name.localeCompare(b.name);
 
@@ -78,4 +79,40 @@ export function placeChoices(troops, enclosures, homeOf, withIntrocages = true) 
                     : [],
         };
     });
+}
+
+// 1 → "1st", 2 → "2nd", 3 → "3rd", 11 → "11th", 22 → "22nd"
+export function ordinal(n) {
+    const teen = n % 100 >= 11 && n % 100 <= 13;
+    const suffix = teen ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th";
+    return `${n}${suffix}`;
+}
+
+// Where an item comes when the items are put in order, biggest first (1 =
+// the biggest; equal values share a place). valueOf(item) gives the number
+// to compare, or null if it isn't known (left out). null if the item's own
+// value isn't known.
+export function rankOf(item, items, valueOf) {
+    const value = valueOf(item);
+    if (value == null) return null;
+    return 1 + items.filter((other) => valueOf(other) != null && valueOf(other) > value).length;
+}
+
+// The troop enclosures in order of size, and of how many troop monkeys
+// they have: e.g. 3 (the 3rd largest), or null if its size isn't recorded
+export function sizeRank(enclosure, enclosures) {
+    const troopEnclosures = enclosures.filter((e) => e.type === "troop");
+    return rankOf(enclosure, troopEnclosures, (e) => e.size ?? null);
+}
+export function troopRank(enclosure, enclosures, monkeys) {
+    const troopEnclosures = enclosures.filter((e) => e.type === "troop");
+    return rankOf(enclosure, troopEnclosures, (e) => troopMonkeys(e, monkeys).length);
+}
+
+// The average age (years, to one decimal place) of the monkeys whose birth
+// year is known, or null if none is
+export function averageAge(monkeys, today = new Date()) {
+    const ages = monkeys.map((m) => ageInYears(m.year, today)).filter((age) => age !== null);
+    if (!ages.length) return null;
+    return Math.round((ages.reduce((sum, age) => sum + age, 0) / ages.length) * 10) / 10;
 }

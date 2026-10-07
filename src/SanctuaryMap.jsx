@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowsMaximize, IconMap2, IconSquareRoundedX } from "@tabler/icons-react";
 import useDialog from "./useDialog";
@@ -161,10 +161,12 @@ function Part({ part, className, filter, mask }) {
 }
 
 // The part of the map to show: the enclosure with room around it (spread:
-// how many times its size), in the card's 4:3 shape, kept within the map
-function zoomBox(box, spread, smallest = 100) {
-    const ASPECT = 4 / 3;
-    let width = Math.max(box.width * spread, box.height * spread * ASPECT, smallest);
+// how many times its size), in the card's shape (aspect: width / height; the
+// pop-up is 4:3), kept within the map
+const CARD_ASPECT = 40 / 21;
+function zoomBox(box, spread, smallest = 100, ASPECT = CARD_ASPECT) {
+    // smallest: the narrowest view, as a 4:3 width (wide strips keep its height)
+    let width = Math.max(box.width * spread, box.height * spread * ASPECT, smallest, smallest * 0.75 * ASPECT);
     let height = width / ASPECT;
     width = Math.min(width, MAP_WIDTH);
     height = Math.min(height, MAP_HEIGHT);
@@ -337,7 +339,7 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
                     <MapView
                         parts={parts}
                         colour={colour}
-                        viewBox={zoomBox(parts.outline.box, 1.15, 60)}
+                        viewBox={zoomBox(parts.outline.box, 1.15, 60, 4 / 3)}
                         label={`Sanctuary map, close up on ${enclosure.name}`}
                         shownIcons={ALL_ICONS}
                     />
@@ -358,6 +360,18 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
 function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] }) {
     const parts = useMapParts(enclosure, introcage, introcages);
     const [popupOpen, setPopupOpen] = useState(false);
+    // The card's shape (width / height): computers show a wide strip, so the
+    // part of the map shown matches it
+    const [aspect, setAspect] = useState(CARD_ASPECT);
+    const cardRef = useCallback((card) => {
+        if (!card || typeof ResizeObserver === "undefined") return;
+        const observer = new ResizeObserver(([entry]) => {
+            const { width, height } = entry.contentRect;
+            if (width > 0 && height > 0) setAspect(width / height);
+        });
+        observer.observe(card);
+        return () => observer.disconnect();
+    }, []);
 
     if (!parts) {
         return (
@@ -374,13 +388,13 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
         <MapView
             parts={parts}
             colour={colour}
-            viewBox={gate ? zoomBox(gate.box, 4, 100) : zoomBox(outline.box, introcage ? 1.4 : 2.6)}
+            viewBox={gate ? zoomBox(gate.box, 4, 100, aspect) : zoomBox(outline.box, introcage ? 1.4 : 2.6, 100, aspect)}
             label={`Sanctuary map, with ${introcage && gate ? introcage : enclosure.name} picked out`}
         />
     );
     if (introcage) {
         return (
-            <div className={`SanctuaryMap${gate ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
+            <div ref={cardRef} className={`SanctuaryMap${gate ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
                 {view}
             </div>
         );
@@ -389,6 +403,7 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
         <>
             <button
                 type="button"
+                ref={cardRef}
                 className="SanctuaryMap is-button"
                 style={{ "--highlight": colour }}
                 onClick={() => setPopupOpen(true)}
