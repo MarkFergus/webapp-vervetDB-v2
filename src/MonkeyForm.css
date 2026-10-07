@@ -144,6 +144,14 @@
     outline: none;
 }
 
+/* Placeholders ("No Chip") and a box not ready yet ("Choose an enclosure
+   first") are the same dim grey */
+.MonkeyForm ::placeholder,
+.MonkeyForm select:disabled {
+    color: #8a877e;
+    opacity: 1;
+}
+
 .MonkeyForm textarea {
     resize: vertical;
     line-height: 1.4;

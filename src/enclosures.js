@@ -60,3 +60,22 @@ export function bySection(enclosures, sections) {
         .map((section) => ({ section, enclosures: troopEnclosures.filter((e) => e.section === section) }))
         .filter((group) => group.enclosures.length > 0);
 }
+
+// What the monkey form's Enclosure and Location boxes offer, in the troops'
+// order: [{ troop, enclosure ("Robert", or the troop's name if it has no
+// enclosure, like the Bandits), introcages: [{ id, name }] }]. homeOf(troop)
+// gives a troop's enclosure name. withIntrocages false: troops only (the
+// database can't save introcage monkeys yet).
+export function placeChoices(troops, enclosures, homeOf, withIntrocages = true) {
+    return troops.map((troop) => {
+        const enclosure = enclosures.find((e) => e.type === "troop" && e.name === homeOf(troop));
+        return {
+            troop,
+            enclosure: enclosure?.name ?? troop,
+            introcages:
+                enclosure && withIntrocages
+                    ? introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name }))
+                    : [],
+        };
+    });
+}

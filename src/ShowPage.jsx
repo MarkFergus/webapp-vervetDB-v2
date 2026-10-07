@@ -757,6 +757,8 @@ function ShowPage({
                     monkey={editing.monkey}
                     troops={troops.filter((t) => t !== "All Troops")}
                     troopIds={troopIds}
+                    enclosures={enclosures}
+                    enclosuresLive={enclosuresLive}
                     defaultTroop={troopFilter}
                     onClose={() => setEditing(null)}
                     onSaved={handleSaved}

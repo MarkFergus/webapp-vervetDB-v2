@@ -2,8 +2,9 @@ import { useRef, useState } from "react";
 import { IconSquareRoundedX, IconStarFilled, IconUpload } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
-import { checkForm, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
-import { deleteMonkey, saveMonkey } from "./monkeyData";
+import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
+import { deleteMonkey, saveMonkey, troopHome } from "./monkeyData";
+import { placeChoices } from "./enclosures";
 import { deletePhotos, uploadPhoto } from "./photoUpload";
 import PhotoCropper from "./PhotoCropper";
 import PhotoOptions from "./PhotoOptions";
@@ -13,6 +14,8 @@ import "./MonkeyForm.css";
 // Edit a monkey (monkey given) or add one (monkey null). Editors only.
 //   troops:   troop names to choose from (without "All Troops")
 //   troopIds: troop name → database id, needed to save
+//   enclosures: for the Location box's introcages (only offered when
+//               enclosuresLive: the database can save them)
 //   onSaved(savedMonkey) / onDeleted(id): after a successful save / delete
 // Birth years to choose from: this year back to 2000, or back to `current`
 // if it's older (so an existing record never loses its year)
@@ -22,11 +25,15 @@ function birthYears(current) {
     return Array.from({ length: thisYear - oldest + 1 }, (_, i) => String(thisYear - i));
 }
 
-function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, onDeleted }) {
+function MonkeyForm({
+    monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted,
+}) {
     const isNew = !monkey;
     const { isAdmin } = useAuth();
+    // Enclosure → its troop and introcages, for the Enclosure + Location boxes
+    const [choices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive));
     const [initial] = useState(() =>
-        isNew ? emptyForm(troops.includes(defaultTroop) ? defaultTroop : "") : formFromMonkey(monkey)
+        isNew ? emptyForm(troops.includes(defaultTroop) ? defaultTroop : "") : formFromMonkey(monkey, choices)
     );
     const [form, setForm] = useState(initial);
     const [errors, setErrors] = useState({});
@@ -63,6 +70,10 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
     useDialog(true, nameRef, { onClose: requestClose });
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
+    // A new enclosure: with its troop to start with
+    const chooseEnclosure = (event) =>
+        setForm({ ...form, troop: event.target.value, location: event.target.value && "troop" });
+    const choice = choices.find((c) => c.troop === form.troop);
 
     // Chip unknown: empties the box and leaves it (closing the phone
     // keyboard). "Clear" undoes it the same way; so does typing a number.
@@ -128,7 +139,10 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
         setUploading(true);
         setUploadProblem(null);
         try {
-            const url = await uploadPhoto(blob, { troop: form.troop || form.introcage, name: form.name });
+            const url = await uploadPhoto(blob, {
+                troop: chosenIntrocage(form, choices)?.name ?? form.troop,
+                name: form.name,
+            });
             uploadedHere.current.push(url);
             setForm((f) => ({ ...f, photos: [...f.photos, url] }));
         } catch (error) {
@@ -144,7 +158,7 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
 
     async function handleSave(event) {
         event.preventDefault();
-        const { errors: found, values } = checkForm(form, troops);
+        const { errors: found, values } = checkForm(form, choices);
         setErrors(found);
         setProblem(null);
         if (Object.keys(found).length) return;
@@ -217,42 +231,57 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                         {errorFor("name")}
                     </label>
 
+                    {/* Where it lives: its enclosure, then with the troop
+                        or in one of that enclosure's introcages */}
                     <div className="MonkeyForm-row">
-                        {/* Introcage monkeys: where they are, for now not
-                            changed here (the Location field comes next) */}
-                        {form.introcage ? (
-                            <div className="MonkeyForm-field">
-                                <span>Introcage</span>
-                                <p className="MonkeyForm-fixed">{form.introcage}</p>
-                            </div>
-                        ) : (
                         <label className="MonkeyForm-field">
-                            <span>Troop <em>(required)</em></span>
+                            <span>Enclosure <em>(required)</em></span>
                             <select
                                 value={form.troop}
-                                onChange={set("troop")}
+                                onChange={chooseEnclosure}
                                 aria-invalid={Boolean(errors.troop)}
                                 aria-describedby={describedBy("troop")}
                             >
                                 <option value="">Choose…</option>
-                                {troops.map((t) => (
-                                    <option key={t} value={t}>{t}</option>
+                                {choices.map((c) => (
+                                    <option key={c.troop} value={c.troop}>{c.enclosure}</option>
                                 ))}
                             </select>
                             {errorFor("troop")}
                         </label>
-                        )}
+                        <label className="MonkeyForm-field">
+                            <span>Location <em>(required)</em></span>
+                            <select
+                                value={form.location}
+                                onChange={set("location")}
+                                disabled={!choice}
+                                aria-invalid={Boolean(errors.location)}
+                                aria-describedby={describedBy("location")}
+                            >
+                                {!choice && <option value="">Choose an enclosure first</option>}
+                                {choice && form.location === "" && <option value="">Choose…</option>}
+                                {choice && (
+                                    <>
+                                        <option value="troop">{choice.troop} Troop</option>
+                                        {choice.introcages.map((i) => (
+                                            <option key={i.id} value={String(i.id)}>{i.name}</option>
+                                        ))}
+                                    </>
+                                )}
+                            </select>
+                            {errorFor("location")}
+                        </label>
+                    </div>
+
+                    <div className="MonkeyForm-row">
                         <label className="MonkeyForm-field">
                             <span>Sex</span>
                             <select value={form.sex} onChange={set("sex")}>
                                 <option value="female">Female</option>
                                 <option value="male">Male</option>
-                                <option value="">Not recorded</option>
+                                <option value="">Unknown</option>
                             </select>
                         </label>
-                    </div>
-
-                    <div className="MonkeyForm-row">
                         <label className="MonkeyForm-field">
                             <span>Birth year</span>
                             {/* This year back to 2000 (or further, if this
@@ -272,6 +301,9 @@ function MonkeyForm({ monkey, troops, troopIds, defaultTroop, onClose, onSaved, 
                             </select>
                             {errorFor("year")}
                         </label>
+                    </div>
+
+                    <div className="MonkeyForm-row">
                         {/* While the box (or the button) has focus, the name
                             has "Unknown?" beside it, or "Clear" once chosen
                             (back to blank: no chip) */}

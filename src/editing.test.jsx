@@ -27,7 +27,7 @@ function fakeSupabase({ signedIn = true, refuse = false, admin = true } = {}) {
     });
     // A saved row, as the database would send it back
     const rowBack = (row, id) => ({
-        id, ...row, troops: { name: troopName(row.troop_id) },
+        id, ...row, troops: row.troop_id ? { name: troopName(row.troop_id) } : null,
     });
     const refusal = { data: null, error: { code: "PGRST116", message: "0 rows" } };
     vi.spyOn(supabase, "from").mockImplementation((table) => {
@@ -67,7 +67,7 @@ function fakeSupabase({ signedIn = true, refuse = false, admin = true } = {}) {
 }
 
 // ShowPage with its own list, like App gives it
-function Harness({ editable = true }) {
+function Harness({ editable = true, enclosuresLive = false }) {
     const [monkeys, setMonkeys] = useState(startingMonkeys);
     return (
         <AuthProvider>
@@ -75,6 +75,7 @@ function Harness({ editable = true }) {
                 monkeys={monkeys}
                 troops={BUILT_IN_DATA.troops}
                 troopIds={TROOP_IDS}
+                enclosuresLive={enclosuresLive}
                 editable={editable}
                 onMonkeySaved={(m) =>
                     setMonkeys((list) =>
@@ -92,7 +93,7 @@ function Harness({ editable = true }) {
 function setup(options = {}) {
     fakeSupabase(options);
     const user = userEvent.setup();
-    render(<Harness editable={options.editable ?? true} />);
+    render(<Harness editable={options.editable ?? true} enclosuresLive={options.enclosuresLive} />);
     return { user };
 }
 
@@ -131,7 +132,10 @@ test("editing: the form is filled in, and saving shows the new details", async (
     expect(form()).toHaveAccessibleName("Edit Aroha");
     expect(field("Name")).toHaveValue("Aroha");
     expect(field("Name")).toHaveFocus();
-    expect(field("Troop")).toHaveValue("H&B");
+    expect(field("Enclosure")).toHaveValue("H&B");
+    expect(field("Location")).toHaveValue("troop");
+    // The database here has no introcages yet: the troop is the only choice
+    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["H&B Troop"]);
     expect(field("Birth year")).toHaveValue("2016");
     expect(field("Chip")).toHaveValue("19806");
 
@@ -250,7 +254,9 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     expect(form()).toHaveAccessibleName("Add a monkey");
 
     await user.type(field("Name"), "Brand New");
-    await user.selectOptions(field("Troop"), "Goliath");
+    expect(field("Location")).toBeDisabled();
+    await user.selectOptions(field("Enclosure"), "Goliath");
+    expect(field("Location")).toHaveValue("troop");
     await user.selectOptions(field("Sex"), "female");
     await user.selectOptions(field("Birth year"), "2026");
     await user.click(within(form()).getByRole("button", { name: "Add monkey" }));
@@ -263,6 +269,41 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     });
     expect(await screen.findByRole("dialog", { name: "Brand New" })).toBeInTheDocument();
     expect(document.querySelector(".ShowPage-monkeys")).toHaveTextContent("Brand New");
+});
+
+test("location: moving a monkey into one of its enclosure's introcages, and back", async () => {
+    const { user } = setup({ enclosuresLive: true });
+    await openEditFor(user, "Aroha");
+    const options = within(field("Location")).getAllByRole("option").map((o) => o.textContent);
+    expect(options).toEqual(["H&B Troop", "H&B A", "H&B B", "H&B C1", "H&B C2"]);
+
+    // (chosen by value: the option's "&" doesn't match as text)
+    const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
+    await user.selectOptions(field("Location"), String(c1.id));
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    // In the introcage, not the troop
+    expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: c1.id });
+    expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("H&B C1");
+
+    // Back to the troop
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(field("Enclosure")).toHaveValue("H&B");
+    expect(field("Location")).toHaveValue(String(c1.id));
+    await user.selectOptions(field("Location"), "troop");
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(2));
+    expect(saved.updates[1].row).toMatchObject({ troop_id: TROOP_IDS["H&B"], introcage_id: null });
+});
+
+test("location: choosing another enclosure starts with its troop", async () => {
+    const { user } = setup({ enclosuresLive: true });
+    await openEditFor(user, "Aroha");
+    const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
+    await user.selectOptions(field("Location"), String(c1.id));
+    await user.selectOptions(field("Enclosure"), "Robert");
+    expect(field("Location")).toHaveValue("troop");
+    expect(within(field("Location")).getAllByRole("option")[1]).toHaveTextContent("Robert A");
 });
 
 // The photos listed in the form, in order (from their previews)

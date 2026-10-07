@@ -37,6 +37,9 @@ function makePlaces(enclosures, troopHomes) {
     return { byId, homeOf };
 }
 
+// The troop enclosure a troop lives in ("Robert"), or null (the Bandits)
+export const troopHome = (troop) => places.homeOf(troop);
+
 // A database row → the shape the rest of the site uses (the same as the
 // entries in monkeysArr.js, plus where it lives), so pages don't need to
 // know where data came from. See places.js.

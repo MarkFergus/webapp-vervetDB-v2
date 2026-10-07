@@ -1,10 +1,16 @@
 import { checkForm, emptyForm, formFromMonkey, PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
-const TROOPS = ["Goliath", "Skunkey"];
+// The Enclosure + Location choices (see placeChoices)
+const CHOICES = [
+    { troop: "Goliath", enclosure: "Goliath", introcages: [{ id: 21, name: "Goliath A" }] },
+    { troop: "H&B", enclosure: "H&B", introcages: [{ id: 30, name: "H&B C1" }] },
+    { troop: "Bandits", enclosure: "Bandits", introcages: [] },
+];
 const THIS_YEAR = 2026;
 const valid = {
     name: "Nova",
     troop: "Goliath",
+    location: "troop",
     sex: "female",
     year: "2024",
     chip: "",
@@ -12,7 +18,7 @@ const valid = {
     bio: "Arrived as an orphan.",
     desc: "",
 };
-const check = (changes) => checkForm({ ...valid, ...changes }, TROOPS, THIS_YEAR);
+const check = (changes) => checkForm({ ...valid, ...changes }, CHOICES, THIS_YEAR);
 
 describe("filling the form from a monkey", () => {
     test("uses the monkey's details, with the year as text", () => {
@@ -21,8 +27,8 @@ describe("filling the form from a monkey", () => {
             img: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: undefined,
         });
         expect(form).toEqual({
-            name: "Aroha", troop: "H&B", sex: "male", year: "2016", chip: "19806",
-            chipUnknown: false, introcage: null, introcageId: undefined,
+            name: "Aroha", troop: "H&B", location: "troop", sex: "male", year: "2016", chip: "19806",
+            chipUnknown: false, introcageId: undefined,
             photos: ["https://i.ibb.co/a.webp"], bio: "Bio.", desc: "",
         });
     });
@@ -43,7 +49,17 @@ describe("filling the form from a monkey", () => {
     });
 
     test("a new monkey starts empty, in the chosen troop", () => {
-        expect(emptyForm("Goliath")).toMatchObject({ name: "", troop: "Goliath", photos: [] });
+        expect(emptyForm("Goliath")).toMatchObject({ name: "", troop: "Goliath", location: "troop", photos: [] });
+        expect(emptyForm()).toMatchObject({ troop: "", location: "" });
+    });
+
+    test("an introcage monkey: its enclosure's troop, and the introcage as its location", () => {
+        const form = formFromMonkey(
+            { name: "Aroha", troop: null, introcage: "H&B C1", introcageId: 30, enclosure: "H&B",
+              sex: "male", year: 2016, chip: "", img: [], bio: "", desc: "" },
+            CHOICES
+        );
+        expect(form).toMatchObject({ troop: "H&B", location: "30", introcageId: 30 });
     });
 });
 
@@ -54,10 +70,13 @@ describe("checking the form", () => {
         expect(values).toMatchObject({ name: "Nova", troop: "Goliath", year: 2024 });
     });
 
-    test("name and troop are required", () => {
+    test("name, enclosure and location are required", () => {
         expect(check({ name: "   " }).errors.name).toBe("Please enter a name.");
-        expect(check({ troop: "" }).errors.troop).toBe("Please choose a troop.");
-        expect(check({ troop: "Bandits" }).errors.troop).toBe("Please choose a troop.");
+        expect(check({ troop: "" }).errors.troop).toBe("Please choose an enclosure.");
+        expect(check({ troop: "Skunkey" }).errors.troop).toBe("Please choose an enclosure.");
+        expect(check({ location: "" }).errors.location).toBe("Please choose a location.");
+        // An introcage of another enclosure
+        expect(check({ location: "30" }).errors.location).toBe("Please choose a location.");
     });
 
     test("stray spaces are tidied away", () => {
@@ -137,4 +156,24 @@ test("up to 5 photos; more are refused with a clear message", () => {
     expect(check({ photos: links(8) }).errors.photos).toMatch(/Please remove 3/);
     // Empty boxes don't count
     expect(check({ photos: [...links(5), "", " "] }).errors.photos).toBeUndefined();
+});
+
+describe("where the monkey lives", () => {
+    test("with the troop: no introcage", () => {
+        expect(check({}).values).toMatchObject({ troop: "Goliath", introcage: null, introcageId: undefined });
+    });
+
+    test("in an introcage: no troop", () => {
+        expect(check({ location: "21" }).values).toMatchObject({ troop: null, introcage: "Goliath A", introcageId: 21 });
+    });
+
+    test("back from an introcage to the troop clears the introcage", () => {
+        expect(check({ introcageId: 21, location: "troop" }).values).toMatchObject({
+            troop: "Goliath", introcage: null, introcageId: null,
+        });
+    });
+
+    test("the Bandits (no enclosure) stay a troop", () => {
+        expect(check({ troop: "Bandits" }).values).toMatchObject({ troop: "Bandits", introcage: null });
+    });
 });

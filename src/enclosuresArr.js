@@ -29,6 +29,12 @@ const LAYOUT = [
     ["James", "Sickbay", ["A", "B"]],
 ];
 
+// Introcages with their own name instead of "<enclosure> <code>"
+const OWN_NAMES = {
+    "Engeltjie 8": "Calypso's Corner A",
+    "Engeltjie 9": "Calypso's Corner B",
+};
+
 const blank = { established: null, description: "", features: "", size: null, photos: [] };
 
 function build() {
@@ -43,7 +49,7 @@ function build() {
             list.push({
                 ...blank,
                 id: ++id,
-                name: `${name} ${code}`,
+                name: OWN_NAMES[`${name} ${code}`] ?? `${name} ${code}`,
                 type: "introcage",
                 parentId: parent.id,
                 // the same section as its enclosure

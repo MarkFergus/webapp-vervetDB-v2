@@ -11,14 +11,22 @@ export const MAX_PHOTOS = 5;
 
 const isPlaceholder = (url) => url === PLACEHOLDER_PHOTO;
 
+// Where a monkey lives, in the form: troop = the troop whose enclosure it's
+// in or beside (the Enclosure box), location = "troop" (with that troop) or
+// an introcage's id as text (the Location box). choices: see placeChoices
+// in enclosures.js.
+
 // A monkey (as used on the site) → what the form's boxes start with
-export function formFromMonkey(monkey) {
+export function formFromMonkey(monkey, choices = []) {
+    // Introcage monkeys have no troop: the troop of their enclosure
+    const troop = monkey.introcage
+        ? choices.find((c) => c.enclosure === monkey.enclosure)?.troop ?? ""
+        : monkey.troop ?? "";
     return {
         name: monkey.name,
-        // Introcage monkeys have no troop: their introcage stays as it is
-        // (choosing where a monkey lives comes with the Location field)
-        troop: monkey.troop ?? "",
-        introcage: monkey.introcage ?? null,
+        troop,
+        location: monkey.introcage ? String(monkey.introcageId ?? "") : troop && "troop",
+        // undefined: the database has no introcages yet (so it isn't saved)
         introcageId: monkey.introcageId,
         sex: monkey.sex ?? "",
         year: monkey.year === "" ? "" : String(monkey.year),
@@ -32,12 +40,19 @@ export function formFromMonkey(monkey) {
     };
 }
 
-// An empty form for adding a monkey
+// An empty form for adding a monkey (with its troop, if one's given)
 export function emptyForm(troop = "") {
     return {
-        name: "", troop, sex: "", year: "", chip: "", chipUnknown: false,
+        name: "", troop, location: troop && "troop", sex: "", year: "", chip: "", chipUnknown: false,
         photos: [], bio: "", desc: "",
     };
+}
+
+// The introcage chosen in the form ({ id, name }), or null
+export function chosenIntrocage(form, choices) {
+    if (!form.location || form.location === "troop") return null;
+    const choice = choices.find((c) => c.troop === form.troop);
+    return choice?.introcages.find((i) => String(i.id) === form.location) ?? null;
 }
 
 // Spaces at the ends removed, runs of spaces made single
@@ -60,15 +75,20 @@ function tidyChip(chip) {
 
 // Tidies and checks the form.
 // Returns { errors } (field → message, empty if all fine) and { values }: the
-// monkey ready to save, in the site's shape (name, troop, sex, year, chip,
-// img, bio, desc).
-export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
+// monkey ready to save, in the site's shape (name, troop or introcage +
+// introcageId, sex, year, chip, img, bio, desc).
+export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
     const errors = {};
 
     const name = tidy(form.name);
     if (!name) errors.name = "Please enter a name.";
 
-    if (!form.introcage && !troops.includes(form.troop)) errors.troop = "Please choose a troop.";
+    const introcage = chosenIntrocage(form, choices);
+    if (!choices.some((c) => c.troop === form.troop)) {
+        errors.troop = "Please choose an enclosure.";
+    } else if (form.location !== "troop" && !introcage) {
+        errors.location = "Please choose a location.";
+    }
 
     const sex = ["male", "female", ""].includes(form.sex) ? form.sex : "";
 
@@ -99,9 +119,12 @@ export function checkForm(form, troops, thisYear = new Date().getFullYear()) {
         errors,
         values: {
             name,
-            troop: form.introcage ? null : form.troop,
-            introcage: form.introcage ?? null,
-            introcageId: form.introcageId,
+            // In an introcage: not in the troop
+            troop: introcage ? null : form.troop,
+            introcage: introcage?.name ?? null,
+            // Back with the troop: no introcage (left out if the database
+            // has no introcages, or for a new troop monkey)
+            introcageId: introcage ? introcage.id : form.introcageId === undefined ? undefined : null,
             sex,
             year,
             chip: chipResult.error ? "" : chipResult.chip,

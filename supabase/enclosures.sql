@@ -123,6 +123,10 @@ from (values
 join public.enclosures p on p.name = v.enclosure and p.type = 'troop'
 cross join lateral unnest(v.codes) with ordinality as code (value, ordinality);
 
+-- Introcages with their own name
+update public.enclosures set name = 'Calypso''s Corner A' where name = 'Engeltjie 8' and type = 'introcage';
+update public.enclosures set name = 'Calypso''s Corner B' where name = 'Engeltjie 9' and type = 'introcage';
+
 ------------------------------------------------------------------------
 -- Troops: their home enclosure (none for the Bandits)
 ------------------------------------------------------------------------
