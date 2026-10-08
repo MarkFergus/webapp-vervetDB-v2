@@ -142,9 +142,8 @@ describe("an enclosure's record", () => {
         expect(stat("Largest troop")).toBe(ordinal(troopRank(HB, enclosuresArr, MONKEYS)));
         expect(stat("Average age")).toBe(String(averageAge(hbTroop)));
         expect(document.querySelector(".Enclosures-back")).toHaveAttribute("href", "#enclosures");
-        // The top bar's page button switches to Monkeys while here
-        expect(document.querySelector(".Nav-pageLink")).toHaveAccessibleName("Monkeys");
-        expect(document.querySelector(".Nav-pageLink")).toHaveAttribute("href", "#");
+        // The side rail shows Enclosures as the page you're on
+        expect(document.querySelector('.SideRail a[href="#enclosures"]')).toHaveAttribute("aria-current", "page");
         // Introcages: open to start with, rows with who's in each
         const c1 = screen.getByRole("link", { name: /^H&B C1/ });
         expect(c1).toHaveAttribute("href", enclosureHash(HB_C1));

@@ -122,9 +122,10 @@ describe("photo helpers", () => {
 describe("the pop-up", () => {
     const dialog = () => screen.getByRole("dialog", { name: "Install & Use Offline" });
 
+    // Phones: ☰ (the drawer)
     async function openFromMenu(user) {
-        await user.click(screen.getByRole("button", { name: /^Menu/ }));
-        await user.click(within(document.getElementById("Nav-menu")).getByRole("button", { name: "Install & Use Offline" }));
+        await user.click(screen.getByRole("button", { name: "Menu" }));
+        await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "Install & Use Offline" }));
     }
 
     test("☰ → Install & Use Offline: install steps for this browser", async () => {
@@ -138,10 +139,12 @@ describe("the pop-up", () => {
         expect(within(dialog()).getByText(/isn't ready in this window yet/)).toBeInTheDocument();
     });
 
-    test("computers: the top bar's Install & Use Offline icon opens it", async () => {
+    test("computers: the side rail (opened out) has it", async () => {
         const user = userEvent.setup();
         render(<ShowPage monkeys={MONKEYS} />);
-        await user.click(document.querySelector(".Nav-buttons .Nav-offline"));
+        await user.click(screen.getByRole("button", { name: "Open the side menu" }));
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Install & Use Offline" }));
+        localStorage.removeItem("vervetdb-rail");
         expect(await screen.findByRole("dialog", { name: "Install & Use Offline" })).toBeInTheDocument();
     });
 

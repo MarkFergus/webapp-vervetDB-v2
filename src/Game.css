@@ -33,41 +33,6 @@
     padding: 8px 16px 48px;
 }
 
-.Game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 8px;
-}
-
-.Game-home {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #d1cfc7;
-    text-decoration: none;
-}
-
-.Game-home svg {
-    width: 34px;
-    height: 31px;
-}
-
-.Game-home-title {
-    font-family: "Russo One", sans-serif;
-    font-size: 24px;
-}
-
-.Game-back {
-    color: #25c4f8;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.Game-back:hover {
-    color: #86e1ff;
-}
-
 .Game-title {
     font-family: "Russo One", sans-serif;
     font-weight: normal;

@@ -4,6 +4,12 @@
 .LoadingSkeleton {
     min-height: 100vh;
     overflow: hidden;
+    /* Computers: room for the side rail, as on the real page (ShowPage.css) */
+    padding-left: var(--rail-width);
+}
+
+.LoadingSkeleton .ShowPage-nav {
+    margin-left: calc(-1 * var(--rail-width));
 }
 
 /* Every shape: a soft grey, with a lighter band sweeping across */
@@ -72,9 +78,35 @@
     border-radius: 50%;
 }
 
-/* Phones show just one (the ☰ menu) */
-.LoadingSkeleton-menu + .LoadingSkeleton-menu {
+/* The ☰ for the side rail: computers only */
+.LoadingSkeleton-railButton {
     display: none;
+    margin-right: 14px;
+}
+
+/* The side rail (computers): a column of icons down the left */
+.LoadingSkeleton-rail {
+    display: none;
+}
+
+/* The bottom bar (phones): five circles across */
+.LoadingSkeleton-bottomBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: var(--bottom-bar);
+    padding-bottom: env(safe-area-inset-bottom);
+    background-color: #1f1f1f;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.LoadingSkeleton-bottomBar .LoadingSkeleton-menu {
+    width: 28px;
+    height: 28px;
 }
 
 /* Filters, Sort, count and (far right) the view switch */
@@ -198,8 +230,29 @@
         justify-self: end;
     }
 
-    .LoadingSkeleton-menu + .LoadingSkeleton-menu {
+    .LoadingSkeleton-railButton {
         display: block;
+    }
+
+    .LoadingSkeleton-rail {
+        position: fixed;
+        top: var(--nav-height);
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        width: var(--rail-small);
+        padding-top: 16px;
+    }
+
+    .LoadingSkeleton-rail .LoadingSkeleton-menu {
+        width: 28px;
+        height: 28px;
+    }
+
+    .LoadingSkeleton-bottomBar {
+        display: none;
     }
 }
 

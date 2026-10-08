@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import ShowPage from "./ShowPage";
-import Game from "./Game";
 import MonkeyIcon from "./MonkeyIcon";
 import LoadingSkeleton from "./LoadingSkeleton";
 import UpdatePrompt from "./UpdatePrompt";
@@ -76,25 +75,23 @@ function App() {
                         {notice}
                     </p>
                 )}
-                {route === "game" ? (
-                    <Game monkeys={monkeys} troops={troops} />
-                ) : (
-                    <ShowPage
-                        route={route}
-                        enclosures={enclosures}
-                        sections={sections}
-                        enclosuresLive={status === "live" && Boolean(enclosuresLive)}
-                        onEnclosureSaved={enclosureSaved}
-                        monkeys={monkeys}
-                        troops={troops}
-                        troopIds={troopIds}
-                        // Editing only when the data is live from the database
-                        // and there's a connection to save changes
-                        editable={status === "live" && online}
-                        onMonkeySaved={monkeySaved}
-                        onMonkeyDeleted={monkeyDeleted}
-                    />
-                )}
+                {/* Every page (the monkeys, the enclosures, the game) under
+                    the same top bar */}
+                <ShowPage
+                    route={route}
+                    enclosures={enclosures}
+                    sections={sections}
+                    enclosuresLive={status === "live" && Boolean(enclosuresLive)}
+                    onEnclosureSaved={enclosureSaved}
+                    monkeys={monkeys}
+                    troops={troops}
+                    troopIds={troopIds}
+                    // Editing only when the data is live from the database
+                    // and there's a connection to save changes
+                    editable={status === "live" && online}
+                    onMonkeySaved={monkeySaved}
+                    onMonkeyDeleted={monkeyDeleted}
+                />
                 <UpdatePrompt />
                 <SaveThumbnails live={status === "live"} monkeys={monkeys} />
             </div>

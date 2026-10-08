@@ -21,6 +21,7 @@ import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
 import { homeName, inIntrocage, placeName } from "./places";
 import { isEnclosuresRoute, placeHash } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
+import Game from "./Game";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
@@ -153,6 +154,17 @@ function ShowPage({
     const canEdit = editable && isEditor;
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
+    // On the Enclosures pages (only once the database has enclosures)
+    const enclosureEditing = {
+        canEdit: canEdit && enclosuresLive,
+        // the maintenance log: any role, maintenance accounts too
+        canLog: editable && canLogMaintenance && enclosuresLive,
+        // enclosure details: admins only, for now
+        canEditDetails: canEdit && enclosuresLive && isAdmin,
+        canDelete: canEdit && enclosuresLive && isAdmin,
+        live: enclosuresLive && editable,
+        onSaved: onEnclosureSaved,
+    };
     const [searchValue, setSearchValue] = useState("");
     // Filters: { location, section, troop, year, age, sex } (see FilterPanel)
     const [filters, setFilters] = useState(NO_FILTERS);
@@ -215,6 +227,14 @@ function ShowPage({
     // The pop-up steps through the monkey list, or (opened from an
     // enclosure's page) that group of monkeys
     const onEnclosures = isEnclosuresRoute(route);
+    // The game (#game): under the same top bar, without the search box
+    const onGame = route === "game";
+    // Another page than the monkey list (going home goes back to it)
+    const offList = onEnclosures || onGame;
+    // The game starts at the top
+    useEffect(() => {
+        if (onGame) window.scrollTo?.(0, 0);
+    }, [onGame]);
     const [modalList, setModalList] = useState(null);
     const neighbours = modalList ?? visibleMonkeys;
     const selectedIndex = neighbours.indexOf(selectedMonkey);
@@ -250,7 +270,7 @@ function ShowPage({
     }
     // The logo: back to the top, with the search and filters cleared
     function goHome() {
-        if (onEnclosures) window.location.hash = "";
+        if (offList) window.location.hash = "";
         setSearchValue("");
         setFilters(NO_FILTERS);
         setCurrentPage(1);
@@ -267,8 +287,8 @@ function ShowPage({
         clearFilters();
     }
     function handleSearch(event) {
-        // Searching from the Enclosures pages: the results are on the list
-        if (onEnclosures) window.location.hash = "";
+        // Searching from another page: the results are on the list
+        if (offList) window.location.hash = "";
         setSearchValue(event.target.value);
         setCurrentPage(1);
     }
@@ -549,10 +569,16 @@ function ShowPage({
                     onAddMonkey={canAdd ? startAdd : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onEnclosures ? "enclosures" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : "monkeys"}
+                    showSearch={!onGame}
+                    barsInert={isAnyModalOpen}
                 />
             </div>
-            {onEnclosures ? (
+            {onGame ? (
+                <div inert={isAnyModalOpen}>
+                    <Game monkeys={monkeys} troops={troops} />
+                </div>
+            ) : onEnclosures ? (
                 <EnclosuresPage
                     route={route}
                     monkeys={monkeys}
@@ -560,17 +586,7 @@ function ShowPage({
                     sections={sections}
                     onOpenMonkey={openModal}
                     inert={isAnyModalOpen}
-                    editing={{
-                        // (only once the database has enclosures, and online)
-                        canEdit: canEdit && enclosuresLive,
-                        // the maintenance log: any role, maintenance accounts too
-                        canLog: editable && canLogMaintenance && enclosuresLive,
-                        // enclosure details: admins only, for now
-                        canEditDetails: canEdit && enclosuresLive && isAdmin,
-                        canDelete: canEdit && enclosuresLive && isAdmin,
-                        live: enclosuresLive && editable,
-                        onSaved: onEnclosureSaved,
-                    }}
+                    editing={enclosureEditing}
                 />
             ) : (
             <>

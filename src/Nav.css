@@ -1,6 +1,7 @@
-/* The top bar. Phones: logo, search filling the middle, ☰ menu.
-   Computers (the media query at the end): logo and name, search in the
-   middle of the page, then the icon buttons. */
+/* The top bar. Phones: logo, search filling the middle, ☰ (the drawer).
+   Computers (the media query at the end): ☰ (the side rail), logo and name,
+   search in the middle of the page, then + Add and the account circle.
+   The side rail, bottom bar and drawer: NavBars.css. */
 
 /* ---- Layout ---- */
 
@@ -113,17 +114,43 @@
     color: white;
 }
 
-/* ---- Icon buttons (computers): round, a soft grey circle on hover ---- */
+/* No search box (the game): the space it would take */
+.Nav-spacer {
+    flex: 1;
+}
+
+/* ---- Computers: + Add (admins) and the account circle ---- */
 
 .Nav-buttons {
     display: none;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     height: 40px; /* the search bar's height */
 }
 
-.Nav-buttons button,
-.Nav-buttons a {
+/* + Add: a soft pill, like YouTube's "+ Create" */
+.Nav-add {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 36px;
+    padding: 0 14px 0 10px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #d1cfc7;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Nav-add:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.Nav-account {
     position: relative; /* for the hover label */
     display: flex;
     justify-content: center;
@@ -139,18 +166,15 @@
     transition: background-color 0.15s;
 }
 
-.Nav-buttons button:hover,
-.Nav-buttons a:hover {
+.Nav-account:hover {
     color: white;
-}
-
-.Nav-buttons button:hover:not(:disabled),
-.Nav-buttons a:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.Nav-buttons button:focus-visible,
-.Nav-buttons a:focus-visible {
+.Nav-add:focus-visible,
+.Nav-account:focus-visible,
+.Nav-railButton:focus-visible,
+.Nav-menuButton:focus-visible {
     outline: 2px solid #25c4f8;
     outline-offset: 0;
 }
@@ -161,15 +185,14 @@
     cursor: auto;
 }
 
-/* Hover labels under the icons: small, dark and rounded (like YouTube's),
-   after a short pause so they don't flash while passing over */
+/* Hover label under the account circle: small, dark and rounded (like
+   YouTube's), after a short pause; lined up with its right edge */
 .Nav-buttons [data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
     z-index: 5;
     top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+    right: 0;
     padding: 5px 9px;
     font-family: "Nunito Sans", sans-serif;
     font-size: 12px;
@@ -190,13 +213,6 @@
     transition-delay: 0.4s;
 }
 
-/* The last icon's label lines up with its right edge, so it stays on screen */
-.Nav-buttons [data-tooltip-align="end"]::after {
-    left: auto;
-    right: 0;
-    transform: none;
-}
-
 /* ---- Account: a person in a circle, green when signed in ---- */
 
 .Nav-avatar {
@@ -209,140 +225,70 @@
     border-radius: 50%;
 }
 
-/* (.Nav-buttons in front: stronger than the white hover, so it stays green) */
-.Nav-buttons .Nav-account.is-signed-in,
-.Nav-menuAccount.is-signed-in .Nav-avatar {
+.Nav-buttons .Nav-account.is-signed-in {
     color: #47b028;
 }
 
-.Nav-buttons .Nav-account.is-signed-in .Nav-avatar,
-.Nav-menuAccount.is-signed-in .Nav-avatar {
+.Nav-buttons .Nav-account.is-signed-in .Nav-avatar {
     background-color: rgba(71, 176, 40, 0.15);
 }
 
-/* ---- ☰ menu (phones) ---- */
+/* ---- The menu buttons: ☰ on the left (computers: the side rail) or on
+   the right (phones: the drawer) ---- */
 
-.Nav-menuWrap {
-    position: relative;
+.Nav-start {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+.Nav-railButton,
 .Nav-menuButton {
-    position: relative; /* for the green dot */
     display: flex;
+    flex-shrink: 0;
     justify-content: center;
     align-items: center;
     width: 40px;
     height: 40px;
-    padding: 4px;
+    padding: 0;
     color: #d1cfc7;
     background: none;
     border: none;
-    border-radius: 6px;
+    border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.15s;
 }
 
-.Nav-menuButton:hover,
-.Nav-menuButton[aria-expanded="true"] {
+.Nav-railButton:hover,
+.Nav-menuButton:hover {
     color: white;
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.Nav-menuButton:focus-visible {
-    outline: 2px solid #25c4f8;
-    outline-offset: 0;
-}
-
-/* A small green dot on ☰ while signed in */
-.Nav-menuDot {
-    position: absolute;
-    top: 3px;
-    right: 2px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background-color: #47b028;
-    box-shadow: 0 0 0 2px #1f1f1f;
-}
-
-/* The menu: drops down from the right-hand edge */
-.Nav-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    z-index: 10;
-    min-width: 220px;
-    display: flex;
-    flex-direction: column;
-    padding: 6px;
-    background-color: #2a282a;
-    border: 1px solid #434343;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-}
-
-.Nav-menu a,
-.Nav-menu button {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    font-family: "Nunito Sans", sans-serif;
-    font-size: 15px;
-    white-space: nowrap; /* each item on one line, e.g. "Monkey Guesser Game" */
-    text-align: left;
-    color: #d1cfc7;
-    text-decoration: none;
-    background: none;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.Nav-menu a > svg {
-    width: 24px;
-    height: 22px;
-    flex-shrink: 0;
-}
-
-.Nav-menu a:hover,
-.Nav-menu button:hover:not(:disabled) {
-    color: white;
-    background-color: #343234;
-}
-
-.Nav-menu button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-/* Sign In / Account: a smaller version of the account circle */
-.Nav-menuAccount .Nav-avatar {
-    width: 22px;
-    height: 22px;
-    border-width: 1.5px;
+/* Phones: no side rail */
+.Nav-railButton {
+    display: none;
 }
 
 /* ---- Computers ---- */
 
 /* Three columns, so the search bar sits in the middle of the page (not just
-   the middle of the space between logo and icons). The side columns share
-   what's left equally; on tight screens they still grow to fit. */
-/* Like Reddit's top bar, as the window narrows: first the "vervetDB" name
-   goes (below 870px) and the search bar takes its room; then, once the
-   search bar would be under 240px, the icons fold into the ☰ menu (below
-   690px; room for editors' extra + icon too) */
+   the middle of the space between logo and buttons). The search bar grows
+   first (up to 540px), then the sides share what's left. Like Reddit's, the
+   "vervetDB" name goes below 870px; below 690px it's the phone layout. */
 @media (min-width: 690px) {
     .Nav {
         display: grid;
-        /* The search bar grows first (up to 540px), then the sides share
-           what's left, so it stays centred; the sides never squash */
         grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
         column-gap: 16px;
     }
 
-    .Nav-home {
+    .Nav-start {
         justify-self: start;
+    }
+
+    .Nav-railButton {
+        display: flex;
     }
 
     .Nav-searchbar {
@@ -355,7 +301,7 @@
         justify-self: end;
     }
 
-    .Nav-menuWrap {
+    .Nav-menuButton {
         display: none;
     }
 }

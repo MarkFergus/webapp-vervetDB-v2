@@ -1,0 +1,403 @@
+/* The side rail (computers), bottom bar and drawer (phones): NavBars.jsx.
+   Phones are below 690px, the same point the top bar changes at (Nav.css). */
+
+:root {
+    /* The top bar's height (Nav.css: 40px search bar + 8px above and below) */
+    --nav-height: 57px;
+    /* The side rail's width: small, or opened out (☰). The page moves over
+       to make room (.rail-open on <html>, set by Nav.jsx) */
+    --rail-small: 72px;
+    --rail-open: 228px;
+    --rail-width: 0px;
+    /* The bottom bar's height on phones (plus the iPhone home bar) */
+    --bottom-bar: calc(60px + env(safe-area-inset-bottom));
+}
+
+/* ---- Computers: the side rail ---- */
+
+.SideRail {
+    display: none;
+}
+
+@media (min-width: 690px) {
+    :root {
+        --rail-width: var(--rail-small);
+    }
+}
+
+/* Wide screens: the rail opened out moves the page over */
+@media (min-width: 1280px) {
+    :root.rail-open {
+        --rail-width: var(--rail-open);
+    }
+}
+
+@media (min-width: 690px) {
+    .SideRail {
+        position: fixed;
+        z-index: 1;
+        top: var(--nav-height);
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        width: var(--rail-small);
+        padding: 4px 4px 12px;
+        overflow-y: auto;
+        font-family: "Nunito Sans", sans-serif;
+        background-color: #1f1f1f;
+    }
+
+    .SideRail.is-open {
+        width: var(--rail-open);
+        padding: 8px 12px 16px;
+    }
+
+    /* Narrower screens: over the page, which dims behind it */
+    .SideRail.is-over {
+        z-index: 3;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.5);
+        animation: SideRail-slide 0.18s ease-out;
+    }
+
+    .SideRail-backdrop {
+        position: fixed;
+        z-index: 3;
+        inset: var(--nav-height) 0 0 0;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+@keyframes SideRail-slide {
+    from {
+        width: var(--rail-small);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .SideRail.is-over {
+        animation: none;
+    }
+}
+
+.SideRail-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.SideRail.is-open .SideRail-group + .SideRail-group {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #333133;
+}
+
+.SideRail-heading {
+    margin: 4px 12px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+/* Small: an icon with a tiny label under it, like YouTube's */
+.SideRail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 14px 0 12px;
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    color: #d1cfc7;
+    text-decoration: none;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Opened out: icon and label side by side */
+.SideRail.is-open .SideRail-item {
+    flex-direction: row;
+    gap: 18px;
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.SideRail-item svg {
+    flex-shrink: 0;
+}
+
+.SideRail-item:hover:not(:disabled) {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.SideRail-item:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.SideRail-item:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -2px;
+}
+
+/* The page you're on */
+.SideRail-item[aria-current="page"] {
+    font-weight: 700;
+    color: white;
+}
+
+.SideRail.is-open .SideRail-item[aria-current="page"] {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.SideRail-footer {
+    margin: auto 12px 0;
+    padding-top: 16px;
+    font-size: 12px;
+    color: #6b6862;
+}
+
+/* ---- Phones: the bottom bar ---- */
+
+.BottomBar {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: stretch;
+    height: var(--bottom-bar);
+    padding-bottom: env(safe-area-inset-bottom);
+    font-family: "Nunito Sans", sans-serif;
+    background-color: rgba(31, 31, 31, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 690px) {
+    .BottomBar {
+        display: none;
+    }
+}
+
+.BottomBar-tab,
+.BottomBar-map {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: 11px;
+    color: #b6b2a5;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.BottomBar-tab[aria-current="page"] {
+    font-weight: 700;
+    color: white;
+}
+
+.BottomBar-tab:focus-visible,
+.BottomBar-map:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -4px;
+    border-radius: 10px;
+}
+
+/* Every icon in a row of the same height, centred in it: the labels line
+   up, and Map's bigger circle sits level with the other icons */
+.BottomBar-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+}
+
+/* You: the person in a circle, green when signed in (like the top bar's) */
+.BottomBar-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+}
+
+.BottomBar-tab.is-signed-in .BottomBar-avatar {
+    color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+}
+
+/* Map in the middle: a circle outlined in blue (coming soon, so it can't
+   be tapped yet) */
+.BottomBar-map {
+    color: #d1cfc7;
+}
+
+.BottomBar-map:disabled {
+    cursor: default;
+}
+
+.BottomBar-mapCircle {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    color: #25c4f8;
+    border: 2px solid #25c4f8;
+    border-radius: 50%;
+}
+
+/* Phones: the page leaves room at the bottom for the bar, and things pinned
+   to the bottom (the update message) sit above it */
+@media (max-width: 689px) {
+    :root {
+        --bottom-bar-space: var(--bottom-bar);
+    }
+
+    body {
+        padding-bottom: var(--bottom-bar);
+    }
+}
+
+/* ---- Phones: the drawer from the right ---- */
+
+.Drawer {
+    position: fixed;
+    z-index: 4;
+    inset: 0;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.Drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    animation: Drawer-fade 0.2s ease-out;
+}
+
+.Drawer-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: min(300px, 85vw);
+    padding: 10px 10px calc(16px + env(safe-area-inset-bottom));
+    background-color: #242224;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
+    animation: Drawer-slide 0.22s ease-out;
+}
+
+@keyframes Drawer-slide {
+    from {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes Drawer-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Drawer-panel,
+    .Drawer-backdrop {
+        animation: none;
+    }
+}
+
+.Drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0 2px 8px 10px;
+    border-bottom: 1px solid #343234;
+}
+
+.Drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Russo One", sans-serif;
+    font-size: 20px;
+    color: white;
+}
+
+.Drawer-brand svg {
+    width: 28px;
+    height: 26px;
+    color: #25c4f8;
+}
+
+.Drawer-close {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.Drawer-close:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.Drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    text-align: left;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Drawer-item:hover:not(:disabled) {
+    color: white;
+    background-color: #343234;
+}
+
+.Drawer-item:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.Drawer-footer {
+    margin: auto 12px 0;
+    font-size: 12px;
+    color: #6b6862;
+}

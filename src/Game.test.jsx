@@ -62,16 +62,20 @@ function optionFor(name) {
     return optionButtons().find((b) => b.textContent.endsWith(name));
 }
 
-test("the Game button in the nav opens the game, and Back returns", async () => {
+test("Game in the side rail opens the game (same top bar, no search box); Monkeys goes back", async () => {
     const user = userEvent.setup();
     render(<App />);
     // The site shows "Loading monkeys…" until the data has arrived
-    await user.click(await screen.findByRole("link", { name: "Monkey Guesser Game" }));
+    await screen.findByRole("textbox", { name: "Search by name or chip number" });
+    await user.click(document.querySelector('.SideRail a[href="#game"]'));
     expect(
         await screen.findByRole("heading", { name: "Monkey Guesser" })
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "vervetDB home" })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Search by name or chip number" })).toBeNull();
+    expect(document.querySelector('.SideRail a[href="#game"]')).toHaveAttribute("aria-current", "page");
 
-    await user.click(screen.getByRole("link", { name: "← Back to monkeys" }));
+    await user.click(document.querySelector('.SideRail a[href="#"]'));
     expect(
         await screen.findByRole("textbox", { name: "Search by name or chip number" })
     ).toBeInTheDocument();

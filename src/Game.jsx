@@ -8,7 +8,6 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA } from "./monkeyData";
-import MonkeyIcon from "./MonkeyIcon";
 import { drawResultImage } from "./resultImage";
 import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
 import ImagePreview from "./ImagePreview";
@@ -491,18 +490,6 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
         return counts;
     }, [monkeys]);
 
-    const header = (
-        <header className="Game-header">
-            <a href="#" className="Game-home">
-                <MonkeyIcon color="currentColor" />
-                <span className="Game-home-title">vervetDB</span>
-            </a>
-            <a href="#" className="Game-back">
-                ← Back to monkeys
-            </a>
-        </header>
-    );
-
     if (stage === "setup" || !round) {
         const available = playableMonkeys(monkeys, draft.troops).length;
         // Fewer than 10 photos in the chosen troops: "10 photos" is greyed
@@ -523,7 +510,6 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
                 // the picked options all turn fiery orange
                 data-ultimate={ultimate ? "true" : undefined}
             >
-                {header}
                 <h1 className="Game-title">Monkey Guesser</h1>
                 <p className="Game-intro">
                     {ultimate
@@ -688,7 +674,6 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
     return (
         // data-level: colours parts of the page for the difficulty being played
         <div className="Game" data-level={difficulty}>
-            {header}
 
             {/* What's being played, like the results screen's heading */}
             {!round.finished && (

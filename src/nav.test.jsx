@@ -1,4 +1,5 @@
-// The ☰ menu (phones) and the filter / sort toolbar.
+// The ways around (the drawer and bottom bar on phones, the side rail on
+// computers) and the filter / sort toolbar.
 // (Which parts show at which screen width is CSS, which the test browser
 // doesn't apply, so these check the behaviour.)
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -39,10 +40,8 @@ function setup({ signedIn = false, admin = false } = {}) {
             <ShowPage editable />
         </AuthProvider>
     );
-    const menuButton = () => screen.getByRole("button", { name: /^Menu/ });
-    const menu = () => document.getElementById("Nav-menu");
-    const menuItems = () => [...menu().querySelectorAll("a, button")].map((i) => i.textContent);
-    return { user, menuButton, menu, menuItems };
+    const menuButton = () => screen.getByRole("button", { name: "Menu" });
+    return { user, menuButton };
 }
 
 describe("top bar", () => {
@@ -53,82 +52,148 @@ describe("top bar", () => {
     });
 });
 
-describe("☰ menu (phones)", () => {
-    test("signed out: game, PDF, Sign In; focus on the first", async () => {
-        const { user, menuButton, menu, menuItems } = setup();
-        expect(menuButton()).toHaveAttribute("aria-expanded", "false");
-        expect(menu()).toBeNull();
+describe("phones: the drawer (☰, from the right)", () => {
+    const drawer = () => screen.queryByRole("dialog", { name: "Menu" });
+    const drawerItems = () => [...drawer().querySelectorAll(".Drawer-item")].map((i) => i.textContent);
 
+    test("Profile Book, Install & Use Offline and About; Escape closes it, back to ☰", async () => {
+        const { user, menuButton } = setup();
+        expect(drawer()).toBeNull();
         await user.click(menuButton());
-        expect(menuButton()).toHaveAttribute("aria-expanded", "true");
-        expect(menuItems()).toEqual(["Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign In"]);
-        expect(within(menu()).getByRole("link", { name: "Monkey Guesser Game" })).toHaveAttribute("href", "#game");
-        expect(menu().querySelector("a")).toHaveFocus();
-        // The other main page comes first: Enclosures (from the monkeys)
-        expect(within(menu()).getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
+        expect(drawerItems()).toEqual(["Create Profile Book", "Install & Use Offline", "About"]);
+        expect(within(drawer()).getByRole("button", { name: "Close menu" })).toHaveFocus();
+        await user.keyboard("{Escape}");
+        expect(drawer()).toBeNull();
+        expect(menuButton()).toHaveFocus();
     });
 
-    test("signed in as an editor: no Add New Monkey (admins only), Account at the end", async () => {
-        const { user, menuButton, menuItems } = setup({ signedIn: true });
-        await screen.findByRole("button", { name: "Menu (signed in)" });
+    test("choosing Create Profile Book closes it and opens the PDF pop-up", async () => {
+        const { user, menuButton } = setup();
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
+        await user.click(within(drawer()).getByRole("button", { name: "Create Profile Book" }));
+        expect(drawer()).toBeNull();
+        expect(await screen.findByRole("dialog", { name: "Create Profile Book" })).toBeInTheDocument();
+    });
+
+    test("admins: Add New Monkey first, opening the new monkey form; editors don't have it", async () => {
+        const { user, menuButton } = setup({ signedIn: true, admin: true });
+        await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
+        await user.click(menuButton());
+        expect(drawerItems()).toEqual(["Add New Monkey", "Create Profile Book", "Install & Use Offline", "About"]);
+        await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
+        expect(drawer()).toBeNull();
+        expect(screen.getByRole("dialog", { name: "Add a monkey" })).toBeInTheDocument();
+    });
+
+    test("editors: no Add New Monkey (adding monkeys is for admins)", async () => {
+        const { user, menuButton } = setup({ signedIn: true });
+        await screen.findByRole("button", { name: "You (signed in)" });
+        await user.click(menuButton());
+        expect(drawerItems()).toEqual(["Create Profile Book", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 
-    test("signed in as an admin: Add New Monkey, first", async () => {
-        const { user, menuButton, menuItems } = setup({ signedIn: true, admin: true });
-        await screen.findByRole("button", { name: "Menu (signed in)" });
-        await waitFor(() => expect(screen.getByRole("button", { name: "Add New Monkey" })).toBeInTheDocument());
-        // First in the top bar too
-        expect(document.querySelector(".Nav-buttons > :first-child")).toHaveAccessibleName("Add New Monkey");
+    test("tapping outside it closes it", async () => {
+        const { user, menuButton } = setup();
         await user.click(menuButton());
-        expect(menuItems()).toEqual(["Add New Monkey", "Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Account"]);
+        await user.click(document.querySelector(".Drawer-backdrop"));
+        expect(drawer()).toBeNull();
+    });
+});
+
+describe("phones: the bottom bar", () => {
+    const bar = () => within(screen.getByRole("navigation", { name: "Main" }));
+    const barItems = () => [...document.querySelector(".BottomBar").children].map((i) => i.textContent);
+
+    test("Monkeys, Enclosures, Map (coming soon), Game and You", () => {
+        setup();
+        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game", "You"]);
+        expect(bar().getByRole("button", { name: "Interactive Map (coming soon)" })).toBeDisabled();
+        expect(bar().getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
+        expect(bar().getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
+        expect(bar().getByRole("link", { name: "Game" })).toHaveAttribute("href", "#game");
     });
 
-    test("Sign In opens the sign-in pop-up", async () => {
-        const { user, menuButton, menu } = setup();
-        await user.click(menuButton());
-        await user.click(within(menu()).getByRole("button", { name: "Sign In" }));
-        expect(menu()).toBeNull();
+    test("You opens the sign-in pop-up", async () => {
+        const { user } = setup();
+        await user.click(bar().getByRole("button", { name: "You (sign in)" }));
         expect(await screen.findByRole("dialog", { name: "Sign in" })).toBeInTheDocument();
     });
 
-    test("signed in: Account opens the account pop-up (Change password, Sign out)", async () => {
-        const { user, menuButton, menu } = setup({ signedIn: true });
-        await screen.findByRole("button", { name: "Menu (signed in)" });
-        await user.click(menuButton());
-        await user.click(within(menu()).getByRole("button", { name: "Account" }));
-
-        expect(menu()).toBeNull();
+    test("signed in: You opens the account pop-up (Change password, Sign out)", async () => {
+        const { user } = setup({ signedIn: true });
+        await user.click(await bar().findByRole("button", { name: "You (signed in)" }));
         const dialog = await screen.findByRole("dialog", { name: "Signed in" });
         expect(within(dialog).getByRole("button", { name: "Change password" })).toBeInTheDocument();
         await user.click(within(dialog).getByRole("button", { name: "Sign out" }));
         expect(supabase.auth.signOut).toHaveBeenCalled();
-        await waitFor(() => expect(menuButton()).toHaveAccessibleName("Menu"));
+        await waitFor(() => expect(bar().getByRole("button", { name: "You (sign in)" })).toBeInTheDocument());
     });
 
-    test("choosing Create Profile Book closes the menu and opens the PDF pop-up", async () => {
-        const { user, menuButton, menu } = setup();
-        await user.click(menuButton());
-        await user.click(within(menu()).getByRole("button", { name: "Create Profile Book" }));
-        expect(menu()).toBeNull();
+
+});
+
+describe("computers: the side rail", () => {
+    afterEach(() => localStorage.removeItem("vervetdb-rail"));
+    const rail = () => screen.getByRole("complementary", { name: "Main menu" });
+    const railItems = () => [...rail().querySelectorAll(".SideRail-item")].map((i) => i.textContent);
+    const railButton = () => screen.getByRole("button", { name: /side menu/ });
+
+    test("small to start with: Monkeys, Enclosures, Map (coming soon), Profile Book, Game", () => {
+        setup();
+        expect(railItems()).toEqual(["Monkeys", "Enclosures", "Map", "Profile Book", "Game"]);
+        expect(within(rail()).getByRole("button", { name: "Interactive Map (coming soon)" })).toBeDisabled();
+        expect(within(rail()).getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
+        expect(railButton()).toHaveAttribute("aria-expanded", "false");
+    });
+
+    test("☰ opens it out, in groups, and it's remembered", async () => {
+        const { user } = setup();
+        await user.click(railButton());
+        expect(railButton()).toHaveAttribute("aria-expanded", "true");
+        expect([...rail().querySelectorAll("h2")].map((h) => h.textContent)).toEqual(["Browse", "Tools", "App"]);
+        expect(railItems()).toEqual([
+            "Monkeys", "Enclosures", "Interactive Map", "Create Profile Book", "Monkey Guesser Game", "Install & Use Offline", "About",
+        ]);
+        expect(document.documentElement).toHaveClass("rail-open");
+        expect(localStorage.getItem("vervetdb-rail")).toBe("open");
+        await user.click(railButton());
+        expect(document.documentElement).not.toHaveClass("rail-open");
+        expect(localStorage.getItem("vervetdb-rail")).toBe("small");
+    });
+
+    test("narrower screens: ☰ opens it over the page; picking something or tapping outside puts it away", async () => {
+        const realMatchMedia = window.matchMedia;
+        window.matchMedia = (query) => ({ matches: false, media: query });
+        try {
+            const { user } = setup();
+            await user.click(railButton());
+            expect(rail()).toHaveClass("is-open", "is-over");
+            // The page doesn't move over, and it isn't remembered
+            expect(document.documentElement).not.toHaveClass("rail-open");
+            expect(localStorage.getItem("vervetdb-rail")).toBe("small");
+            await user.click(document.querySelector(".SideRail-backdrop"));
+            expect(rail()).not.toHaveClass("is-open");
+
+            await user.click(railButton());
+            await user.click(within(rail()).getByRole("button", { name: "About" }));
+            expect(rail()).not.toHaveClass("is-open");
+            expect(await screen.findByRole("dialog", { name: "About vervetDB" })).toBeInTheDocument();
+        } finally {
+            window.matchMedia = realMatchMedia;
+        }
+    });
+
+    test("Profile Book opens the PDF pop-up", async () => {
+        const { user } = setup();
+        await user.click(within(rail()).getByRole("button", { name: "Profile Book" }));
         expect(await screen.findByRole("dialog", { name: "Create Profile Book" })).toBeInTheDocument();
     });
 
-    test("Escape closes it and returns focus to ☰", async () => {
-        const { user, menuButton, menu } = setup();
-        await user.click(menuButton());
-        await user.keyboard("{Escape}");
-        expect(menu()).toBeNull();
-        expect(menuButton()).toHaveFocus();
-    });
-
-    test("tapping outside closes it", async () => {
-        const { user, menuButton, menu } = setup();
-        await user.click(menuButton());
-        await user.click(document.querySelector(".ShowPage-monkeys"));
-        expect(menu()).toBeNull();
+    test("admins: + Add in the top bar, before the account circle", async () => {
+        setup({ signedIn: true, admin: true });
+        await waitFor(() => expect(screen.getByRole("button", { name: "Add New Monkey" })).toBeInTheDocument());
+        expect(document.querySelector(".Nav-buttons > :first-child")).toHaveAccessibleName("Add New Monkey");
     });
 });
 

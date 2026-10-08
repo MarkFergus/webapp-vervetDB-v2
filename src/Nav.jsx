@@ -1,29 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-    IconSearch,
-    IconX,
-    IconFileTypePdf,
-    IconHourglassLow,
-    IconInfoCircle,
-    IconDeviceMobileDown,
-    IconDeviceGamepad2,
-    IconFence,
-    IconMenu2,
-    IconPlus,
-    IconUser,
-    IconUsersGroup,
-} from "@tabler/icons-react";
+import { IconSearch, IconX, IconMenu2, IconPlus, IconUser } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
 import AboutModal from "./AboutModal";
 import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
+import { BottomBar, Drawer, SideRail } from "./NavBars";
 import "./Nav.css";
 
-// The top bar: logo, search box, then on computers icon buttons, or on
-// phones (see Nav.css) a ☰ menu holding the game, PDF, sign in/out and
-// (for editors) Add monkey.
+// The top bar, and the ways around beside it (NavBars.jsx):
+//   Computers: the menu button (opens the side rail out or back) and the
+//   logo; search in the middle; + Add (admins) and the account circle. The
+//   side rail down the left.
+//   Phones: the logo, search, and the menu button (the drawer from the
+//   right); the bottom bar: Monkeys, Enclosures, Map, Game, You.
+// The side rail: on wide screens, opening it out moves the page over (and
+// that's remembered on this device); on narrower ones it slides out over
+// the page instead, YouTube-style, until something's picked.
+const RAIL_KEY = "vervetdb-rail";
+const WIDE = "(min-width: 1280px)";
+const isWide = () => window.matchMedia?.(WIDE).matches ?? true;
+function savedRailOpen() {
+    try {
+        return localStorage.getItem(RAIL_KEY) === "open";
+    } catch {
+        return false;
+    }
+}
+
 function Nav({
     searchValue,
     handleSearch,
@@ -46,17 +51,46 @@ function Nav({
     toggleAbout,
     isOfflineOpen,
     toggleOffline,
-    onAddMonkey, // editors only: adds an "Add monkey" button (☰ menu on phones)
+    onAddMonkey, // admins only: "+ Add" (computers), Add New Monkey (the drawer)
     onHome, // the logo: back to the top, search and filters cleared
-    page = "monkeys", // the page showing: "monkeys" or "enclosures"
+    page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
+    showSearch = true, // false: no search box (the game)
+    barsInert = false, // a pop-up is open: the side rail and bottom bar wait
 }) {
     const { user } = useAuth();
     const searchInputRef = useRef(null);
-    const menuButtonRef = useRef(null);
-    const menuRef = useRef(null);
 
-    // Phones: the ☰ menu
-    const [menuOpen, setMenuOpen] = useState(false);
+    // Computers: the side rail opened out (labels) or small (icons).
+    // Wide screens: pinned open (the page moves over; remembered). Narrower:
+    // over the page for a moment.
+    const [wide, setWide] = useState(isWide);
+    useEffect(() => {
+        const query = window.matchMedia?.(WIDE);
+        const update = () => setWide(query.matches);
+        query?.addEventListener?.("change", update);
+        return () => query?.removeEventListener?.("change", update);
+    }, []);
+    const [railPinned, setRailPinned] = useState(savedRailOpen);
+    const [railOver, setRailOver] = useState(false);
+    const railOpen = wide ? railPinned : railOver;
+    useEffect(() => {
+        // (NavBars.css only moves the page over on wide screens)
+        document.documentElement.classList.toggle("rail-open", railPinned);
+        try {
+            localStorage.setItem(RAIL_KEY, railPinned ? "open" : "small");
+        } catch {
+            // (not saved: fine)
+        }
+    }, [railPinned]);
+    function toggleRail() {
+        if (wide) setRailPinned((open) => !open);
+        else setRailOver((open) => !open);
+    }
+    // Over the page: a new page, or a pop-up opening, puts it away
+    const closeRailOver = () => setRailOver(false);
+    useEffect(closeRailOver, [page, wide]);
+    // Phones: the drawer
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     // The clear button disappears once clicked, so put focus back in the box
     function clearSearch() {
@@ -64,57 +98,8 @@ function Nav({
         searchInputRef.current?.focus();
     }
 
-    function closeMenu({ returnFocus = false } = {}) {
-        setMenuOpen(false);
-        if (returnFocus) menuButtonRef.current?.focus();
-    }
-
-    // Menu open: focus its first item; Escape or a tap outside closes it
-    useEffect(() => {
-        if (!menuOpen) return;
-        menuRef.current?.querySelector("a, button")?.focus();
-
-        function handleKeyDown(event) {
-            if (event.key === "Escape") closeMenu({ returnFocus: true });
-        }
-        function handlePointerDown(event) {
-            const inside =
-                menuRef.current?.contains(event.target) ||
-                menuButtonRef.current?.contains(event.target);
-            if (!inside) closeMenu();
-        }
-        document.addEventListener("keydown", handleKeyDown);
-        document.addEventListener("pointerdown", handlePointerDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-            document.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, [menuOpen]);
-
-    function openPDF() {
-        closeMenu();
-        togglePDFModal();
-    }
-    // Opens the account pop-up: sign in, or (signed in) Change password /
-    // Sign out, the same as the green circle on computers
-    function openAccount() {
-        closeMenu();
-        toggleAccount();
-    }
-    function openOffline() {
-        closeMenu();
-        toggleOffline();
-    }
-    function openAbout() {
-        closeMenu();
-        toggleAbout();
-    }
-    function addMonkey() {
-        closeMenu();
-        onAddMonkey();
-    }
-
     const accountLabel = user ? "Account (signed in)" : "Sign in";
+    const anyPopUp = isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen;
 
     // "/" anywhere on the page jumps into the search box (like YouTube and X),
     // unless you're already typing somewhere
@@ -135,27 +120,40 @@ function Nav({
     return (
         <>
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
-            <nav className="Nav" inert={isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen}>
-                {/* The logo: back home (top of the page, search and filters
-                    cleared), like YouTube's */}
-                <a
-                    href="#"
-                    className="Nav-home"
-                    aria-label="vervetDB home"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        onHome?.();
-                    }}
-                >
-                    <span className="Nav-icon">
-                        {/* Same colour as the "vervetDB" text beside it */}
-                        <MonkeyIcon color="currentColor" aria-hidden="true" role={undefined} aria-label={undefined} />
-                    </span>
-                    <span className="Nav-title" aria-hidden="true">
-                        vervetDB
-                    </span>
-                </a>
+            <nav className="Nav" inert={anyPopUp}>
+                <div className="Nav-start">
+                    {/* Computers: opens the side rail out, or back to icons */}
+                    <button
+                        type="button"
+                        className="Nav-railButton"
+                        onClick={toggleRail}
+                        aria-label={railOpen ? "Make the side menu smaller" : "Open the side menu"}
+                        aria-expanded={railOpen}
+                        aria-controls="SideRail"
+                    >
+                        <IconMenu2 stroke={1.75} size={24} />
+                    </button>
+                    {/* The logo: back home (top of the page, search and
+                        filters cleared), like YouTube's */}
+                    <a
+                        href="#"
+                        className="Nav-home"
+                        aria-label="vervetDB home"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            onHome?.();
+                        }}
+                    >
+                        <span className="Nav-icon">
+                            <MonkeyIcon color="currentColor" aria-hidden="true" role={undefined} aria-label={undefined} />
+                        </span>
+                        <span className="Nav-title" aria-hidden="true">
+                            vervetDB
+                        </span>
+                    </a>
+                </div>
 
+                {showSearch ? (
                 <div className="Nav-searchbar">
                     <div className="Nav-iconSearch" aria-hidden="true">
                         <IconSearch stroke={2} />
@@ -180,76 +178,19 @@ function Nav({
                         </button>
                     )}
                 </div>
+                ) : (
+                    // (keeps the middle of the bar: the buttons stay put)
+                    <div className="Nav-spacer" />
+                )}
 
-                {/* Computers: icon buttons */}
+                {/* Computers: + Add (admins), then the account circle */}
                 <div className="Nav-buttons">
-                    {/* Add New Monkey (admins only) comes first */}
                     {onAddMonkey && (
-                        <button
-                            type="button"
-                            className="Nav-addMonkey"
-                            onClick={onAddMonkey}
-                            aria-label="Add New Monkey"
-                            data-tooltip="Add New Monkey"
-                        >
-                            <IconPlus stroke={1.75} size={26} />
+                        <button type="button" className="Nav-add" onClick={onAddMonkey} aria-label="Add New Monkey">
+                            <IconPlus stroke={2} size={20} aria-hidden="true" />
+                            Add
                         </button>
                     )}
-                    {/* Switch page: Enclosures from the monkeys, Monkeys from
-                        the enclosures */}
-                    {page === "enclosures" ? (
-                        <a href="#" className="Nav-pageLink" aria-label="Monkeys" data-tooltip="Monkeys">
-                            {/* (the group icon, as on the monkey count) */}
-                            <IconUsersGroup stroke={1.75} size={26} />
-                        </a>
-                    ) : (
-                        <a href="#enclosures" className="Nav-pageLink" aria-label="Enclosures" data-tooltip="Enclosures">
-                            <IconFence stroke={1.75} size={26} />
-                        </a>
-                    )}
-                    <a
-                        href="#game"
-                        className="Nav-gameLink"
-                        aria-label="Monkey Guesser Game"
-                        data-tooltip="Monkey Guesser Game"
-                    >
-                        <IconDeviceGamepad2 stroke={1.75} size={26} />
-                    </a>
-                    <button
-                        type="button"
-                        onClick={togglePDFModal}
-                        disabled={isGeneratingPDF}
-                        aria-label={
-                            isGeneratingPDF
-                                ? "Creating Profile Book…"
-                                : "Create Profile Book"
-                        }
-                        data-tooltip={isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
-                    >
-                        {isGeneratingPDF ? (
-                            <IconHourglassLow className="hourglass" stroke={1.75} size={24} />
-                        ) : (
-                            <IconFileTypePdf stroke={1.75} size={26} />
-                        )}
-                    </button>
-                    <button
-                        type="button"
-                        className="Nav-offline"
-                        onClick={toggleOffline}
-                        aria-label="Install & Use Offline"
-                        data-tooltip="Install & Use Offline"
-                    >
-                        <IconDeviceMobileDown stroke={1.75} size={26} />
-                    </button>
-                    <button
-                        type="button"
-                        className="Nav-about"
-                        onClick={toggleAbout}
-                        aria-label="About vervetDB"
-                        data-tooltip="About"
-                    >
-                        <IconInfoCircle stroke={1.75} size={26} />
-                    </button>
                     {/* Sign in / account: a person in a circle, green when signed in */}
                     <button
                         type="button"
@@ -265,71 +206,52 @@ function Nav({
                     </button>
                 </div>
 
-                {/* Phones only: ☰ menu with the game, PDF, account and
-                    (editors) Add monkey */}
-                <div className="Nav-menuWrap">
-                    <button
-                        type="button"
-                        className="Nav-menuButton"
-                        ref={menuButtonRef}
-                        onClick={() => setMenuOpen((open) => !open)}
-                        aria-label={user ? "Menu (signed in)" : "Menu"}
-                        aria-expanded={menuOpen}
-                        aria-controls="Nav-menu"
-                    >
-                        <IconMenu2 stroke={2} size={30} />
-                        {user && <span className="Nav-menuDot" aria-hidden="true" />}
-                    </button>
-                    {menuOpen && (
-                        <div className="Nav-menu" id="Nav-menu" ref={menuRef}>
-                            {onAddMonkey && (
-                                <button type="button" onClick={addMonkey}>
-                                    <IconPlus stroke={2} aria-hidden="true" />
-                                    Add New Monkey
-                                </button>
-                            )}
-                            {/* The other main page (as in the top bar) */}
-                            {page === "enclosures" ? (
-                                <a href="#" onClick={() => closeMenu()}>
-                                    <IconUsersGroup stroke={2} aria-hidden="true" />
-                                    Monkeys
-                                </a>
-                            ) : (
-                                <a href="#enclosures" onClick={() => closeMenu()}>
-                                    <IconFence stroke={2} aria-hidden="true" />
-                                    Enclosures
-                                </a>
-                            )}
-                            <a href="#game" onClick={() => closeMenu()}>
-                                <IconDeviceGamepad2 stroke={2} aria-hidden="true" />
-                                Monkey Guesser Game
-                            </a>
-                            <button type="button" onClick={openPDF} disabled={isGeneratingPDF}>
-                                <IconFileTypePdf stroke={2} aria-hidden="true" />
-                                {isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
-                            </button>
-                            <button type="button" onClick={openOffline}>
-                                <IconDeviceMobileDown stroke={2} aria-hidden="true" />
-                                Install & Use Offline
-                            </button>
-                            <button type="button" onClick={openAbout}>
-                                <IconInfoCircle stroke={2} aria-hidden="true" />
-                                About
-                            </button>
-                            <button
-                                type="button"
-                                className={user ? "Nav-menuAccount is-signed-in" : "Nav-menuAccount"}
-                                onClick={openAccount}
-                            >
-                                <span className="Nav-avatar" aria-hidden="true">
-                                    <IconUser stroke={2} size={16} />
-                                </span>
-                                {user ? "Account" : "Sign In"}
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {/* Phones: opens the drawer from the right */}
+                <button
+                    type="button"
+                    className="Nav-menuButton"
+                    onClick={() => setDrawerOpen(true)}
+                    aria-label="Menu"
+                    aria-expanded={drawerOpen}
+                >
+                    <IconMenu2 stroke={2} size={28} />
+                </button>
             </nav>
+            {/* The side rail, bottom bar and drawer sit outside the top bar
+                (its blur would trap them in its own strip) */}
+            {createPortal(
+                <>
+                    <SideRail
+                        open={railOpen}
+                        over={!wide && railOver}
+                        onClose={closeRailOver}
+                        page={page}
+                        onHome={onHome}
+                        onProfileBook={togglePDFModal}
+                        isGeneratingPDF={isGeneratingPDF}
+                        onOffline={toggleOffline}
+                        onAbout={toggleAbout}
+                        inert={barsInert || anyPopUp}
+                    />
+                    <BottomBar
+                        page={page}
+                        onHome={onHome}
+                        onAccount={toggleAccount}
+                        signedIn={Boolean(user)}
+                        inert={barsInert || anyPopUp}
+                    />
+                    <Drawer
+                        open={drawerOpen}
+                        onClose={() => setDrawerOpen(false)}
+                        onAddMonkey={onAddMonkey}
+                        onProfileBook={togglePDFModal}
+                        isGeneratingPDF={isGeneratingPDF}
+                        onOffline={toggleOffline}
+                        onAbout={toggleAbout}
+                    />
+                </>,
+                document.body
+            )}
             {/* The pop-ups are drawn at the top level of the page (a portal),
                 not inside the header: the pinned header's blur would
                 otherwise trap them in its own small strip */}

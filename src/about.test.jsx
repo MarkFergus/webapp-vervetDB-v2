@@ -41,10 +41,17 @@ test("dates read as words", () => {
     expect(releaseDate("2026-10-02")).toBe("2 October 2026");
 });
 
-test("ⓘ in the top bar opens About: version, date and latest changes", async () => {
+// Computers: the side rail, opened out, has About
+async function openAbout(user) {
+    await user.click(screen.getByRole("button", { name: "Open the side menu" }));
+    await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "About" }));
+}
+afterEach(() => localStorage.removeItem("vervetdb-rail"));
+
+test("the side rail's About opens it: version, date and latest changes", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
-    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    await openAbout(user);
     expect(within(dialog()).getByRole("button", { name: "Close" })).toHaveFocus();
 
     expect(within(dialog()).getByText(`Version ${APP_VERSION} · ${releaseDate(CHANGELOG[0].date)}`)).toBeInTheDocument();
@@ -71,12 +78,12 @@ test("ⓘ in the top bar opens About: version, date and latest changes", async (
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); // after its closing animation
 });
 
-test("phones: ☰ menu → About", async () => {
+test("phones: ☰ (the drawer) → About", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
-    await user.click(screen.getByRole("button", { name: /^Menu/ }));
-    await user.click(within(document.getElementById("Nav-menu")).getByRole("button", { name: "About" }));
-    expect(document.getElementById("Nav-menu")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "About" }));
+    expect(screen.queryByRole("dialog", { name: "Menu" })).toBeNull();
     expect(dialog()).toBeInTheDocument();
 });
 
@@ -85,7 +92,7 @@ test("while About is open the page behind can't scroll", async () => {
     render(<ShowPage />);
     const root = document.documentElement;
     expect(root.style.overflow).toBe("");
-    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    await openAbout(user);
     expect(root.style.overflow).toBe("hidden");
     await user.click(within(dialog()).getByRole("button", { name: "Close" }));
     expect(root.style.overflow).toBe("");
@@ -94,7 +101,7 @@ test("while About is open the page behind can't scroll", async () => {
 test("Open-Source Licences folds open: each project with a link, and the full texts", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
-    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    await openAbout(user);
     const toggle = within(dialog()).getByRole("button", { name: "Open-Source Licences" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(within(dialog()).queryByRole("link", { name: "React" })).not.toBeInTheDocument();
@@ -109,7 +116,7 @@ test("Open-Source Licences folds open: each project with a link, and the full te
 test("a major release has a Major Update pill beside its version", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
-    await user.click(screen.getByRole("button", { name: "About vervetDB" }));
+    await openAbout(user);
     const major = CHANGELOG.find((e) => e.major);
     const heading = within(dialog()).getByRole("heading", { name: new RegExp(`^Version ${major.version.replace(/\./g, "\.")}`) });
     expect(heading).toHaveTextContent(`Version ${major.version}Major Update`);

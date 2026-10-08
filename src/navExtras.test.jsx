@@ -1,6 +1,6 @@
 // Nav extras: the logo takes you home, "/" jumps to search, a line under the
-// header once scrolled, and hover labels on the icons.
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+// header once scrolled, and the account circle's hover label.
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -48,12 +48,11 @@ test("a faint line appears under the header once the page has scrolled", () => {
     expect(header()).not.toHaveClass("is-scrolled");
 });
 
-test("the icons have hover labels (and the last one lines up to its right edge)", () => {
+test("the account circle has a hover label, lined up to its right edge", () => {
     render(<ShowPage />);
     const labels = [...document.querySelectorAll(".Nav-buttons [data-tooltip]")].map((el) => el.dataset.tooltip);
-    expect(labels).toEqual(["Enclosures", "Monkey Guesser Game", "Create Profile Book", "Install & Use Offline", "About", "Sign in"]);
+    expect(labels).toEqual(["Sign in"]);
     expect(document.querySelector(".Nav-account")).toHaveAttribute("data-tooltip-align", "end");
     // No browser tooltips as well
     expect(document.querySelectorAll(".Nav-buttons [title]")).toHaveLength(0);
-    fireEvent.mouseOver(document.querySelector(".Nav-gameLink"));
 });

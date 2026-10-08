@@ -44,8 +44,8 @@ afterEach(() => vi.restoreAllMocks());
 function setup() {
     const user = userEvent.setup();
     const utils = render(<ShowPage />);
-    const openPdfModal = () =>
-        user.click(utils.container.querySelector(".Nav-buttons button"));
+    // (the side rail's Profile Book)
+    const openPdfModal = () => user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Profile Book" }));
     const troopSelect = () => utils.container.querySelector("#troops");
     return { user, openPdfModal, troopSelect, ...utils };
 }
@@ -88,7 +88,7 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
 
     // Modal closes once the download starts
     await waitFor(() =>
-        expect(screen.queryByText("Create Profile Book")).toBeNull()
+        expect(screen.queryByRole("dialog", { name: "Create Profile Book" })).toBeNull()
     );
 });
 

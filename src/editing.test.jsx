@@ -453,12 +453,11 @@ test("closing with unsaved changes asks first", async () => {
     expect(form()).toBeInTheDocument();
 });
 
-test("phones: editors also find Add monkey in the ☰ menu", async () => {
+test("phones: admins also find Add New Monkey in the ☰ drawer", async () => {
     const { user } = setup();
-    // Signed in as an editor: wait for the desktop button, then use the menu
+    // Signed in as an admin: wait for the computer's button, then use the drawer
     await screen.findByRole("button", { name: "Add New Monkey" });
-    await user.click(screen.getByRole("button", { name: /^Menu/ }));
-    const menu = document.getElementById("Nav-menu");
-    await user.click(within(menu).getByRole("button", { name: "Add New Monkey" }));
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "Add New Monkey" }));
     expect(form()).toHaveAccessibleName("Add a monkey");
 });
