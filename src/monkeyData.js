@@ -84,7 +84,7 @@ export function toDatabaseRow(monkey, troopIds) {
 
 // A database enclosure → the site's shape (see enclosuresArr.js)
 function toAppEnclosure(row, sectionNames) {
-    return {
+    const enclosure = {
         id: row.id,
         name: row.name,
         type: row.type,
@@ -99,7 +99,19 @@ function toAppEnclosure(row, sectionNames) {
         photos: row.photos,
         sortOrder: row.sort_order,
     };
+    // Introcages, once introcage-fields.sql has run (until then the form
+    // leaves these out)
+    if (row.type === "introcage" && "troop_door" in row) Object.assign(enclosure, introcageDetails(row));
+    return enclosure;
 }
+
+// An introcage's Troop Door, Plate Slot (true / false, or null: not
+// recorded) and Sleeping Perches (1–10, or null)
+const introcageDetails = (row) => ({
+    troopDoor: row.troop_door,
+    plateSlot: row.plate_slot,
+    sleepingPerches: row.sleeping_perches,
+});
 
 // The database doesn't have the enclosures yet (enclosures.sql not run):
 // a missing table, column or link
@@ -116,7 +128,8 @@ async function loadWithEnclosures() {
         supabase.from("sections").select("id, name").order("sort_order"),
         supabase
             .from("enclosures")
-            .select("id, name, type, parent_id, section_id, established, description, features, size, photos, sort_order")
+            // (everything: the introcage details only once introcage-fields.sql has run)
+            .select("*")
             .order("sort_order"),
     ]);
     throwIfError(troops, monkeys, sections, enclosures);
@@ -229,7 +242,8 @@ export async function deleteMonkey(id) {
 // ---- Enclosures: editing their details, and the maintenance log ----
 
 // Saves an enclosure's details. changes: any of { description, features,
-// size (square metres, or null), established ("2014-03" or null), photos }.
+// size (square metres, or null), established ("2014-03" or null), photos,
+// troopDoor, plateSlot, sleepingPerches (introcages) }.
 // Returns the enclosure with them.
 export async function saveEnclosure(enclosure, changes) {
     const row = {};
@@ -237,13 +251,16 @@ export async function saveEnclosure(enclosure, changes) {
     if ("features" in changes) row.features = changes.features;
     if ("size" in changes) row.size = changes.size;
     if ("photos" in changes) row.photos = changes.photos;
+    if ("troopDoor" in changes) row.troop_door = changes.troopDoor;
+    if ("plateSlot" in changes) row.plate_slot = changes.plateSlot;
+    if ("sleepingPerches" in changes) row.sleeping_perches = changes.sleepingPerches;
     // stored as the 1st of the month
     if ("established" in changes) row.established = changes.established ? `${changes.established}-01` : null;
     const { data, error } = await supabase
         .from("enclosures")
         .update(row)
         .eq("id", enclosure.id)
-        .select("description, features, size, established, photos")
+        .select("*")
         .single();
     if (error) {
         console.error("Saving enclosure failed:", error);
@@ -256,6 +273,7 @@ export async function saveEnclosure(enclosure, changes) {
         size: data.size == null ? null : Number(data.size),
         established: data.established ? data.established.slice(0, 7) : null,
         photos: data.photos ?? enclosure.photos,
+        ...("troop_door" in data && introcageDetails(data)),
     };
 }
 

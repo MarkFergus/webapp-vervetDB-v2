@@ -9,8 +9,8 @@ import { SECTIONS } from "./sections";
 
 const filtersButton = () => screen.getByRole("button", { name: /^Filters/ });
 const panel = () => screen.getByRole("dialog", { name: "Filters" });
-const choice = (group, name) =>
-    within(screen.getByRole("radiogroup", { name: group })).getByRole("radio", { name: new RegExp(`^${name}`) });
+// Location: Troop and Introcage pills, both on to start with
+const locationPill = (name) => within(screen.getByRole("group", { name: "Living in" })).getByRole("button", { name });
 // The monkeys' cards, in order (their names are "Aroha, …")
 const shownNames = () =>
     within(document.querySelector(".ShowPage-monkeys"))
@@ -36,7 +36,7 @@ test("Filters opens the panel, ready to use; Escape closes it and returns to the
     await user.click(filtersButton());
     expect(panel()).toBeInTheDocument();
     expect(filtersButton()).toHaveAttribute("aria-expanded", "true");
-    expect(choice("Enclosure", "Troop")).toHaveFocus(); // the first choice
+    expect(locationPill("Troop")).toHaveFocus(); // the first choice
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
@@ -184,11 +184,75 @@ test("sort by sex: females first, then males (and back)", async () => {
 });
 
 describe("Location", () => {
-    test("Troops are chosen; Introcage is greyed out until those monkeys are added", async () => {
-        const { user } = setup();
+    // Aroha in an introcage at H&B (the built-in copy has nobody in one)
+    const aroha = { ...monkeysArr.find((m) => m.name === "Aroha"), troop: null, introcage: "H&B C1", enclosure: "H&B" };
+    const MONKEYS = monkeysArr.map((m) => (m.name === "Aroha" ? aroha : m));
+    const hbTroop = MONKEYS.filter((m) => m.troop === "H&B");
+    function setupWithIntrocage() {
+        const user = userEvent.setup();
+        render(<ShowPage monkeys={MONKEYS} />);
+        return { user };
+    }
+    const chips = () => [...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent);
+
+    test("Troop and Introcage: both on to start with (everyone)", async () => {
+        const { user } = setupWithIntrocage();
         await user.click(filtersButton());
-        expect(choice("Enclosure", "Troop")).toHaveAttribute("aria-checked", "true");
-        expect(choice("Enclosure", "Introcage")).toBeDisabled();
+        expect(locationPill("Troop")).toHaveAttribute("aria-pressed", "true");
+        expect(locationPill("Introcage")).toHaveAttribute("aria-pressed", "true");
+        expectShowing(MONKEYS.length);
+    });
+
+    test("Troop off: only introcage monkeys, with a chip; the last pill on can't go off", async () => {
+        const { user } = setupWithIntrocage();
+        await user.click(filtersButton());
+        await user.click(locationPill("Troop"));
+        expect(locationPill("Troop")).toHaveAttribute("aria-pressed", "false");
+        expectShowing(1);
+        expect(shownNames()).toEqual(["Aroha"]);
+        expect(chips()).toEqual(["In introcages"]);
+
+        await user.click(locationPill("Introcage")); // the only one on: stays on
+        expect(locationPill("Introcage")).toHaveAttribute("aria-pressed", "true");
+        expectShowing(1);
+
+        await user.click(locationPill("Troop")); // back on: everyone
+        expectShowing(MONKEYS.length);
+        expect(chips()).toEqual([]);
+    });
+
+    test("Introcage off: only troop monkeys", async () => {
+        const { user } = setupWithIntrocage();
+        await user.click(filtersButton());
+        await user.click(locationPill("Introcage"));
+        expectShowing(MONKEYS.length - 1);
+        expect(shownNames()).not.toContain("Aroha");
+        expect(chips()).toEqual(["In troops"]);
+    });
+
+    test("a troop chosen: its monkeys; with only Introcage on, the ones in its enclosure's introcages", async () => {
+        const { user } = setupWithIntrocage();
+        await user.click(filtersButton());
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "H&B");
+        // (introcage monkeys aren't in the troop)
+        expectShowing(hbTroop.length);
+        // Introcage only: the ones in H&B's introcages
+        await user.click(locationPill("Troop"));
+        expectShowing(1);
+        expect(chips()).toEqual(["In introcages", "H&B"]);
+        // Another troop: nobody in its introcages
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
+        expect(screen.getByText("No monkeys found")).toBeInTheDocument();
+    });
+
+    test("Clear All puts both back on", async () => {
+        const { user } = setupWithIntrocage();
+        await user.click(filtersButton());
+        await user.click(locationPill("Troop"));
+        await user.click(screen.getByRole("button", { name: "Remove filter: In introcages" }));
+        expectShowing(MONKEYS.length);
+        await user.click(filtersButton());
+        expect(locationPill("Troop")).toHaveAttribute("aria-pressed", "true");
     });
 
     // Section pills: "All Sections" to start with; tapping others adds them

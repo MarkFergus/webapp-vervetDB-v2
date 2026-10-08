@@ -5,13 +5,12 @@ import { fallbackTo } from "./photoFallback";
 import "./MonkeyRow.css";
 
 // The list view's column headings (computers; phones have no room for them)
-//   place: the heading for where they live ("Introcage" for introcage monkeys)
-export function MonkeyListHeader({ place = "Troop" }) {
+export function MonkeyListHeader() {
     return (
         <div className="MonkeyRow MonkeyRow-header" aria-hidden="true">
             <span />
             <span>Name</span>
-            <span className="MonkeyRow-wide">{place}</span>
+            <span className="MonkeyRow-wide">Location</span>
             <span className="MonkeyRow-wide">Sex</span>
             <span className="MonkeyRow-wide MonkeyRow-born">Born</span>
             <span className="MonkeyRow-wide">Age</span>
@@ -71,6 +70,7 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, chip, img, onC
                     <span>{year ? ageLabel(year) : "Age ?"}</span>
                 </span>
             </span>
+            {/* The troop ("Skunkey"), or the introcage ("H&B C1") */}
             <span className="MonkeyRow-wide">{troop}</span>
             <span className="MonkeyRow-wide">
                 {SexIcon && <SexIcon size={14} stroke={2} aria-hidden="true" />}

@@ -29,6 +29,85 @@
     border-color: #6b6862;
 }
 
+/* ---- A record's top row: back on the left; previous / next on the right ---- */
+
+.Enclosures-topRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.Enclosures-steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Enclosures-position {
+    font-size: 13px;
+    color: #8a877e;
+    white-space: nowrap;
+}
+
+.Enclosures-step {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    color: #d1cfc7;
+    background-color: #262426;
+    border: 1px solid #3a3839;
+    border-radius: 50%;
+}
+
+.Enclosures-step:hover {
+    color: white;
+    border-color: #6b6862;
+}
+
+/* Touch screens swipe instead (the "3 of 73" stays, as a hint) */
+@media (pointer: coarse) {
+    .Enclosures-step {
+        display: none;
+    }
+}
+
+/* Swiping: the page follows the finger sideways; scrolling still works */
+.Enclosures-record.is-steppable {
+    touch-action: pan-y pinch-zoom;
+}
+
+/* Arrived from the previous / next one: slides in from that side */
+.Enclosures-record.is-from-next {
+    animation: Enclosures-slideFromRight 0.22s ease-out;
+}
+
+.Enclosures-record.is-from-prev {
+    animation: Enclosures-slideFromLeft 0.22s ease-out;
+}
+
+@keyframes Enclosures-slideFromRight {
+    from {
+        transform: translateX(60px);
+        opacity: 0.3;
+    }
+}
+
+@keyframes Enclosures-slideFromLeft {
+    from {
+        transform: translateX(-60px);
+        opacity: 0.3;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Enclosures-record.is-from-next,
+    .Enclosures-record.is-from-prev {
+        animation: none;
+    }
+}
+
 /* ---- The list ---- */
 
 .Enclosures-title,
@@ -306,25 +385,10 @@
     gap: 12px;
 }
 
+/* Edit: the monkey pop-up's button (Modal.css .Modal-edit), beside the name */
 .Enclosures-edit {
-    display: inline-flex;
     flex-shrink: 0;
-    align-items: center;
-    gap: 6px;
     margin-top: 10px;
-    padding: 6px 14px;
-    font-family: inherit;
-    font-size: 14px;
-    color: #d1cfc7;
-    background-color: #262426;
-    border: 1px solid #3a3839;
-    border-radius: 999px;
-    cursor: pointer;
-}
-
-.Enclosures-edit:hover {
-    color: white;
-    border-color: #6b6862;
 }
 
 /* "Introcage at H&B" under the name */
@@ -378,6 +442,45 @@
     font-weight: 700;
     text-align: right;
     color: #d1cfc7;
+}
+
+/* Phones and small tablets: two side by side, the value under its label
+   (lined up with the label's text, past the icon) */
+@media (max-width: 759px) {
+    .Enclosures-details {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .Enclosures-details div {
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 3px;
+        padding: 10px 2px;
+    }
+
+    .Enclosures-details div:nth-child(even) {
+        padding-left: 14px;
+        border-left: 1px solid #2c2a2c;
+    }
+
+    .Enclosures-details dt {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .Enclosures-details dd {
+        padding-left: 24px;
+        text-align: left;
+        white-space: nowrap;
+    }
+}
+
+/* Narrow phones: the value under the icon, so "Sickbay Section" fits */
+@media (max-width: 379px) {
+    .Enclosures-details dd {
+        padding-left: 0;
+    }
 }
 
 .Enclosures-unset {
@@ -483,10 +586,6 @@
     margin: 16px 0 0;
 }
 
-.Enclosures-stats.is-single {
-    grid-template-columns: minmax(0, 1fr);
-    max-width: 50%;
-}
 
 .Enclosures-stats div {
     display: flex;
@@ -641,6 +740,28 @@
     }
 }
 
+/* Narrow phones: two per row (the third across the bottom), so two rows */
+@media (max-width: 379px) {
+    .Enclosures-jumps.is-few {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jump {
+        gap: 7px;
+        padding: 11px 10px;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jump:nth-child(2) {
+        border-top: none;
+        border-left: 1px solid #343234;
+    }
+
+    .Enclosures-jumps.is-few .Enclosures-jump:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (min-width: 380px) and (max-width: 459px) {
     .Enclosures-jumps.is-few .Enclosures-jump {
         gap: 6px;
@@ -648,9 +769,8 @@
     }
 }
 
-/* Small tablets and big phones: two per row (an odd one out takes the
-   whole last row) */
-@media (min-width: 550px) and (max-width: 759px) {
+/* Phones and small tablets: two per row, so at most two rows */
+@media (max-width: 759px) {
     .Enclosures-jumps:not(.is-few) {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -666,6 +786,14 @@
 
     .Enclosures-jumps:not(.is-few) .Enclosures-jump:nth-child(even) {
         border-left: 1px solid #343234;
+    }
+}
+
+/* Narrow phones: a little tighter */
+@media (max-width: 459px) {
+    .Enclosures-jumps:not(.is-few) .Enclosures-jump {
+        gap: 7px;
+        padding: 11px 10px;
     }
 }
 

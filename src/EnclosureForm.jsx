@@ -11,13 +11,33 @@ import "./EnclosureForm.css";
 
 // Editing an enclosure's or introcage's details (editors only), in the same
 // window as the monkey form: Photos, About (troop enclosures), Features,
-// Size and Established (troop enclosures, month and year).
+// Size and Established (troop enclosures, month and year); introcages also
+// Troop Door, Plate Slot (yes / no) and Sleeping Perches (1–10).
 //   onSaved(savedEnclosure) after a successful save
 
 const MONTHS = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
 ];
+
+// Yes / no details: true / false / null (not recorded) ⇄ the box's "yes" / "no" / ""
+const toYesNo = (value) => (value === true ? "yes" : value === false ? "no" : "");
+const fromYesNo = (text) => (text === "yes" ? true : text === "no" ? false : null);
+const PERCHES = Array.from({ length: 10 }, (_, i) => String(i + 1));
+
+// A yes / no box, blank for "not recorded"
+function YesNoField({ label, value, onChange }) {
+    return (
+        <label className="MonkeyForm-field">
+            <span>{label}</span>
+            <select value={value} onChange={onChange}>
+                <option value="">Not recorded</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+    );
+}
 
 // Years to choose from: this year back to 1990 (or further, for an older one)
 function years(current) {
@@ -28,6 +48,8 @@ function years(current) {
 
 function EnclosureForm({ enclosure, onClose, onSaved }) {
     const isIntrocage = enclosure.type === "introcage";
+    // (only once the database has them: see introcage-fields.sql)
+    const hasIntrocageDetails = isIntrocage && "troopDoor" in enclosure;
     const [year, month] = enclosure.established ? enclosure.established.split("-") : ["", ""];
     const [initial] = useState({
         description: enclosure.description ?? "",
@@ -36,6 +58,11 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
         year,
         month,
         photos: enclosure.photos ?? [],
+        ...(hasIntrocageDetails && {
+            troopDoor: toYesNo(enclosure.troopDoor),
+            plateSlot: toYesNo(enclosure.plateSlot),
+            sleepingPerches: enclosure.sleepingPerches == null ? "" : String(enclosure.sleepingPerches),
+        }),
     });
     const [form, setForm] = useState(initial);
     const [problem, setProblem] = useState(null);
@@ -82,6 +109,11 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
         if (!isIntrocage) {
             changes.description = form.description.trim();
             changes.established = form.year ? `${form.year}-${form.month}` : null;
+        }
+        if (hasIntrocageDetails) {
+            changes.troopDoor = fromYesNo(form.troopDoor);
+            changes.plateSlot = fromYesNo(form.plateSlot);
+            changes.sleepingPerches = form.sleepingPerches ? Number(form.sleepingPerches) : null;
         }
         try {
             const saved = await saveEnclosure(enclosure, changes);
@@ -207,7 +239,26 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                                 </select>
                             </fieldset>
                         )}
+                        {hasIntrocageDetails && (
+                            <label className="MonkeyForm-field">
+                                <span>Sleeping Perches</span>
+                                <select value={form.sleepingPerches} onChange={set("sleepingPerches")}>
+                                    <option value="">Not recorded</option>
+                                    {PERCHES.map((n) => (
+                                        <option key={n} value={n}>
+                                            {n}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
                     </div>
+                    {hasIntrocageDetails && (
+                        <div className="MonkeyForm-row">
+                            <YesNoField label="Troop Door" value={form.troopDoor} onChange={set("troopDoor")} />
+                            <YesNoField label="Plate Slot" value={form.plateSlot} onChange={set("plateSlot")} />
+                        </div>
+                    )}
                 </div>
 
                 <p className="MonkeyForm-problem" role="alert">

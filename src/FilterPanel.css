@@ -88,15 +88,6 @@
     text-align: right;
 }
 
-.FilterPanel-choice button:disabled {
-    opacity: 0.4;
-    cursor: default;
-}
-
-.FilterPanel-choice button:disabled:hover {
-    color: #b6b2a5;
-}
-
 .FilterPanel-section {
     display: flex;
     flex-direction: column;
@@ -185,7 +176,7 @@
     border-style: dashed;
 }
 
-/* The only Sex pill still on: tapping it does nothing */
+/* The only Location / Sex pill still on: tapping it does nothing */
 .FilterPanel-pills button[aria-disabled="true"] {
     cursor: default;
 }
@@ -201,50 +192,6 @@
     background-color: #25c4f8;
     border-color: #25c4f8;
     border-style: solid;
-}
-
-/* Age / Sex: joined buttons, the chosen one blue */
-.FilterPanel-choice {
-    display: flex;
-    padding: 2px;
-    background-color: #1f1f1f;
-    border: 1px solid #434343;
-    border-radius: 999px;
-}
-
-.FilterPanel-choice button {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    line-height: 1.2;
-    padding: 6px 2px;
-    font-family: inherit;
-    font-size: 13px;
-    color: #b6b2a5;
-    background: none;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-}
-
-/* The age range, under the label: "4+", "1–3", "<1" */
-.FilterPanel-choice button small {
-    font-size: 11px;
-    font-weight: 400;
-    opacity: 0.75;
-}
-
-.FilterPanel-choice button:hover {
-    color: white;
-}
-
-.FilterPanel-choice button[aria-checked="true"],
-.FilterPanel-choice button[aria-pressed="true"] {
-    font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
 }
 
 /* Clear all / Show N monkeys: always in view, even when the panel scrolls */

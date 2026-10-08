@@ -83,6 +83,22 @@ test("loads troops (All Troops first), monkeys, sections and enclosures", async 
     expect(inC1).toMatchObject({ name: "Aroha", troop: null, introcage: "H&B C1", introcageId: 41, enclosure: "H&B" });
 });
 
+test("once introcage-fields.sql has run: an introcage's Troop Door, Plate Slot and Sleeping Perches", async () => {
+    const extra = { troop_door: null, plate_slot: null, sleeping_perches: null };
+    fakeDatabase({
+        troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }]),
+        monkeys: answer([hbMonkey]),
+        sections: answer(SECTIONS),
+        enclosures: answer([
+            { ...ENCLOSURES[0], ...extra },
+            { ...ENCLOSURES[1], troop_door: true, plate_slot: false, sleeping_perches: 4 },
+        ]),
+    });
+    const [hb, c1] = (await loadMonkeyData()).enclosures;
+    expect(hb).not.toHaveProperty("troopDoor"); // (troop enclosures don't have them)
+    expect(c1).toMatchObject({ troopDoor: true, plateSlot: false, sleepingPerches: 4 });
+});
+
 test("before enclosures.sql has run: troops and monkeys, with the built-in enclosures", async () => {
     const missing = Promise.resolve({ data: null, error: { code: "42703", message: "column does not exist" } });
     fakeDatabase({

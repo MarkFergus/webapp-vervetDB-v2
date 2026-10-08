@@ -163,7 +163,7 @@ describe("editing an enclosure", () => {
         expect(saved.updates).toHaveLength(0);
     });
 
-    test("an introcage: Description and Size only (no About or Established)", async () => {
+    test("an introcage: Description, Size and its own details (no About or Established)", async () => {
         const { user } = setup({ route: `enclosure/${ROBERT_B1.id}` });
         await user.click(await screen.findByRole("button", { name: "Edit" }));
         const form = screen.getByRole("dialog", { name: "Edit Robert B1" });
@@ -172,7 +172,59 @@ describe("editing an enclosure", () => {
         await user.type(within(form).getByRole("textbox", { name: "Description" }), "Shade net");
         await user.click(within(form).getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
-        expect(saved.updates[0].row).toEqual({ features: "Shade net", size: null, photos: [] });
+        expect(saved.updates[0].row).toEqual({
+            features: "Shade net", size: null, photos: [], troop_door: null, plate_slot: null, sleeping_perches: null,
+        });
+    });
+
+    test("an introcage's Troop Door, Plate Slot and Sleeping Perches: saved and shown under Size", async () => {
+        const { user } = setup({ route: `enclosure/${ROBERT_B1.id}` });
+        const details = () => within(document.querySelector(".Enclosures-details"));
+        const value = (label) => details().getByText(label).closest("div").querySelector("dd").textContent;
+        // Not recorded to start with
+        expect(value("Troop Door")).toBe("Not recorded");
+        expect(value("Plate Slot")).toBe("Not recorded");
+        expect(value("Sleeping Perches")).toBe("Not recorded");
+
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        const form = within(screen.getByRole("dialog", { name: "Edit Robert B1" }));
+        expect(form.getByRole("combobox", { name: "Sleeping Perches" }).querySelectorAll("option")).toHaveLength(11);
+        await user.selectOptions(form.getByRole("combobox", { name: "Troop Door" }), "Yes");
+        await user.selectOptions(form.getByRole("combobox", { name: "Plate Slot" }), "No");
+        await user.selectOptions(form.getByRole("combobox", { name: "Sleeping Perches" }), "4");
+        await user.click(form.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).toMatchObject({ troop_door: true, plate_slot: false, sleeping_perches: 4 });
+
+        await waitFor(() => expect(value("Troop Door")).toBe("Yes"));
+        expect(value("Plate Slot")).toBe("No");
+        expect(value("Sleeping Perches")).toBe("4");
+        // In the order asked for, after Size
+        const labels = [...document.querySelectorAll(".Enclosures-details dt")].map((dt) => dt.textContent);
+        expect(labels).toEqual(["No. of Monkeys", "Section", "Size", "Troop Door", "Plate Slot", "Sleeping Perches"]);
+    });
+
+    test("troop enclosures don't have them", async () => {
+        const { user } = setup();
+        await screen.findByRole("heading", { level: 1, name: "Robert" });
+        expect(screen.queryByText("Troop Door")).toBeNull();
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        expect(screen.queryByRole("combobox", { name: "Sleeping Perches" })).toBeNull();
+    });
+
+    test("before introcage-fields.sql has run, the form leaves them out", async () => {
+        const without = BUILT_IN_DATA.enclosures.map((e) => {
+            if (e.id !== ROBERT_B1.id) return e;
+            const { troopDoor, plateSlot, sleepingPerches, ...rest } = e;
+            return rest;
+        });
+        const { user } = setup({ route: `enclosure/${ROBERT_B1.id}`, startingEnclosures: without });
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        const form = within(screen.getByRole("dialog", { name: "Edit Robert B1" }));
+        expect(form.queryByRole("combobox", { name: "Troop Door" })).toBeNull();
+        await user.click(form.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).not.toHaveProperty("troop_door");
     });
 
     test("editors who aren't admins can't edit an enclosure's details (they can still log maintenance)", async () => {

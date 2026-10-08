@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import {
     IconArrowDown,
     IconArrowLeft,
+    IconBed,
+    IconBowl,
     IconCalendar,
+    IconDoor,
     IconChevronDown,
     IconChevronLeft,
     IconChevronRight,
@@ -35,6 +38,7 @@ import {
     ordinal,
     sizeRank,
     sizeText,
+    stepsFrom,
     troopMonkeys,
     troopRank,
 } from "./enclosures";
@@ -50,6 +54,23 @@ import "./EnclosuresPage.css";
 
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 
+// An introcage's yes / no details (null or missing: not recorded)
+const yesNo = (value) => (value === true ? "Yes" : value === false ? "No" : null);
+
+// One of the details rows: icon and label on the left, the value (or "Not
+// recorded") on the right
+function DetailRow({ icon: Icon, label, value }) {
+    return (
+        <div>
+            <dt>
+                <Icon size={16} aria-hidden="true" />
+                {label}
+            </dt>
+            <dd>{value ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
+        </div>
+    );
+}
+
 // "← Enclosures" / "← H&B": back up a level
 function BackLink({ href, label }) {
     return (
@@ -57,6 +78,42 @@ function BackLink({ href, label }) {
             <IconArrowLeft size={16} aria-hidden="true" />
             {label}
         </a>
+    );
+}
+
+// Previous / next record (see stepsFrom): round arrow buttons either side of
+// "3 of 73" (on touch screens, just the "3 of 73": they swipe instead)
+//   onStep("prev" | "next")
+function Steps({ steps, kind, onStep }) {
+    const arrow = (direction) => {
+        const to = steps[direction];
+        const Icon = direction === "prev" ? IconChevronLeft : IconChevronRight;
+        const label = `${direction === "prev" ? "Previous" : "Next"} ${kind}: ${to.name}`;
+        return (
+            <a
+                href={enclosureHash(to)}
+                className="Enclosures-step"
+                aria-label={label}
+                title={label}
+                onClick={(event) => {
+                    // (Ctrl / middle click: a new tab as usual)
+                    if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
+                    event.preventDefault();
+                    onStep(direction);
+                }}
+            >
+                <Icon size={18} stroke={2.25} aria-hidden="true" />
+            </a>
+        );
+    };
+    return (
+        <nav className="Enclosures-steps" aria-label={`Other ${kind}s`}>
+            {arrow("prev")}
+            <span className="Enclosures-position">
+                {steps.number} of {steps.total}
+            </span>
+            {arrow("next")}
+        </nav>
     );
 }
 
@@ -284,12 +341,12 @@ function EnclosureList({ enclosures, sections, monkeys }) {
 
 // A group of monkeys on a record, folded away, in the same list view as
 // the monkey list. Tapping a monkey opens its pop-up.
-function MonkeyGroup({ title, monkeys, onOpen, empty, place, ...fold }) {
+function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
     return (
         <Fold title={title} count={monkeys.length} {...fold}>
             {monkeys.length ? (
                 <div className="MonkeyList">
-                    <MonkeyListHeader place={place} />
+                    <MonkeyListHeader />
                     {monkeys.map((m) => (
                         <MonkeyRow
                             key={m.id ?? m.name}
@@ -316,9 +373,21 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, place, ...fold }) {
 //   adding to the maintenance log),
 //   canEditDetails (admins: About, Features, Size, Established), canDelete (admins),
 //   onSaved(enclosure) }
-function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing }) {
+//   steps: previous / next (stepsFrom), or null; onStep(direction)
+//   slideFrom: arrived by stepping ("prev" / "next"): slides in from that side
+function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing, steps, onStep, slideFrom }) {
     const [isEditing, setIsEditing] = useState(false);
     const isIntrocage = enclosure.type === "introcage";
+    // Touch screens: swipe sideways anywhere on the page for the previous /
+    // next one (the photos swipe through themselves, so not on those)
+    const swipe = useSwipe((direction) => onStep(direction), Boolean(steps) && !isEditing);
+    const swipeHandlers = {
+        ...swipe.handlers,
+        onPointerDown(event) {
+            if (event.target.closest?.(".is-swipeable")) return;
+            swipe.handlers.onPointerDown(event);
+        },
+    };
     const parent = isIntrocage ? enclosures.find((e) => e.id === enclosure.parentId) : null;
     const introcages = isIntrocage ? [] : introcagesOf(enclosure, enclosures);
     const troop = isIntrocage ? [] : troopMonkeys(enclosure, monkeys);
@@ -328,9 +397,10 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     // The troop's average age
     const age = isIntrocage ? null : averageAge(troop);
 
-    // Which folding parts are open: all but the troop's monkeys to start with
+    // Which folding parts are open: all but an enclosure's (long) monkey
+    // list to start with
     const [open, setOpen] = useState({
-        introcages: true, maintenance: true, troop: false, inIntrocages: true, residents: true,
+        introcages: true, maintenance: true, monkeys: false, residents: true,
     });
     const foldProps = (key) => ({
         open: open[key],
@@ -359,7 +429,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                   ? [{ key: "introcages", label: "Introcages", icon: IconFence }]
                   : []),
               maintenanceJump,
-              { key: "troop", label: "Troop Monkeys", icon: IconUsersGroup },
+              { key: "monkeys", label: "Monkeys", icon: IconUsersGroup },
           ];
 
     // Enclosures: before the monkeys; introcages: at the bottom
@@ -377,8 +447,15 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     return (
         <>
             {/* Centred, the same width as the monkey list view */}
-            <article className="Enclosures-record">
-                <BackLink href={parent ? enclosureHash(parent) : ENCLOSURES_HASH} label={parent ? parent.name : "Enclosures"} />
+            <article
+                className={`Enclosures-record${steps ? " is-steppable" : ""}${slideFrom ? ` is-from-${slideFrom}` : ""}`}
+                style={swipe.dragX ? { transform: `translateX(${swipe.dragX * 0.6}px)`, opacity: 1 - Math.min(0.5, Math.abs(swipe.dragX) / 600) } : undefined}
+                {...swipeHandlers}
+            >
+                <div className="Enclosures-topRow">
+                    <BackLink href={parent ? enclosureHash(parent) : ENCLOSURES_HASH} label={parent ? parent.name : "Enclosures"} />
+                    {steps && <Steps steps={steps} kind={isIntrocage ? "introcage" : "enclosure"} onStep={onStep} />}
+                </div>
                 {/* Computers (iNaturalist style): picture, then About and
                     Features on the left; name, numbers, details, then the map
                     on the right. Phones: one after another. */}
@@ -388,8 +465,9 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         <div className="Enclosures-titleRow">
                             <h1 className="Enclosures-recordTitle">{enclosure.name}</h1>
                             {editing.canEditDetails && (
-                                <button type="button" className="Enclosures-edit" onClick={() => setIsEditing(true)}>
-                                    <IconPencil size={16} aria-hidden="true" />
+                                // The same Edit button as a monkey's pop-up
+                                <button type="button" className="Modal-edit Enclosures-edit" onClick={() => setIsEditing(true)}>
+                                    <IconPencil size={18} aria-hidden="true" />
                                     Edit
                                 </button>
                             )}
@@ -403,45 +481,41 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     </div>
                     <Picture enclosure={enclosure} monkeys={living} large />
                     <div className="Enclosures-summary">
-                        {/* The numbers, worked out from the monkeys */}
-                        <dl className={`Enclosures-stats${isIntrocage ? " is-single" : ""}`}>
-                            {isIntrocage ? (
+                        {/* The numbers, worked out from the monkeys (an
+                            introcage's one number is in the details instead) */}
+                        {!isIntrocage && (
+                            <dl className="Enclosures-stats">
                                 <div>
-                                    <dt>{living.length === 1 ? "Monkey" : "Monkeys"}</dt>
-                                    <dd>{living.length}</dd>
+                                    <dt>Troop monkeys</dt>
+                                    <dd>{troop.length}</dd>
                                 </div>
-                            ) : (
-                                <>
-                                    <div>
-                                        <dt>Troop monkeys</dt>
-                                        <dd>{troop.length}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Introcage monkeys</dt>
-                                        <dd>{inIntrocages.length}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Introcages</dt>
-                                        <dd>{introcages.length}</dd>
-                                    </div>
-                                    <Ranking label="Largest enclosure" rank={sizeRank(enclosure, enclosures)} unknown="Size not recorded" />
-                                    <Ranking label="Largest troop" rank={troopRank(enclosure, enclosures, monkeys)} />
-                                    <div>
-                                        <dt>Average age</dt>
-                                        <dd>{age === null ? "–" : age}</dd>
-                                    </div>
-                                </>
-                            )}
-                        </dl>
+                                <div>
+                                    <dt>Introcage monkeys</dt>
+                                    <dd>{inIntrocages.length}</dd>
+                                </div>
+                                <div>
+                                    <dt>Introcages</dt>
+                                    <dd>{introcages.length}</dd>
+                                </div>
+                                <Ranking label="Largest enclosure" rank={sizeRank(enclosure, enclosures)} unknown="Size not recorded" />
+                                <Ranking label="Largest troop" rank={troopRank(enclosure, enclosures, monkeys)} />
+                                <div>
+                                    <dt>Average age</dt>
+                                    <dd>{age === null ? "–" : age}</dd>
+                                </div>
+                            </dl>
+                        )}
 
                         {/* The details, as label / value rows */}
                         <dl className="Enclosures-details">
+                            {isIntrocage && <DetailRow icon={IconUsersGroup} label="No. of Monkeys" value={living.length} />}
                             <div>
                                 <dt>
                                     <IconMapPin size={16} aria-hidden="true" />
                                     Section
                                 </dt>
-                                <dd>{enclosure.section ?? <span className="Enclosures-unset">Not set</span>}</dd>
+                                {/* e.g. "Top Section" */}
+                                <dd>{enclosure.section ? `${enclosure.section} Section` : <span className="Enclosures-unset">Not set</span>}</dd>
                             </div>
                             {!isIntrocage && (
                                 <div>
@@ -459,6 +533,13 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                 </dt>
                                 <dd>{sizeText(enclosure.size) ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
                             </div>
+                            {isIntrocage && (
+                                <>
+                                    <DetailRow icon={IconDoor} label="Troop Door" value={yesNo(enclosure.troopDoor)} />
+                                    <DetailRow icon={IconBowl} label="Plate Slot" value={yesNo(enclosure.plateSlot)} />
+                                    <DetailRow icon={IconBed} label="Sleeping Perches" value={enclosure.sleepingPerches} />
+                                </>
+                            )}
                         </dl>
                     </div>
 
@@ -509,28 +590,18 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         monkeys={living}
                         onOpen={onOpenMonkey}
                         empty="Nobody's in here at the moment."
-                        place="Introcage"
                         {...foldProps("residents")}
                     />
                 ) : (
-                    <>
-                        <MonkeyGroup
-                            title="Troop Monkeys"
-                            monkeys={troop}
-                            onOpen={onOpenMonkey}
-                            empty="No troop monkeys."
-                            {...foldProps("troop")}
-                        />
-                        {inIntrocages.length > 0 && (
-                            <MonkeyGroup
-                                title="In introcages"
-                                monkeys={inIntrocages}
-                                onOpen={onOpenMonkey}
-                                place="Introcage"
-                                {...foldProps("inIntrocages")}
-                            />
-                        )}
-                    </>
+                    // The troop, then the monkeys in its introcages (their
+                    // introcage shows where the troop's name would)
+                    <MonkeyGroup
+                        title="Monkeys"
+                        monkeys={[...troop, ...inIntrocages]}
+                        onOpen={onOpenMonkey}
+                        empty="No monkeys here at the moment."
+                        {...foldProps("monkeys")}
+                    />
                 )}
 
                 {isIntrocage && maintenance}
@@ -556,6 +627,18 @@ const NO_EDITING = {
 // editing: see EnclosureRecord (plus live: the database has enclosures)
 function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, inert, editing = NO_EDITING }) {
     const enclosure = enclosureFromRoute(route, enclosures);
+    const steps = enclosure ? stepsFrom(enclosure, enclosures, sections) : null;
+    // The last step: { id (where to), from ("prev" / "next") }, so that
+    // record slides in from that side
+    const [stepped, setStepped] = useState(null);
+
+    // Previous / next: in place of this record in the history, so Back
+    // still goes back to wherever they came from
+    function step(direction) {
+        const to = steps[direction];
+        setStepped({ id: to.id, from: direction });
+        window.location.replace(enclosureHash(to));
+    }
 
     // A new page starts at the top
     useEffect(() => {
@@ -573,6 +656,9 @@ function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, in
                     enclosures={enclosures}
                     monkeys={monkeys}
                     onOpenMonkey={onOpenMonkey}
+                    steps={steps}
+                    onStep={step}
+                    slideFrom={stepped?.id === enclosure.id ? stepped.from : null}
                 />
             ) : route.startsWith("enclosure/") ? (
                 <>

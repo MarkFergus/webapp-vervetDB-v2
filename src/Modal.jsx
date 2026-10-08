@@ -32,6 +32,7 @@ function Modal({
     nextMonkey,
     onEdit, // given only to editors: shows the Edit button
     position, // { number, total }: where this monkey is in the list (optional)
+    placeHref, // the page of where it lives ("#enclosure/57"), or null
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -270,7 +271,27 @@ function Modal({
                                     picture), then the bio and features */}
                                 <div className="Modal-details">
                                     <ul className="Modal-pills" aria-label="Details">
-                                        <li className="is-troop">{placeLabel(monkey)}</li>
+                                        {/* Its troop (or introcage): tap for that
+                                            enclosure's page */}
+                                        {placeHref ? (
+                                            <li className="is-troop is-link">
+                                                <a
+                                                    href={placeHref}
+                                                    onClick={(event) => {
+                                                        // Already on that page: just close
+                                                        if (window.location.hash === placeHref) {
+                                                            event.preventDefault();
+                                                            onClose();
+                                                        }
+                                                    }}
+                                                >
+                                                    {placeLabel(monkey)}
+                                                    <IconChevronRight size={14} stroke={2.5} aria-hidden="true" />
+                                                </a>
+                                            </li>
+                                        ) : (
+                                            <li className="is-troop">{placeLabel(monkey)}</li>
+                                        )}
                                         <li>
                                             {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}
                                             {monkey.sex === "female" && <IconVenus size={15} stroke={2} aria-hidden="true" />}

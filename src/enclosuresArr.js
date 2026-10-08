@@ -6,7 +6,9 @@
 // An enclosure, as the rest of the site uses it:
 //   { id, name, type: "troop" | "introcage", parentId (introcages),
 //     section (introcages: their enclosure's), established ("2014-03" or null),
-//     description, features, size (square metres, or null), photos, sortOrder }
+//     description, features, size (square metres, or null), photos, sortOrder,
+//     introcages only: troopDoor, plateSlot (true / false / null = not
+//     recorded), sleepingPerches (1–10 or null) }
 
 export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay"];
 
@@ -51,6 +53,9 @@ function build() {
                 id: ++id,
                 name: OWN_NAMES[`${name} ${code}`] ?? `${name} ${code}`,
                 type: "introcage",
+                troopDoor: null,
+                plateSlot: null,
+                sleepingPerches: null,
                 parentId: parent.id,
                 // the same section as its enclosure
                 section: parent.section,

@@ -1,13 +1,14 @@
 // The Enclosures pages, and how introcage monkeys show around the site.
 // Uses the built-in enclosures with Aroha moved into H&B C1, as the
 // database has him once enclosures.sql has run.
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
 import enclosuresArr, { SECTION_NAMES } from "./enclosuresArr";
 import {
-    averageAge, enclosureHash, establishedText, introcageCode, ordinal, rankOf, sizeRank, sizeText, troopRank,
+    averageAge, bySection, enclosureHash, establishedText, introcageCode, introcagesOf, ordinal, rankOf, sizeRank, sizeText,
+    placeHash, stepsFrom, troopRank,
 } from "./enclosures";
 import { homeName, placeLabel, placeName } from "./places";
 import { monkeyHash } from "./monkeyLink";
@@ -129,7 +130,7 @@ describe("an enclosure's record", () => {
     test("its details, counts, introcages, troop and introcage monkeys", async () => {
         const { user } = showPage(`enclosure/${HB.id}`);
         expect(screen.getByRole("heading", { level: 1, name: "H&B" })).toBeInTheDocument();
-        expect(screen.getByText("Section").closest("div")).toHaveTextContent("Bottom");
+        expect(screen.getByText("Section").closest("div")).toHaveTextContent("Bottom Section");
         expect(screen.getByText("Established").closest("div")).toHaveTextContent("Not recorded");
         expect(screen.getByText("Size").closest("div")).toHaveTextContent("Not recorded");
         const stat = (label) => screen.getByText(label, { selector: "dt" }).nextSibling.textContent;
@@ -152,20 +153,18 @@ describe("an enclosure's record", () => {
         // Maintenance comes before the monkeys, open too
         expect(screen.getByText(/maintenance log will show here once vervetDB is online/)).toBeInTheDocument();
         const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-        expect(headings.indexOf("Maintenance")).toBeLessThan(headings.findIndex((h) => h.startsWith("Troop")));
-        // The troop's monkeys stay folded away until asked for
+        expect(headings.indexOf("Maintenance")).toBeLessThan(headings.findIndex((h) => h.startsWith("Monkeys")));
+        // The monkeys stay folded away until asked for
         expect(screen.queryByRole("button", { name: /^Agatha,|^Apollo,/ })).toBeNull();
-        const troopToggle = document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-troop-monkeys"]');
-        expect(troopToggle).toHaveAttribute("aria-expanded", "false");
-        await user.click(troopToggle);
-        expect(troopToggle).toHaveAttribute("aria-expanded", "true");
-        // Aroha under "In introcages", not in the troop
-        const inIntrocages = screen.getByRole("heading", { name: /^In introcages/ }).parentElement;
-        expect(within(inIntrocages).getByRole("button", { name: /^Aroha, .*in H&B C1/ })).toBeInTheDocument();
-        const troop = screen.getByRole("heading", { name: /^Troop/ }).parentElement;
-        expect(within(troop).queryByRole("button", { name: /^Aroha,/ })).toBeNull();
-        // (the rows, plus the heading's own button)
-        expect(within(troop).getAllByRole("button")).toHaveLength(hbTroop.length + 1);
+        const toggle = document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-monkeys"]');
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        await user.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        // One list: the troop, then Aroha (in H&B C1) last
+        const list = screen.getByRole("heading", { name: /^Monkeys/ }).parentElement;
+        const rows = within(list).getAllByRole("button").slice(1); // (after the heading's own button)
+        expect(rows).toHaveLength(hbTroop.length + 1);
+        expect(rows.at(-1)).toHaveAccessibleName(/^Aroha, .*in H&B C1/);
     });
 
     test("an introcage: its enclosure (link back), residents, no established date", async () => {
@@ -174,7 +173,11 @@ describe("an enclosure's record", () => {
         expect(screen.getByText(/Introcage at/)).toHaveTextContent("Introcage at H&B");
         expect(screen.getAllByRole("link", { name: "H&B" })[0]).toHaveAttribute("href", enclosureHash(HB));
         expect(screen.queryByText(/Established/)).toBeNull();
-        expect(screen.getByText("Monkey", { selector: "dt" })).toBeInTheDocument();
+        // No number boxes: how many is the first detail
+        expect(document.querySelector(".Enclosures-stats")).toBeNull();
+        const first = document.querySelector(".Enclosures-details > div");
+        expect(first).toHaveTextContent("No. of Monkeys1");
+        expect(screen.getByText("Section").closest("div")).toHaveTextContent("Bottom Section");
         // Its one field is its description; no rankings or average age
         expect(screen.getByRole("heading", { name: "Description" })).toBeInTheDocument();
         expect(screen.queryByText("Average age")).toBeNull();
@@ -194,17 +197,17 @@ describe("an enclosure's record", () => {
         expect(popUp).not.toHaveTextContent("troop");
     });
 
-    test("jump buttons: Map, Introcages, Maintenance and Troop Monkeys, opening the troop's list", async () => {
+    test("jump buttons: Map, Introcages, Maintenance and Monkeys, opening the monkey list", async () => {
         const { user } = showPage(`enclosure/${HB.id}`);
         const jumps = within(screen.getByRole("navigation", { name: "On this page" }));
         const labels = jumps.getAllByRole("button").map((b) => b.textContent);
-        expect(labels).toEqual(["Map", "Introcages", "Maintenance", "Troop Monkeys"]);
+        expect(labels).toEqual(["Map", "Introcages", "Maintenance", "Monkeys"]);
         const scrolled = vi.fn();
         Element.prototype.scrollIntoView = scrolled;
-        await user.click(jumps.getByRole("button", { name: /^Troop Monkeys/ }));
+        await user.click(jumps.getByRole("button", { name: /^Monkeys/ }));
         await waitFor(() => expect(scrolled).toHaveBeenCalled());
-        expect(scrolled.mock.contexts[0]).toHaveAttribute("id", "Enclosures-jump-troop");
-        expect(document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-troop-monkeys"]')).toHaveAttribute("aria-expanded", "true");
+        expect(scrolled.mock.contexts[0]).toHaveAttribute("id", "Enclosures-jump-monkeys");
+        expect(document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-monkeys"]')).toHaveAttribute("aria-expanded", "true");
         delete Element.prototype.scrollIntoView;
     });
 
@@ -222,6 +225,73 @@ describe("an enclosure's record", () => {
     });
 });
 
+describe("stepping through the records (previous / next, swipe)", () => {
+    const troopOrder = bySection(enclosuresArr, SECTION_NAMES).flatMap((g) => g.enclosures);
+    const introcageOrder = troopOrder.flatMap((e) => introcagesOf(e, enclosuresArr));
+
+    test("introcages go through every introcage, enclosure by enclosure, round from last to first", () => {
+        const hb = introcagesOf(HB, enclosuresArr).map((e) => e.name);
+        expect(hb).toEqual(["H&B A", "H&B B", "H&B C1", "H&B C2"]);
+        const steps = stepsFrom(HB_C1, enclosuresArr, SECTION_NAMES);
+        expect(steps.prev.name).toBe("H&B B");
+        expect(steps.next.name).toBe("H&B C2");
+        expect(steps.total).toBe(73);
+        // The last of H&B's: on to the next enclosure's first
+        const fromC2 = stepsFrom(byName("H&B C2"), enclosuresArr, SECTION_NAMES);
+        expect(fromC2.next).toBe(introcageOrder[introcageOrder.indexOf(byName("H&B C2")) + 1]);
+        expect(stepsFrom(introcageOrder.at(-1), enclosuresArr, SECTION_NAMES).next).toBe(introcageOrder[0]);
+        expect(stepsFrom(introcageOrder[0], enclosuresArr, SECTION_NAMES).prev).toBe(introcageOrder.at(-1));
+    });
+
+    test("troop enclosures go through the troop enclosures", () => {
+        const steps = stepsFrom(troopOrder[0], enclosuresArr, SECTION_NAMES);
+        expect(steps).toMatchObject({ number: 1, total: 15, next: troopOrder[1], prev: troopOrder.at(-1) });
+    });
+
+    afterEach(() => window.history.replaceState(null, "", window.location.pathname));
+
+    test("arrows either side of \"N of 73\" go to the previous / next introcage", async () => {
+        const { user } = showPage(`enclosure/${HB_C1.id}`);
+        const steps = screen.getByRole("navigation", { name: "Other introcages" });
+        expect(steps).toHaveTextContent(`${introcageOrder.indexOf(HB_C1) + 1} of 73`);
+        await user.click(within(steps).getByRole("link", { name: "Next introcage: H&B C2" }));
+        expect(window.location.hash).toBe(enclosureHash(byName("H&B C2")));
+        await user.click(within(steps).getByRole("link", { name: "Previous introcage: H&B B" }));
+        expect(window.location.hash).toBe(enclosureHash(byName("H&B B")));
+    });
+
+    test("on an enclosure, they go to the previous / next enclosure", () => {
+        showPage(`enclosure/${HB.id}`);
+        const i = troopOrder.indexOf(HB);
+        const steps = screen.getByRole("navigation", { name: "Other enclosures" });
+        expect(within(steps).getByRole("link", { name: `Next enclosure: ${troopOrder[i + 1].name}` })).toHaveAttribute(
+            "href",
+            enclosureHash(troopOrder[i + 1])
+        );
+    });
+
+    // A finger moving sideways (dx) over the page, starting on an element
+    function swipe(element, dx, pointerType = "touch") {
+        const at = (x) => ({ pointerId: 1, isPrimary: true, pointerType, clientX: x, clientY: 300 });
+        fireEvent.pointerDown(element, at(200));
+        fireEvent.pointerMove(element, at(200 + dx / 2));
+        fireEvent.pointerMove(element, at(200 + dx));
+        fireEvent.pointerUp(element, at(200 + dx));
+    }
+
+    test("phones: swipe left anywhere for the next one, right for the previous (not with a mouse)", () => {
+        showPage(`enclosure/${HB_C1.id}`);
+        const title = screen.getByRole("heading", { level: 1, name: "H&B C1" });
+        swipe(title, -120);
+        expect(window.location.hash).toBe(enclosureHash(byName("H&B C2")));
+        swipe(title, 120);
+        expect(window.location.hash).toBe(enclosureHash(byName("H&B B")));
+        window.history.replaceState(null, "", window.location.pathname);
+        swipe(title, -120, "mouse");
+        expect(window.location.hash).toBe("");
+    });
+});
+
 describe("introcage monkeys on the main page", () => {
     const setup = () => {
         const user = userEvent.setup();
@@ -233,6 +303,30 @@ describe("introcage monkeys on the main page", () => {
         const { user } = setup();
         await user.type(screen.getByPlaceholderText("Name or chip number"), "Aroha");
         expect(screen.getByRole("button", { name: /^Aroha, .*in H&B C1/ })).toHaveTextContent("H&B C1");
+    });
+
+    // The pop-up's blue troop / introcage pill: a link to that page
+    const placePill = () => within(screen.getByRole("list", { name: "Details" })).getAllByRole("listitem")[0];
+    async function openMonkey(user, name) {
+        await user.type(screen.getByPlaceholderText("Name or chip number"), name);
+        await user.click(screen.getAllByRole("button", { name: new RegExp(`^${name},`) })[0]);
+    }
+
+    test("their pop-up's introcage pill links to the introcage's page", async () => {
+        const { user } = setup();
+        await openMonkey(user, "Aroha");
+        expect(within(placePill()).getByRole("link", { name: "H&B C1" })).toHaveAttribute("href", enclosureHash(HB_C1));
+    });
+
+    test("a troop monkey's troop pill links to its enclosure's page", async () => {
+        const { user } = setup();
+        const someone = hbTroop.find((m) => MONKEYS.filter((x) => x.name === m.name).length === 1);
+        await openMonkey(user, someone.name);
+        expect(within(placePill()).getByRole("link", { name: "H&B Troop" })).toHaveAttribute("href", enclosureHash(HB));
+    });
+
+    test("the Bandits have no enclosure, so no link", () => {
+        expect(placeHash({ troop: "Bandits", introcage: null }, enclosuresArr)).toBeNull();
     });
 
     test("they're not in their enclosure's troop", async () => {

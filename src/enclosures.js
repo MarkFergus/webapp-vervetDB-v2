@@ -24,6 +24,15 @@ export function introcagesOf(enclosure, enclosures) {
         .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
+// The page of where a monkey lives: its introcage's, or its troop's
+// enclosure's ("#enclosure/57"), or null if it has none (the Bandits)
+export function placeHash(monkey, enclosures) {
+    const place = inIntrocage(monkey)
+        ? enclosures.find((e) => e.type === "introcage" && e.name === monkey.introcage)
+        : enclosures.find((e) => e.type === "troop" && e.name === homeName(monkey));
+    return place ? enclosureHash(place) : null;
+}
+
 // "C1" for "H&B C1" (its name without the enclosure's)
 export function introcageCode(introcage, parent) {
     const prefix = `${parent.name} `;
@@ -60,6 +69,26 @@ export function bySection(enclosures, sections) {
     return sections
         .map((section) => ({ section, enclosures: troopEnclosures.filter((e) => e.section === section) }))
         .filter((group) => group.enclosures.length > 0);
+}
+
+// Stepping through the records (previous / next on a record page): troop
+// enclosures through the troop enclosures, introcages through every
+// introcage, enclosure by enclosure, in section order (round from the last
+// to the first). { prev, next, number, total }, or null if it isn't listed.
+export function stepsFrom(enclosure, enclosures, sections) {
+    const troopEnclosures = bySection(enclosures, sections).flatMap((group) => group.enclosures);
+    const all =
+        enclosure.type === "introcage"
+            ? troopEnclosures.flatMap((e) => introcagesOf(e, enclosures))
+            : troopEnclosures;
+    const index = all.findIndex((e) => e.id === enclosure.id);
+    if (index === -1 || all.length < 2) return null;
+    return {
+        prev: all[(index - 1 + all.length) % all.length],
+        next: all[(index + 1) % all.length],
+        number: index + 1,
+        total: all.length,
+    };
 }
 
 // What the monkey form's Enclosure and Location boxes offer, in the troops'

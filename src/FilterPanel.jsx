@@ -13,10 +13,11 @@ export const AGE_GROUPS = [
     { id: "adults", label: "Adults", hint: "4–14" },
     { id: "elderly", label: "Elderly", hint: "15+" },
 ];
-// Where the monkeys live: troops, or (later) introcages
+// Where the monkeys live: in a troop, or in an introcage ("all": both)
 export const LOCATIONS = [
+    { id: "all", label: "All" },
     { id: "troop", label: "Troop" },
-    { id: "introcage", label: "Introcage", disabled: true, title: "Coming soon" },
+    { id: "introcage", label: "Introcage" },
 ];
 export const SEXES = [
     { id: "all", label: "All" },
@@ -27,36 +28,6 @@ export const SEXES = [
 // Birth years to choose from: this year back to 2000
 const thisYear = new Date().getFullYear();
 export const FILTER_YEARS = Array.from({ length: thisYear - 1999 }, (_, i) => thisYear - i);
-
-// One row of joined buttons, one of them chosen (like the sort control).
-// hideLabel: the box's title already says what it is (e.g. Sex)
-function Choice({ label, options, value, onChange, hideLabel = false }) {
-    // e.g. "FilterPanel-enclosure" (no spaces: aria-labelledby splits on them)
-    const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
-    return (
-        <div className="FilterPanel-section">
-            <span className={hideLabel ? "visually-hidden" : "FilterPanel-label"} id={labelId}>
-                {label}
-            </span>
-            <div className="FilterPanel-choice" role="radiogroup" aria-labelledby={labelId}>
-                {options.map((o) => (
-                    <button
-                        key={o.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={value === o.id}
-                        onClick={() => onChange(o.id)}
-                        disabled={o.disabled}
-                        title={o.title}
-                    >
-                        {o.label}
-                        {o.hint && <small aria-hidden="true">{o.hint}</small>}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-}
 
 // Pills where several can be on at once, like the game's troop picker:
 // "All Sections" (dashed) is on when none are; tapping another adds or
@@ -93,32 +64,35 @@ function Pills({ label, allLabel, options, value, onChange, allOff = false }) {
     );
 }
 
-// Sex: Female and Male pills, both on to start with (everyone, including
-// monkeys whose sex isn't known). Tapping one off shows only the other; the
-// last one on can't be turned off (that would show nobody).
-//   value: "all", "female" or "male" (the one still on)
-function SexPills({ value, onChange }) {
+// Two pills, both on to start with (everyone): tapping one off shows only
+// the other; the last one on can't be turned off (that would show nobody).
+// Used for Location (Troop / Introcage) and Sex (Female / Male).
+//   options: [{ id: "all" }, first, second]; value: "all" or the one still on
+//   hideLabel: the box's title already says what it is (e.g. Sex)
+function PairPills({ label, options, value, onChange, hideLabel = false }) {
+    const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
+    const [first, second] = options.filter((o) => o.id !== "all");
     const on = (id) => value === "all" || value === id;
     function tap(id) {
-        if (value === "all") onChange(id === "female" ? "male" : "female"); // this one off
+        if (value === "all") onChange(id === first.id ? second.id : first.id); // this one off
         else if (value !== id) onChange("all"); // this one back on
     }
     return (
         <div className="FilterPanel-section">
-            <span className="visually-hidden" id="FilterPanel-sex">
-                Sex
+            <span className={hideLabel ? "visually-hidden" : "FilterPanel-label"} id={labelId}>
+                {label}
             </span>
-            <div className="FilterPanel-pills is-two" role="group" aria-labelledby="FilterPanel-sex">
-                {SEXES.filter((s) => s.id !== "all").map((s) => (
+            <div className="FilterPanel-pills is-two" role="group" aria-labelledby={labelId}>
+                {[first, second].map((o) => (
                     <button
-                        key={s.id}
+                        key={o.id}
                         type="button"
-                        aria-pressed={on(s.id)}
+                        aria-pressed={on(o.id)}
                         // The only one on: tapping it does nothing
-                        aria-disabled={value === s.id}
-                        onClick={() => tap(s.id)}
+                        aria-disabled={value === o.id}
+                        onClick={() => tap(o.id)}
                     >
-                        {s.label}
+                        {o.label}
                     </button>
                 ))}
             </div>
@@ -138,7 +112,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
     // Open: focus the first choice. Escape or a click outside closes it.
     useEffect(() => {
         if (!open) return;
-        panelRef.current?.querySelector(".FilterPanel-section select, .FilterPanel-section button:not(:disabled)")?.focus();
+        panelRef.current?.querySelector(".FilterPanel-section select, .FilterPanel-section button")?.focus();
         function handleKeyDown(event) {
             if (event.key === "Escape") {
                 event.stopPropagation();
@@ -192,8 +166,10 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
 
                 <div className="FilterPanel-group">
                     <span className="FilterPanel-groupTitle">Location</span>
-                    <Choice
-                        label="Enclosure"
+                    {/* Introcage only, with a troop chosen: that troop's
+                        enclosure's introcages */}
+                    <PairPills
+                        label="Living in"
                         options={LOCATIONS}
                         value={filters.location}
                         onChange={(v) => onChange("location", v)}
@@ -275,7 +251,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
 
                 <div className="FilterPanel-group">
                     <span className="FilterPanel-groupTitle">Sex</span>
-                    <SexPills value={filters.sex} onChange={(v) => onChange("sex", v)} />
+                    <PairPills label="Sex" options={SEXES} value={filters.sex} onChange={(v) => onChange("sex", v)} hideLabel />
                 </div>
 
                 <div className="FilterPanel-footer">

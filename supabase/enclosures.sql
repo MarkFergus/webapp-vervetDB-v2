@@ -63,6 +63,12 @@ create table public.enclosures (
     -- the floor area in whole square metres, e.g. 600 (shown as "600 m²");
     -- null = not recorded (both troop enclosures and introcages)
     size         integer check (size > 0),
+    -- introcages only (null = not recorded): a door through to the troop,
+    -- a slot for food plates, and how many sleeping perches (1 to 10)
+    -- (added by introcage-fields.sql)
+    troop_door       boolean,
+    plate_slot       boolean,
+    sleeping_perches smallint constraint enclosures_sleeping_perches_check check (sleeping_perches between 1 and 10),
     -- first photo is the main one; all https links (none is fine)
     photos       text[] not null default '{}'
                  check (cardinality(photos) = 0 or public.all_https(photos)),
@@ -78,7 +84,10 @@ create table public.enclosures (
     -- a troop enclosure has a section; an introcage doesn't
     check ((type = 'troop') = (section_id is not null)),
     -- only troop enclosures have an established date and a description
-    check (type = 'troop' or (established is null and description = ''))
+    check (type = 'troop' or (established is null and description = '')),
+    -- only introcages have a troop door, plate slot and sleeping perches
+    constraint enclosures_introcage_details_check
+        check (type = 'introcage' or (troop_door is null and plate_slot is null and sleeping_perches is null))
 );
 
 create index enclosures_parent_id_idx on public.enclosures (parent_id);

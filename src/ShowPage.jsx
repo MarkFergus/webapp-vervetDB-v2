@@ -19,7 +19,7 @@ import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
 import { homeName, inIntrocage, placeName } from "./places";
-import { isEnclosuresRoute } from "./enclosures";
+import { isEnclosuresRoute, placeHash } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { ageInYears } from "./ages";
@@ -61,7 +61,7 @@ function inAgeGroups(monkey, groups) {
 }
 
 const NO_FILTERS = {
-    location: "troop",
+    location: "all", // "troop" or "introcage": only those
     section: [], // section ids picked ([] = all sections)
     troop: "All Troops",
     year: "All Years",
@@ -72,15 +72,19 @@ const NO_FILTERS = {
 // The list on screen is worked out from the search, filters and sort
 // every time, so they always agree with each other.
 function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
-    const { section, troop: troopFilter, year: yearFilter, age, sex } = filters;
+    const { location, section, troop: troopFilter, year: yearFilter, age, sex } = filters;
     const query = searchValue.trim().toLowerCase();
     const isChipSearch = /^\d+$/.test(query);
 
     const results = monkeys.filter((monkey) => {
+        const matchesLocation = location === "all" || (location === "introcage") === inIntrocage(monkey);
         const matchesTroop =
             troopFilter === "All Troops" ||
-            // (introcage monkeys aren't in a troop)
-            (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase());
+            // Introcage monkeys aren't in the troop; with only Introcage on,
+            // the ones in the introcages at that troop's enclosure
+            (inIntrocage(monkey)
+                ? location === "introcage" && homeName(monkey).toLowerCase() === troopFilter.toLowerCase()
+                : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase()));
         const matchesYear =
             yearFilter === "All Years" ||
             // Number() on both sides in case a year is entered as text
@@ -92,6 +96,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
                 : monkey.name.toLowerCase().includes(query));
         const matchesSex = sex === "all" || monkey.sex === sex;
         return (
+            matchesLocation &&
             matchesTroop &&
             inSection(homeName(monkey), section) &&
             matchesYear &&
@@ -149,7 +154,7 @@ function ShowPage({
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
     const [searchValue, setSearchValue] = useState("");
-    // Filters: { troop, year, age, sex } (see FilterPanel)
+    // Filters: { location, section, troop, year, age, sex } (see FilterPanel)
     const [filters, setFilters] = useState(NO_FILTERS);
     const troopFilter = filters.troop;
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -470,6 +475,10 @@ function ShowPage({
             id: s.id,
             label: s.chip,
         })),
+        filters.location !== NO_FILTERS.location && {
+            field: "location",
+            label: filters.location === "introcage" ? "In introcages" : "In troops",
+        },
         filters.troop !== NO_FILTERS.troop && { field: "troop", label: filters.troop },
         filters.year !== NO_FILTERS.year && { field: "year", label: `Born ${filters.year}` },
         // One chip per age category picked
@@ -505,6 +514,7 @@ function ShowPage({
                             : { number: selectedIndex + 1, total: neighbours.length }
                     }
                     onEdit={canEdit ? startEdit : undefined}
+                    placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}
                 />
             </div>
             <div

@@ -28,6 +28,17 @@ test("cards to start with; List view shows a row per monkey with its details", a
     if (abby.chip) expect(within(row).getByText(String(abby.chip))).toBeInTheDocument();
 });
 
+test("the Location column: the troop (\"Global\"), or the introcage", async () => {
+    const user = userEvent.setup();
+    const aroha = { ...monkeysArr.find((m) => m.name === "Aroha"), troop: null, introcage: "H&B C1", enclosure: "H&B" };
+    const { container } = render(<ShowPage monkeys={monkeysArr.map((m) => (m.name === "Aroha" ? aroha : m))} />);
+    await user.click(listButton());
+    expect(container.querySelector(".MonkeyRow-header")).toHaveTextContent("Location");
+    const column = (name) => screen.getByRole("button", { name: new RegExp(`^${name},`) }).querySelectorAll(".MonkeyRow-wide")[0];
+    expect(column("Abby")).toHaveTextContent(/^Global$/);
+    expect(column("Aroha")).toHaveTextContent(/^H&B C1$/);
+});
+
 test("a row opens the monkey's pop-up", async () => {
     const user = userEvent.setup();
     render(<ShowPage />);
