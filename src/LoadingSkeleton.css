@@ -190,10 +190,6 @@
 
 /* Phones: the same sizes as the real (tighter) pills */
 @media (max-width: 624px) {
-    .LoadingSkeleton-pill {
-        height: 32px;
-    }
-
     .LoadingSkeleton-pill.is-filters {
         width: 94px;
     }

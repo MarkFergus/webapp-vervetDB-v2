@@ -59,3 +59,16 @@
     gap: 6px;
 }
 
+/* The sort icon: only when the toolbar is too tight for the words
+   (.is-compact, set by ShowPage) */
+.SortMenu-icon {
+    display: none;
+}
+
+.ShowPage-toolbar.is-compact .SortMenu-current {
+    display: none;
+}
+
+.ShowPage-toolbar.is-compact .SortMenu-icon {
+    display: block;
+}

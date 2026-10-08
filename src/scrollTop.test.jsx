@@ -26,6 +26,16 @@ test("appears once the Filters / sort row has scrolled out of view, and hides ne
     expect(toTop()).toBeNull();
 });
 
+test("only on the monkey list: not after going on to the game", () => {
+    const { rerender } = render(<ShowPage />);
+    scrollNavTo(-500);
+    expect(toTop()).toBeInTheDocument();
+    rerender(<ShowPage route="game" />);
+    expect(toTop()).toBeNull();
+    act(() => window.dispatchEvent(new Event("scroll")));
+    expect(toTop()).toBeNull();
+});
+
 test("takes you back to the top, ready to search", async () => {
     const scrollTo = vi.fn();
     window.scrollTo = scrollTo;

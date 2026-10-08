@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
+import { IconArrowsSort, IconChevronDown } from "@tabler/icons-react";
 import "./SortMenu.css";
 
 // The ways to sort, and what each direction means in words
@@ -76,6 +76,9 @@ function SortMenu({ sort, onSort }) {
                     {current.label}
                     <span className="SortMenu-direction">{sort.ascending ? current.up : current.down}</span>
                 </span>
+                {/* When the row's too tight for the words (ShowPage), just
+                    a sort icon */}
+                <IconArrowsSort className="SortMenu-icon" size={16} stroke={2} aria-hidden="true" />
                 <IconChevronDown className="ShowPage-chevron" size={14} stroke={2} aria-hidden="true" />
             </button>
             {open && (

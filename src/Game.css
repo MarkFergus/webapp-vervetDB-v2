@@ -38,7 +38,7 @@
     font-weight: normal;
     text-align: center;
     font-size: 28px;
-    margin: 32px 0 12px; /* room below the vervetDB header */
+    margin: 10px 0 12px; /* (just under the site's top bar) */
 }
 
 /* Setup screen: a line of instructions under the title… */
@@ -791,7 +791,7 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    margin: 14px 0 12px;
+    margin: 4px 0 12px; /* (just under the site's top bar) */
 }
 
 .Game-change {
@@ -974,10 +974,8 @@
 
     .Game-title {
         font-size: 24px;
-        margin: 24px 0 8px;
+        margin: 6px 0 8px;
     }
-
-
 
     .Game-scoreboard {
         margin-bottom: 8px;

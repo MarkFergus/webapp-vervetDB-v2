@@ -53,8 +53,9 @@ function ProfileBookIcon({ busy, size }) {
 //   open: full labels in groups; otherwise just the main icons
 //   over: opened out over the page (narrower screens): a dimmed backdrop,
 //   and picking something, tapping outside or Escape calls onClose
-//   onProfileBook, onOffline, onAbout: open those pop-ups
-export function SideRail({ open, over, onClose, page, onHome, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
+//   onProfileBook, onOffline, onAbout: open those pop-ups; onMap: the
+//   Interactive Map (for now, its "coming soon" notice)
+export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
     useEffect(() => {
         if (!over) return;
         const handleKeyDown = (event) => event.key === "Escape" && onClose();
@@ -72,17 +73,16 @@ export function SideRail({ open, over, onClose, page, onHome, onProfileBook, isG
             <span>{label}</span>
         </a>
     );
-    const button = (onClick, icon, label, props = {}) => (
-        <button type="button" className="SideRail-item" onClick={andClose(onClick)} {...props}>
+    const button = (onClick, icon, label, { className = "SideRail-item", ...props } = {}) => (
+        <button type="button" className={className} onClick={andClose(onClick)} {...props}>
             {icon}
             <span>{label}</span>
         </button>
     );
     // The interactive sanctuary map: coming soon
-    const map = button(null, <IconMap stroke={1.75} size={24} aria-hidden="true" />, open ? "Interactive Map" : "Map", {
-        disabled: true,
+    const map = button(onMap, <IconMap stroke={1.75} size={24} aria-hidden="true" />, open ? "Interactive Map" : "Map", {
         "aria-label": "Interactive Map (coming soon)",
-        title: "Coming soon",
+        className: "SideRail-item is-soon",
     });
     const profileBook = button(
         onProfileBook,
@@ -141,7 +141,8 @@ export function SideRail({ open, over, onClose, page, onHome, onProfileBook, isG
 
 // ---- Phones: the bottom bar ----
 //   onAccount: opens the account pop-up; signedIn: the person shows green
-export function BottomBar({ page, onHome, onAccount, signedIn, inert }) {
+//   onMap: the Interactive Map (for now, its "coming soon" notice)
+export function BottomBar({ page, onHome, onMap, onAccount, signedIn, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -155,7 +156,7 @@ export function BottomBar({ page, onHome, onAccount, signedIn, inert }) {
             {tab(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, IconFence, "Enclosures")}
             {/* The interactive sanctuary map: coming soon */}
-            <button type="button" className="BottomBar-map" disabled aria-label="Interactive Map (coming soon)" title="Coming soon">
+            <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map (coming soon)">
                 <span className="BottomBar-icon" aria-hidden="true">
                     <span className="BottomBar-mapCircle">
                         <IconMap stroke={1.75} size={20} />
@@ -225,6 +226,34 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                 </button>
                 <p className="Drawer-footer">© {YEAR} Vervet Monkey Foundation</p>
             </div>
+        </div>
+    );
+}
+
+// "Interactive Map coming soon": slides up from the bottom when Map is
+// tapped (until the map is built), and goes again with the next tap, key
+// press or scroll anywhere
+export function ComingSoon({ open, onClose }) {
+    useEffect(() => {
+        if (!open) return;
+        const close = () => onClose();
+        const events = ["pointerdown", "keydown", "wheel", "touchmove"];
+        events.forEach((e) => document.addEventListener(e, close, true));
+        window.addEventListener("scroll", close, true);
+        return () => {
+            events.forEach((e) => document.removeEventListener(e, close, true));
+            window.removeEventListener("scroll", close, true);
+        };
+    }, [open]);
+    return (
+        // (read out by screen readers when it appears)
+        <div className="ComingSoon" aria-live="polite">
+            {open && (
+                <p className="ComingSoon-card">
+                    <IconMap stroke={1.75} size={20} aria-hidden="true" />
+                    Interactive Map coming soon
+                </p>
+            )}
         </div>
     );
 }

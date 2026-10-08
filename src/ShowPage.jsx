@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
     IconUsersGroup,
     IconChevronDown,
+    IconFilterOff,
     IconLayoutGrid,
     IconList,
     IconSearchOff,
@@ -472,13 +473,34 @@ function ShowPage({
     useEffect(() => {
         function check() {
             const toolbar = toolbarRef.current;
-            if (toolbar) setNavOutOfView(toolbar.getBoundingClientRect().bottom < 0);
+            // (no toolbar: another page, e.g. the game)
+            setNavOutOfView(Boolean(toolbar) && toolbar.getBoundingClientRect().bottom < 0);
             setScrolled(window.scrollY > 0);
         }
         check();
         window.addEventListener("scroll", check, { passive: true });
         return () => window.removeEventListener("scroll", check);
     }, []);
+    // Too tight for Filters, Sort, the count and the view switch on one
+    // line (narrow phones, long sorts like "Age · Youngest first"): first
+    // Filters loses its word (.is-tight), then Sort becomes just an icon
+    // (.is-compact). Tried with all the words each time first, before the
+    // screen is drawn, so it never flickers.
+    useLayoutEffect(() => {
+        const toolbar = toolbarRef.current;
+        if (!toolbar) return;
+        const tooWide = () => toolbar.scrollWidth > toolbar.clientWidth + 1;
+        function fit() {
+            toolbar.classList.remove("is-tight", "is-compact");
+            if (tooWide()) toolbar.classList.add("is-tight");
+            if (tooWide()) toolbar.classList.add("is-compact");
+        }
+        fit();
+        if (typeof ResizeObserver === "undefined") return;
+        const observer = new ResizeObserver(fit);
+        observer.observe(toolbar);
+        return () => observer.disconnect();
+    }, [sort, filters, visibleMonkeys.length, offList]);
     function scrollToTop() {
         const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
         window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
@@ -608,7 +630,8 @@ function ShowPage({
                         }
                     >
                         <IconAdjustmentsHorizontal size={16} aria-hidden="true" />
-                        Filters
+                        {/* (hidden when the row's too tight: just the icon) */}
+                        <span className="ShowPage-filtersLabel">Filters</span>
                         {activeFilters.length > 0 && (
                             <span className="ShowPage-filtersCount" aria-hidden="true">
                                 {activeFilters.length}
@@ -681,8 +704,16 @@ function ShowPage({
                             <IconX size={14} aria-hidden="true" />
                         </button>
                     ))}
-                    <button type="button" className="ShowPage-clearChips" onClick={clearFilters}>
-                        Clear All
+                    {/* Clear All: the Filters panel's clear icon, in a pink
+                        circle the chips' height */}
+                    <button
+                        type="button"
+                        className="ShowPage-clearChips"
+                        onClick={clearFilters}
+                        aria-label="Clear All"
+                        title="Clear All"
+                    >
+                        <IconFilterOff size={15} aria-hidden="true" />
                     </button>
                 </div>
             )}
@@ -758,7 +789,8 @@ function ShowPage({
             )}
             </>
             )}
-            {navOutOfView && !isAnyModalOpen && (
+            {/* (the monkey list only: not the game or the enclosures) */}
+            {navOutOfView && !offList && !isAnyModalOpen && (
                 <button
                     type="button"
                     className="ShowPage-toTop"

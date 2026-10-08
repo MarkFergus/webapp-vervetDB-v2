@@ -6,7 +6,7 @@ import AccountModal from "./AccountModal";
 import AboutModal from "./AboutModal";
 import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
-import { BottomBar, Drawer, SideRail } from "./NavBars";
+import { BottomBar, ComingSoon, Drawer, SideRail } from "./NavBars";
 import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
@@ -91,6 +91,9 @@ function Nav({
     useEffect(closeRailOver, [page, wide]);
     // Phones: the drawer
     const [drawerOpen, setDrawerOpen] = useState(false);
+    // Map (the side rail or bottom bar): "coming soon" for now
+    const [mapNotice, setMapNotice] = useState(false);
+    const showMapNotice = () => setMapNotice(true);
 
     // The clear button disappears once clicked, so put focus back in the box
     function clearSearch() {
@@ -223,6 +226,7 @@ function Nav({
                 <>
                     <SideRail
                         open={railOpen}
+                        onMap={showMapNotice}
                         over={!wide && railOver}
                         onClose={closeRailOver}
                         page={page}
@@ -236,10 +240,12 @@ function Nav({
                     <BottomBar
                         page={page}
                         onHome={onHome}
+                        onMap={showMapNotice}
                         onAccount={toggleAccount}
                         signedIn={Boolean(user)}
                         inert={barsInert || anyPopUp}
                     />
+                    <ComingSoon open={mapNotice} onClose={() => setMapNotice(false)} />
                     <Drawer
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}

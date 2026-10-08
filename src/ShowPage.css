@@ -53,7 +53,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 12px 12px 4px;
+    /* Phones: close under the top bar */
+    margin: 4px 12px 4px;
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
 }
@@ -204,19 +205,32 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     border-color: white;
 }
 
+/* Clear All: the "filters off" icon in a circle of the site's neon pink,
+   after the chips: the same height and outline as them */
 .ShowPage-clearChips {
-    padding: 3px 6px;
-    font: inherit;
-    font-size: 13px;
-    color: #b6b2a5;
-    background: none;
-    border: none;
+    box-sizing: border-box;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    color: #fe39a4;
+    background-color: rgba(254, 57, 164, 0.1);
+    border: 1px solid #fe39a4;
+    border-radius: 50%;
     cursor: pointer;
 }
 
 .ShowPage-clearChips:hover {
-    color: white;
-    text-decoration: underline;
+    color: #ff6dbb;
+    border-color: #ff6dbb;
+}
+
+.ShowPage-clearChips:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 1px;
 }
 
 .ShowPage-monkeys {
@@ -228,15 +242,11 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 16px;
 }
 
-/* Phones: Filters, Sort and the view switch a little taller, easier to tap */
+/* Phones: a little closer together (the same height as on computers, so
+   nothing changes size as the screen narrows) */
 @media (max-width: 624px) {
     .ShowPage-toolbar {
         gap: 8px;
-    }
-
-    .ShowPage-filtersButton,
-    .ShowPage-count {
-        height: 32px;
     }
 
     /* Room for Filters, Sort, the count and the view switch on one line */
@@ -267,20 +277,28 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 }
 
-/* The narrowest phones: the count's just the number, no ⌄ on Filters and
-   Sort, and the view switch slimmer */
-@media (max-width: 380px) {
-    .ShowPage-count svg,
-    .ShowPage-toolbar .ShowPage-chevron {
-        display: none;
-    }
+/* Too tight for everything on one line (set by ShowPage): Filters is just
+   its icon (and ⌄); tighter still, Sort is just an icon too (SortMenu.css) */
+.ShowPage-toolbar.is-tight .ShowPage-filtersLabel {
+    display: none;
+}
 
+/* The narrowest phones: the view switch slimmer */
+@media (max-width: 380px) {
     .ShowPage-view button {
         width: 28px;
     }
+}
 
-    .ShowPage-view button {
-        height: 26px;
+/* 320px phones (the original iPhone SE): a touch tighter again, so the view
+   switch fits even with a filter count showing */
+@media (max-width: 340px) {
+    .ShowPage-toolbar {
+        gap: 4px;
+    }
+
+    .ShowPage-filtersButton {
+        padding: 0 7px;
     }
 }
 

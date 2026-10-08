@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.3.0",
+        date: "2026-10-08",
+        // a significant release: "Major Update" beside it in About
+        major: true,
+        changes: [
+            "New layout: a side menu on computers, and a bottom bar and ☰ menu on phones",
+            "Improved navigation around the app",
+        ],
+    },
+    {
         version: "1.2.1",
         date: "2026-10-08",
         changes: [

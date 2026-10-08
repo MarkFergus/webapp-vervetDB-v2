@@ -108,10 +108,23 @@ describe("phones: the bottom bar", () => {
     test("Monkeys, Enclosures, Map (coming soon), Game and You", () => {
         setup();
         expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game", "You"]);
-        expect(bar().getByRole("button", { name: "Interactive Map (coming soon)" })).toBeDisabled();
         expect(bar().getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
         expect(bar().getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
         expect(bar().getByRole("link", { name: "Game" })).toHaveAttribute("href", "#game");
+    });
+
+    test("Map: a notice says it's coming soon, gone again at the next tap", async () => {
+        const { user } = setup();
+        const notice = () => screen.queryByText("Interactive Map coming soon");
+        expect(notice()).toBeNull();
+        await user.click(bar().getByRole("button", { name: "Interactive Map (coming soon)" }));
+        expect(notice()).toBeInTheDocument();
+        await user.click(document.querySelector(".ShowPage-monkeys"));
+        expect(notice()).toBeNull();
+        // (a key press puts it away too)
+        await user.click(bar().getByRole("button", { name: "Interactive Map (coming soon)" }));
+        await user.keyboard("{Shift}");
+        expect(notice()).toBeNull();
     });
 
     test("You opens the sign-in pop-up", async () => {
@@ -139,10 +152,11 @@ describe("computers: the side rail", () => {
     const railItems = () => [...rail().querySelectorAll(".SideRail-item")].map((i) => i.textContent);
     const railButton = () => screen.getByRole("button", { name: /side menu/ });
 
-    test("small to start with: Monkeys, Enclosures, Map (coming soon), Profile Book, Game", () => {
+    test("small to start with: Monkeys, Enclosures, Map (coming soon), Profile Book, Game", async () => {
         setup();
         expect(railItems()).toEqual(["Monkeys", "Enclosures", "Map", "Profile Book", "Game"]);
-        expect(within(rail()).getByRole("button", { name: "Interactive Map (coming soon)" })).toBeDisabled();
+        await userEvent.click(within(rail()).getByRole("button", { name: "Interactive Map (coming soon)" }));
+        expect(screen.getByText("Interactive Map coming soon")).toBeInTheDocument();
         expect(within(rail()).getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
         expect(railButton()).toHaveAttribute("aria-expanded", "false");
     });
