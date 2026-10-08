@@ -13,7 +13,7 @@ import OpenSansRegular from "./fonts/OpenSans-Regular.ttf";
 import OpenSansItalic from "./fonts/OpenSans-Italic.ttf";
 import OpenSansBold from "./fonts/OpenSans-Bold.ttf";
 import RussoOne from "./fonts/RussoOne-Regular.ttf";
-import { MONKEY_ICON_PATH, MONKEY_ICON_VIEWBOX } from "./monkeyIconPath";
+import { LOGO_HEIGHT, LOGO_LINE, LOGO_LINE_FONT_SIZE, LOGO_MONKEY, LOGO_NAME, LOGO_WIDTH } from "./logoShapes";
 import { placeLabel, placeName } from "./places";
 
 Font.register({
@@ -50,8 +50,11 @@ Font.registerHyphenationCallback((word) => [word]);
 const PHOTO_WIDTH = 262;
 const PHOTO_HEIGHT = 210;
 
-// Colour of the cover's logo and "vervetDB"
-const BRAND_GREY = "#666";
+// The cover's logo (monkey, vervetDB, Vervet Monkey Foundation), sized so
+// "Vervet Monkey Foundation" prints at 5.5pt; the monkey grey, not blue, to
+// save colour ink when printing
+const COVER_LOGO_SCALE = 5.5 / LOGO_LINE_FONT_SIZE;
+const COVER_MONKEY_GREY = "#666";
 
 const styles = StyleSheet.create({
     document: {
@@ -141,28 +144,17 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    // Logo + "vervetDB" at the bottom of the cover, like the website's nav
+    // The full logo at the bottom of the cover, centred
     coverBrand: {
         position: "absolute",
-        bottom: 48,
+        bottom: 56,
         left: 0,
         right: 0,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "flex-end",
+        alignItems: "center",
     },
-    coverBrandIcon: {
-        width: 22,
-        height: 20,
-        marginRight: 6,
-        // Lifts the icon so its bottom sits on the text baseline rather than
-        // the bottom of the text box (which leaves room for letters like "g")
-        marginBottom: 3.9,
-    },
-    coverBrandName: {
-        fontFamily: "RussoOne",
-        fontSize: 14,
-        color: BRAND_GREY,
+    coverBrandLogo: {
+        width: LOGO_WIDTH * COVER_LOGO_SCALE,
+        height: LOGO_HEIGHT * COVER_LOGO_SCALE,
     },
     coverTitle: {
         fontSize: 36,
@@ -240,18 +232,13 @@ function MonkeyPDF({ sections, title, showTroop = false }) {
                 <Text style={styles.coverSubtitle}>Profile Book</Text>
                 <View style={styles.coverRule} />
                 <Text style={styles.coverDate}>Created {formattedDate}</Text>
+                {/* The logo: logos/vervetDB-logo-stacked-for-light, with a grey monkey */}
                 <View style={styles.coverBrand}>
-                    <Svg
-                        viewBox={MONKEY_ICON_VIEWBOX}
-                        style={styles.coverBrandIcon}
-                    >
-                        <Path
-                            d={MONKEY_ICON_PATH}
-                            fill={BRAND_GREY}
-                            fillRule="evenodd"
-                        />
+                    <Svg viewBox={`0 0 ${LOGO_WIDTH} ${LOGO_HEIGHT}`} style={styles.coverBrandLogo}>
+                        <Path d={LOGO_MONKEY} fill={COVER_MONKEY_GREY} fillRule="evenodd" />
+                        <Path d={LOGO_NAME} fill="#1f1f1f" />
+                        <Path d={LOGO_LINE} fill="#5f5c55" />
                     </Svg>
-                    <Text style={styles.coverBrandName}>vervetDB</Text>
                 </View>
             </Page>
             {/* The pages flow on by themselves; a monkey's row is never split

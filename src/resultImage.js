@@ -1,4 +1,4 @@
-import { MONKEY_ICON_PATH } from "./monkeyIconPath";
+import { MONKEY_ICON_PATH, MONKEY_ICON_WIDTH } from "./monkeyIconPath";
 import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
 
 // The results screen as a square picture (1080 × 1080 PNG) for sharing:
@@ -91,7 +91,7 @@ export async function drawResultImage({
     const brandLeft = (SIZE - (logoWidth + 18 + brandWidth)) / 2;
     ctx.save();
     ctx.translate(brandLeft, 128);
-    ctx.scale(logoWidth / 54, logoWidth / 54);
+    ctx.scale(logoWidth / MONKEY_ICON_WIDTH, logoWidth / MONKEY_ICON_WIDTH);
     ctx.fillStyle = "#d1cfc7";
     ctx.fill(new Path2D(MONKEY_ICON_PATH), "evenodd");
     ctx.restore();
