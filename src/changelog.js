@@ -21,6 +21,18 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.2.1",
+        date: "2026-10-08",
+        changes: [
+            "New previous / next and swipe between enclosure and introcage pages",
+            "New introcage details: Troop Door, Plate Slot and Sleeping Perches",
+            "Added a Troop / Introcage filter",
+            "Added full names for staff, and maintenance accounts",
+            "Improved enclosure pages: new layout, one Monkeys list, quick links",
+            "Improved the sanctuary map: corrected, clearer labels, larger pop-up",
+        ],
+    },
+    {
         version: "1.2.0",
         date: "2026-10-07",
         // a significant release: "Major Update" beside it in About
