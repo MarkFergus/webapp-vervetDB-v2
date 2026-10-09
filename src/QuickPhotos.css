@@ -1,0 +1,357 @@
+/* Add Photos (QuickPhotos.jsx): the edit form's window (MonkeyForm.css),
+   with a list of the chosen photos and "Who is this?" */
+
+.QuickPhotos-window {
+    width: min(94vw, 600px);
+}
+
+/* A computer: photos dragged over the window */
+.QuickPhotos-window.is-dragging {
+    outline: 2px dashed #25c4f8;
+    outline-offset: -6px;
+}
+
+/* (the title takes the focus when it opens, for screen readers: no ring) */
+.QuickPhotos h1:focus {
+    outline: none;
+}
+
+.QuickPhotos-hint {
+    margin: 0;
+}
+
+.QuickPhotos-notice {
+    margin: 0;
+    font-size: 13px;
+    color: #ffe14d;
+}
+
+/* ---- The photos ---- */
+.QuickPhotos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.QuickPhotos-item {
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: 10px 12px;
+    padding: 10px;
+    background-color: #282728;
+    border-radius: 10px;
+}
+
+/* In the site's 5:4 shape: the middle shows, as it will be cropped */
+.QuickPhotos-photo {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+}
+
+.QuickPhotos-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Who's in it: a big target (blue dashed until chosen) */
+.QuickPhotos-choose {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 6px 10px;
+    font-family: "Nunito Sans", sans-serif;
+    text-align: left;
+    color: white;
+    background: none;
+    border: 1px dashed #25c4f8;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.QuickPhotos-choose.is-chosen {
+    border: 1px solid #4a4849;
+}
+
+.QuickPhotos-choose:hover:not(:disabled) {
+    border-color: #25c4f8;
+}
+
+.QuickPhotos-ask {
+    font-size: 15px;
+    font-weight: 700;
+    color: #25c4f8;
+}
+
+.QuickPhotos-face {
+    flex: none;
+    width: 40px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+}
+
+.QuickPhotos-who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.QuickPhotos-name {
+    font-size: 15px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.QuickPhotos-place {
+    font-size: 12px;
+    color: #b6b2a5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Crop · Remove: quiet text buttons */
+.QuickPhotos-tools {
+    display: flex;
+    gap: 14px;
+}
+
+.QuickPhotos-tools button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #b6b2a5;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.QuickPhotos-tools button:hover:not(:disabled) {
+    color: white;
+}
+
+/* No room: pick one of their photos to replace */
+.QuickPhotos-replace {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.QuickPhotos-replace legend {
+    padding: 0;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #ffe14d;
+}
+
+.QuickPhotos-replaceChoices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.QuickPhotos-replaceChoice {
+    position: relative;
+    cursor: pointer;
+}
+
+.QuickPhotos-replaceChoice input {
+    position: absolute;
+    opacity: 0;
+}
+
+.QuickPhotos-replaceChoice img {
+    display: block;
+    width: 64px;
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 6px;
+}
+
+.QuickPhotos-replaceChoice input:checked + img {
+    border-color: #fe39a4;
+    opacity: 0.6;
+}
+
+.QuickPhotos-replaceChoice input:focus-visible + img {
+    outline: 2px solid #25c4f8;
+    outline-offset: 2px;
+}
+
+.QuickPhotos-more {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ---- Saved ---- */
+.QuickPhotos-finished {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.QuickPhotos-savedRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background-color: #282728;
+    border-radius: 10px;
+    color: #e8e6df;
+    font-size: 14px;
+}
+
+.QuickPhotos-tick {
+    flex: none;
+    color: #47b028;
+}
+
+.QuickPhotos-savedText {
+    flex: 1;
+    min-width: 0;
+}
+
+.QuickPhotos-open {
+    padding: 4px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #25c4f8;
+    background: none;
+    border: 1px solid #25c4f8;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.QuickPhotos-open:hover {
+    color: #1f1f1f;
+    background-color: #25c4f8;
+}
+
+/* ---- Who is this? ---- */
+.QuickPhotos-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.QuickPhotos-pickerTop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.QuickPhotos-pickerPhoto {
+    flex: none;
+    width: 90px;
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.QuickPhotos-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 0 12px;
+    color: #8a877e;
+    background-color: #121212;
+    border: 1px solid #4a4849;
+    border-radius: 999px;
+}
+
+.QuickPhotos-search:focus-within {
+    border-color: #25c4f8;
+}
+
+.QuickPhotos-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 0;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: white;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+.QuickPhotos-group h3 {
+    margin: 4px 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+.QuickPhotos-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px;
+    font-family: "Nunito Sans", sans-serif;
+    text-align: left;
+    color: white;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.QuickPhotos-option:hover,
+.QuickPhotos-option:focus-visible {
+    background-color: #2e2d2e;
+}
+
+.QuickPhotos-none {
+    margin: 0;
+    font-size: 14px;
+    color: #b6b2a5;
+}
+
+.QuickPhotos-back {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #25c4f8;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Phones: a smaller photo, so the names have room */
+@media (max-width: 459px) {
+    .QuickPhotos-item {
+        grid-template-columns: 104px 1fr;
+        gap: 8px 10px;
+    }
+}

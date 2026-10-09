@@ -6,7 +6,7 @@ import {
     IconHourglassLow,
     IconInfoCircle,
     IconMap,
-    IconPencil,
+    IconPhotoPlus,
     IconPlus,
     IconUsersGroup,
     IconX,
@@ -20,9 +20,10 @@ import "./NavBars.css";
 // The site's ways around, beside the top bar (Nav.jsx):
 //   SideRail   computers: down the left, YouTube-style. Small (icons with
 //              tiny labels) to start with; ☰ opens it out with full labels.
-//   BottomBar  phones: Monkeys · Enclosures · Map (or Edit) · Game · You
+//   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) · Game · You
 //   Drawer     phones: ☰ (top right) slides it in from the right: Add New
-//              Monkey (admins), Profile Book, Install & Use Offline, About
+//              Monkey (admins), Interactive Map (staff), Profile Book,
+//              Install & Use Offline, About
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
 
 const YEAR = new Date().getFullYear();
@@ -56,7 +57,8 @@ function ProfileBookIcon({ busy, size }) {
 //   and picking something, tapping outside or Escape calls onClose
 //   onProfileBook, onOffline, onAbout: open those pop-ups; onMap: the
 //   Interactive Map (for now, its "coming soon" notice)
-export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
+//   onAddPhotos: staff (editors / admins): Add Photos
+export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
     useEffect(() => {
         if (!over) return;
         const handleKeyDown = (event) => event.key === "Escape" && onClose();
@@ -85,6 +87,9 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
         "aria-label": "Interactive Map (coming soon)",
         className: "SideRail-item is-soon",
     });
+    // Staff: photos already taken, matched to their monkeys
+    const addPhotos =
+        onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos");
     const profileBook = button(
         onProfileBook,
         <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
@@ -110,6 +115,7 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
                     "Enclosures"
                 )}
                 {/* The small rail: the tools straight after (no headings) */}
+                {!open && addPhotos}
                 {!open && map}
                 {!open && profileBook}
                 {!open &&
@@ -119,6 +125,7 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
                 <>
                     <div className="SideRail-group">
                         <h2 className="SideRail-heading">Tools</h2>
+                        {addPhotos}
                         {map}
                         {profileBook}
                         {item(
@@ -144,8 +151,9 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
 //   onAccount: opens the account pop-up; signedIn: the person shows green;
 //   avatarUrl: their photo in its place (still ringed in green)
 //   onMap: the Interactive Map (for now, its "coming soon" notice)
-//   onEdit: on a page they can edit (editors / admins), Edit takes Map's place
-export function BottomBar({ page, onHome, onMap, onEdit, onAccount, signedIn, avatarUrl, inert }) {
+//   onAddPhotos: staff (editors / admins): Add Photos takes Map's place,
+//   opening the photo picker straight away (the quick way in for staff)
+export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedIn, avatarUrl, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -158,15 +166,13 @@ export function BottomBar({ page, onHome, onMap, onEdit, onAccount, signedIn, av
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosureIcon, "Enclosures")}
-            {onEdit ? (
-                // A page they can edit: Edit, in the same circle
-                <button type="button" className="BottomBar-map is-edit" onClick={onEdit} aria-label="Edit this page">
-                    <span className="BottomBar-icon" aria-hidden="true">
-                        <span className="BottomBar-mapCircle">
-                            <IconPencil stroke={1.75} size={20} />
-                        </span>
+            {onAddPhotos ? (
+                // Staff: Add Photos, a bigger green circle that stands out
+                // (no label: its name is read out)
+                <button type="button" className="BottomBar-map is-photos" onClick={onAddPhotos} aria-label="Add Photos">
+                    <span className="BottomBar-photosCircle" aria-hidden="true">
+                        <IconPhotoPlus stroke={1.75} size={26} />
                     </span>
-                    <span aria-hidden="true">Edit</span>
                 </button>
             ) : (
                 // The interactive sanctuary map: coming soon
@@ -199,7 +205,8 @@ export function BottomBar({ page, onHome, onMap, onEdit, onAccount, signedIn, av
 
 // ---- Phones: the drawer from the right ----
 //   onAddMonkey: admins only (Add New Monkey first)
-export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, onOffline, onAbout }) {
+//   onMap: staff only (their bottom bar has Add Photos in Map's place)
+export function Drawer({ open, onClose, onAddMonkey, onMap, onProfileBook, isGeneratingPDF, onOffline, onAbout }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
     if (!open) return null;
@@ -225,6 +232,12 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                     <button type="button" className="Drawer-item" onClick={then(onAddMonkey)}>
                         <IconPlus stroke={1.75} size={22} aria-hidden="true" />
                         Add New Monkey
+                    </button>
+                )}
+                {onMap && (
+                    <button type="button" className="Drawer-item" onClick={then(onMap)}>
+                        <IconMap stroke={1.75} size={22} aria-hidden="true" />
+                        Interactive Map
                     </button>
                 )}
                 <button type="button" className="Drawer-item" onClick={then(onProfileBook)} disabled={isGeneratingPDF}>

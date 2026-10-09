@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.6.0",
+        date: "2026-10-09",
+        changes: [
+            "New Add Photos for staff: upload several photos at once and choose who's in each",
+            "Improved the bottom bar for staff: Add Photos in the middle, Map in the ☰ menu",
+            "Improved the Section filters: Quarantine and Sickbay Care Unit left out for now",
+        ],
+    },
+    {
         version: "1.5.1",
         date: "2026-10-09",
         changes: [

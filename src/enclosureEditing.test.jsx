@@ -137,20 +137,22 @@ describe("editing an enclosure", () => {
         expect(screen.getByText("Established").closest("div")).toHaveTextContent("March 2014");
     });
 
-    test("phones: Edit takes Map's place in the bottom bar, and opens the form", async () => {
+    test("phones: staff have Add Photos in Map's place; the page's own Edit opens the form", async () => {
         const { user } = setup();
         const bar = screen.getByRole("navigation", { name: "Main" });
-        await user.click(await within(bar).findByRole("button", { name: "Edit this page" }));
-        expect(screen.getByRole("dialog", { name: "Edit Robert" })).toBeInTheDocument();
+        expect(await within(bar).findByRole("button", { name: "Add Photos" })).toBeInTheDocument();
         expect(within(bar).queryByRole("button", { name: /Interactive Map/ })).toBeNull();
+        expect(within(bar).queryByRole("button", { name: "Edit this page" })).toBeNull();
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        expect(screen.getByRole("dialog", { name: "Edit Robert" })).toBeInTheDocument();
     });
 
-    test("no Edit there for those who can't edit, or off an enclosure's page: Map instead", async () => {
-        setup({ admin: false });
+    test("no Add Photos for those who can't edit monkeys (maintenance): Map instead", async () => {
+        setup({ role: "maintenance", admin: false });
         await screen.findByRole("heading", { level: 1, name: "Robert" });
         await screen.findByText("Section");
         const bar = screen.getByRole("navigation", { name: "Main" });
-        expect(within(bar).queryByRole("button", { name: "Edit this page" })).toBeNull();
+        expect(within(bar).queryByRole("button", { name: "Add Photos" })).toBeNull();
         expect(within(bar).getByRole("button", { name: /Interactive Map/ })).toBeInTheDocument();
     });
 

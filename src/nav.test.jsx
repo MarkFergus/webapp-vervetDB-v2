@@ -79,7 +79,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true, admin: true });
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Add New Monkey", "Create Profile Book", "Install & Use Offline", "About"]);
+        // (staff: Interactive Map here, as Add Photos has its place in the bottom bar)
+        expect(drawerItems()).toEqual(["Add New Monkey", "Interactive Map", "Create Profile Book", "Install & Use Offline", "About"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
         expect(screen.getByRole("dialog", { name: "Add a monkey" })).toBeInTheDocument();
@@ -89,7 +90,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Create Profile Book", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Interactive Map", "Create Profile Book", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 

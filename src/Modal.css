@@ -123,6 +123,26 @@
     border-color: #4a4849;
 }
 
+/* Phones: Share and Save image are round icon buttons, so they fit on one
+   row with Edit and Photos (their names are still read out) */
+@media (max-width: 459px) {
+    .Modal-edit.is-quiet {
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+    }
+
+    .Modal-edit.is-quiet .Modal-editLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
 .Modal-edit.is-quiet:hover:not(:disabled) {
     color: #25c4f8;
     background: none;

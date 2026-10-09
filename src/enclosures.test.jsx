@@ -13,7 +13,7 @@ import {
 import { fullName, homeName, placeLabel, placeName } from "./places";
 import { monkeyHash } from "./monkeyLink";
 import { sortEnclosures } from "./EnclosuresPage";
-import { inSection } from "./sections";
+import { SECTIONS, inSection } from "./sections";
 
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
 const HB = byName("H&B");
@@ -523,11 +523,10 @@ describe("special enclosures (Bachelor Block, Quarantine)", () => {
         expect(sizeRank(sized.find((e) => e.name === "Goliath"), sized)).toBe(1);
     });
 
-    test("filtering by section: the care areas are each a section of their own", () => {
-        expect(inSection("Quarantine", ["quarantine"])).toBe(true);
-        expect(inSection("Quarantine", ["sickbay"])).toBe(false);
+    test("filtering by section: Baby Care is a section of its own; Quarantine and Sickbay Care Unit aren't filters", () => {
         expect(inSection("Baby Care", ["babyCare"])).toBe(true);
-        expect(inSection("Sickbay Care Unit", ["sickbayCareUnit"])).toBe(true);
+        expect(SECTIONS.map((s) => s.label)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Baby Care", "Bandits"]);
+        expect(inSection("Quarantine", ["sickbay"])).toBe(false);
         expect(inSection("Sickbay Care Unit", ["sickbay"])).toBe(false);
         expect(inSection("Bachelor Block", ["top"])).toBe(true);
     });

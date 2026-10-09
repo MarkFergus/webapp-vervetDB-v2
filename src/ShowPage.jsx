@@ -16,11 +16,19 @@ import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
 import Modal from "./Modal";
 import MonkeyForm from "./MonkeyForm";
+import QuickPhotos from "./QuickPhotos";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
 import { fullName, homeName, inIntrocage, placeName } from "./places";
-import { isEnclosuresRoute, placeHash } from "./enclosures";
+import {
+    enclosureFromRoute,
+    introcageMonkeys,
+    isEnclosuresRoute,
+    placeHash,
+    residents,
+    troopMonkeys,
+} from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
 import Game from "./Game";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
@@ -157,9 +165,6 @@ function ShowPage({
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
     // On the Enclosures pages (only once the database has enclosures)
-    // A page that can be edited (an enclosure, for admins): its Edit, which
-    // takes Map's place in the bottom bar (phones)
-    const [pageEdit, setPageEdit] = useState(null);
     const enclosureEditing = {
         canEdit: canEdit && enclosuresLive,
         // the maintenance log: any role, maintenance accounts too
@@ -169,7 +174,6 @@ function ShowPage({
         canDelete: canEdit && enclosuresLive && isAdmin,
         live: enclosuresLive && editable,
         onSaved: onEnclosureSaved,
-        setPageEdit,
     };
     const [searchValue, setSearchValue] = useState("");
     // Filters: { location, section, troop, year, age, sex } (see FilterPanel)
@@ -198,6 +202,14 @@ function ShowPage({
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedMonkey, setSelectedMonkey] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // Monkeys opened lately (their ids, newest first), for Add Photos'
+    // suggestions: each monkey opened goes to the front
+    const recentIds = useRef([]);
+    useEffect(() => {
+        const id = isModalOpen ? selectedMonkey?.id : null;
+        if (id == null) return;
+        recentIds.current = [id, ...recentIds.current.filter((x) => x !== id)].slice(0, 10);
+    }, [isModalOpen, selectedMonkey]);
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -208,6 +220,12 @@ function ShowPage({
     }, [passwordSetup]);
     // The edit / add form: null when closed, else { monkey } (null = adding)
     const [editing, setEditing] = useState(null);
+    // Add Photos (staff): null when closed, else { files, current, place }
+    // (see QuickPhotos). The photo picker is here, always on the page, so
+    // the chosen photos arrive even after the menu that opened it has gone.
+    const [quickPhotos, setQuickPhotos] = useState(null);
+    const photoPickerRef = useRef(null);
+    const photoContext = useRef(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState(null); // { done, total }
     const [pdfError, setPdfError] = useState(null);
@@ -380,6 +398,32 @@ function ShowPage({
     function startAdd() {
         setEditing({ monkey: null });
     }
+    // Add Photos: the phone's photo picker (or a computer's files) opens
+    // straight away. current: the monkey it's for (from its pop-up), or null.
+    function startAddPhotos(current = null) {
+        // The enclosure / introcage page it's opened on: its monkeys first
+        const page = onEnclosures ? enclosureFromRoute(route, enclosures) : null;
+        const place = page && {
+            name: page.name,
+            monkeys:
+                page.type === "introcage"
+                    ? residents(page, monkeys)
+                    : [...troopMonkeys(page, monkeys), ...introcageMonkeys(page, monkeys)],
+        };
+        photoContext.current = { current, place };
+        photoPickerRef.current?.click();
+    }
+    function photosChosen(event) {
+        const files = [...event.target.files];
+        event.target.value = ""; // (so the same photos can be chosen again)
+        if (!files.length) return;
+        // From a monkey's pop-up: it closes, as for Edit
+        if (isModalOpen) {
+            setIsModalOpen(false);
+            leaveAddress();
+        }
+        setQuickPhotos({ files, ...photoContext.current });
+    }
     // Saved: update the list, then show the monkey (with its new details)
     function handleSaved(saved) {
         onMonkeySaved(saved);
@@ -543,7 +587,13 @@ function ShowPage({
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
     const isAnyModalOpen =
-        isModalOpen || isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen || Boolean(editing);
+        isModalOpen ||
+        isPDFModalOpen ||
+        isAccountOpen ||
+        isAboutOpen ||
+        isOfflineOpen ||
+        Boolean(editing) ||
+        Boolean(quickPhotos);
 
     return (
         <div className="ShowPage">
@@ -561,12 +611,13 @@ function ShowPage({
                             : { number: selectedIndex + 1, total: neighbours.length }
                     }
                     onEdit={canEdit ? startEdit : undefined}
+                    onAddPhotos={canEdit ? startAddPhotos : undefined}
                     placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}
                 />
             </div>
             <div
                 className={scrolled ? "ShowPage-nav is-scrolled" : "ShowPage-nav"}
-                inert={isModalOpen || Boolean(editing)}
+                inert={isModalOpen || Boolean(editing) || Boolean(quickPhotos)}
             >
                 <Nav
                     createPDF={createPDF}
@@ -594,7 +645,7 @@ function ShowPage({
                     isOfflineOpen={isOfflineOpen}
                     toggleOffline={() => setIsOfflineOpen((open) => !open)}
                     onAddMonkey={canAdd ? startAdd : undefined}
-                    onEdit={onEnclosures ? pageEdit : null}
+                    onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
                     page={onGame ? "game" : onEnclosures ? "enclosures" : "monkeys"}
@@ -816,6 +867,32 @@ function ShowPage({
                     setIsAccountOpen(true);
                 }}
             />
+            {/* Add Photos' photo picker: photos already taken (or, on most
+                phones, a new one) */}
+            <input
+                ref={photoPickerRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={photosChosen}
+                data-testid="add-photos-picker"
+            />
+            {quickPhotos && (
+                <QuickPhotos
+                    files={quickPhotos.files}
+                    monkeys={monkeys}
+                    current={quickPhotos.current}
+                    place={quickPhotos.place}
+                    recent={recentIds.current.map((id) => monkeys.find((m) => m.id === id)).filter(Boolean)}
+                    onSaved={onMonkeySaved}
+                    onOpenMonkey={(m) => {
+                        setQuickPhotos(null);
+                        openModal(m);
+                    }}
+                    onClose={() => setQuickPhotos(null)}
+                />
+            )}
             {editing && (
                 <MonkeyForm
                     // key: a fresh form for each monkey

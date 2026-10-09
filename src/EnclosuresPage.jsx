@@ -445,18 +445,11 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
 // editing: { canEdit (editors, with the database live), canLog (any role:
 //   adding to the maintenance log),
 //   canEditDetails (admins: About, Features, Size, Established), canDelete (admins),
-//   onSaved(enclosure), setPageEdit (hands the page's Edit to the bottom bar) }
+//   onSaved(enclosure) }
 //   steps: previous / next (stepsFrom), or null; onStep(direction)
 //   slideFrom: arrived by stepping ("prev" / "next"): slides in from that side
 function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing, steps, onStep, slideFrom }) {
     const [isEditing, setIsEditing] = useState(false);
-    // Phones: the bottom bar's middle button becomes Edit here
-    const { canEditDetails, setPageEdit } = editing;
-    useEffect(() => {
-        if (!canEditDetails || !setPageEdit) return;
-        setPageEdit(() => () => setIsEditing(true));
-        return () => setPageEdit(null);
-    }, [canEditDetails, setPageEdit]);
     const isIntrocage = enclosure.type === "introcage";
     // Touch screens: swipe sideways anywhere on the page for the previous /
     // next one (the photos swipe through themselves, so not on those)

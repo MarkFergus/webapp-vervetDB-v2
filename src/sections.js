@@ -15,10 +15,10 @@ export const SECTIONS = [
     },
     { id: "sickbay", label: "Sickbay", chip: "Sickbay section", troops: ["James", "Global"] },
     // The care areas for new intakes: not in a section, so each a "section"
-    // of its own
+    // of its own. Just Baby Care for now: Quarantine and Sickbay Care Unit
+    // aren't needed as filters here (user, 2026-10-09), so they're left out
+    // (choosing any section leaves their monkeys out)
     { id: "babyCare", label: "Baby Care", chip: "Baby Care", troops: ["Baby Care"] },
-    { id: "quarantine", label: "Quarantine", chip: "Quarantine", troops: ["Quarantine"] },
-    { id: "sickbayCareUnit", label: "Sickbay Care Unit", chip: "Sickbay Care Unit", troops: ["Sickbay Care Unit"] },
     // The wild troop at the sanctuary: not in a section, so a "section" of its own
     { id: "bandits", label: "Bandits", chip: "Bandits", troops: ["Bandits"] },
 ];

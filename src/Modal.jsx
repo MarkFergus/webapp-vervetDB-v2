@@ -10,6 +10,7 @@ import {
     IconPencil,
     IconShare,
     IconCameraPlus,
+    IconPhotoPlus,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -32,6 +33,7 @@ function Modal({
     prevMonkey,
     nextMonkey,
     onEdit, // given only to editors: shows the Edit button
+    onAddPhotos, // editors too: Add Photos, for this monkey
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
 }) {
@@ -313,8 +315,8 @@ function Modal({
                                         </p>
                                     </section>
                                 </div>
-                                {/* Edit (editors only) on the left; Share and
-                                    Save image on the right */}
+                                {/* Edit and Photos (editors only) on the left;
+                                    Share and Save image on the right */}
                                 <div className="Modal-footer">
                                     {onEdit && (
                                         <button
@@ -329,10 +331,22 @@ function Modal({
                                             Edit
                                         </button>
                                     )}
+                                    {onAddPhotos && (
+                                        <button
+                                            type="button"
+                                            className="Modal-edit"
+                                            onClick={() => onAddPhotos(monkey)}
+                                            aria-label={`Add photos of ${monkey.name}`}
+                                        >
+                                            <IconPhotoPlus size={18} aria-hidden="true" />
+                                            Photos
+                                        </button>
+                                    )}
                                     <span className="Modal-footer-spacer" />
                                     <button type="button" className="Modal-edit is-quiet" onClick={shareMonkey}>
                                         <IconShare size={18} aria-hidden="true" />
-                                        {shareStatus === "copied" ? "Link copied!" : "Share"}
+                                        {/* (phones: just the icon, so the buttons fit one row) */}
+                                        <span className="Modal-editLabel">{shareStatus === "copied" ? "Link copied!" : "Share"}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -341,7 +355,7 @@ function Modal({
                                         disabled={shareStatus === "saving"}
                                     >
                                         <IconDownload size={18} aria-hidden="true" />
-                                        {shareStatus === "saving" ? "Saving…" : "Save image"}
+                                        <span className="Modal-editLabel">{shareStatus === "saving" ? "Saving…" : "Save image"}</span>
                                     </button>
                                 </div>
                                 <ImagePreview image={preview} onClose={() => setPreview(null)} />

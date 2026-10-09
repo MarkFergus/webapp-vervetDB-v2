@@ -55,7 +55,7 @@ function Nav({
     isOfflineOpen,
     toggleOffline,
     onAddMonkey, // admins only: "+ Add" (computers), Add New Monkey (the drawer)
-    onEdit, // a page that can be edited: Edit in place of Map (the bottom bar)
+    onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
     showSearch = true, // false: no search box (the game)
@@ -227,6 +227,7 @@ function Nav({
                     <SideRail
                         open={railOpen}
                         onMap={showMapNotice}
+                        onAddPhotos={onAddPhotos}
                         over={!wide && railOver}
                         onClose={closeRailOver}
                         page={page}
@@ -241,7 +242,7 @@ function Nav({
                         page={page}
                         onHome={onHome}
                         onMap={showMapNotice}
-                        onEdit={onEdit}
+                        onAddPhotos={onAddPhotos}
                         onAccount={toggleAccount}
                         signedIn={Boolean(user)}
                         avatarUrl={avatarUrl}
@@ -252,6 +253,8 @@ function Nav({
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
+                        // (staff: Map's place in the bottom bar is Add Photos)
+                        onMap={onAddPhotos ? showMapNotice : undefined}
                         onProfileBook={togglePDFModal}
                         isGeneratingPDF={isGeneratingPDF}
                         onOffline={toggleOffline}

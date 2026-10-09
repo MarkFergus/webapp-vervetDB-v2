@@ -224,6 +224,17 @@ export async function saveMonkey(monkey, troopIds, id) {
     return toAppMonkey(data);
 }
 
+// Saves just a monkey's photos (Add Photos), leaving everything else as it
+// is in the database. Returns the saved monkey (site shape).
+export async function saveMonkeyPhotos(id, photos) {
+    const { data, error } = await supabase.from("monkeys").update({ photos }).eq("id", id).select(monkeyColumns).single();
+    if (error) {
+        console.error("Saving photos failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppMonkey(data);
+}
+
 // Deletes a monkey for good
 export async function deleteMonkey(id) {
     const { data, error } = await supabase
