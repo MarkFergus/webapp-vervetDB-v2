@@ -155,6 +155,13 @@
     }
 }
 
+/* Computers: 16px from the side rail, like the monkey list */
+@media (min-width: 690px) {
+    .Enclosures {
+        padding-left: 16px;
+    }
+}
+
 .EnclosureCard-link {
     display: flex;
     flex-direction: column;

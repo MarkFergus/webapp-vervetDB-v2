@@ -354,10 +354,17 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 }
 
-/* Computers: the top bar's ☰ lines up over the side rail's icons */
+/* Computers: the top bar's ☰ lines up over the side rail's icons, and the
+   page sits 16px from the side rail (EnclosuresPage.css too) */
 @media (min-width: 690px) {
     .ShowPage-nav {
         padding-left: 16px;
+    }
+
+    .ShowPage-toolbar,
+    .ShowPage-chips,
+    .ShowPage-monkeys {
+        margin-left: 16px;
     }
 }
 
