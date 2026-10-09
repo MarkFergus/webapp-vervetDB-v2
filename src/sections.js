@@ -1,5 +1,6 @@
 // The sanctuary's sections and the troops in each, and the special
-// enclosures (Bachelor Block, Quarantine: their monkeys are in their cages).
+// enclosures (Bachelor Block, and the care areas for new intakes: their
+// monkeys are in their cages / areas).
 // Used by the Filters panel's Location filter. A troop added later shows
 // under "All Sections" until it's put in a section here.
 //   chip: how a chosen section reads in the filter chips under the toolbar
@@ -12,7 +13,12 @@ export const SECTIONS = [
         chip: "Bottom section",
         troops: ["Skrow", "Robert", "Skunkey", "H&B", "Jalamango"],
     },
-    { id: "sickbay", label: "Sickbay", chip: "Sickbay section", troops: ["James", "Global", "Quarantine"] },
+    { id: "sickbay", label: "Sickbay", chip: "Sickbay section", troops: ["James", "Global"] },
+    // The care areas for new intakes: not in a section, so each a "section"
+    // of its own
+    { id: "babyCare", label: "Baby Care", chip: "Baby Care", troops: ["Baby Care"] },
+    { id: "quarantine", label: "Quarantine", chip: "Quarantine", troops: ["Quarantine"] },
+    { id: "sickbayCareUnit", label: "Sickbay Care Unit", chip: "Sickbay Care Unit", troops: ["Sickbay Care Unit"] },
     // The wild troop at the sanctuary: not in a section, so a "section" of its own
     { id: "bandits", label: "Bandits", chip: "Bandits", troops: ["Bandits"] },
 ];

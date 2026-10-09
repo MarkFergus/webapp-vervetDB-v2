@@ -61,10 +61,12 @@ function MonkeyForm({
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
     // A new enclosure: with its troop to start with
-    // (a special enclosure has no troop: a cage needs choosing)
+    // (a special enclosure has no troop: a cage needs choosing, unless it
+    // has only one, like Sickbay Care Unit)
     const chooseEnclosure = (event) => {
         const chosen = choices.find((c) => c.key === event.target.value);
-        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.special ? "troop" : "" });
+        const onlyArea = chosen?.special && chosen.introcages.length === 1 ? String(chosen.introcages[0].id) : "";
+        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.special ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
 

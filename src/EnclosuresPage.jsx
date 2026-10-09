@@ -33,8 +33,10 @@ import {
     ENCLOSURES_HASH,
     enclosureFromRoute,
     enclosureHash,
+    isCareArea,
     establishedText,
     introcageMonkeys,
+    introcageWord,
     introcagesOf,
     monkeyCount,
     residents,
@@ -329,7 +331,8 @@ export const ENCLOSURE_SORTS = [
 export const DEFAULT_ENCLOSURE_SORT = { key: "section", ascending: true };
 
 // The troop enclosures, sorted. inOrder: in section order (ties keep it);
-// sizes not recorded go last, whichever way round.
+// sizes not recorded go last, whichever way round, and so do the care areas
+// for new intakes (each a "section" of its own) by section.
 export function sortEnclosures(inOrder, sort, monkeys) {
     const place = new Map(inOrder.map((e, i) => [e, i]));
     const count = new Map(inOrder.map((e) => [e, monkeyCount(e, monkeys)]));
@@ -337,6 +340,7 @@ export function sortEnclosures(inOrder, sort, monkeys) {
     // sections round, each one's enclosures staying in their usual order
     const sectionOrder = [...new Set(inOrder.map((e) => e.section))];
     const sectionOf = (e) => sectionOrder.indexOf(e.section);
+    const ownSection = (e) => e.section === e.name;
     const flip = sort.ascending ? 1 : -1;
     const compare = {
         // (by the names shown: "Dino & Daniel", not "D&D")
@@ -348,6 +352,8 @@ export function sortEnclosures(inOrder, sort, monkeys) {
     return [...inOrder].sort((a, b) => {
         if (sort.key === "size" && (a.size == null) !== (b.size == null)) return a.size == null ? 1 : -1;
         if (sort.key === "size" && a.size == null) return place.get(a) - place.get(b);
+        if (sort.key === "section" && ownSection(a) !== ownSection(b)) return ownSection(a) ? 1 : -1;
+        if (sort.key === "section" && ownSection(a)) return place.get(a) - place.get(b);
         return flip * compare(a, b) || place.get(a) - place.get(b);
     });
 }
@@ -393,7 +399,7 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
                                         <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
                                         <span className="EnclosureCard-meta">
                                             {plural(living.length, enclosure.special ? "monkey" : "troop monkey")} ·{" "}
-                                            {plural(introcagesOf(enclosure, enclosures).length, "introcage")}
+                                            {plural(introcagesOf(enclosure, enclosures).length, introcageWord(enclosure))}
                                             {/* Sorted by size: each one's size too */}
                                             {sort.key === "size" && enclosure.size != null && ` · ${sizeText(enclosure.size)}`}
                                         </span>
@@ -493,6 +499,8 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
             document.getElementById(jumpId(key))?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
         });
     }
+    // A care area's introcages are its "Areas"
+    const introcagesTitle = isCareArea(enclosure) ? "Areas" : "Introcages";
     // In the page's order (an introcage: its monkeys before Maintenance)
     const maintenanceJump = { key: "maintenance", label: "Maintenance", icon: IconTool };
     const jumps = isIntrocage
@@ -504,7 +512,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
         : [
               { key: "map", label: "Map", icon: IconMap },
               ...(introcages.length
-                  ? [{ key: "introcages", label: "Introcages", icon: IconCube }]
+                  ? [{ key: "introcages", label: introcagesTitle, icon: IconCube }]
                   : []),
               maintenanceJump,
               { key: "monkeys", label: "Monkeys", icon: IconUsersGroup },
@@ -574,7 +582,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <dd>{inIntrocages.length}</dd>
                                 </div>
                                 <div>
-                                    <dt>Introcages</dt>
+                                    <dt>{introcagesTitle}</dt>
                                     <dd>{introcages.length}</dd>
                                 </div>
                                 <div>
@@ -614,8 +622,17 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <IconMapPin size={16} aria-hidden="true" />
                                     Section
                                 </dt>
-                                {/* e.g. "Top Section" */}
-                                <dd>{enclosure.section ? `${enclosure.section} Section` : <span className="Enclosures-unset">Not set</span>}</dd>
+                                {/* e.g. "Top Section"; a care area for new intakes (a
+                                    "section" of its own): "No Section" */}
+                                <dd>
+                                    {!enclosure.section ? (
+                                        <span className="Enclosures-unset">Not set</span>
+                                    ) : enclosure.section === (parent ?? enclosure).name ? (
+                                        "No Section"
+                                    ) : (
+                                        `${enclosure.section} Section`
+                                    )}
+                                </dd>
                             </div>
                             {!isIntrocage && (
                                 <div>
@@ -680,7 +697,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                 </div>
 
                 {!isIntrocage && introcages.length > 0 && (
-                    <Fold title="Introcages" count={introcages.length} {...foldProps("introcages")}>
+                    <Fold title={introcagesTitle} count={introcages.length} {...foldProps("introcages")}>
                         <IntrocageList introcages={introcages} monkeys={monkeys} />
                     </Fold>
                 )}

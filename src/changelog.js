@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.5.1",
+        date: "2026-10-09",
+        changes: [
+            "Added care areas for new intakes: Baby Care and Sickbay Care Unit",
+            "Improved Quarantine: now a care area, no longer in the Sickbay section",
+            "Added a Section filter for each care area",
+        ],
+    },
+    {
         version: "1.5.0",
         date: "2026-10-09",
         // a significant release: "Major Update" beside it in About

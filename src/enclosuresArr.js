@@ -12,7 +12,10 @@
 //     introcages only: troopDoor, plateSlot (true / false / null = not
 //     recorded), sleepingPerches (1–10 or null) }
 
-export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay"];
+// (Baby Care, Quarantine and Sickbay Care Unit: the care areas for new
+// intakes, not real sections but each a "section" of its own, holding just
+// itself: supabase/care-areas.sql)
+export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay", "Baby Care", "Quarantine", "Sickbay Care Unit"];
 
 // Troop enclosure → its section and introcage codes, in order
 const LAYOUT = [
@@ -33,11 +36,16 @@ const LAYOUT = [
     ["James", "Sickbay", ["A", "B"]],
 ];
 
-// Special enclosures (not a troop's home: supabase/special-enclosures.sql),
-// listed after the troop enclosures in their sections, with their cages
+// Special enclosures (not a troop's home: supabase/special-enclosures.sql
+// and care-areas.sql), listed after the troop enclosures in their sections,
+// with their cages / areas (full names; Sickbay Care Unit is one area,
+// named the same as itself)
+const cages = (name, codes) => codes.map((code) => `${name} ${code}`);
 const SPECIAL = [
-    ["Bachelor Block", "Top", ["A", "B"]],
-    ["Quarantine", "Sickbay", ["A", "B", "C", "D", "E", "F"]],
+    ["Bachelor Block", "Top", cages("Bachelor Block", ["A", "B"])],
+    ["Quarantine", "Quarantine", cages("Quarantine", ["A", "B", "C", "D", "E", "F"])],
+    ["Baby Care", "Baby Care", ["Dreamland", "Neverland", "Disneyland"]],
+    ["Sickbay Care Unit", "Sickbay Care Unit", ["Sickbay Care Unit"]],
 ];
 
 // Introcages with their own name instead of "<enclosure> <code>"
@@ -56,7 +64,7 @@ function build() {
         list.push({ ...blank, id: ++id, name, type: "troop", parentId: null, section, sortOrder: i + 1 });
     });
     LAYOUT.forEach(([name, , codes]) => {
-        const parent = list.find((e) => e.name === name);
+        const parent = list.find((e) => e.type === "troop" && e.name === name);
         codes.forEach((code, i) => {
             list.push({
                 ...blank,
@@ -75,14 +83,14 @@ function build() {
     });
     // The special enclosures and their cages (ids after the others, so
     // theirs stay the same)
-    SPECIAL.forEach(([name, section, codes], i) => {
+    SPECIAL.forEach(([name, section, areas], i) => {
         const parent = { ...blank, id: ++id, name, type: "troop", parentId: null, section, sortOrder: 100 + i, special: true };
         list.push(parent);
-        codes.forEach((code, j) => {
+        areas.forEach((area, j) => {
             list.push({
                 ...blank,
                 id: ++id,
-                name: `${name} ${code}`,
+                name: area,
                 type: "introcage",
                 troopDoor: null,
                 plateSlot: null,

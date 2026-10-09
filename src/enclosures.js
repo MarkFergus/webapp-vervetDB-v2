@@ -53,6 +53,14 @@ export const introcageMonkeys = (enclosure, monkeys) =>
 export const monkeyCount = (enclosure, monkeys) =>
     (enclosure.special ? introcageMonkeys(enclosure, monkeys) : troopMonkeys(enclosure, monkeys)).length;
 
+// A care area for new intakes (Baby Care, Quarantine, Sickbay Care Unit):
+// a special enclosure that's a "section" of its own (no real section)
+export const isCareArea = (enclosure) => Boolean(enclosure.special) && enclosure.section === enclosure.name;
+
+// What its introcages are called on screen: a care area's are "areas"
+// (Dreamland, Quarantine A), everyone else's "introcages"
+export const introcageWord = (enclosure) => (isCareArea(enclosure) ? "area" : "introcage");
+
 // Who's in one introcage
 export const residents = (introcage, monkeys) => monkeys.filter((m) => m.introcage === introcage.name).sort(byName);
 

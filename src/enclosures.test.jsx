@@ -88,10 +88,10 @@ describe("where a monkey lives", () => {
         expect(averageAge([{ year: "" }], today)).toBeNull();
     });
 
-    test("the built-in list: 17 enclosures (2 special) and 81 introcages, introcages in their enclosure's section", () => {
-        expect(enclosuresArr.filter((e) => e.type === "troop")).toHaveLength(17);
-        expect(enclosuresArr.filter((e) => e.special).map((e) => e.name)).toEqual(["Bachelor Block", "Quarantine"]);
-        expect(enclosuresArr.filter((e) => e.type === "introcage")).toHaveLength(81);
+    test("the built-in list: 19 enclosures (4 special) and 85 introcages, introcages in their enclosure's section", () => {
+        expect(enclosuresArr.filter((e) => e.type === "troop")).toHaveLength(19);
+        expect(enclosuresArr.filter((e) => e.special).map((e) => e.name)).toEqual(["Bachelor Block", "Quarantine", "Baby Care", "Sickbay Care Unit"]);
+        expect(enclosuresArr.filter((e) => e.type === "introcage")).toHaveLength(85);
         expect(HB_C1.section).toBe("Bottom");
     });
 });
@@ -103,18 +103,19 @@ describe("the Enclosures list", () => {
         expect(screen.getByPlaceholderText("Name or chip number")).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 1, name: "Enclosures" })).toBeInTheDocument();
         // The totals: a pill (shorter) beside Sort, the full words for screen readers
-        expect(screen.getByText("17 enclosures · 81 introcages")).toHaveClass("visually-hidden");
-        expect(screen.getByText("17 enclosures")).toBeInTheDocument();
-        expect(screen.getByText("81 introcages")).toBeInTheDocument();
+        expect(screen.getByText("19 enclosures · 85 introcages")).toHaveClass("visually-hidden");
+        expect(screen.getByText("19 enclosures")).toBeInTheDocument();
+        expect(screen.getByText("85 introcages")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Sort: Section, Top first" })).toBeInTheDocument();
-        // No section headings; Top first, Sickbay last
+        // No section headings; Top first, then Sickbay, then the care areas
         expect(screen.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
         // (the names wrap only after the "&": read with plain spaces)
         const names = screen.getAllByRole("article").map((a) => a.querySelector(".EnclosureCard-name").textContent.replace(/ /g, " "));
-        expect(names).toHaveLength(17);
-        // The special enclosures after their sections' troop enclosures
+        expect(names).toHaveLength(19);
+        // The special enclosures after their sections' troop enclosures; the
+        // care areas (each a "section" of its own) last
         expect(names.slice(0, 5)).toEqual(["Goliath", "Gismo", "Dino & Daniel", "Royal", "Bachelor Block"]);
-        expect(names.slice(-3)).toEqual(["Global", "James", "Quarantine"]);
+        expect(names.slice(-5)).toEqual(["Global", "James", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
         // The monkey list's Filters bar isn't shown here
         expect(screen.queryByRole("button", { name: /^Filters/ })).toBeNull();
     });
@@ -244,7 +245,7 @@ describe("stepping through the records (previous / next, swipe)", () => {
         const steps = stepsFrom(HB_C1, enclosuresArr, SECTION_NAMES);
         expect(steps.prev.name).toBe("H&B B");
         expect(steps.next.name).toBe("H&B C2");
-        expect(steps.total).toBe(81);
+        expect(steps.total).toBe(85);
         // The last of H&B's: on to the next enclosure's first
         const fromC2 = stepsFrom(byName("H&B C2"), enclosuresArr, SECTION_NAMES);
         expect(fromC2.next).toBe(introcageOrder[introcageOrder.indexOf(byName("H&B C2")) + 1]);
@@ -254,15 +255,15 @@ describe("stepping through the records (previous / next, swipe)", () => {
 
     test("troop enclosures go through the troop enclosures", () => {
         const steps = stepsFrom(troopOrder[0], enclosuresArr, SECTION_NAMES);
-        expect(steps).toMatchObject({ number: 1, total: 17, next: troopOrder[1], prev: troopOrder.at(-1) });
+        expect(steps).toMatchObject({ number: 1, total: 19, next: troopOrder[1], prev: troopOrder.at(-1) });
     });
 
     afterEach(() => window.history.replaceState(null, "", window.location.pathname));
 
-    test("arrows either side of \"N of 81\" go to the previous / next introcage", async () => {
+    test("arrows either side of \"N of 85\" go to the previous / next introcage", async () => {
         const { user } = showPage(`enclosure/${HB_C1.id}`);
         const steps = screen.getByRole("navigation", { name: "Other introcages" });
-        expect(steps).toHaveTextContent(`${introcageOrder.indexOf(HB_C1) + 1} of 81`);
+        expect(steps).toHaveTextContent(`${introcageOrder.indexOf(HB_C1) + 1} of 85`);
         await user.click(within(steps).getByRole("link", { name: "Next introcage: Holt & Barrington C2" }));
         expect(window.location.hash).toBe(enclosureHash(byName("H&B C2")));
         await user.click(within(steps).getByRole("link", { name: "Previous introcage: Holt & Barrington B" }));
@@ -354,11 +355,15 @@ describe("the sanctuary map", () => {
         const { mapLabel, SECTION_COLOURS } = await import("./SanctuaryMap");
         expect(mapLabel("Robert")).toBe("Robert troop");
         expect(mapLabel("D&D")).toBe("Dino & Daniel troop");
-        expect(Object.keys(SECTION_COLOURS)).toEqual(["Top", "Middle", "Bottom", "Sickbay"]);
-        // Every troop enclosure has a shape by that name in the map
+        expect(Object.keys(SECTION_COLOURS)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+        // The care areas for new intakes share one purple
+        expect(new Set([SECTION_COLOURS["Baby Care"], SECTION_COLOURS.Quarantine, SECTION_COLOURS["Sickbay Care Unit"]]).size).toBe(1);
+        // Every troop enclosure has a shape by that name in the map (not
+        // Baby Care and Sickbay Care Unit yet: still to be labelled)
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        for (const e of enclosuresArr.filter((x) => x.type === "troop")) {
+        const notYet = ["Baby Care", "Sickbay Care Unit"];
+        for (const e of enclosuresArr.filter((x) => x.type === "troop" && !notYet.includes(x.name))) {
             expect(svg, e.name).toContain(`inkscape:label="${mapLabel(e.name)}"`);
         }
     });
@@ -429,11 +434,11 @@ describe("sorting the Enclosures list", () => {
         expect(cardNames()).toEqual([...sorted].reverse());
     });
 
-    test("Section the other way: Sickbay first, each section's enclosures in their usual order", async () => {
+    test("Section the other way: Sickbay first, each section's enclosures in their usual order, the care areas still last", async () => {
         const { user } = setup();
         await chooseSort(user, "Section, Sickbay first");
         expect(cardNames().slice(0, 2)).toEqual(["Global", "James"]);
-        expect(cardNames().slice(-5)).toEqual(["Goliath", "Gismo", "Dino & Daniel", "Royal", "Bachelor Block"]);
+        expect(cardNames().slice(-8)).toEqual(["Goliath", "Gismo", "Dino & Daniel", "Royal", "Bachelor Block", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
     });
 
     test("Size: largest first (with each size on its card), unrecorded last; then smallest first", async () => {
@@ -443,7 +448,7 @@ describe("sorting the Enclosures list", () => {
         expect(screen.getAllByRole("article")[0]).toHaveTextContent("1,200 m²");
         await chooseSort(user, "Size, Smallest first");
         expect(cardNames().slice(0, 3)).toEqual(["James", "Robert", "Goliath"]);
-        expect(cardNames()).toHaveLength(17);
+        expect(cardNames()).toHaveLength(19);
     });
 
     test("Monkeys: most troop monkeys first, then fewest", async () => {
@@ -490,7 +495,8 @@ describe("special enclosures (Bachelor Block, Quarantine)", () => {
     test("its card counts the monkeys in its cages", () => {
         showWith("enclosures");
         const card = screen.getAllByRole("article").find((a) => a.textContent.includes("Quarantine"));
-        expect(card).toHaveTextContent(/2 monkeys · 6 introcages/i);
+        // (a care area's introcages are its "areas")
+        expect(card).toHaveTextContent(/2 monkeys · 6 areas/i);
     });
 
     test("its page: a Special Enclosure box, its monkeys, introcages and average age; no troop numbers, rankings or Size", () => {
@@ -501,7 +507,8 @@ describe("special enclosures (Bachelor Block, Quarantine)", () => {
         expect(stats).not.toHaveTextContent("Troop monkeys");
         expect(stats).not.toHaveTextContent("Largest");
         expect(screen.queryByText("Size")).toBeNull();
-        expect(screen.getByText("Sickbay Section")).toBeInTheDocument();
+        // A care area for new intakes: no section
+        expect(screen.getByText("No Section")).toBeInTheDocument();
     });
 
     test("its cages' pages: no Troop Door", () => {
@@ -516,9 +523,41 @@ describe("special enclosures (Bachelor Block, Quarantine)", () => {
         expect(sizeRank(sized.find((e) => e.name === "Goliath"), sized)).toBe(1);
     });
 
-    test("filtering by section: Quarantine's monkeys are in Sickbay", () => {
-        expect(inSection("Quarantine", ["sickbay"])).toBe(true);
+    test("filtering by section: the care areas are each a section of their own", () => {
+        expect(inSection("Quarantine", ["quarantine"])).toBe(true);
+        expect(inSection("Quarantine", ["sickbay"])).toBe(false);
+        expect(inSection("Baby Care", ["babyCare"])).toBe(true);
+        expect(inSection("Sickbay Care Unit", ["sickbayCareUnit"])).toBe(true);
+        expect(inSection("Sickbay Care Unit", ["sickbay"])).toBe(false);
         expect(inSection("Bachelor Block", ["top"])).toBe(true);
-        expect(inSection("Quarantine", ["top"])).toBe(false);
+    });
+
+    test("Baby Care's areas: Dreamland, Neverland, Disneyland; Sickbay Care Unit's one area has its name", () => {
+        const babyCare = enclosuresArr.find((e) => e.type === "troop" && e.name === "Baby Care");
+        expect(introcagesOf(babyCare, enclosuresArr).map((e) => e.name)).toEqual(["Dreamland", "Neverland", "Disneyland"]);
+        const unit = enclosuresArr.find((e) => e.type === "troop" && e.name === "Sickbay Care Unit");
+        expect(introcagesOf(unit, enclosuresArr).map((e) => e.name)).toEqual(["Sickbay Care Unit"]);
+    });
+
+    test("a care area's page: Areas (not Introcages); Bachelor Block keeps Introcages", () => {
+        const babyCare = enclosuresArr.find((e) => e.type === "troop" && e.name === "Baby Care");
+        const { unmount } = render(<ShowPage route={`enclosure/${babyCare.id}`} monkeys={MONKEYS} enclosures={enclosuresArr} sections={SECTION_NAMES} />);
+        // (the jump button and the folding list)
+        expect(screen.getAllByRole("button", { name: /^Areas/ })).toHaveLength(2);
+        expect(document.querySelector(".Enclosures-stats")).toHaveTextContent("Areas3");
+        expect(screen.queryByText("Introcages")).toBeNull();
+        unmount();
+        const bachelor = enclosuresArr.find((e) => e.name === "Bachelor Block");
+        render(<ShowPage route={`enclosure/${bachelor.id}`} monkeys={MONKEYS} enclosures={enclosuresArr} sections={SECTION_NAMES} />);
+        expect(document.querySelector(".Enclosures-stats")).toHaveTextContent("Introcages2");
+    });
+
+    test("a monkey in Sickbay Care Unit: its area's page, and No Section", () => {
+        const unit = enclosuresArr.find((e) => e.type === "introcage" && e.name === "Sickbay Care Unit");
+        const inUnit = { ...monkeysArr[0], troop: null, introcage: "Sickbay Care Unit", enclosure: "Sickbay Care Unit" };
+        expect(placeHash(inUnit, enclosuresArr)).toBe(enclosureHash(unit));
+        render(<ShowPage route={`enclosure/${unit.id}`} monkeys={[inUnit]} enclosures={enclosuresArr} sections={SECTION_NAMES} />);
+        expect(screen.getByRole("heading", { level: 1, name: "Sickbay Care Unit" })).toBeInTheDocument();
+        expect(screen.getByText("No Section")).toBeInTheDocument();
     });
 });

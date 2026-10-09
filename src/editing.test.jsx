@@ -315,6 +315,25 @@ test("location: choosing another enclosure starts with its troop", async () => {
     expect(within(field("Location")).getAllByRole("option")[1]).toHaveTextContent("Robert A");
 });
 
+test("location: the care areas; Sickbay Care Unit's one area is chosen by itself", async () => {
+    const { user } = setup({ enclosuresLive: true });
+    await openEditFor(user, "Aroha");
+    const byKind = (type, name) => BUILT_IN_DATA.enclosures.find((e) => e.type === type && e.name === name);
+    // Baby Care: its three areas to choose from, no troop
+    await user.selectOptions(field("Enclosure"), `enclosure:${byKind("troop", "Baby Care").id}`);
+    expect(field("Location")).toHaveValue("");
+    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent))
+        .toEqual(["Choose…", "Dreamland", "Neverland", "Disneyland"]);
+    // Sickbay Care Unit: just itself, already chosen
+    const unit = byKind("introcage", "Sickbay Care Unit");
+    await user.selectOptions(field("Enclosure"), `enclosure:${byKind("troop", "Sickbay Care Unit").id}`);
+    expect(field("Location")).toHaveValue(String(unit.id));
+    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Sickbay Care Unit"]);
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: unit.id });
+});
+
 // The photos listed in the form, in order (from their previews)
 const formPhotos = () =>
     within(form()).queryAllByRole("img", { name: /^Photo \d/ }).map((img) => img.getAttribute("src"));

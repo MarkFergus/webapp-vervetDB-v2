@@ -31,6 +31,10 @@ export const SECTION_COLOURS = {
     Middle: "#25c4f8",
     Bottom: "#ff4d6a",
     Sickbay: "#ffe14d",
+    // The care areas for new intakes: one colour, as they share a purpose
+    "Baby Care": "#c77dff",
+    Quarantine: "#c77dff",
+    "Sickbay Care Unit": "#c77dff",
 };
 
 // The map is loaded once, then each enclosure's outline is worked out once
