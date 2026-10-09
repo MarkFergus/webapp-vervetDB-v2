@@ -82,10 +82,11 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         const matchesLocation = location === "all" || (location === "introcage") === inIntrocage(monkey);
         const matchesTroop =
             troopFilter === "All Troops" ||
-            // Introcage monkeys aren't in the troop; with only Introcage on,
-            // the ones in the introcages at that troop's enclosure
+            // Introcage monkeys aren't in the troop: the ones in the
+            // introcages at that troop's enclosure (unless Introcage is off,
+            // see matchesLocation)
             (inIntrocage(monkey)
-                ? location === "introcage" && homeName(monkey).toLowerCase() === troopFilter.toLowerCase()
+                ? homeName(monkey).toLowerCase() === troopFilter.toLowerCase()
                 : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase()));
         const matchesYear =
             yearFilter === "All Years" ||

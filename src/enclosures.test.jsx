@@ -328,9 +328,12 @@ describe("introcage monkeys on the main page", () => {
         expect(placeHash({ troop: "Bandits", introcage: null }, enclosuresArr)).toBeNull();
     });
 
-    test("they're not in their enclosure's troop", async () => {
+    test("choosing their enclosure's troop includes them (until Introcage is turned off)", async () => {
         const { user, container } = setup();
         await user.selectOptions(container.querySelector("#troops"), "H&B");
+        expect(screen.getByRole("button", { name: /^Aroha,/ })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: /^Filters/ }));
+        await user.click(within(screen.getByRole("group", { name: "Living in" })).getByRole("button", { name: "Introcage" }));
         expect(screen.queryByRole("button", { name: /^Aroha,/ })).toBeNull();
     });
 });

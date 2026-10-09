@@ -230,15 +230,23 @@ describe("Location", () => {
         expect(chips()).toEqual(["In troops"]);
     });
 
-    test("a troop chosen: its monkeys; with only Introcage on, the ones in its enclosure's introcages", async () => {
+    test("a troop chosen: its monkeys and those in its enclosure's introcages; each pill changes the count", async () => {
         const { user } = setupWithIntrocage();
+        const showButton = () => screen.getByRole("button", { name: /^Show \d+ monkeys?$/ });
         await user.click(filtersButton());
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "H&B");
-        // (introcage monkeys aren't in the troop)
+        // Both on: the troop and its introcages
+        expectShowing(hbTroop.length + 1);
+        expect(showButton()).toHaveTextContent(`Show ${hbTroop.length + 1} monkeys`);
+        // Introcage off: just the troop
+        await user.click(locationPill("Introcage"));
         expectShowing(hbTroop.length);
+        expect(showButton()).toHaveTextContent(`Show ${hbTroop.length} monkeys`);
         // Introcage only: the ones in H&B's introcages
+        await user.click(locationPill("Introcage"));
         await user.click(locationPill("Troop"));
         expectShowing(1);
+        expect(showButton()).toHaveTextContent("Show 1 monkey");
         expect(chips()).toEqual(["In introcages", "H&B"]);
         // Another troop: nobody in its introcages
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
