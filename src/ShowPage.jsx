@@ -19,7 +19,7 @@ import MonkeyForm from "./MonkeyForm";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
-import { homeName, inIntrocage, placeName } from "./places";
+import { fullName, homeName, inIntrocage, placeName } from "./places";
 import { isEnclosuresRoute, placeHash } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
 import Game from "./Game";
@@ -526,7 +526,7 @@ function ShowPage({
             field: "location",
             label: filters.location === "introcage" ? "In introcages" : "In troops",
         },
-        filters.troop !== NO_FILTERS.troop && { field: "troop", label: filters.troop },
+        filters.troop !== NO_FILTERS.troop && { field: "troop", label: fullName(filters.troop) },
         filters.year !== NO_FILTERS.year && { field: "year", label: `Born ${filters.year}` },
         // One chip per age category picked
         ...AGE_GROUPS.filter((g) => filters.age.includes(g.id)).map((g) => ({

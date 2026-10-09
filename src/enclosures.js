@@ -47,6 +47,12 @@ export const troopMonkeys = (enclosure, monkeys) =>
 export const introcageMonkeys = (enclosure, monkeys) =>
     monkeys.filter((m) => inIntrocage(m) && homeName(m) === enclosure.name).sort(byName);
 
+// How many monkeys an enclosure has, as its card and the Monkeys sort
+// count them: a troop enclosure's troop, or (a special enclosure, which has
+// no troop) the monkeys in its cages
+export const monkeyCount = (enclosure, monkeys) =>
+    (enclosure.special ? introcageMonkeys(enclosure, monkeys) : troopMonkeys(enclosure, monkeys)).length;
+
 // Who's in one introcage
 export const residents = (introcage, monkeys) => monkeys.filter((m) => m.introcage === introcage.name).sort(byName);
 
@@ -92,22 +98,37 @@ export function stepsFrom(enclosure, enclosures, sections) {
 }
 
 // What the monkey form's Enclosure and Location boxes offer, in the troops'
-// order: [{ troop, enclosure ("Robert", or the troop's name if it has no
-// enclosure, like the Bandits), introcages: [{ id, name }] }]. homeOf(troop)
-// gives a troop's enclosure name. withIntrocages false: troops only (the
-// database can't save introcage monkeys yet).
+// order, then the special enclosures: [{ key (the Enclosure box's value: the
+// troop's name, or "enclosure:<id>" for a special enclosure), troop (null for
+// a special enclosure: its monkeys are always in one of its cages),
+// enclosure ("Robert", or the troop's name if it has no enclosure, like the
+// Bandits), special, introcages: [{ id, name }] }]. homeOf(troop) gives a
+// troop's enclosure name. withIntrocages false: troops only (the database
+// can't save introcage monkeys yet).
 export function placeChoices(troops, enclosures, homeOf, withIntrocages = true) {
-    return troops.map((troop) => {
+    const cagesOf = (enclosure) => introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name }));
+    const troopChoices = troops.map((troop) => {
         const enclosure = enclosures.find((e) => e.type === "troop" && e.name === homeOf(troop));
         return {
+            key: troop,
             troop,
             enclosure: enclosure?.name ?? troop,
-            introcages:
-                enclosure && withIntrocages
-                    ? introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name }))
-                    : [],
+            special: false,
+            introcages: enclosure && withIntrocages ? cagesOf(enclosure) : [],
         };
     });
+    if (!withIntrocages) return troopChoices;
+    const specialChoices = enclosures
+        .filter((e) => e.type === "troop" && e.special)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((enclosure) => ({
+            key: `enclosure:${enclosure.id}`,
+            troop: null,
+            enclosure: enclosure.name,
+            special: true,
+            introcages: cagesOf(enclosure),
+        }));
+    return [...troopChoices, ...specialChoices];
 }
 
 // 1 → "1st", 2 → "2nd", 3 → "3rd", 11 → "11th", 22 → "22nd"
@@ -129,12 +150,13 @@ export function rankOf(item, items, valueOf) {
 
 // The troop enclosures in order of size, and of how many troop monkeys
 // they have: e.g. 3 (the 3rd largest), or null if its size isn't recorded
+// (special enclosures aren't counted: they have no troop)
 export function sizeRank(enclosure, enclosures) {
-    const troopEnclosures = enclosures.filter((e) => e.type === "troop");
+    const troopEnclosures = enclosures.filter((e) => e.type === "troop" && !e.special);
     return rankOf(enclosure, troopEnclosures, (e) => e.size ?? null);
 }
 export function troopRank(enclosure, enclosures, monkeys) {
-    const troopEnclosures = enclosures.filter((e) => e.type === "troop");
+    const troopEnclosures = enclosures.filter((e) => e.type === "troop" && !e.special);
     return rankOf(enclosure, troopEnclosures, (e) => troopMonkeys(e, monkeys).length);
 }
 

@@ -1,4 +1,4 @@
-/* "A new version is ready": a small card at the bottom of the screen, in
+/* "Version 1.5.0 is now live!": a small card at the bottom of the screen, in
    the site's neon pink so it stands out */
 .UpdatePrompt {
     /* 16px in from both edges (never off the screen), centred once the
@@ -86,8 +86,19 @@
     border-color: #ff92ce;
 }
 
-/* Narrow phones: the buttons go under the message, on the right */
-@media (max-width: 480px) {
+/* Wider screens: room for the message and both buttons on one line */
+@media (min-width: 541px) {
+    .UpdatePrompt {
+        max-width: 500px;
+    }
+
+    .UpdatePrompt p {
+        white-space: nowrap;
+    }
+}
+
+/* Phones and small tablets: the buttons go under the message, on the right */
+@media (max-width: 540px) {
     .UpdatePrompt {
         flex-direction: column;
         align-items: stretch;

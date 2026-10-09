@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import PlaceName from "./PlaceName";
 import {
     IconSquareRoundedX,
     IconChevronLeft,
@@ -285,12 +286,12 @@ function Modal({
                                                         }
                                                     }}
                                                 >
-                                                    {placeLabel(monkey)}
+                                                    {monkey.introcage ? <PlaceName name={monkey.introcage} /> : <PlaceName name={monkey.troop} suffix=" Troop" />}
                                                     <IconChevronRight size={14} stroke={2.5} aria-hidden="true" />
                                                 </a>
                                             </li>
                                         ) : (
-                                            <li className="is-troop">{placeLabel(monkey)}</li>
+                                            <li className="is-troop">{monkey.introcage ? <PlaceName name={monkey.introcage} /> : <PlaceName name={monkey.troop} suffix=" Troop" />}</li>
                                         )}
                                         <li>
                                             {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}

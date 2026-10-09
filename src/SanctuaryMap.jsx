@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import PlaceName from "./PlaceName";
+import { fullName } from "./places";
 import { createPortal } from "react-dom";
 import { IconArrowsMaximize, IconMap2, IconSquareRoundedX } from "@tabler/icons-react";
 import useDialog from "./useDialog";
@@ -18,8 +20,9 @@ const MAP_WIDTH = 595.3;
 const MAP_HEIGHT = 841.9;
 const LABEL = "http://www.inkscape.org/namespaces/inkscape";
 
-// Enclosure name → its shape's label in the map, where they differ
-const MAP_LABELS = { "D&D": "Dino & Daniel troop" };
+// Enclosure name → its shape's label in the map, where they differ (the
+// special enclosures aren't "… troop")
+const MAP_LABELS = { "D&D": "Dino & Daniel troop", "Bachelor Block": "Bachelor block", Quarantine: "Quarantine" };
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
 
 // The site's neon colours, by section
@@ -330,7 +333,7 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
             <div className="MapPopup-overlay" onClick={onClose} />
             <div className="MapPopup-window">
                 <div className="MapPopup-header">
-                    <h2 id="MapPopup-title">{enclosure.name} on the map</h2>
+                    <h2 id="MapPopup-title"><PlaceName name={enclosure.name} /> on the map</h2>
                     <button type="button" className="MapPopup-close" ref={closeRef} onClick={onClose} aria-label="Close">
                         <IconSquareRoundedX />
                     </button>
@@ -340,7 +343,7 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
                         parts={parts}
                         colour={colour}
                         viewBox={zoomBox(parts.outline.box, 1.15, 60, 4 / 3)}
-                        label={`Sanctuary map, close up on ${enclosure.name}`}
+                        label={`Sanctuary map, close up on ${fullName(enclosure.name)}`}
                         shownIcons={ALL_ICONS}
                     />
                 </div>
@@ -389,7 +392,7 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
             parts={parts}
             colour={colour}
             viewBox={gate ? zoomBox(gate.box, 4, 100, aspect) : zoomBox(outline.box, introcage ? 1.4 : 2.6, 100, aspect)}
-            label={`Sanctuary map, with ${introcage && gate ? introcage : enclosure.name} picked out`}
+            label={`Sanctuary map, with ${fullName(introcage && gate ? introcage : enclosure.name)} picked out`}
         />
     );
     if (introcage) {

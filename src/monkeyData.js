@@ -98,6 +98,8 @@ function toAppEnclosure(row, sectionNames) {
         size: row.size == null ? null : Number(row.size),
         photos: row.photos,
         sortOrder: row.sort_order,
+        // a special enclosure (not a troop's home), once special-enclosures.sql has run
+        special: Boolean(row.special),
     };
     // Introcages, once introcage-fields.sql has run (until then the form
     // leaves these out)

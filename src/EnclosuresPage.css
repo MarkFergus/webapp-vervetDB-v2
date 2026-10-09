@@ -135,13 +135,34 @@
     margin-right: 0;
 }
 
+/* Phones: Sort is just its icon (and ⌄), so Sort and the totals fit on one
+   row (the menu still says what each choice is) */
+@media (max-width: 624px) {
+    .Enclosures-toolbar .SortMenu-current {
+        display: none;
+    }
+}
+
 /* The totals pill: a little more room before the introcages' cube */
-.Enclosures-totals svg + span + svg {
+.Enclosures-introcageTotal {
+    display: flex;
+    align-items: center;
+    gap: inherit;
     margin-left: 6px;
 }
 
+/* Under 335px wide: just the enclosures, so Sort and the totals stay on one
+   row (screen readers still hear both) */
+@media (max-width: 334px) {
+    .Enclosures-introcageTotal {
+        display: none;
+    }
+}
+
+/* The cards start exactly where the monkey cards do: 8px under the toolbar
+   (ShowPage.css .ShowPage-monkeys) */
 .Enclosures-toolbar + .Enclosures-grid {
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 /* Headings on a record: small grey capitals, like the field names in forms */
@@ -625,6 +646,11 @@
     font-size: 13px;
     white-space: nowrap;
     color: #8a877e;
+}
+
+/* A special enclosure's first box: across the whole row, saying what it is */
+.Enclosures-stats .Enclosures-statKind {
+    grid-column: 1 / -1;
 }
 
 /* Narrow computer windows: the summary column is too narrow for the labels

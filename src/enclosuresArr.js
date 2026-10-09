@@ -5,6 +5,8 @@
 //
 // An enclosure, as the rest of the site uses it:
 //   { id, name, type: "troop" | "introcage", parentId (introcages),
+//     special (true: a special enclosure, not a troop's home, e.g.
+//     Quarantine; its cages are its introcages),
 //     section (introcages: their enclosure's), established ("2014-03" or null),
 //     description, features, size (square metres, or null), photos, sortOrder,
 //     introcages only: troopDoor, plateSlot (true / false / null = not
@@ -31,10 +33,18 @@ const LAYOUT = [
     ["James", "Sickbay", ["A", "B"]],
 ];
 
+// Special enclosures (not a troop's home: supabase/special-enclosures.sql),
+// listed after the troop enclosures in their sections, with their cages
+const SPECIAL = [
+    ["Bachelor Block", "Top", ["A", "B"]],
+    ["Quarantine", "Sickbay", ["A", "B", "C", "D", "E", "F"]],
+];
+
 // Introcages with their own name instead of "<enclosure> <code>"
 const OWN_NAMES = {
     "Engeltjie 8": "Calypso's Corner A",
     "Engeltjie 9": "Calypso's Corner B",
+    "James B": "Groomingdales",
 };
 
 const blank = { established: null, description: "", features: "", size: null, photos: [] };
@@ -60,6 +70,26 @@ function build() {
                 // the same section as its enclosure
                 section: parent.section,
                 sortOrder: i + 1,
+            });
+        });
+    });
+    // The special enclosures and their cages (ids after the others, so
+    // theirs stay the same)
+    SPECIAL.forEach(([name, section, codes], i) => {
+        const parent = { ...blank, id: ++id, name, type: "troop", parentId: null, section, sortOrder: 100 + i, special: true };
+        list.push(parent);
+        codes.forEach((code, j) => {
+            list.push({
+                ...blank,
+                id: ++id,
+                name: `${name} ${code}`,
+                type: "introcage",
+                troopDoor: null,
+                plateSlot: null,
+                sleepingPerches: null,
+                parentId: parent.id,
+                section,
+                sortOrder: j + 1,
             });
         });
     });

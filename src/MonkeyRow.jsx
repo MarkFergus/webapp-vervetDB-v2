@@ -1,4 +1,5 @@
 import { IconCameraPlus, IconMars, IconVenus } from "@tabler/icons-react";
+import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
@@ -31,7 +32,7 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, chip, img, onC
         name,
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
-        inIntrocage ? `in ${troop}` : `${troop} troop`,
+        inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
     ].join(", ");
     const sexWord = sex === "male" ? "Male" : sex === "female" ? "Female" : "–";

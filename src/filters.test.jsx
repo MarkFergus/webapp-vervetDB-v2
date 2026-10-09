@@ -1,6 +1,7 @@
 // The Filters panel (troop, birth year, age group, sex), the filter chips,
 // and sorting by sex.
 import { render, screen, within } from "@testing-library/react";
+import { fullName } from "./places";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
@@ -247,7 +248,7 @@ describe("Location", () => {
         await user.click(locationPill("Troop"));
         expectShowing(1);
         expect(showButton()).toHaveTextContent("Show 1 monkey");
-        expect(chips()).toEqual(["In introcages", "H&B"]);
+        expect(chips()).toEqual(["In introcages", "Holt & Barrington"]);
         // Another troop: nobody in its introcages
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
         expect(screen.getByText("No monkeys found")).toBeInTheDocument();
@@ -290,7 +291,7 @@ describe("Location", () => {
         await user.click(sectionPill("Top"));
         expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
         expectShowing(monkeysArr.filter((m) => TOP.includes(m.troop)).length);
-        expect(troopList()).toEqual(["All Troops", ...TOP]);
+        expect(troopList()).toEqual(["All Troops", ...TOP.map((t) => fullName(t))]); // (full names)
     });
 
     test("several sections at once; each a chip that removes just it", async () => {
@@ -299,7 +300,7 @@ describe("Location", () => {
         await user.click(sectionPill("Top"));
         await user.click(sectionPill("Sickbay"));
         expectShowing(monkeysArr.filter((m) => [...TOP, ...SICKBAY].includes(m.troop)).length);
-        expect(troopList().slice(1).sort()).toEqual([...TOP, ...SICKBAY].sort()); // in the usual troop order
+        expect(troopList().slice(1).sort()).toEqual([...TOP, ...SICKBAY].map((t) => fullName(t)).sort()); // in the usual troop order
         const chips = () => [...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent);
         expect(chips()).toEqual(["Top section", "Sickbay section"]);
 

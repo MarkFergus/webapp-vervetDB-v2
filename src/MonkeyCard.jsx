@@ -1,4 +1,5 @@
 import { IconCameraPlus, IconMars, IconVenus } from "@tabler/icons-react";
+import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
@@ -23,7 +24,7 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, img, onClick 
         name,
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
-        inIntrocage ? `in ${troop}` : `${troop} troop`,
+        inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(photoNeeded ? ["photo needed"] : []),
     ].join(", ");
 

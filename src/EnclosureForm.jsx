@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import PlaceName from "./PlaceName";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
@@ -13,6 +14,8 @@ import "./EnclosureForm.css";
 // window as the monkey form: Photos, About (troop enclosures), Features,
 // Size and Established (troop enclosures, month and year); introcages also
 // Troop Door, Plate Slot (yes / no) and Sleeping Perches (1–10).
+//   special: a special enclosure (Bachelor Block, Quarantine): no Size
+//   inSpecial: one of its cages: no Troop Door
 //   onSaved(savedEnclosure) after a successful save
 
 const MONTHS = [
@@ -46,7 +49,7 @@ function years(current) {
     return Array.from({ length: thisYear - oldest + 1 }, (_, i) => String(thisYear - i));
 }
 
-function EnclosureForm({ enclosure, onClose, onSaved }) {
+function EnclosureForm({ enclosure, onClose, onSaved, special = false, inSpecial = false }) {
     const isIntrocage = enclosure.type === "introcage";
     // (only once the database has them: see introcage-fields.sql)
     const hasIntrocageDetails = isIntrocage && "troopDoor" in enclosure;
@@ -140,7 +143,7 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                 animate={{ scale: 1, opacity: 1, transition: { duration: 0.2 } }}
             >
                 <div className="MonkeyForm-header">
-                    <h1 id="EnclosureForm-title">Edit {enclosure.name}</h1>
+                    <h1 id="EnclosureForm-title">Edit <PlaceName name={enclosure.name} /></h1>
                     <button type="button" className="MonkeyForm-close" onClick={requestClose} aria-label="Close">
                         <IconSquareRoundedX />
                     </button>
@@ -191,6 +194,7 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                     </label>
 
                     <div className="MonkeyForm-row">
+                        {!special && (
                         <label className="MonkeyForm-field">
                             <span>Size</span>
                             {/* Just the number: shown as "600 m²" */}
@@ -208,6 +212,7 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                                 </span>
                             </span>
                         </label>
+                        )}
                         {!isIntrocage && (
                             <fieldset className="EnclosureForm-date">
                                 <legend>Established</legend>
@@ -255,7 +260,7 @@ function EnclosureForm({ enclosure, onClose, onSaved }) {
                     </div>
                     {hasIntrocageDetails && (
                         <div className="MonkeyForm-row">
-                            <YesNoField label="Troop Door" value={form.troopDoor} onChange={set("troopDoor")} />
+                            {!inSpecial && <YesNoField label="Troop Door" value={form.troopDoor} onChange={set("troopDoor")} />}
                             <YesNoField label="Plate Slot" value={form.plateSlot} onChange={set("plateSlot")} />
                         </div>
                     )}

@@ -18,6 +18,11 @@ body {
 }
 
 /* Hidden on screen but still read out by screen readers */
+/* Text kept on one line (e.g. "Holt &" and "Barrington C1": PlaceName.jsx) */
+.nowrap {
+    white-space: nowrap;
+}
+
 .visually-hidden {
     position: absolute;
     width: 1px;

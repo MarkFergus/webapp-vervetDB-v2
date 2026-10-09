@@ -3,12 +3,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import licenceFile from "./scripts/licenceFile.js";
+import versionFile from "./scripts/versionFile.js";
 
 export default defineConfig({
     plugins: [
         react(),
         // licences.txt: the open-source licences, linked from About
         licenceFile(),
+        versionFile(),
         // Installable app: the manifest (name, icons, own window) and a
         // service worker that keeps the site's files on the device
         VitePWA({

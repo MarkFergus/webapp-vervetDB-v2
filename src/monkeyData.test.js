@@ -73,9 +73,9 @@ test("loads troops (All Troops first), monkeys, sections and enclosures", async 
     // Introcages take their enclosure's section; established is month + year
     expect(data.enclosures).toEqual([
         { id: 40, name: "H&B", type: "troop", parentId: null, section: "Bottom", established: "2014-03",
-            description: "By the river", features: "Pool", size: 600, photos: [], sortOrder: 12 },
+            description: "By the river", features: "Pool", size: 600, photos: [], sortOrder: 12, special: false },
         { id: 41, name: "H&B C1", type: "introcage", parentId: 40, section: "Bottom", established: null,
-            description: "", features: "", size: null, photos: [], sortOrder: 3 },
+            description: "", features: "", size: null, photos: [], sortOrder: 3, special: false },
     ]);
     const [bobo, inC1] = data.monkeys;
     expect(bobo).toMatchObject({ troop: "H&B", introcage: null, introcageId: null, enclosure: "H&B" });

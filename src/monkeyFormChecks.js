@@ -11,16 +11,17 @@ export const MAX_PHOTOS = 5;
 
 const isPlaceholder = (url) => url === PLACEHOLDER_PHOTO;
 
-// Where a monkey lives, in the form: troop = the troop whose enclosure it's
-// in or beside (the Enclosure box), location = "troop" (with that troop) or
-// an introcage's id as text (the Location box). choices: see placeChoices
-// in enclosures.js.
+// Where a monkey lives, in the form: troop = the Enclosure box's choice (the
+// troop whose enclosure it's in or beside, or "enclosure:<id>" for a special
+// enclosure such as Quarantine), location = "troop" (with that troop) or an
+// introcage's id as text (the Location box; a special enclosure has no troop,
+// so always one of its cages). choices: see placeChoices in enclosures.js.
 
 // A monkey (as used on the site) → what the form's boxes start with
 export function formFromMonkey(monkey, choices = []) {
     // Introcage monkeys have no troop: the troop of their enclosure
     const troop = monkey.introcage
-        ? choices.find((c) => c.enclosure === monkey.enclosure)?.troop ?? ""
+        ? choices.find((c) => c.enclosure === monkey.enclosure)?.key ?? ""
         : monkey.troop ?? "";
     return {
         name: monkey.name,
@@ -51,7 +52,7 @@ export function emptyForm(troop = "") {
 // The introcage chosen in the form ({ id, name }), or null
 export function chosenIntrocage(form, choices) {
     if (!form.location || form.location === "troop") return null;
-    const choice = choices.find((c) => c.troop === form.troop);
+    const choice = choices.find((c) => c.key === form.troop);
     return choice?.introcages.find((i) => String(i.id) === form.location) ?? null;
 }
 
@@ -84,9 +85,11 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
     if (!name) errors.name = "Please enter a name.";
 
     const introcage = chosenIntrocage(form, choices);
-    if (!choices.some((c) => c.troop === form.troop)) {
+    const choice = choices.find((c) => c.key === form.troop);
+    if (!choice) {
         errors.troop = "Please choose an enclosure.";
-    } else if (form.location !== "troop" && !introcage) {
+    } else if ((form.location !== "troop" || choice.special) && !introcage) {
+        // (a special enclosure: one of its cages)
         errors.location = "Please choose a location.";
     }
 

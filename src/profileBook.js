@@ -1,4 +1,5 @@
 import { ageInYears, currentBabySeason } from "./ages";
+import { fullName } from "./places";
 
 // What goes in a Profile Book, and in what order. Books are made for one
 // troop, or for this season's orphans/babies from every troop.
@@ -63,5 +64,5 @@ export function bookSections(monkeys, today = new Date()) {
 
 // The book's title, e.g. "Goliath Troop" or "2025 Orphans/Babies"
 export function bookTitle(book, today = new Date()) {
-    return book === BABIES_BOOK ? `${currentBabySeason(today)} Orphans/Babies` : `${book} Troop`;
+    return book === BABIES_BOOK ? `${currentBabySeason(today)} Orphans/Babies` : `${fullName(book)} Troop`;
 }

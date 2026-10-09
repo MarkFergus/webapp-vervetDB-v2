@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { fullName } from "./places";
 import {
     IconCheck,
     IconCircleCheckFilled,
@@ -658,12 +659,12 @@ function Game({ monkeys: allMonkeys = BUILT_IN_DATA.monkeys, troops: allTroops =
 
     function feedback() {
         if (!result) return "";
-        const who = `${answer.name} from ${answer.troop}`;
+        const who = `${answer.name} from ${fullName(answer.troop)}`;
         switch (result.kind) {
             case "correct":
                 return `Correct! It's ${who}.`;
             case "close":
-                return `Close enough! It's spelled ${answer.name}, from ${answer.troop}.`;
+                return `Close enough! It's spelled ${answer.name}, from ${fullName(answer.troop)}.`;
             case "timeout":
                 return `Time's up! It's ${who}.`;
             default:

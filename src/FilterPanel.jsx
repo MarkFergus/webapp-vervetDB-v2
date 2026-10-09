@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { fullName } from "./places";
 import { IconFilterOff, IconX } from "@tabler/icons-react";
 import { SECTIONS, inSection } from "./sections";
 import { lockScroll, unlockScroll } from "./useDialog";
@@ -199,7 +200,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                                 .filter((t) => t === "All Troops" || inSection(t, filters.section))
                                 .map((t) => (
                                     <option key={t} value={t}>
-                                        {t}
+                                        {fullName(t)}
                                     </option>
                                 ))}
                         </select>

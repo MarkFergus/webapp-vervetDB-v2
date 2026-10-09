@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PlaceName from "./PlaceName";
 import {
     IconArrowDown,
     IconArrowLeft,
@@ -26,7 +27,7 @@ import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import EnclosureIcon from "./EnclosureIcon";
 import SortMenu from "./SortMenu";
-import { inIntrocage, placeName } from "./places";
+import { fullName, inIntrocage, placeName } from "./places";
 import {
     bySection,
     ENCLOSURES_HASH,
@@ -35,6 +36,7 @@ import {
     establishedText,
     introcageMonkeys,
     introcagesOf,
+    monkeyCount,
     residents,
     averageAge,
     ordinal,
@@ -90,7 +92,7 @@ function Steps({ steps, kind, onStep }) {
     const arrow = (direction) => {
         const to = steps[direction];
         const Icon = direction === "prev" ? IconChevronLeft : IconChevronRight;
-        const label = `${direction === "prev" ? "Previous" : "Next"} ${kind}: ${to.name}`;
+        const label = `${direction === "prev" ? "Previous" : "Next"} ${kind}: ${fullName(to.name)}`;
         return (
             <a
                 href={enclosureHash(to)}
@@ -300,7 +302,7 @@ function IntrocageList({ introcages, monkeys }) {
                             )}
                         </span>
                         <span className="IntrocageRow-main">
-                            <span className="IntrocageRow-name">{introcage.name}</span>
+                            <span className="IntrocageRow-name"><PlaceName name={introcage.name} /></span>
                             <span className="IntrocageRow-who">
                                 {living.length ? living.map((m) => m.name).join(", ") : "Empty"}
                             </span>
@@ -330,14 +332,15 @@ export const DEFAULT_ENCLOSURE_SORT = { key: "section", ascending: true };
 // sizes not recorded go last, whichever way round.
 export function sortEnclosures(inOrder, sort, monkeys) {
     const place = new Map(inOrder.map((e, i) => [e, i]));
-    const count = new Map(inOrder.map((e) => [e, troopMonkeys(e, monkeys).length]));
+    const count = new Map(inOrder.map((e) => [e, monkeyCount(e, monkeys)]));
     // Each section's place (Top 0 … Sickbay 3): Sickbay first turns the
     // sections round, each one's enclosures staying in their usual order
     const sectionOrder = [...new Set(inOrder.map((e) => e.section))];
     const sectionOf = (e) => sectionOrder.indexOf(e.section);
     const flip = sort.ascending ? 1 : -1;
     const compare = {
-        name: (a, b) => a.name.localeCompare(b.name),
+        // (by the names shown: "Dino & Daniel", not "D&D")
+        name: (a, b) => fullName(a.name).localeCompare(fullName(b.name)),
         section: (a, b) => sectionOf(a) - sectionOf(b),
         monkeys: (a, b) => count.get(b) - count.get(a),
         size: (a, b) => b.size - a.size,
@@ -355,7 +358,7 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
     const inOrder = bySection(enclosures, sections).flatMap((group) => group.enclosures);
     const all = sortEnclosures(inOrder, sort, monkeys);
     const introcageTotal = enclosures.filter((e) => e.type === "introcage").length;
-    const totals = `${plural(all.length, "troop enclosure")} · ${plural(introcageTotal, "introcage")}`;
+    const totals = `${plural(all.length, "enclosure")} · ${plural(introcageTotal, "introcage")}`;
     return (
         <>
             {/* No title on screen, like the monkey list (the side rail and
@@ -369,21 +372,27 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
                 <span className="ShowPage-count Enclosures-totals" title={totals}>
                     <EnclosureIcon size={16} aria-hidden="true" />
                     <span aria-hidden="true">{plural(all.length, "enclosure")}</span>
-                    <IconCube size={16} aria-hidden="true" />
-                    <span aria-hidden="true">{plural(introcageTotal, "introcage")}</span>
+                    {/* (the narrowest phones: left out, so the row fits) */}
+                    <span className="Enclosures-introcageTotal" aria-hidden="true">
+                        <IconCube size={16} aria-hidden="true" />
+                        {plural(introcageTotal, "introcage")}
+                    </span>
                     <span className="visually-hidden">{totals}</span>
                 </span>
             </div>
                     <div className="Enclosures-grid">
                         {all.map((enclosure) => {
-                            const troop = troopMonkeys(enclosure, monkeys);
+                            // A special enclosure has no troop: the monkeys in its cages
+                            const living = enclosure.special
+                                ? introcageMonkeys(enclosure, monkeys)
+                                : troopMonkeys(enclosure, monkeys);
                             return (
                                 <article key={enclosure.id} className="EnclosureCard">
                                     <a href={enclosureHash(enclosure)} className="EnclosureCard-link">
-                                        <Picture enclosure={enclosure} monkeys={troop} />
-                                        <span className="EnclosureCard-name">{enclosure.name}</span>
+                                        <Picture enclosure={enclosure} monkeys={living} />
+                                        <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
                                         <span className="EnclosureCard-meta">
-                                            {plural(troop.length, "troop monkey")} ·{" "}
+                                            {plural(living.length, enclosure.special ? "monkey" : "troop monkey")} ·{" "}
                                             {plural(introcagesOf(enclosure, enclosures).length, "introcage")}
                                             {/* Sorted by size: each one's size too */}
                                             {sort.key === "size" && enclosure.size != null && ` · ${sizeText(enclosure.size)}`}
@@ -457,10 +466,14 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     const introcages = isIntrocage ? [] : introcagesOf(enclosure, enclosures);
     const troop = isIntrocage ? [] : troopMonkeys(enclosure, monkeys);
     const inIntrocages = isIntrocage ? [] : introcageMonkeys(enclosure, monkeys);
-    const living = isIntrocage ? residents(enclosure, monkeys) : troop;
+    // A special enclosure (Bachelor Block, Quarantine): no troop, so its
+    // monkeys are the ones in its cages; its cages have no troop door
+    const isSpecial = Boolean(enclosure.special);
+    const inSpecial = Boolean(parent?.special);
+    const living = isIntrocage ? residents(enclosure, monkeys) : isSpecial ? inIntrocages : troop;
     const established = establishedText(enclosure.established);
-    // The troop's average age
-    const age = isIntrocage ? null : averageAge(troop);
+    // The troop's average age (a special enclosure: its monkeys')
+    const age = isIntrocage ? null : averageAge(isSpecial ? inIntrocages : troop);
 
     // Which folding parts are open: all but an enclosure's (long) monkey
     // list to start with
@@ -518,7 +531,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                 {...swipeHandlers}
             >
                 <div className="Enclosures-topRow">
-                    <BackLink href={parent ? enclosureHash(parent) : ENCLOSURES_HASH} label={parent ? parent.name : "Enclosures"} />
+                    <BackLink href={parent ? enclosureHash(parent) : ENCLOSURES_HASH} label={parent ? fullName(parent.name) : "Enclosures"} />
                     {steps && <Steps steps={steps} kind={isIntrocage ? "introcage" : "enclosure"} onStep={onStep} />}
                 </div>
                 {/* Computers (iNaturalist style): picture, then About and
@@ -528,7 +541,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     {/* The name (phones: above the picture; computers: beside it) */}
                     <div className="Enclosures-heading">
                         <div className="Enclosures-titleRow">
-                            <h1 className="Enclosures-recordTitle">{enclosure.name}</h1>
+                            <h1 className="Enclosures-recordTitle"><PlaceName name={enclosure.name} /></h1>
                             {editing.canEditDetails && (
                                 // The same Edit button as a monkey's pop-up
                                 <button type="button" className="Modal-edit Enclosures-edit" onClick={() => setIsEditing(true)}>
@@ -540,7 +553,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         {isIntrocage && parent && (
                             <p className="Enclosures-parent">
                                 <EnclosureIcon size={15} aria-hidden="true" />
-                                Introcage at <a href={enclosureHash(parent)}>{parent.name}</a>
+                                Introcage at <a href={enclosureHash(parent)}><PlaceName name={parent.name} /></a>
                             </p>
                         )}
                     </div>
@@ -548,7 +561,29 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     <div className="Enclosures-summary">
                         {/* The numbers, worked out from the monkeys (an
                             introcage's one number is in the details instead) */}
-                        {!isIntrocage && (
+                        {/* A special enclosure: what it is, then its monkeys
+                            (no troop, so no troop numbers or rankings) */}
+                        {isSpecial && (
+                            <dl className="Enclosures-stats">
+                                <div className="Enclosures-statKind">
+                                    <dt>No resident troop</dt>
+                                    <dd>Special Enclosure</dd>
+                                </div>
+                                <div>
+                                    <dt>Monkeys</dt>
+                                    <dd>{inIntrocages.length}</dd>
+                                </div>
+                                <div>
+                                    <dt>Introcages</dt>
+                                    <dd>{introcages.length}</dd>
+                                </div>
+                                <div>
+                                    <dt>Average age</dt>
+                                    <dd>{age === null ? "–" : age}</dd>
+                                </div>
+                            </dl>
+                        )}
+                        {!isIntrocage && !isSpecial && (
                             <dl className="Enclosures-stats">
                                 <div>
                                     <dt>Troop monkeys</dt>
@@ -591,16 +626,19 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <dd>{established ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
                                 </div>
                             )}
-                            <div>
-                                <dt>
-                                    <IconRuler2 size={16} aria-hidden="true" />
-                                    Size
-                                </dt>
-                                <dd>{sizeText(enclosure.size) ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
-                            </div>
+                            {/* (not for a special enclosure: its cages have sizes) */}
+                            {!isSpecial && (
+                                <div>
+                                    <dt>
+                                        <IconRuler2 size={16} aria-hidden="true" />
+                                        Size
+                                    </dt>
+                                    <dd>{sizeText(enclosure.size) ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
+                                </div>
+                            )}
                             {isIntrocage && (
                                 <>
-                                    <DetailRow icon={IconDoor} label="Troop Door" value={yesNo(enclosure.troopDoor)} />
+                                    {!inSpecial && <DetailRow icon={IconDoor} label="Troop Door" value={yesNo(enclosure.troopDoor)} />}
                                     <DetailRow icon={IconBowl} label="Plate Slot" value={yesNo(enclosure.plateSlot)} />
                                     <DetailRow icon={IconBed} label="Sleeping Perches" value={enclosure.sleepingPerches} />
                                 </>
@@ -674,6 +712,9 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
             {isEditing && (
                 <EnclosureForm
                     enclosure={enclosure}
+                    // (a special enclosure: no Size; its cages: no Troop Door)
+                    special={isSpecial}
+                    inSpecial={inSpecial}
                     onClose={() => setIsEditing(false)}
                     onSaved={(saved) => {
                         editing.onSaved(saved);

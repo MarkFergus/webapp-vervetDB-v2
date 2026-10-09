@@ -111,7 +111,7 @@ test("Share on a phone: the share menu gets the monkey's link", async () => {
 
     expect(share).toHaveBeenCalledWith({
         title: "Aroha · vervetDB",
-        text: "Aroha (H&B Troop) on vervetDB",
+        text: "Aroha (Holt & Barrington Troop) on vervetDB",
         url: expect.stringMatching(/#monkey\/aroha-h-b$/),
     });
 });

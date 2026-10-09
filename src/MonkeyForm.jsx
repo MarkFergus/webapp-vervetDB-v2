@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { fullName } from "./places";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
@@ -60,9 +61,12 @@ function MonkeyForm({
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
     // A new enclosure: with its troop to start with
-    const chooseEnclosure = (event) =>
-        setForm({ ...form, troop: event.target.value, location: event.target.value && "troop" });
-    const choice = choices.find((c) => c.troop === form.troop);
+    // (a special enclosure has no troop: a cage needs choosing)
+    const chooseEnclosure = (event) => {
+        const chosen = choices.find((c) => c.key === event.target.value);
+        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.special ? "troop" : "" });
+    };
+    const choice = choices.find((c) => c.key === form.troop);
 
     // Chip unknown: empties the box and leaves it (closing the phone
     // keyboard). "Clear" undoes it the same way; so does typing a number.
@@ -165,7 +169,7 @@ function MonkeyForm({
                             >
                                 <option value="">Choose…</option>
                                 {choices.map((c) => (
-                                    <option key={c.troop} value={c.troop}>{c.enclosure}</option>
+                                    <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
                                 ))}
                             </select>
                             {errorFor("troop")}
@@ -183,9 +187,9 @@ function MonkeyForm({
                                 {choice && form.location === "" && <option value="">Choose…</option>}
                                 {choice && (
                                     <>
-                                        <option value="troop">{choice.troop} Troop</option>
+                                        {!choice.special && <option value="troop">{fullName(choice.troop)} Troop</option>}
                                         {choice.introcages.map((i) => (
-                                            <option key={i.id} value={String(i.id)}>{i.name}</option>
+                                            <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
                                         ))}
                                     </>
                                 )}

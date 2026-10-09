@@ -2,9 +2,11 @@ import { checkForm, emptyForm, formFromMonkey, PLACEHOLDER_PHOTO } from "./monke
 
 // The Enclosure + Location choices (see placeChoices)
 const CHOICES = [
-    { troop: "Goliath", enclosure: "Goliath", introcages: [{ id: 21, name: "Goliath A" }] },
-    { troop: "H&B", enclosure: "H&B", introcages: [{ id: 30, name: "H&B C1" }] },
-    { troop: "Bandits", enclosure: "Bandits", introcages: [] },
+    { key: "Goliath", troop: "Goliath", enclosure: "Goliath", special: false, introcages: [{ id: 21, name: "Goliath A" }] },
+    { key: "H&B", troop: "H&B", enclosure: "H&B", special: false, introcages: [{ id: 30, name: "H&B C1" }] },
+    { key: "Bandits", troop: "Bandits", enclosure: "Bandits", special: false, introcages: [] },
+    // A special enclosure: no troop, just its cages
+    { key: "enclosure:90", troop: null, enclosure: "Quarantine", special: true, introcages: [{ id: 91, name: "Quarantine A" }] },
 ];
 const THIS_YEAR = 2026;
 const valid = {
@@ -175,5 +177,20 @@ describe("where the monkey lives", () => {
 
     test("the Bandits (no enclosure) stay a troop", () => {
         expect(check({ troop: "Bandits" }).values).toMatchObject({ troop: "Bandits", introcage: null });
+    });
+
+    test("a special enclosure (Quarantine): in one of its cages, never a troop", () => {
+        expect(check({ troop: "enclosure:90", location: "91" }).values).toMatchObject({
+            troop: null, introcage: "Quarantine A", introcageId: 91,
+        });
+        // No cage chosen: asked for one
+        expect(check({ troop: "enclosure:90", location: "troop" }).errors.location).toBe("Please choose a location.");
+        expect(check({ troop: "enclosure:90", location: "" }).errors.location).toBe("Please choose a location.");
+    });
+
+    test("a monkey in a special enclosure's cage fills the form with that enclosure", () => {
+        const monkey = { name: "Nova", troop: null, introcage: "Quarantine A", introcageId: 91, enclosure: "Quarantine",
+            sex: "female", year: "", chip: "", img: [PLACEHOLDER_PHOTO], bio: "", desc: "" };
+        expect(formFromMonkey(monkey, CHOICES)).toMatchObject({ troop: "enclosure:90", location: "91" });
     });
 });

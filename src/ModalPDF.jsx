@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { fullName } from "./places";
 import { IconCircleCheckFilled, IconDownload, IconSquareRoundedX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -119,7 +120,7 @@ function ModalPDF({
                                         >
                                             {troops.map((t) => (
                                                 <option key={t} value={t}>
-                                                    {t}
+                                                    {fullName(t)}
                                                 </option>
                                             ))}
                                             {/* This season's babies, from every troop */}

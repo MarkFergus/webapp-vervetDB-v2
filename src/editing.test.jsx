@@ -143,7 +143,7 @@ test("editing: the form is filled in, and saving shows the new details", async (
     expect(field("Enclosure")).toHaveValue("H&B");
     expect(field("Location")).toHaveValue("troop");
     // The database here has no introcages yet: the troop is the only choice
-    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["H&B Troop"]);
+    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Holt & Barrington Troop"]);
     expect(field("Birth year")).toHaveValue("2016");
     expect(field("Chip")).toHaveValue("19806");
 
@@ -283,7 +283,8 @@ test("location: moving a monkey into one of its enclosure's introcages, and back
     const { user } = setup({ enclosuresLive: true });
     await openEditFor(user, "Aroha");
     const options = within(field("Location")).getAllByRole("option").map((o) => o.textContent);
-    expect(options).toEqual(["H&B Troop", "H&B A", "H&B B", "H&B C1", "H&B C2"]);
+    // (full names: "H&B" is Holt & Barrington)
+    expect(options).toEqual(["Holt & Barrington Troop", ...["A", "B", "C1", "C2"].map((c) => `Holt & Barrington ${c}`)]);
 
     // (chosen by value: the option's "&" doesn't match as text)
     const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
@@ -292,7 +293,7 @@ test("location: moving a monkey into one of its enclosure's introcages, and back
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     // In the introcage, not the troop
     expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: c1.id });
-    expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("H&B C1");
+    expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("Holt & Barrington C1");
 
     // Back to the troop
     await user.click(screen.getByRole("button", { name: "Edit" }));

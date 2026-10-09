@@ -21,6 +21,17 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.5.0",
+        date: "2026-10-09",
+        // a significant release: "Major Update" beside it in About
+        major: true,
+        changes: [
+            "New special enclosures: Bachelor Block and Quarantine, with their cages",
+            "New Sort on the Enclosures page: Name, Section, Monkeys or Size",
+            "Improved names: Dino & Daniel and Holt & Barrington in full, and James B is now Groomingdales",
+        ],
+    },
+    {
         version: "1.4.0",
         date: "2026-10-09",
         changes: [
