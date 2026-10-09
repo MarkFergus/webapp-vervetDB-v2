@@ -31,6 +31,54 @@
     pointer-events: auto;
 }
 
+/* The changelog: a little wider */
+.AccountModal-window.is-wide {
+    max-width: 480px;
+}
+
+/* "← Account": back from the changelog */
+.AccountModal-back {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: -24px 0 0 -8px;
+    padding: 4px 8px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 14px;
+    color: #25c4f8;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.AccountModal-back:hover {
+    color: #86e1ff;
+}
+
+.AccountModal-back:focus-visible {
+    outline: 2px solid #25c4f8;
+}
+
+.AccountModal-back svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* A full-width button with an icon (Changelog) */
+.AccountModal-button.is-withIcon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.AccountModal-button.is-withIcon svg {
+    width: 18px;
+    height: 18px;
+}
+
 .AccountModal-close button {
     position: absolute;
     top: 2px;
@@ -111,21 +159,68 @@
     border-bottom: 1px solid #3a3839;
 }
 
-/* The nav's account circle, bigger: green with a soft green fill */
+/* The nav's account circle, bigger (80px): green with a soft green fill,
+   or their photo inside the green ring */
 .AccountModal-avatar {
+    position: relative;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
     margin-bottom: 4px;
+    padding: 0;
     color: #47b028;
     background-color: rgba(71, 176, 40, 0.15);
     border: 2px solid currentColor;
     border-radius: 50%;
 }
 
-.AccountModal-avatar svg {
+/* Staff: tap it to add or change the photo */
+.AccountModal-avatar.is-button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.AccountModal-avatar.is-button:hover .AccountModal-camera,
+.AccountModal-avatar.is-button:focus-visible .AccountModal-camera {
+    background-color: #5cc93a;
+}
+
+.AccountModal-avatar.is-button:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: 3px;
+}
+
+/* Saving: dimmed until it's done */
+.AccountModal-avatar.is-busy {
+    cursor: progress;
+    opacity: 0.5;
+}
+
+/* The small camera at the bottom right */
+.AccountModal-camera {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 26px;
+    height: 26px;
+    color: #202020;
+    background-color: #47b028;
+    border: 2px solid #202020;
+    border-radius: 50%;
+}
+
+.AccountModal-camera svg {
+    width: 15px;
+    height: 15px;
+}
+
+.AccountModal-avatar > svg {
     width: 36px;
     height: 36px;
 }

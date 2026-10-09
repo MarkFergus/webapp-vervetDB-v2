@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Cropper from "react-easy-crop";
 import { IconZoomIn, IconZoomOut } from "@tabler/icons-react";
 import { cropPhoto, PHOTO_ASPECT } from "./photoUpload";
+import { AVATAR_SIZE } from "./accountPhoto";
 import "./PhotoCropper.css";
 
 // Frame a chosen photo in the site's 5:4 shape before it's uploaded:
@@ -10,7 +11,9 @@ import "./PhotoCropper.css";
 //   position:  e.g. "Photo 1 of 3" when several were chosen (optional)
 //   onUse(blob): the cropped 960 × 768 photo, ready to upload
 //   onCancel:  skip this photo
-function PhotoCropper({ file, position, onUse, onCancel }) {
+//   round:     an account photo instead: a square, framed in a circle,
+//              made 256 × 256 (see accountPhoto.js)
+function PhotoCropper({ file, position, onUse, onCancel, round = false }) {
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
@@ -29,7 +32,7 @@ function PhotoCropper({ file, position, onUse, onCancel }) {
         setBusy(true);
         setProblem(null);
         try {
-            onUse(await cropPhoto(imageSrc, area));
+            onUse(await cropPhoto(imageSrc, area, round ? AVATAR_SIZE : undefined));
         } catch (error) {
             setProblem(error.message);
             setBusy(false);
@@ -51,7 +54,8 @@ function PhotoCropper({ file, position, onUse, onCancel }) {
                             crop={crop}
                             zoom={zoom}
                             maxZoom={4}
-                            aspect={PHOTO_ASPECT}
+                            aspect={round ? 1 : PHOTO_ASPECT}
+                            cropShape={round ? "round" : "rect"}
                             onCropChange={setCrop}
                             onZoomChange={setZoom}
                             onCropComplete={(_, pixels) => setArea(pixels)}

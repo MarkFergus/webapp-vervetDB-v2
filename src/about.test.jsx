@@ -118,6 +118,10 @@ test("a major release has a Major Update pill beside its version", async () => {
     render(<ShowPage />);
     await openAbout(user);
     const major = CHANGELOG.find((e) => e.major);
+    // (an earlier series: open "Earlier versions" to see it)
+    if (!currentSeries(CHANGELOG).current.includes(major)) {
+        await user.click(within(dialog()).getByRole("button", { name: "Earlier versions" }));
+    }
     const heading = within(dialog()).getByRole("heading", { name: new RegExp(`^Version ${major.version.replace(/\./g, "\.")}`) });
     expect(heading).toHaveTextContent(`Version ${major.version}Major Update`);
     // Ordinary releases have none

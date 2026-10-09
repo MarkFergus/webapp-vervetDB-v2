@@ -1,0 +1,110 @@
+/* Computers: the account menu drops down under the circle, lined up with
+   its right edge (the same look as the Sort menu) */
+.AccountMenu {
+    position: relative;
+}
+
+.AccountMenu-menu {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    background-color: #2a282a;
+    border: 1px solid #434343;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Who's signed in: photo, name and email */
+.AccountMenu-who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+}
+
+.AccountMenu-avatar {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    box-sizing: border-box;
+    color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+    border: 1.75px solid currentColor;
+    border-radius: 50%;
+}
+
+.AccountMenu-names {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.AccountMenu-name,
+.AccountMenu-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.AccountMenu-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+}
+
+.AccountMenu-email {
+    font-size: 13px;
+    color: #8a877e;
+}
+
+.AccountMenu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background-color: #434343;
+}
+
+.AccountMenu-menu [role="menuitem"] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 15px;
+    text-align: left;
+    color: #d1cfc7;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.AccountMenu-menu [role="menuitem"]:hover,
+.AccountMenu-menu [role="menuitem"]:focus-visible {
+    color: white;
+    background-color: #343234;
+    outline: none;
+}
+
+/* Theme: fixed on Dark for now (not clickable) */
+.AccountMenu-menu .AccountMenu-theme {
+    cursor: default;
+}
+
+.AccountMenu-menu .AccountMenu-theme:hover {
+    color: #d1cfc7;
+    background: none;
+}
+
+.AccountMenu-value {
+    margin-left: auto;
+    font-size: 13px;
+    color: #8a877e;
+}

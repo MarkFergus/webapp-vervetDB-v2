@@ -82,6 +82,17 @@ export default defineConfig({
                         },
                     },
                     {
+                        // Account photos (a new name for each new photo)
+                        urlPattern: ({ url }) =>
+                            url.pathname.includes("/storage/v1/object/public/avatars/"),
+                        handler: "CacheFirst",
+                        options: {
+                            cacheName: "vervetdb-avatars",
+                            expiration: { maxEntries: 100, purgeOnQuotaError: true },
+                            cacheableResponse: { statuses: [200] },
+                        },
+                    },
+                    {
                         // The "no photo yet" picture (still on ImgBB)
                         urlPattern: ({ url }) => url.origin === "https://i.ibb.co",
                         handler: "CacheFirst",

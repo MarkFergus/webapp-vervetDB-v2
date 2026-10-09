@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { IconEye, IconKey, IconLogout, IconPencil, IconShieldCheck, IconSquareRoundedX, IconTool, IconUser } from "@tabler/icons-react";
+import { IconArrowLeft, IconCamera, IconEye, IconHistory, IconKey, IconLogout, IconPencil, IconShieldCheck, IconSquareRoundedX, IconTool } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { useAuth, MIN_PASSWORD_LENGTH } from "./auth";
+import { saveAvatar } from "./accountPhoto";
+import PhotoCropper from "./PhotoCropper";
+import Avatar from "./Avatar";
+import MyChanges from "./MyChanges";
 import "./AccountModal.css";
 
 // Who to ask for an account
@@ -22,12 +26,18 @@ const ROLE_NAMES = { admin: "Admin", editor: "Editor", maintenance: "Maintenance
 //   signed out:  sign in (email + password), or "Forgot password?"
 //   forgot:      email a link for choosing a new password
 //   newPassword: choose a password (from an email link, or Change password)
-//   signed in:   who you are, Continue, Change password, Sign out
-function AccountModal({ isOpen, onClose }) {
+//   signed in:   who you are (staff: tap the picture to add a photo),
+//                Continue, Changelog (staff), Change password, Sign out
+//   changes:     the changelog: your own recent changes (MyChanges)
+// startView: open straight onto one of these, e.g. "changes" (the account
+//   menu's Changelog)
+function AccountModal({ isOpen, onClose, startView = null }) {
     const {
         user,
         role: accountRole,
         name,
+        avatarUrl,
+        setAvatarUrl,
         passwordSetup,
         signIn,
         signOut,
@@ -46,6 +56,12 @@ function AccountModal({ isOpen, onClose }) {
     const [notice, setNotice] = useState(null);
     // "Request access" clicked: show who to email
     const [showAccessHelp, setShowAccessHelp] = useState(false);
+    // Account photo: the file being cropped, and while it's saving
+    const [photoFile, setPhotoFile] = useState(null);
+    const [photoBusy, setPhotoBusy] = useState(false);
+    const photoInputRef = useRef(null);
+    // Staff only (accounts with a role): the database allows nobody else
+    const canChangePhoto = Boolean(accountRole);
 
     // Arrived from an email link: straight to choosing a password, or (if the
     // link had expired) to signing in with an explanation
@@ -60,6 +76,11 @@ function AccountModal({ isOpen, onClose }) {
         }
     }, [passwordSetup]);
 
+    // Opened from the account menu's Changelog: straight there
+    useEffect(() => {
+        if (isOpen && startView) show(startView);
+    }, [isOpen, startView]);
+
     // Focus starts on the first box or button of what's showing
     const firstFieldRef = useRef(null);
     useDialog(isOpen, firstFieldRef, { onClose: handleClose });
@@ -69,6 +90,16 @@ function AccountModal({ isOpen, onClose }) {
     useEffect(() => {
         if (isOpen) firstFieldRef.current?.focus();
     }, [user, view]);
+
+    // Signed in just now, with the pop-up open: "Welcome" at the top, until
+    // it's closed (not when opening the account later)
+    const [welcome, setWelcome] = useState(false);
+    const previousUser = useRef(user);
+    useEffect(() => {
+        if (!user) setWelcome(false);
+        else if (isOpen && !previousUser.current) setWelcome(true);
+        previousUser.current = user;
+    }, [user]);
 
     function show(nextView) {
         setView(nextView);
@@ -81,6 +112,7 @@ function AccountModal({ isOpen, onClose }) {
 
     function handleClose() {
         show("main");
+        setWelcome(false);
         if (passwordSetup) clearPasswordSetup();
         onClose();
     }
@@ -133,6 +165,26 @@ function AccountModal({ isOpen, onClose }) {
         }
     }
 
+    async function handlePhotoChosen(event) {
+        const file = event.target.files?.[0];
+        event.target.value = ""; // (the same file can be chosen again)
+        if (file) setPhotoFile(file);
+    }
+
+    async function handleUsePhoto(blob) {
+        setPhotoFile(null);
+        setPhotoBusy(true);
+        setError(null);
+        setNotice(null);
+        try {
+            setAvatarUrl(await saveAvatar(user, blob, avatarUrl));
+            setNotice("Photo saved.");
+        } catch (problem) {
+            setError(problem.message);
+        }
+        setPhotoBusy(false);
+    }
+
     async function handleSignOut() {
         setBusy(true);
         await signOut();
@@ -154,7 +206,21 @@ function AccountModal({ isOpen, onClose }) {
     );
 
     let content;
-    if (view === "newPassword" && user) {
+    if (view === "changes" && user) {
+        content = (
+            <div className="AccountModal-content">
+                <button type="button" className="AccountModal-back" ref={firstFieldRef} onClick={() => show("main")}>
+                    <IconArrowLeft stroke={2} aria-hidden="true" />
+                    Account
+                </button>
+                <h1 className="AccountModal-title" id="AccountModal-title">
+                    Changelog
+                </h1>
+                <p className="AccountModal-note">Your recent changes to vervetDB.</p>
+                <MyChanges />
+            </div>
+        );
+    } else if (view === "newPassword" && user) {
         const title =
             passwordSetup === "invite"
                 ? "Welcome! Choose a password"
@@ -212,11 +278,43 @@ function AccountModal({ isOpen, onClose }) {
             <div className="AccountModal-content">
                 {/* Like an account page: picture, who you are, what you can do */}
                 <div className="AccountModal-profile">
-                    <span className="AccountModal-avatar" aria-hidden="true">
-                        <IconUser stroke={1.75} />
-                    </span>
-                    <h1 className="AccountModal-title" id="AccountModal-title">
-                        Signed in
+                    {canChangePhoto ? (
+                        // Tap the picture to add or change the photo
+                        <button
+                            type="button"
+                            className={`AccountModal-avatar is-button${photoBusy ? " is-busy" : ""}`}
+                            onClick={() => photoInputRef.current?.click()}
+                            disabled={photoBusy}
+                            aria-label={avatarUrl ? "Change Photo" : "Add Photo"}
+                        >
+                            <Avatar url={avatarUrl} />
+                            <span className="AccountModal-camera" aria-hidden="true">
+                                <IconCamera stroke={2} />
+                            </span>
+                        </button>
+                    ) : (
+                        <span className="AccountModal-avatar" aria-hidden="true">
+                            <Avatar url={avatarUrl} />
+                        </span>
+                    )}
+                    {canChangePhoto && (
+                        <input
+                            ref={photoInputRef}
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={handlePhotoChosen}
+                            data-testid="AccountModal-photoInput"
+                        />
+                    )}
+                    {/* Just signed in: "Welcome, Sam". Otherwise no heading
+                        (being signed in goes without saying), just a name
+                        for screen readers. */}
+                    <h1
+                        className={welcome ? "AccountModal-title" : "visually-hidden"}
+                        id="AccountModal-title"
+                    >
+                        {welcome ? (name ? `Welcome, ${name.split(" ")[0]}` : "Welcome") : "Account"}
                     </h1>
                     {name && <p className="AccountModal-name">{name}</p>}
                     <p className="AccountModal-email">{user.email}</p>
@@ -241,6 +339,11 @@ function AccountModal({ isOpen, onClose }) {
                         {notice}
                     </p>
                 )}
+                {error && (
+                    <p className="AccountModal-error" role="alert">
+                        {error}
+                    </p>
+                )}
                 <button
                     type="button"
                     className="AccountModal-button"
@@ -249,6 +352,12 @@ function AccountModal({ isOpen, onClose }) {
                 >
                     Continue
                 </button>
+                {canChangePhoto && (
+                    <button type="button" className="AccountModal-button is-quiet is-withIcon" onClick={() => show("changes")}>
+                        <IconHistory stroke={2} aria-hidden="true" />
+                        Changelog
+                    </button>
+                )}
                 <div className="AccountModal-actions">
                     <button
                         type="button"
@@ -393,7 +502,7 @@ function AccountModal({ isOpen, onClose }) {
                         animate={{ scale: 1, opacity: 1, transition: { duration: 0.2 } }}
                         exit={{ scale: 0, opacity: 0 }}
                     >
-                        <div className="AccountModal-window">
+                        <div className={`AccountModal-window${view === "changes" && user ? " is-wide" : ""}`}>
                             <div className="AccountModal-close">
                                 <button type="button" onClick={handleClose} aria-label="Close">
                                     <IconSquareRoundedX />
@@ -402,6 +511,15 @@ function AccountModal({ isOpen, onClose }) {
                             {content}
                         </div>
                     </motion.div>
+                    {/* (outside the growing window: it sits over the whole screen) */}
+                    {photoFile && (
+                        <PhotoCropper
+                            file={photoFile}
+                            round
+                            onUse={handleUsePhoto}
+                            onCancel={() => setPhotoFile(null)}
+                        />
+                    )}
                 </div>
             )}
         </AnimatePresence>

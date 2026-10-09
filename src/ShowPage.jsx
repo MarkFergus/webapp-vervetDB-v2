@@ -156,6 +156,9 @@ function ShowPage({
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
     // On the Enclosures pages (only once the database has enclosures)
+    // A page that can be edited (an enclosure, for admins): its Edit, which
+    // takes Map's place in the bottom bar (phones)
+    const [pageEdit, setPageEdit] = useState(null);
     const enclosureEditing = {
         canEdit: canEdit && enclosuresLive,
         // the maintenance log: any role, maintenance accounts too
@@ -165,6 +168,7 @@ function ShowPage({
         canDelete: canEdit && enclosuresLive && isAdmin,
         live: enclosuresLive && editable,
         onSaved: onEnclosureSaved,
+        setPageEdit,
     };
     const [searchValue, setSearchValue] = useState("");
     // Filters: { location, section, troop, year, age, sex } (see FilterPanel)
@@ -589,6 +593,7 @@ function ShowPage({
                     isOfflineOpen={isOfflineOpen}
                     toggleOffline={() => setIsOfflineOpen((open) => !open)}
                     onAddMonkey={canAdd ? startAdd : undefined}
+                    onEdit={onEnclosures ? pageEdit : null}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
                     page={onGame ? "game" : onEnclosures ? "enclosures" : "monkeys"}

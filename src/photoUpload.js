@@ -29,15 +29,16 @@ function loadImage(src) {
 // Cuts out the chosen area of a photo and scales it to 960 × 768.
 //   imageSrc: the photo (e.g. an object URL of the chosen file)
 //   area:     { x, y, width, height } in the photo's own pixels (from the cropper)
+//   size:     another size instead, e.g. account photos: { width: 256, height: 256 }
 // Returns a Blob: WebP where the browser can make one, otherwise JPEG.
-export async function cropPhoto(imageSrc, area) {
+export async function cropPhoto(imageSrc, area, { width = PHOTO_WIDTH, height = PHOTO_HEIGHT } = {}) {
     const img = await loadImage(imageSrc);
     const canvas = document.createElement("canvas");
-    canvas.width = PHOTO_WIDTH;
-    canvas.height = PHOTO_HEIGHT;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, PHOTO_WIDTH, PHOTO_HEIGHT);
+    ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, width, height);
 
     const toBlob = (type) => new Promise((resolve) => canvas.toBlob(resolve, type, QUALITY));
     const webp = await toBlob("image/webp");

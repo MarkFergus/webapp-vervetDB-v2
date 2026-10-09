@@ -1,20 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconSearch, IconX, IconMenu2, IconPlus, IconUser } from "@tabler/icons-react";
+import { IconSearch, IconX, IconMenu2, IconPlus } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
 import AboutModal from "./AboutModal";
 import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
+import AccountMenu from "./AccountMenu";
 import { BottomBar, ComingSoon, Drawer, SideRail } from "./NavBars";
 import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
 //   Computers: the menu button (opens the side rail out or back) and the
-//   logo; search in the middle; + Add (admins) and the account circle. The
+//   logo; search in the middle; + Add (admins) and the account circle
+//   (signed in: the account menu, AccountMenu.jsx). The
 //   side rail down the left.
 //   Phones: the logo, search, and the menu button (the drawer from the
-//   right); the bottom bar: Monkeys, Enclosures, Map, Game, You.
+//   right); the bottom bar: Monkeys, Enclosures, Map (Edit on a page that
+//   can be edited), Game, You.
 // The side rail: on wide screens, opening it out moves the page over (and
 // that's remembered on this device); on narrower ones it slides out over
 // the page instead, YouTube-style, until something's picked.
@@ -52,12 +55,13 @@ function Nav({
     isOfflineOpen,
     toggleOffline,
     onAddMonkey, // admins only: "+ Add" (computers), Add New Monkey (the drawer)
+    onEdit, // a page that can be edited: Edit in place of Map (the bottom bar)
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
     showSearch = true, // false: no search box (the game)
     barsInert = false, // a pop-up is open: the side rail and bottom bar wait
 }) {
-    const { user } = useAuth();
+    const { user, avatarUrl } = useAuth();
     const searchInputRef = useRef(null);
 
     // Computers: the side rail opened out (labels) or small (icons).
@@ -89,6 +93,8 @@ function Nav({
     // Over the page: a new page, or a pop-up opening, puts it away
     const closeRailOver = () => setRailOver(false);
     useEffect(closeRailOver, [page, wide]);
+    // The account pop-up opened from the account menu's Changelog: starts there
+    const [accountStart, setAccountStart] = useState(null);
     // Phones: the drawer
     const [drawerOpen, setDrawerOpen] = useState(false);
     // Map (the side rail or bottom bar): "coming soon" for now
@@ -101,7 +107,6 @@ function Nav({
         searchInputRef.current?.focus();
     }
 
-    const accountLabel = user ? "Account (signed in)" : "Sign in";
     const anyPopUp = isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen;
 
     // "/" anywhere on the page jumps into the search box (like YouTube and X),
@@ -194,19 +199,14 @@ function Nav({
                             Add
                         </button>
                     )}
-                    {/* Sign in / account: a person in a circle, green when signed in */}
-                    <button
-                        type="button"
-                        className={user ? "Nav-account is-signed-in" : "Nav-account"}
-                        onClick={toggleAccount}
-                        aria-label={accountLabel}
-                        data-tooltip={user ? "Account" : "Sign in"}
-                        data-tooltip-align="end"
-                    >
-                        <span className="Nav-avatar" aria-hidden="true">
-                            <IconUser stroke={1.75} size={20} />
-                        </span>
-                    </button>
+                    {/* Sign in, or (signed in) the account menu */}
+                    <AccountMenu
+                        onAccount={toggleAccount}
+                        onChangelog={() => {
+                            setAccountStart("changes");
+                            toggleAccount();
+                        }}
+                    />
                 </div>
 
                 {/* Phones: opens the drawer from the right */}
@@ -241,8 +241,10 @@ function Nav({
                         page={page}
                         onHome={onHome}
                         onMap={showMapNotice}
+                        onEdit={onEdit}
                         onAccount={toggleAccount}
                         signedIn={Boolean(user)}
+                        avatarUrl={avatarUrl}
                         inert={barsInert || anyPopUp}
                     />
                     <ComingSoon open={mapNotice} onClose={() => setMapNotice(false)} />
@@ -281,7 +283,14 @@ function Nav({
                 document.body
             )}
             {createPortal(
-                <AccountModal isOpen={isAccountOpen} onClose={toggleAccount} />,
+                <AccountModal
+                    isOpen={isAccountOpen}
+                    startView={accountStart}
+                    onClose={() => {
+                        setAccountStart(null);
+                        toggleAccount();
+                    }}
+                />,
                 document.body
             )}
             {createPortal(

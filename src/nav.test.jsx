@@ -136,7 +136,7 @@ describe("phones: the bottom bar", () => {
     test("signed in: You opens the account pop-up (Change password, Sign out)", async () => {
         const { user } = setup({ signedIn: true });
         await user.click(await bar().findByRole("button", { name: "You (signed in)" }));
-        const dialog = await screen.findByRole("dialog", { name: "Signed in" });
+        const dialog = await screen.findByRole("dialog", { name: "Account" });
         expect(within(dialog).getByRole("button", { name: "Change password" })).toBeInTheDocument();
         await user.click(within(dialog).getByRole("button", { name: "Sign out" }));
         expect(supabase.auth.signOut).toHaveBeenCalled();

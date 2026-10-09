@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.4.0",
+        date: "2026-10-09",
+        changes: [
+            "New account photos: tap your picture in Account to add one",
+            "New account menu on computers: Account, Changelog, Theme and Sign Out",
+            "New Changelog: your own recent changes to monkeys, enclosures and maintenance",
+            "Improved the daily summary email: now includes enclosure and introcage changes",
+        ],
+    },
+    {
         version: "1.3.0",
         date: "2026-10-08",
         // a significant release: "Major Update" beside it in About

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
+import { loadAvatar } from "./accountPhoto";
 
 // Who's signed in, shared with every page through <AuthProvider>.
 //   user:          the signed-in account (null when signed out)
@@ -10,6 +11,8 @@ import { supabase } from "./supabase";
 //                  enclosure details
 //   canLogMaintenance: whether it may add to the maintenance log (any role)
 //   name:          the account's full name (set by admins), or null
+//   avatarUrl:     the account's photo (staff add their own), or null;
+//                  setAvatarUrl(url) after changing it
 //   ready:         false until we've checked for a saved sign-in
 //   passwordSetup: why the account pop-up should open by itself (see below)
 const AuthContext = createContext({
@@ -19,6 +22,8 @@ const AuthContext = createContext({
     isAdmin: false,
     canLogMaintenance: false,
     name: null,
+    avatarUrl: null,
+    setAvatarUrl: () => {},
     ready: true,
     passwordSetup: null,
     signIn: async () => {},
@@ -66,7 +71,7 @@ async function loadName(user) {
 // This account's role: its entry in the editors table (the database only
 // lets people see their own entry). No entry: view only. All columns, so it
 // works before roles.sql too (no role column: an editor, or an admin).
-const NO_ROLE = { role: null, isEditor: false, isAdmin: false, canLogMaintenance: false, name: null };
+const NO_ROLE = { role: null, isEditor: false, isAdmin: false, canLogMaintenance: false, name: null, avatarUrl: null };
 async function checkRole(user) {
     if (!user) return NO_ROLE;
     const { data, error } = await supabase.from("editors").select("*").eq("user_id", user.id).maybeSingle();
@@ -76,8 +81,10 @@ async function checkRole(user) {
     }
     if (!data) return NO_ROLE;
     const role = data.role ?? (data.is_admin ? "admin" : "editor");
+    const [name, avatarUrl] = await Promise.all([loadName(user), loadAvatar(user)]);
     return {
-        name: await loadName(user),
+        name,
+        avatarUrl,
         role,
         isEditor: role === "admin" || role === "editor",
         isAdmin: role === "admin",
@@ -178,6 +185,7 @@ export function AuthProvider({ children }) {
     }
 
     const clearPasswordSetup = () => setPasswordSetup(null);
+    const setAvatarUrl = (avatarUrl) => setRoles((r) => ({ ...r, avatarUrl }));
 
     return (
         <AuthContext.Provider
@@ -191,6 +199,7 @@ export function AuthProvider({ children }) {
                 sendPasswordReset,
                 updatePassword,
                 clearPasswordSetup,
+                setAvatarUrl,
             }}
         >
             {children}

@@ -1,0 +1,134 @@
+/* The changelog in the account pop-up: days, then each change with a
+   coloured icon (added green, changed blue, deleted red, maintenance amber)
+   like the daily summary email */
+.MyChanges {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: min(60svh, 520px);
+    margin: 0 -8px;
+    padding: 0 8px;
+    overflow-y: auto;
+}
+
+.MyChanges-dayLabel {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #8a877e;
+}
+
+.MyChanges-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.MyChanges-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #2e2c2d;
+}
+
+.MyChanges-item:last-child {
+    border-bottom: none;
+}
+
+.MyChanges-icon {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    margin-top: 1px;
+    border-radius: 50%;
+}
+
+.MyChanges-item.is-added .MyChanges-icon {
+    color: #47b028;
+    background-color: rgba(71, 176, 40, 0.15);
+}
+
+.MyChanges-item.is-changed .MyChanges-icon {
+    color: #25c4f8;
+    background-color: rgba(37, 196, 248, 0.15);
+}
+
+.MyChanges-item.is-deleted .MyChanges-icon {
+    color: #ff4d4f;
+    background-color: rgba(255, 77, 79, 0.15);
+}
+
+.MyChanges-item.is-maintenance .MyChanges-icon {
+    color: #f5a623;
+    background-color: rgba(245, 166, 35, 0.15);
+}
+
+.MyChanges-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.MyChanges-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 4px;
+    margin: 0;
+    font-size: 14px;
+    color: white;
+}
+
+.MyChanges-kind {
+    font-weight: 700;
+}
+
+.MyChanges-troop {
+    color: #8a877e;
+}
+
+/* The time: over on the right */
+.MyChanges-time {
+    margin-left: auto;
+    padding-left: 8px;
+    font-size: 12px;
+    color: #8a877e;
+}
+
+.MyChanges-lines {
+    margin: 4px 0 0;
+    padding-left: 16px;
+    font-size: 13px;
+    color: #b6b2a5;
+    overflow-wrap: anywhere;
+}
+
+.MyChanges-lines li + li {
+    margin-top: 2px;
+}
+
+.MyChanges-note {
+    margin: 0;
+    font-size: 14px;
+    color: #b6b2a5;
+    text-align: center;
+}
+
+/* "Loading your changes…": the site's blue */
+.MyChanges-note.is-loading {
+    color: #25c4f8;
+}
+
+.MyChanges-problem {
+    margin: 0;
+    font-size: 14px;
+    color: #ff4d4f;
+    text-align: center;
+}

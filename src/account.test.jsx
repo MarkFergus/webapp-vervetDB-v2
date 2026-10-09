@@ -90,8 +90,14 @@ function setup(options) {
             <ShowPage />
         </AuthProvider>
     );
-    const dialog = () => screen.getByRole("dialog", { name: /Sign in|Signed in/ });
+    const dialog = () => screen.getByRole("dialog", { name: /Sign in|Account|Welcome/ });
     return { user, dialog };
+}
+
+// Computers: the account circle's menu → Account (the signed-in pop-up)
+async function openAccountPage(user) {
+    await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+    await user.click(screen.getByRole("menuitem", { name: "Account" }));
 }
 
 async function signIn(user, email, password) {
@@ -123,11 +129,25 @@ test("the editor signs in: told they can edit, and the nav icon turns green", as
     const { user, dialog } = setup();
     await signIn(user, EDITOR.email, PASSWORD);
 
-    await waitFor(() => expect(dialog()).toHaveAccessibleName("Signed in"));
+    await waitFor(() => expect(dialog()).toHaveAccessibleName("Welcome"));
     expect(within(dialog()).getByText(EDITOR.email)).toBeInTheDocument();
     expect(within(dialog()).getByText("You can edit monkeys, upload photos, log maintenance, and download all photos for offline use.")).toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: "Account (signed in)" });
     expect(accountButton).toHaveClass("is-signed-in");
+});
+
+test("just signed in: Welcome and their first name; opening the account later: no heading", async () => {
+    const { user, dialog } = setup({ names: { [EDITOR.id]: "Sam Smith" } });
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(dialog()).toHaveAccessibleName("Welcome, Sam"));
+    expect(within(dialog()).getByRole("heading", { level: 1, name: "Welcome, Sam" })).toBeVisible();
+
+    await user.click(within(dialog()).getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await openAccountPage(user);
+    expect(dialog()).toHaveAccessibleName("Account");
+    expect(within(dialog()).queryByText(/Welcome/)).toBeNull();
+    expect(within(dialog()).getByRole("heading", { level: 1, name: "Account" })).toHaveClass("visually-hidden");
 });
 
 test("an admin sees a pink ADMIN badge, and that they can add and delete monkeys", async () => {
@@ -242,6 +262,79 @@ test("Request access shows who to email", async () => {
     );
 });
 
+describe("the account menu (computers)", () => {
+    test("signed in, the circle opens a menu: name, email, Account, Changelog, Theme and Sign Out", async () => {
+        const { user, dialog } = setup({ savedUser: EDITOR, names: { [EDITOR.id]: "Sam Smith" } });
+        const circle = await screen.findByRole("button", { name: "Account (signed in)" });
+        expect(circle).toHaveAttribute("aria-expanded", "false");
+        await user.click(circle);
+        const menu = screen.getByRole("menu", { name: "Account" });
+        expect(circle).toHaveAttribute("aria-expanded", "true");
+        expect(within(menu).getByText("Sam Smith")).toBeInTheDocument();
+        expect(within(menu).getByText(EDITOR.email)).toBeInTheDocument();
+        expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
+            "Account",
+            "Changelog",
+            "ThemeDark",
+            "Sign Out",
+        ]);
+        // Theme: Dark only, for now
+        expect(within(menu).getByRole("menuitem", { name: "Theme: Dark (Light coming soon)" })).toHaveAttribute("aria-disabled", "true");
+        expect(within(menu).getByRole("menuitem", { name: "Account" })).toHaveFocus();
+
+        // Account: the signed-in pop-up, and the menu's put away
+        await user.click(within(menu).getByRole("menuitem", { name: "Account" }));
+        expect(dialog()).toHaveAccessibleName("Account");
+        expect(screen.queryByRole("menu")).toBeNull();
+    });
+
+    test("Sign Out signs out; the circle then opens the sign-in pop-up", async () => {
+        const { user, dialog } = setup({ savedUser: EDITOR });
+        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        await user.click(screen.getByRole("menuitem", { name: "Sign Out" }));
+        expect(supabase.auth.signOut).toHaveBeenCalled();
+        await waitFor(() => expect(navAccountButton()).toHaveAccessibleName("Sign in"));
+        expect(screen.queryByRole("menu")).toBeNull();
+        await user.click(navAccountButton());
+        expect(dialog()).toHaveAccessibleName("Sign in");
+    });
+
+    test("arrow keys move through it; Escape closes it, back on the circle", async () => {
+        const { user } = setup({ savedUser: EDITOR });
+        const circle = await screen.findByRole("button", { name: "Account (signed in)" });
+        await user.click(circle);
+        await user.keyboard("{ArrowDown}");
+        expect(screen.getByRole("menuitem", { name: "Changelog" })).toHaveFocus();
+        await user.keyboard("{ArrowUp}{ArrowUp}");
+        expect(screen.getByRole("menuitem", { name: "Sign Out" })).toHaveFocus();
+        await user.keyboard("{ArrowDown}");
+        expect(screen.getByRole("menuitem", { name: "Account" })).toHaveFocus();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("menu")).toBeNull();
+        expect(circle).toHaveFocus();
+    });
+
+    test("accounts without a role (viewers): no Changelog", async () => {
+        const { user } = setup({ savedUser: VIEWER });
+        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        expect(screen.queryByRole("menuitem", { name: "Changelog" })).toBeNull();
+    });
+
+    test("a click outside closes it", async () => {
+        const { user } = setup({ savedUser: EDITOR });
+        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        await user.click(document.body);
+        expect(screen.queryByRole("menu")).toBeNull();
+    });
+
+    test("no name set yet: just the email", async () => {
+        const { user } = setup({ savedUser: EDITOR });
+        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        expect(document.querySelector(".AccountMenu-name")).toBeNull();
+        expect(within(screen.getByRole("menu")).getByText(EDITOR.email)).toBeInTheDocument();
+    });
+});
+
 describe("passwords", () => {
     test("links in Supabase emails are recognised", () => {
         expect(passwordSetupFromLink("#access_token=x&type=recovery")).toBe("recovery");
@@ -306,13 +399,14 @@ describe("passwords", () => {
         await user.click(screen.getByRole("button", { name: "Save password" }));
 
         expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: "a-new-password" });
-        expect(await screen.findByRole("dialog", { name: "Signed in" })).toBeInTheDocument();
+        // Signed in by the link: welcomed
+        expect(await screen.findByRole("dialog", { name: "Welcome" })).toBeInTheDocument();
         expect(within(screen.getByRole("dialog")).getByRole("status")).toHaveTextContent("Password saved.");
     });
 
     test("Change password: checks the length and that both match", async () => {
         const { user, dialog } = setup({ savedUser: EDITOR });
-        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        await openAccountPage(user);
         await user.click(within(dialog()).getByRole("button", { name: "Change password" }));
         expect(screen.getByRole("dialog")).toHaveAccessibleName("Change password");
         await waitFor(() => expect(screen.getByLabelText("New password")).toHaveFocus());
@@ -329,7 +423,7 @@ describe("passwords", () => {
 
         // Cancel goes back without changing anything
         await user.click(screen.getByRole("button", { name: "Cancel" }));
-        expect(screen.getByRole("dialog")).toHaveAccessibleName("Signed in");
+        expect(screen.getByRole("dialog")).toHaveAccessibleName("Account");
     });
 
     test("choosing the same password as before is explained", async () => {
@@ -337,7 +431,7 @@ describe("passwords", () => {
             savedUser: EDITOR,
             updateError: { status: 422, code: "same_password", message: "same" },
         });
-        await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
+        await openAccountPage(user);
         await user.click(within(dialog()).getByRole("button", { name: "Change password" }));
         await user.type(screen.getByLabelText("New password"), PASSWORD);
         await user.type(screen.getByLabelText("Type it again"), PASSWORD);

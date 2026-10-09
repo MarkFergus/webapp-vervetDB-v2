@@ -7,19 +7,20 @@ import {
     IconHourglassLow,
     IconInfoCircle,
     IconMap,
+    IconPencil,
     IconPlus,
-    IconUser,
     IconUsersGroup,
     IconX,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
+import Avatar from "./Avatar";
 import "./NavBars.css";
 
 // The site's ways around, beside the top bar (Nav.jsx):
 //   SideRail   computers: down the left, YouTube-style. Small (icons with
 //              tiny labels) to start with; ☰ opens it out with full labels.
-//   BottomBar  phones: Monkeys · Enclosures · Map · Game · You
+//   BottomBar  phones: Monkeys · Enclosures · Map (or Edit) · Game · You
 //   Drawer     phones: ☰ (top right) slides it in from the right: Add New
 //              Monkey (admins), Profile Book, Install & Use Offline, About
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
@@ -140,9 +141,11 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
 }
 
 // ---- Phones: the bottom bar ----
-//   onAccount: opens the account pop-up; signedIn: the person shows green
+//   onAccount: opens the account pop-up; signedIn: the person shows green;
+//   avatarUrl: their photo in its place (still ringed in green)
 //   onMap: the Interactive Map (for now, its "coming soon" notice)
-export function BottomBar({ page, onHome, onMap, onAccount, signedIn, inert }) {
+//   onEdit: on a page they can edit (editors / admins), Edit takes Map's place
+export function BottomBar({ page, onHome, onMap, onEdit, onAccount, signedIn, avatarUrl, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -155,15 +158,27 @@ export function BottomBar({ page, onHome, onMap, onAccount, signedIn, inert }) {
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, IconFence, "Enclosures")}
-            {/* The interactive sanctuary map: coming soon */}
-            <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map (coming soon)">
-                <span className="BottomBar-icon" aria-hidden="true">
-                    <span className="BottomBar-mapCircle">
-                        <IconMap stroke={1.75} size={20} />
+            {onEdit ? (
+                // A page they can edit: Edit, in the same circle
+                <button type="button" className="BottomBar-map is-edit" onClick={onEdit} aria-label="Edit this page">
+                    <span className="BottomBar-icon" aria-hidden="true">
+                        <span className="BottomBar-mapCircle">
+                            <IconPencil stroke={1.75} size={20} />
+                        </span>
                     </span>
-                </span>
-                <span aria-hidden="true">Map</span>
-            </button>
+                    <span aria-hidden="true">Edit</span>
+                </button>
+            ) : (
+                // The interactive sanctuary map: coming soon
+                <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map (coming soon)">
+                    <span className="BottomBar-icon" aria-hidden="true">
+                        <span className="BottomBar-mapCircle">
+                            <IconMap stroke={1.75} size={20} />
+                        </span>
+                    </span>
+                    <span aria-hidden="true">Map</span>
+                </button>
+            )}
             {tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
             <button
                 type="button"
@@ -173,7 +188,7 @@ export function BottomBar({ page, onHome, onMap, onAccount, signedIn, inert }) {
             >
                 <span className="BottomBar-icon" aria-hidden="true">
                     <span className="BottomBar-avatar">
-                        <IconUser stroke={1.75} size={16} />
+                        <Avatar url={avatarUrl} size={16} />
                     </span>
                 </span>
                 <span aria-hidden="true">You</span>

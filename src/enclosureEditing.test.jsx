@@ -137,6 +137,30 @@ describe("editing an enclosure", () => {
         expect(screen.getByText("Established").closest("div")).toHaveTextContent("March 2014");
     });
 
+    test("phones: Edit takes Map's place in the bottom bar, and opens the form", async () => {
+        const { user } = setup();
+        const bar = screen.getByRole("navigation", { name: "Main" });
+        await user.click(await within(bar).findByRole("button", { name: "Edit this page" }));
+        expect(screen.getByRole("dialog", { name: "Edit Robert" })).toBeInTheDocument();
+        expect(within(bar).queryByRole("button", { name: /Interactive Map/ })).toBeNull();
+    });
+
+    test("no Edit there for those who can't edit, or off an enclosure's page: Map instead", async () => {
+        setup({ admin: false });
+        await screen.findByRole("heading", { level: 1, name: "Robert" });
+        await screen.findByText("Section");
+        const bar = screen.getByRole("navigation", { name: "Main" });
+        expect(within(bar).queryByRole("button", { name: "Edit this page" })).toBeNull();
+        expect(within(bar).getByRole("button", { name: /Interactive Map/ })).toBeInTheDocument();
+    });
+
+    test("the Enclosures list: Map, not Edit", async () => {
+        setup({ route: "enclosures" });
+        const bar = screen.getByRole("navigation", { name: "Main" });
+        await screen.findByRole("heading", { level: 1 });
+        expect(within(bar).queryByRole("button", { name: "Edit this page" })).toBeNull();
+    });
+
     test("size: just the number, shown in m²; anything else isn't saved", async () => {
         const { user } = setup();
         await user.click(await screen.findByRole("button", { name: "Edit" }));
