@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import {
     IconDeviceGamepad2,
     IconDeviceMobileDown,
-    IconFence,
     IconFileTypePdf,
     IconHourglassLow,
     IconInfoCircle,
@@ -14,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
+import EnclosureIcon from "./EnclosureIcon";
 import Avatar from "./Avatar";
 import "./NavBars.css";
 
@@ -106,7 +106,7 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onProfileBo
                 {item(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
                 {item(
                     { href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined },
-                    IconFence,
+                    EnclosureIcon,
                     "Enclosures"
                 )}
                 {/* The small rail: the tools straight after (no headings) */}
@@ -157,7 +157,7 @@ export function BottomBar({ page, onHome, onMap, onEdit, onAccount, signedIn, av
     return (
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
-            {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, IconFence, "Enclosures")}
+            {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosureIcon, "Enclosures")}
             {onEdit ? (
                 // A page they can edit: Edit, in the same circle
                 <button type="button" className="BottomBar-map is-edit" onClick={onEdit} aria-label="Edit this page">

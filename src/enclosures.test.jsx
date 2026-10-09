@@ -12,6 +12,7 @@ import {
 } from "./enclosures";
 import { homeName, placeLabel, placeName } from "./places";
 import { monkeyHash } from "./monkeyLink";
+import { sortEnclosures } from "./EnclosuresPage";
 
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
 const HB = byName("H&B");
@@ -98,7 +99,11 @@ describe("the Enclosures list", () => {
         expect(screen.getByRole("link", { name: "vervetDB home" })).toBeInTheDocument();
         expect(screen.getByPlaceholderText("Name or chip number")).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 1, name: "Enclosures" })).toBeInTheDocument();
-        expect(screen.getByText("15 troop enclosures · 73 introcages")).toBeInTheDocument();
+        // The totals: a pill (shorter) beside Sort, the full words for screen readers
+        expect(screen.getByText("15 troop enclosures · 73 introcages")).toHaveClass("visually-hidden");
+        expect(screen.getByText("15 enclosures")).toBeInTheDocument();
+        expect(screen.getByText("73 introcages")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Sort: Section, Top first" })).toBeInTheDocument();
         // No section headings; Top first, Sickbay last
         expect(screen.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
         const names = screen.getAllByRole("article").map((a) => a.querySelector(".EnclosureCard-name").textContent);
@@ -375,5 +380,76 @@ describe("the map's small icons", () => {
         for (const name of ["Water taps", "Mister icon", "Electric fence switches", "Toilets & showers", "Rocks & fire pits"]) {
             expect(svg, name).toContain(`inkscape:label="${name}"`);
         }
+    });
+});
+
+describe("sorting the Enclosures list", () => {
+    const cardNames = () => screen.getAllByRole("article").map((a) => a.querySelector(".EnclosureCard-name").textContent);
+    // Sizes for three of them (the rest not recorded)
+    const SIZED = enclosuresArr.map((e) =>
+        ({ Robert: { ...e, size: 600 }, Goliath: { ...e, size: 1200 }, James: { ...e, size: 80 } })[e.name] ?? e
+    );
+    function setup() {
+        const user = userEvent.setup();
+        render(<ShowPage route="enclosures" monkeys={MONKEYS} enclosures={SIZED} sections={SECTION_NAMES} />);
+        return { user };
+    }
+    async function chooseSort(user, name) {
+        await user.click(screen.getByRole("button", { name: /^Sort:/ }));
+        await user.click(screen.getByRole("menuitem", { name }));
+    }
+
+    test("the Sort menu: Name, Section, Monkeys and Size", async () => {
+        const { user } = setup();
+        await user.click(screen.getByRole("button", { name: "Sort: Section, Top first" }));
+        expect(screen.getAllByRole("menuitem").map((i) => i.getAttribute("aria-label"))).toEqual([
+            "Name",
+            "Section, Sickbay first",
+            "Monkeys",
+            "Size",
+        ]);
+    });
+
+    test("Name: A–Z, then Z–A", async () => {
+        const { user } = setup();
+        const sorted = enclosuresArr.filter((e) => e.type === "troop").map((e) => e.name).sort((a, b) => a.localeCompare(b));
+        await chooseSort(user, "Name");
+        expect(cardNames()).toEqual(sorted);
+        await chooseSort(user, "Name, Z–A");
+        expect(cardNames()).toEqual([...sorted].reverse());
+    });
+
+    test("Section the other way: Sickbay first, each section's enclosures in their usual order", async () => {
+        const { user } = setup();
+        await chooseSort(user, "Section, Sickbay first");
+        expect(cardNames().slice(0, 2)).toEqual(["Global", "James"]);
+        expect(cardNames().slice(-4)).toEqual(["Goliath", "Gismo", "D&D", "Royal"]);
+    });
+
+    test("Size: largest first (with each size on its card), unrecorded last; then smallest first", async () => {
+        const { user } = setup();
+        await chooseSort(user, "Size");
+        expect(cardNames().slice(0, 3)).toEqual(["Goliath", "Robert", "James"]);
+        expect(screen.getAllByRole("article")[0]).toHaveTextContent("1,200 m²");
+        await chooseSort(user, "Size, Smallest first");
+        expect(cardNames().slice(0, 3)).toEqual(["James", "Robert", "Goliath"]);
+        expect(cardNames()).toHaveLength(15);
+    });
+
+    test("Monkeys: most troop monkeys first, then fewest", async () => {
+        const { user } = setup();
+        const count = (name) => MONKEYS.filter((m) => m.troop === name).length;
+        await chooseSort(user, "Monkeys");
+        const most = cardNames().map(count);
+        expect(most).toEqual([...most].sort((a, b) => b - a));
+        await chooseSort(user, "Monkeys, Fewest first");
+        const fewest = cardNames().map(count);
+        expect(fewest).toEqual([...fewest].sort((a, b) => a - b));
+    });
+
+    test("ties keep section order", () => {
+        const [a, b, c] = enclosuresArr.filter((e) => e.type === "troop");
+        const sized = [{ ...a, size: 100 }, { ...b, size: 100 }, { ...c, size: 200 }];
+        expect(sortEnclosures(sized, { key: "size", ascending: true }, []).map((e) => e.name)).toEqual([c.name, a.name, b.name]);
     });
 });

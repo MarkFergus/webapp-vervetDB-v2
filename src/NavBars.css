@@ -153,6 +153,12 @@
     color: white;
 }
 
+/* The page you're on: its icon green (the bottom bar's too) */
+.SideRail-item[aria-current="page"] svg,
+.BottomBar-tab[aria-current="page"] svg {
+    color: #47b028;
+}
+
 .SideRail.is-open .SideRail-item[aria-current="page"] {
     background-color: rgba(255, 255, 255, 0.1);
 }

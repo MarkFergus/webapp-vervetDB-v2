@@ -59,16 +59,12 @@
     gap: 6px;
 }
 
-/* The sort icon: only when the toolbar is too tight for the words
-   (.is-compact, set by ShowPage) */
+/* The sort icon: always first, like the Filters icon. When the toolbar is
+   too tight for the words (.is-compact, set by ShowPage), just the icon. */
 .SortMenu-icon {
-    display: none;
+    flex-shrink: 0;
 }
 
 .ShowPage-toolbar.is-compact .SortMenu-current {
     display: none;
-}
-
-.ShowPage-toolbar.is-compact .SortMenu-icon {
-    display: block;
 }

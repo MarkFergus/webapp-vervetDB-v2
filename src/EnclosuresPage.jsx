@@ -9,7 +9,7 @@ import {
     IconChevronDown,
     IconChevronLeft,
     IconChevronRight,
-    IconFence,
+    IconCube,
     IconMap,
     IconMapPin,
     IconPencil,
@@ -24,6 +24,8 @@ import MaintenanceLog from "./MaintenanceLog";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
+import EnclosureIcon from "./EnclosureIcon";
+import SortMenu from "./SortMenu";
 import { inIntrocage, placeName } from "./places";
 import {
     bySection,
@@ -163,9 +165,15 @@ function PhotoSlides({ photos, name }) {
     );
 }
 
+// A place's icon: the enclosure icon (EnclosureIcon) for a troop enclosure, a cube for an introcage
+function PlaceIcon({ enclosure, ...props }) {
+    const Icon = enclosure.type === "introcage" ? IconCube : EnclosureIcon;
+    return <Icon {...props} />;
+}
+
 // The enclosure's own photos (cards: the primary one, small), or until it
-// has some, up to four of its monkeys in a 2 × 2 grid, or a fence icon if
-// it's empty
+// has some, up to four of its monkeys in a 2 × 2 grid, or if it's empty
+// its icon (the enclosure icon; an introcage: a cube)
 function Picture({ enclosure, monkeys, large = false }) {
     const className = `Enclosures-picture${large ? " is-large" : ""}`;
     if (enclosure.photos.length) {
@@ -186,7 +194,7 @@ function Picture({ enclosure, monkeys, large = false }) {
     if (!faces.length) {
         return (
             <span className={`${className} is-empty`}>
-                <IconFence size={large ? 48 : 36} stroke={1.5} aria-hidden="true" />
+                <PlaceIcon enclosure={enclosure} size={large ? 48 : 36} stroke={1.5} aria-hidden="true" />
             </span>
         );
     }
@@ -266,7 +274,7 @@ function JumpList({ jumps, onJump }) {
 }
 
 // A troop enclosure's introcages, as rows like the monkey list: a small
-// picture (its own photo, someone living there, or a fence if it's empty),
+// picture (its own photo, someone living there, or a cube if it's empty),
 // the name, who's in it and how many. Each opens that introcage.
 function IntrocageList({ introcages, monkeys }) {
     return (
@@ -288,7 +296,7 @@ function IntrocageList({ introcages, monkeys }) {
                                     onError={fallbackTo(photo)}
                                 />
                             ) : (
-                                <IconFence size={22} stroke={1.5} aria-hidden="true" />
+                                <IconCube size={22} stroke={1.5} aria-hidden="true" />
                             )}
                         </span>
                         <span className="IntrocageRow-main">
@@ -307,17 +315,65 @@ function IntrocageList({ introcages, monkeys }) {
     );
 }
 
-// The list: every troop enclosure as a card, one after another in section
-// order (a section filter can come later)
-function EnclosureList({ enclosures, sections, monkeys }) {
-    const all = bySection(enclosures, sections).flatMap((group) => group.enclosures);
+// The ways to sort the list (the Sort menu, as on the monkey list). The
+// first way round is the usual one: sections in order, most monkeys first,
+// largest first.
+export const ENCLOSURE_SORTS = [
+    { key: "name", label: "Name", up: "A–Z", down: "Z–A" },
+    { key: "section", label: "Section", up: "Top first", down: "Sickbay first" },
+    { key: "monkeys", label: "Monkeys", up: "Most first", down: "Fewest first" },
+    { key: "size", label: "Size", up: "Largest first", down: "Smallest first" },
+];
+export const DEFAULT_ENCLOSURE_SORT = { key: "section", ascending: true };
+
+// The troop enclosures, sorted. inOrder: in section order (ties keep it);
+// sizes not recorded go last, whichever way round.
+export function sortEnclosures(inOrder, sort, monkeys) {
+    const place = new Map(inOrder.map((e, i) => [e, i]));
+    const count = new Map(inOrder.map((e) => [e, troopMonkeys(e, monkeys).length]));
+    // Each section's place (Top 0 … Sickbay 3): Sickbay first turns the
+    // sections round, each one's enclosures staying in their usual order
+    const sectionOrder = [...new Set(inOrder.map((e) => e.section))];
+    const sectionOf = (e) => sectionOrder.indexOf(e.section);
+    const flip = sort.ascending ? 1 : -1;
+    const compare = {
+        name: (a, b) => a.name.localeCompare(b.name),
+        section: (a, b) => sectionOf(a) - sectionOf(b),
+        monkeys: (a, b) => count.get(b) - count.get(a),
+        size: (a, b) => b.size - a.size,
+    }[sort.key];
+    return [...inOrder].sort((a, b) => {
+        if (sort.key === "size" && (a.size == null) !== (b.size == null)) return a.size == null ? 1 : -1;
+        if (sort.key === "size" && a.size == null) return place.get(a) - place.get(b);
+        return flip * compare(a, b) || place.get(a) - place.get(b);
+    });
+}
+
+// The list: every troop enclosure as a card, in section order to start
+// with; Sort changes the order (sort / onSort: see EnclosuresPage)
+function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
+    const inOrder = bySection(enclosures, sections).flatMap((group) => group.enclosures);
+    const all = sortEnclosures(inOrder, sort, monkeys);
     const introcageTotal = enclosures.filter((e) => e.type === "introcage").length;
+    const totals = `${plural(all.length, "troop enclosure")} · ${plural(introcageTotal, "introcage")}`;
     return (
         <>
-            <h1 className="Enclosures-title">Enclosures</h1>
-            <p className="Enclosures-subtitle">
-                {plural(all.length, "troop enclosure")} · {plural(introcageTotal, "introcage")}
-            </p>
+            {/* No title on screen, like the monkey list (the side rail and
+                bottom bar show which page this is). The title is still
+                there for screen readers. */}
+            <h1 className="visually-hidden">Enclosures</h1>
+            {/* Sort, and how many: the same row as the monkey list's */}
+            <div className="ShowPage-toolbar Enclosures-toolbar">
+                <SortMenu sort={sort} onSort={onSort} options={ENCLOSURE_SORTS} />
+                {/* How many: troop enclosures (the enclosure icon) and introcages (a cube) */}
+                <span className="ShowPage-count Enclosures-totals" title={totals}>
+                    <EnclosureIcon size={16} aria-hidden="true" />
+                    <span aria-hidden="true">{plural(all.length, "enclosure")}</span>
+                    <IconCube size={16} aria-hidden="true" />
+                    <span aria-hidden="true">{plural(introcageTotal, "introcage")}</span>
+                    <span className="visually-hidden">{totals}</span>
+                </span>
+            </div>
                     <div className="Enclosures-grid">
                         {all.map((enclosure) => {
                             const troop = troopMonkeys(enclosure, monkeys);
@@ -329,6 +385,8 @@ function EnclosureList({ enclosures, sections, monkeys }) {
                                         <span className="EnclosureCard-meta">
                                             {plural(troop.length, "troop monkey")} ·{" "}
                                             {plural(introcagesOf(enclosure, enclosures).length, "introcage")}
+                                            {/* Sorted by size: each one's size too */}
+                                            {sort.key === "size" && enclosure.size != null && ` · ${sizeText(enclosure.size)}`}
                                         </span>
                                     </a>
                                 </article>
@@ -433,7 +491,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
         : [
               { key: "map", label: "Map", icon: IconMap },
               ...(introcages.length
-                  ? [{ key: "introcages", label: "Introcages", icon: IconFence }]
+                  ? [{ key: "introcages", label: "Introcages", icon: IconCube }]
                   : []),
               maintenanceJump,
               { key: "monkeys", label: "Monkeys", icon: IconUsersGroup },
@@ -481,7 +539,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         </div>
                         {isIntrocage && parent && (
                             <p className="Enclosures-parent">
-                                <IconFence size={15} aria-hidden="true" />
+                                <EnclosureIcon size={15} aria-hidden="true" />
                                 Introcage at <a href={enclosureHash(parent)}>{parent.name}</a>
                             </p>
                         )}
@@ -638,6 +696,12 @@ function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, in
     // The last step: { id (where to), from ("prev" / "next") }, so that
     // record slides in from that side
     const [stepped, setStepped] = useState(null);
+    // The list's sort: kept while looking at enclosures, so it's the same
+    // on coming back from one. Choosing the current sort flips it; another
+    // starts the usual way round (as on the monkey list).
+    const [sort, setSort] = useState(DEFAULT_ENCLOSURE_SORT);
+    const sortBy = (key) =>
+        setSort((prev) => ({ key, ascending: prev.key === key ? !prev.ascending : true }));
 
     // Previous / next: in place of this record in the history, so Back
     // still goes back to wherever they came from
@@ -673,7 +737,7 @@ function EnclosuresPage({ route, monkeys, enclosures, sections, onOpenMonkey, in
                     <p className="Enclosures-missing">That enclosure couldn't be found. It may have been removed.</p>
                 </>
             ) : (
-                <EnclosureList enclosures={enclosures} sections={sections} monkeys={monkeys} />
+                <EnclosureList enclosures={enclosures} sections={sections} monkeys={monkeys} sort={sort} onSort={sortBy} />
             )}
         </div>
     );

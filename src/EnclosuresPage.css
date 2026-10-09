@@ -126,6 +126,24 @@
     color: #8a877e;
 }
 
+/* The list's Sort and totals: the monkey list's toolbar (ShowPage.css), in
+   the same place under the top bar; .Enclosures already sets the edges */
+.Enclosures .Enclosures-toolbar {
+    flex-wrap: wrap; /* (the narrowest phones: the totals go underneath) */
+    row-gap: 8px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* The totals pill: a little more room before the introcages' cube */
+.Enclosures-totals svg + span + svg {
+    margin-left: 6px;
+}
+
+.Enclosures-toolbar + .Enclosures-grid {
+    margin-top: 12px;
+}
+
 /* Headings on a record: small grey capitals, like the field names in forms */
 .Enclosures-block h2 {
     margin: 0 0 10px;

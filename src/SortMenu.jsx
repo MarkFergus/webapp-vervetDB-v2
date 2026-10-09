@@ -10,9 +10,9 @@ export const SORTS = [
     { key: "sex", label: "Sex", up: "Female first", down: "Male first" },
 ];
 
-// "Name, A–Z"
-export function sortDescription({ key, ascending }) {
-    const s = SORTS.find((option) => option.key === key);
+// "Name, A–Z" (options: the sorts on offer, SORTS unless given)
+export function sortDescription({ key, ascending }, options = SORTS) {
+    const s = options.find((option) => option.key === key);
     return `${s.label}, ${ascending ? s.up : s.down}`;
 }
 
@@ -21,11 +21,13 @@ export function sortDescription({ key, ascending }) {
 // stays grey (sorting only changes the order; nothing is filtered out). Its
 // dropdown offers the other sorts, and the current one the other way round
 // ("Name Z–A"). Another sort starts the usual way round.
-function SortMenu({ sort, onSort }) {
+//   options: the sorts on offer ({ key, label, up, down }), the monkey
+//   list's (SORTS) unless given, e.g. the Enclosures list's
+function SortMenu({ sort, onSort, options = SORTS }) {
     const [open, setOpen] = useState(false);
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
-    const current = SORTS.find((option) => option.key === sort.key);
+    const current = options.find((option) => option.key === sort.key);
 
     function close() {
         setOpen(false);
@@ -70,20 +72,20 @@ function SortMenu({ sort, onSort }) {
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-controls={open ? "SortMenu-menu" : undefined}
-                aria-label={`Sort: ${sortDescription(sort)}`}
+                aria-label={`Sort: ${sortDescription(sort, options)}`}
             >
+                {/* The sort icon first, like Filters' (when the row's too
+                    tight for the words, ShowPage: just the icon) */}
+                <IconArrowsSort className="SortMenu-icon" size={16} stroke={2} aria-hidden="true" />
                 <span className="SortMenu-current">
                     {current.label}
                     <span className="SortMenu-direction">{sort.ascending ? current.up : current.down}</span>
                 </span>
-                {/* When the row's too tight for the words (ShowPage), just
-                    a sort icon */}
-                <IconArrowsSort className="SortMenu-icon" size={16} stroke={2} aria-hidden="true" />
                 <IconChevronDown className="ShowPage-chevron" size={14} stroke={2} aria-hidden="true" />
             </button>
             {open && (
                 <div className="SortMenu-menu" id="SortMenu-menu" role="menu" ref={menuRef} onKeyDown={handleKeyDown}>
-                    {SORTS.map((option) => {
+                    {options.map((option) => {
                         const isCurrent = option.key === sort.key;
                         // The current sort is offered the other way round
                         const reversed = isCurrent && (sort.ascending ? option.down : option.up);

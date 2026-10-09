@@ -1,0 +1,298 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The enclosure icon designs considered (2026-10-09). K (fence only) was
+     chosen: src/EnclosureIcon.jsx (P, the acacia, was tried and dropped).
+     Open this file in a browser to compare them. -->
+<title>vervetDB Enclosure Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Russo+One&display=swap">
+<style>
+/* Layout: one card per icon design, each showing it big, in the phone's bottom bar,
+   in the computer's side rail, and beside the introcage cube. Dark only, like the app. */
+:root {
+    --bg: #1a1a1a;
+    --panel: #222122;
+    --bar: #1f1f1f;
+    --line: #3a3839;
+    --text: #d1cfc7;
+    --muted: #8a877e;
+    --white: #ffffff;
+    --green: #47b028;
+    --blue: #25c4f8;
+    --pink: #fe39a4;
+    --display: "Russo One", "Arial Black", sans-serif;
+    --body: "Nunito Sans", "Segoe UI", Arial, sans-serif;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+}
+.wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 28px 48px;
+}
+h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: normal;
+    font-size: 28px;
+    color: var(--white);
+    text-wrap: balance;
+}
+.intro {
+    margin: 6px 0 24px;
+    max-width: 62ch;
+    color: var(--muted);
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+    gap: 16px;
+}
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-width: 0;
+}
+.card.is-current { border-style: dashed; }
+.head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.big {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    color: var(--white);
+    background: var(--bar);
+    border-radius: 14px;
+}
+.letter {
+    display: inline-block;
+    margin-right: 6px;
+    font-family: var(--display);
+    color: var(--pink);
+}
+.name {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+}
+.desc {
+    margin: 2px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+}
+.label {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+/* The phone's bottom bar */
+.bottombar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 0 4px;
+    background: var(--bar);
+    border-top: 1px solid var(--line);
+    border-radius: 8px;
+}
+.tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: #b6b2a5;
+}
+.tab .ico { height: 32px; display: grid; place-items: center; }
+.tab.is-current { color: var(--white); font-weight: 700; }
+.tab.is-current svg { color: var(--green); }
+.mapcircle {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--blue);
+    border: 2px solid var(--blue);
+    border-radius: 50%;
+}
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+}
+/* The computer's side rail (small) and the totals pill, side by side */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-start;
+}
+.rail {
+    display: flex;
+    gap: 2px;
+    padding: 6px;
+    background: var(--bar);
+    border-radius: 8px;
+}
+.railitem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 58px;
+    padding: 8px 0 6px;
+    font-size: 10px;
+    color: #b6b2a5;
+    border-radius: 8px;
+}
+.railitem.is-current { color: var(--white); font-weight: 700; }
+.railitem.is-current svg { color: var(--green); }
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.pill svg { color: var(--text); }
+.pill svg + span + svg { margin-left: 6px; }
+svg { display: block; }
+</style>
+
+<div class="wrap">
+    <h1>Enclosure icon designs</h1>
+    <p class="intro">Round 5: the fence with an acacia or a cloud-shaped tree, beside N (round tree) and K (fence only). Each design is shown large, then where it would really appear: the phone's bottom bar
+        (as the page you're on, in green), the computer's side rail, and the Enclosures totals beside the
+        introcage cube. All are drawn on the same 24-pixel grid and line weight as the app's other icons.</p>
+    <div class="grid" id="grid"></div>
+</div>
+
+<script>
+// Each icon: SVG paths on Tabler's 24 × 24 grid (lines only, round ends)
+const ICONS = {
+    usersGroup: ["M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0", "M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1", "M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0", "M17 10h2a2 2 0 0 1 2 2v1", "M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0", "M3 13v-1a2 2 0 0 1 2 -2h2"],
+    map: ["M3 7l6 -3l6 3l6 -3v13l-6 3l-6 -3l-6 3v-13", "M9 4v13", "M15 7v13"],
+    gamepad: ["M12 5h3.5a5 5 0 0 1 0 10h-5.5l-4.015 4.227a2.3 2.3 0 0 1 -3.923 -2.035l1.634 -8.173a5 5 0 0 1 4.904 -4.019h3.4", "M14 15l4.07 4.284a2.3 2.3 0 0 0 3.925 -2.023l-1.6 -8.232", "M8 9v2", "M7 10h2", "M14 10h2"],
+    user: ["M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0", "M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"],
+    cube: ["M21 16.008v-8.018a1.98 1.98 0 0 0 -1 -1.717l-7 -4.008a2.016 2.016 0 0 0 -2 0l-7 4.008c-.619 .355 -1 1.01 -1 1.718v8.018c0 .709 .381 1.363 1 1.717l7 4.008a2.016 2.016 0 0 0 2 0l7 -4.008c.619 -.355 1 -1.01 1 -1.718", "M12 22v-10", "M12 12l8.73 -5.04", "M3.27 6.96l8.73 5.04"],
+    pdf: ["M14 3v4a1 1 0 0 0 1 1h4", "M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4", "M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6", "M17 18h2", "M20 15h-3v6", "M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"],
+};
+
+// The designs to compare (the current fence last, for reference)
+// Round 5: N's fence with other trees: acacias (the flat umbrella top)
+// and a cloud-shaped crown. N and K stay for comparison.
+const FENCE = ["M5 10v11", "M19 10v11", "M2.5 12h19", "M2.5 16h19", "M2.5 20h19"];
+const DESIGNS = [
+    {
+        letter: "P", name: "Acacia",
+        desc: "A flat-topped acacia over the fence: a short trunk that forks into a wide umbrella canopy.",
+        paths: ["M5 7h14c-1.5 -2.5 -4 -3.5 -7 -3.5s-5.5 1 -7 3.5", "M12 12v-2.5", "M12 9.5l-2.5 -2.5", "M12 9.5l2.5 -2.5", ...FENCE],
+    },
+    {
+        letter: "Q", name: "Wide acacia",
+        desc: "A wider, flatter canopy reaching across both poles, like the big acacias on the savanna.",
+        paths: ["M3 6.5h18c-2 -2 -5.5 -3 -9 -3s-7 1 -9 3", "M12 12v-3", "M12 9l-3.5 -2.5", "M12 9l2 -2.5", ...FENCE],
+    },
+    {
+        letter: "R", name: "Cloud tree",
+        desc: "A soft, cloud-shaped crown on a short trunk.",
+        paths: ["M8 10a2 2 0 0 1 0 -4a3 3 0 0 1 5.6 -1.5a2.6 2.6 0 0 1 2.4 5.5z", "M12 10v2", ...FENCE],
+    },
+    {
+        letter: "N", name: "Tree in the middle",
+        desc: "K's fence on the bottom half (three wires), with a round tree behind it, centred.",
+        paths: [
+            "M8.5 6a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0", "M12 9.5v2.5",
+            "M5 10v11", "M19 10v11", "M2.5 12h19", "M2.5 16h19", "M2.5 20h19",
+        ],
+    },
+    {
+        letter: "K", name: "Four wires, short run-on",
+        desc: "Poles near each side, four wires carrying on a short way past them.",
+        paths: ["M5 3v18", "M19 3v18", "M2.5 7h19", "M2.5 11h19", "M2.5 15h19", "M2.5 19h19"],
+    },
+    {
+        letter: "Now", name: "Fence (current)",
+        desc: "Today's icon, for comparison.",
+        current: true,
+        paths: ["M4 12v4h16v-4l-16 0", "M6 16v4h4v-4m0 -4v-6l-2 -2l-2 2v6", "M14 16v4h4v-4m0 -4v-6l-2 -2l-2 2v6"],
+    },
+];
+
+function svg(paths, size = 24, stroke = 1.75) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        ${paths.map((d) => `<path d="${d}"/>`).join("")}</svg>`;
+}
+
+function card(design) {
+    const icon = (size, stroke) => svg(design.paths, size, stroke);
+    return `
+    <article class="card${design.current ? " is-current" : ""}">
+        <div class="head">
+            <div class="big">${icon(56, 1.5)}</div>
+            <div>
+                <p class="name"><span class="letter">${design.letter}</span>${design.name}</p>
+                <p class="desc">${design.desc}</p>
+            </div>
+        </div>
+        <div>
+            <p class="label">Phone bottom bar</p>
+            <div class="bottombar">
+                <div class="tab"><span class="ico">${svg(ICONS.usersGroup)}</span>Monkeys</div>
+                <div class="tab is-current"><span class="ico">${icon(24, 1.75)}</span>Enclosures</div>
+                <div class="tab"><span class="ico"><span class="mapcircle">${svg(ICONS.map, 20)}</span></span>Map</div>
+                <div class="tab"><span class="ico">${svg(ICONS.gamepad)}</span>Game</div>
+                <div class="tab"><span class="ico"><span class="avatar">${svg(ICONS.user, 16)}</span></span>You</div>
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <p class="label">Side rail</p>
+                <div class="rail">
+                    <div class="railitem">${svg(ICONS.usersGroup)}Monkeys</div>
+                    <div class="railitem is-current">${icon(24, 1.75)}Enclosures</div>
+                    <div class="railitem">${svg(ICONS.map)}Map</div>
+                </div>
+            </div>
+            <div>
+                <p class="label">With the cube</p>
+                <span class="pill">${icon(16, 2)}<span>15 enclosures</span>${svg(ICONS.cube, 16, 2)}<span>73 introcages</span></span>
+            </div>
+        </div>
+    </article>`;
+}
+
+document.getElementById("grid").innerHTML = DESIGNS.map(card).join("");
+</script>
