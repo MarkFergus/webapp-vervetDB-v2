@@ -21,6 +21,17 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.8.0",
+        date: "2026-10-10",
+        changes: [
+            "New Feeding for introcage monkeys: fed by Local Team or Sickbay, AM plates and PM bowls",
+            "New AM Plates List: the morning plates by section, for the plates board",
+            "New Troop Monitoring Sheet: each troop's monkeys to tick off, the youngest by year",
+            "Improved Create PDF: choose a document; for staff only, and in the bottom bar on phones",
+            "Improved pop-ups: they sit near the top and no longer jump about",
+        ],
+    },
+    {
         version: "1.7.0",
         date: "2026-10-10",
         changes: [

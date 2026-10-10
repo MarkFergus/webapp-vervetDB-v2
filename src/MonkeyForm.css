@@ -1,6 +1,28 @@
 /* Edit / add monkey form. Same dark look as the other pop-ups:
    neon blue #25c4f8 for Save, neon pink #fe39a4 for Delete. */
 
+/* The whole screen: the window near the top (--popup-top-tall), growing
+   downwards; as tall as it needs, up to nearly the full screen (it scrolls
+   inside) */
+.MonkeyForm {
+    position: fixed;
+    z-index: 5;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 4svh;
+    box-sizing: border-box;
+}
+
+/* The gap above it: always the same (--popup-top-tall), so it never moves
+   as fields appear (e.g. Feeding); a longer one scrolls inside */
+.MonkeyForm::before {
+    content: "";
+    flex: none;
+    height: var(--popup-top-tall);
+}
+
 .MonkeyForm-overlay {
     position: fixed;
     z-index: 5;
@@ -9,11 +31,10 @@
 }
 
 .MonkeyForm-window {
-    position: fixed;
+    position: relative;
     z-index: 6;
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
+    flex: 0 1 auto;
+    min-height: 0;
     width: min(94vw, 560px);
     max-height: 92svh;
     display: flex;
@@ -193,6 +214,74 @@
 .MonkeyForm-fieldError {
     font-size: 13px;
     color: #ff4d4f;
+}
+
+/* Feeding (introcage monkeys): its own little group */
+.MonkeyForm-feeding {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    margin: 0;
+    padding: 12px;
+    border: 2px solid #343234;
+    border-radius: 8px;
+}
+
+.MonkeyForm-feeding legend {
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
+/* Feeding's rows: the box a set width, the tick boxes beside it */
+.MonkeyForm-feedRow {
+    grid-template-columns: 9.5rem 1fr;
+}
+
+/* Tick boxes beside the plates / bowls box: centred on the box (the same
+   height, below its name), in set-width columns so AM's and PM's
+   "Cut Small" line up */
+.MonkeyForm-checks {
+    align-self: end;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 6.75rem);
+    align-items: center;
+    gap: 4px 8px;
+    min-height: 43px;
+    font-size: 14px;
+    color: #d1cfc7;
+}
+
+.MonkeyForm-checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* (not the form's text-box look) */
+.MonkeyForm .MonkeyForm-checks input {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: none;
+    accent-color: #3dfc8a;
+    cursor: pointer;
+}
+
+.MonkeyForm .MonkeyForm-checks input:disabled,
+.MonkeyForm-checks label:has(input:disabled) {
+    cursor: default;
+    opacity: 0.7;
 }
 
 /* Photo links, each with a small preview */

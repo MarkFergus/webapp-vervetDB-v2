@@ -423,6 +423,11 @@
     cursor: pointer;
 }
 
+/* (the game: a link, looking the same as the buttons) */
+a.Drawer-item {
+    text-decoration: none;
+}
+
 .Drawer-item:hover:not(:disabled) {
     color: white;
     background-color: #343234;

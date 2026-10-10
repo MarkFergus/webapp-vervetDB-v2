@@ -23,6 +23,7 @@ import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import { placeLabel } from "./places";
+import { amText, hasFeeding, pmText } from "./feeding";
 import "./Modal.css";
 
 function Modal({
@@ -314,6 +315,20 @@ function Modal({
                                             {monkey.desc ? monkey.desc : "Nothing. Nada. Zilch."}
                                         </p>
                                     </section>
+                                    {/* Introcage monkeys: what they're fed (after the bio and features) */}
+                                    {hasFeeding(monkey) && (
+                                        <section className="Modal-section">
+                                            <h2 className="Modal-label">Feeding</h2>
+                                            {monkey.feeding.fedBy === "sickbay" ? (
+                                                <p>Fed by Sickbay</p>
+                                            ) : (
+                                                <p className="Modal-feeding">
+                                                    <span><b>AM food:</b> {amText(monkey)}</span>
+                                                    <span><b>PM food:</b> {pmText(monkey)}</span>
+                                                </p>
+                                            )}
+                                        </section>
+                                    )}
                                 </div>
                                 {/* Edit and Photos (editors only) on the left;
                                     Share and Save image on the right */}

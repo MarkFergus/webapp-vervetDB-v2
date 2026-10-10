@@ -5,6 +5,10 @@ import monkeysArr from "./monkeysArr";
 import { preparePhotosForPdf } from "./pdfPhotos";
 import { pdf } from "@react-pdf/renderer";
 import { currentBabySeason } from "./ages";
+import { DEFAULT_FEEDING } from "./feeding";
+
+// Signed in as staff: making PDFs is for staff
+vi.mock("./auth", async (importOriginal) => (await import("./testStaff")).staffAuth(await importOriginal()));
 
 // The simulated browser has no canvas, and real PDF building is slow, so
 // both are replaced with stand-ins. These tests check the modal and flow.
@@ -44,10 +48,15 @@ afterEach(() => vi.restoreAllMocks());
 function setup() {
     const user = userEvent.setup();
     const utils = render(<ShowPage />);
-    // (the side rail's Profile Book)
-    const openPdfModal = () => user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Profile Book" }));
+    // (the side rail's Create PDF)
+    const openMenuItem = () => user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
+    // Create PDF, then Troop Profile Book
+    const openPdfModal = async () => {
+        await openMenuItem();
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
+    };
     const troopSelect = () => utils.container.querySelector("#troops");
-    return { user, openPdfModal, troopSelect, ...utils };
+    return { user, openMenuItem, openPdfModal, troopSelect, ...utils };
 }
 
 test("shows how many monkeys a troop's PDF will include, without a warning", async () => {
@@ -60,7 +69,7 @@ test("shows how many monkeys a troop's PDF will include, without a warning", asy
         within(screen.getByRole("dialog")).getByText(`${count} monkeys`, { exact: false })
     ).toBeInTheDocument();
     expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
-        `This Profile Book will contain ${count} monkeys from Goliath Troop.`
+        `Creates a formatted Profile Book for ${count} monkeys from Goliath Troop.`
     );
     expect(screen.queryByText(/can take several minutes/)).toBeNull();
 });
@@ -69,7 +78,7 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
     const { user, openPdfModal, troopSelect } = setup();
     await user.selectOptions(troopSelect(), "D&D");
     await openPdfModal();
-    await user.click(screen.getByRole("button", { name: "Create PDF" }));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
 
     // Ready: nothing downloads until Save PDF is tapped (Firefox on Android
     // only allows a download straight after a tap)
@@ -88,7 +97,7 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
 
     // Modal closes once the download starts
     await waitFor(() =>
-        expect(screen.queryByRole("dialog", { name: "Create Profile Book" })).toBeNull()
+        expect(screen.queryByRole("dialog", { name: "Create PDF" })).toBeNull()
     );
 });
 
@@ -122,10 +131,10 @@ describe("choosing the troop", () => {
         await user.selectOptions(picker(), "Royal");
         const count = monkeysArr.filter((m) => m.troop === "Royal").length;
         expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
-            `This Profile Book will contain ${count} monkeys from Royal Troop.`
+            `Creates a formatted Profile Book for ${count} monkeys from Royal Troop.`
         );
 
-        await user.click(screen.getByRole("button", { name: "Create PDF" }));
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
         await user.click(await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 }));
         expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Royal_\d{4}-\d{2}-\d{2}\.pdf$/);
@@ -152,7 +161,7 @@ describe("choosing the troop", () => {
         );
         if (babies.length === 0) return; // nothing to make yet this season
 
-        await user.click(screen.getByRole("button", { name: "Create PDF" }));
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
         await user.click(await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 }));
         expect(downloads).toHaveLength(1);
         expect(downloads[0]).toMatch(/^profile_book_Orphans_Babies_/);
@@ -181,12 +190,12 @@ test("choosing another troop after the book is ready goes back to Create PDF", a
     const { user, openPdfModal, troopSelect } = setup();
     await user.selectOptions(troopSelect(), "D&D");
     await openPdfModal();
-    await user.click(screen.getByRole("button", { name: "Create PDF" }));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
     await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
 
-    await user.selectOptions(within(screen.getByRole("dialog")).getByRole("combobox"), "Royal");
+    await user.selectOptions(within(screen.getByRole("dialog")).getByRole("combobox", { name: "Troop" }), "Royal");
     expect(screen.queryByRole("button", { name: "Save PDF" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
+    expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
     expect(downloads).toHaveLength(0);
 });
 
@@ -222,5 +231,105 @@ describe("Firefox's home-screen app on Android", () => {
         downloadBlob(new Blob(["pdf"]), "profile_book_James.pdf");
         expect(open).not.toHaveBeenCalled();
         expect(downloads).toEqual(["profile_book_James.pdf"]);
+    });
+});
+
+test("Create PDF: choose which PDF first; the troop picker only for a Profile Book", async () => {
+    const { user, openMenuItem } = setup();
+    await openMenuItem();
+    expect(screen.getByRole("combobox", { name: "Document" })).toHaveValue("");
+    expect(screen.queryByRole("combobox", { name: "Troop" })).toBeNull();
+    expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeDisabled();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
+    expect(screen.getByRole("combobox", { name: "Troop" })).toBeInTheDocument();
+    // Closed and opened again: chosen afresh
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await openMenuItem();
+    expect(screen.getByRole("combobox", { name: "Document" })).toHaveValue("");
+});
+
+describe("the Troop Monitoring Sheet", () => {
+    test("the troop's monkeys (no Orphans/Babies to choose), saved as monitoring_sheet_<troop>_<date>.pdf", async () => {
+        const { user, openMenuItem } = setup();
+        await openMenuItem();
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        const troop = screen.getByRole("combobox", { name: "Troop" });
+        expect(within(troop).queryByRole("option", { name: /Orphans/ })).toBeNull();
+        await user.selectOptions(troop, "D&D");
+        const count = monkeysArr.filter((m) => m.troop === "D&D").length;
+        expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
+            `Creates a Troop Monitoring Sheet for ${count} monkeys from Dino & Daniel Troop.`
+        );
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
+        const save = await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
+        expect(screen.getByText(/Your Troop Monitoring Sheet is ready/)).toBeInTheDocument();
+        const { title, groups } = pdf.mock.lastCall[0].props;
+        expect(title).toBe("Dino & Daniel Troop Monitoring");
+        expect(groups.flatMap((g) => g.monkeys).every((m) => m.troop === "D&D")).toBe(true);
+        expect(groups.flatMap((g) => g.monkeys)).toHaveLength(count);
+        await user.click(save);
+        expect(downloads[0]).toMatch(/^monitoring_sheet_D_D_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
+
+    test("the Bandits (a wild troop, not monitored) aren't offered; the Profile Book still has them", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage troops={["All Troops", "Goliath", "Bandits"]} />);
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
+        const options = () => within(screen.getByRole("combobox", { name: "Troop" })).getAllByRole("option").map((o) => o.value);
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
+        expect(options()).toContain("Bandits");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Troop" }), "Bandits");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        expect(options()).toEqual(["Goliath"]);
+        expect(screen.getByRole("combobox", { name: "Troop" })).toHaveValue("Goliath");
+    });
+
+    test("from Orphans/Babies in the Profile Book: starts on the first troop instead", async () => {
+        const { user, openPdfModal } = setup();
+        await openPdfModal();
+        await user.selectOptions(screen.getByRole("combobox", { name: "Troop" }), "Orphans/Babies (" + currentBabySeason() + ")");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        expect(screen.getByRole("combobox", { name: "Troop" }).value).not.toMatch(/babies/i);
+    });
+});
+
+describe("the AM Plates List", () => {
+    const fed = (name, introcage, enclosure, feeding = {}) => ({
+        ...monkeysArr.find((m) => m.name === name), troop: null, introcage, introcageType: "introcage", enclosure,
+        feeding: { ...DEFAULT_FEEDING, ...feeding },
+    });
+
+    test("Create PDF → AM Plates List: no plates recorded yet (the built-in copy has no feeding)", async () => {
+        const { user, openMenuItem } = setup();
+        await openMenuItem();
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "AM Plates List");
+        expect(screen.queryByRole("combobox", { name: "Troop" })).toBeNull();
+        expect(screen.getByText(/No AM plates recorded yet/)).toBeInTheDocument();
+        expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeDisabled();
+    });
+
+    test("made from the introcage monkeys' feeding, and saved as am_plates_<date>.pdf", async () => {
+        const user = userEvent.setup();
+        const monkeys = [
+            ...monkeysArr.filter((m) => !["Aroha", "Hocus"].includes(m.name)),
+            fed("Aroha", "H&B C1", "H&B", { amPlates: 2 }),
+            fed("Hocus", "H&B C1", "H&B", { fedBy: "sickbay" }),
+        ];
+        render(<ShowPage monkeys={monkeys} />);
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "AM Plates List");
+        expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
+            "Creates an AM Plates List for 1 monkey from 1 introcage."
+        );
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
+        const save = await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
+        expect(screen.getByText(/Your AM Plates List is ready/)).toBeInTheDocument();
+        const { groups, date } = pdf.mock.lastCall[0].props;
+        expect(date).toMatch(/^\d{1,2}(st|nd|rd|th) [A-Z][a-z]{2} \d{4}$/);
+        expect(groups.find((g) => g.title === "Bottom Section")).toMatchObject({
+            plates: 2, rows: ["Aroha x2"], sickbay: "Hocus",
+        });
+        await user.click(save);
+        expect(downloads[0]).toMatch(/^am_plates_\d{4}-\d{2}-\d{2}\.pdf$/);
     });
 });

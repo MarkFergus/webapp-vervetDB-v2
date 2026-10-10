@@ -21,7 +21,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-/* Centred when there's room; on a short screen it starts at the top and the
+/* Near the top (--popup-top), growing downwards; on a short screen the
    screen scrolls, so nothing is cut off */
 .ModalPDF-windowbox {
     display: flex;
@@ -44,10 +44,18 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     width: 96%;
     max-width: 400px;
     height: auto;
-    margin: auto 0; /* centres it when there's room */
+    flex: none;
+    margin: 0;
     background-color: #202020;
     border-radius: 10px;
     display: block;
+}
+
+/* The gap above it (see --popup-top in index.css): shrinks if the window's
+   too tall for it, so a tall window starts further up */
+.ModalPDF-windowbox::before {
+    content: "";
+    flex: 0 1 var(--popup-top);
 }
 
 .ModalPDF-close {
@@ -97,16 +105,6 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     margin: 50px 0 16px 0;
 }
 
-/* What it does: quieter, supporting text */
-.ModalPDF-details {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.4;
-    color: #b6b2a5;
-    text-align: center;
-    margin: 0 8px 14px;
-}
-
 /* Which troop the book is for */
 .ModalPDF-troop {
     display: flex;
@@ -137,7 +135,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     outline: none;
 }
 
-/* What this book will contain: the main line */
+/* What it will create: the main line */
 .ModalPDF-subdetails {
     font-size: 17px;
     line-height: 1.4;

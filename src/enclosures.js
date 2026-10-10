@@ -138,12 +138,14 @@ export function stepsFrom(enclosure, enclosures, sections) {
 // the troop's name, or "enclosure:<id>" for a block or care unit), troop
 // (null for a block or care unit: its monkeys are always in one of its
 // introcages / areas), enclosure ("Robert", or the troop's name if it has
-// no enclosure, like the Bandits), noTroop, introcages: [{ id, name }] }].
+// no enclosure, like the Bandits), noTroop, introcages: [{ id, name, type
+// ("introcage" or "area") }] }].
 // homeOf(troop) gives a troop's enclosure name. withIntrocages false:
 // troops only (the database can't save introcage monkeys yet).
 // careUnitsOnly: just the care units (a new arrival always starts in one).
 export function placeChoices(troops, enclosures, homeOf, withIntrocages = true, careUnitsOnly = false) {
-    const cagesOf = (enclosure) => introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name }));
+    const cagesOf = (enclosure) =>
+        introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name, type: e.type }));
     const troopChoices = troops.map((troop) => {
         const enclosure = enclosures.find((e) => hasTroop(e) && e.name === homeOf(troop));
         return {

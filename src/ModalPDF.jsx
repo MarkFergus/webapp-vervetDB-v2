@@ -26,7 +26,25 @@ function ModalPDF({
     // The finished book ({ blob, filename }), waiting for Save PDF
     ready,
     onSave,
+    // Which PDF: null (not chosen yet), "profileBook", "monitoring" (a
+    // Troop Monitoring Sheet) or "amPlates" (the AM Plates List), and what
+    // to call when the choice changes;
+    // plateCount / plateMonkeys / plateIntrocages: the summary's Local
+    // Team plates, the monkeys they're for, and how many introcages
+    report = null,
+    onChooseReport,
+    plateCount = 0,
+    plateMonkeys = 0,
+    plateIntrocages = 0,
+    // monitoringCount: the troop's monkeys on its Monitoring Sheet;
+    // monitorTroops: the troops that are monitored (not the Bandits)
+    monitoringCount = 0,
+    monitorTroops = troops,
 }) {
+    const isAmPlates = report === "amPlates";
+    const isProfileBook = report === "profileBook";
+    const isMonitoring = report === "monitoring";
+    const REPORT_NAMES = { profileBook: "Profile Book", monitoring: "Troop Monitoring Sheet", amPlates: "AM Plates List" };
     const plural = monkeyCount === 1 ? "monkey" : "monkeys";
     const troopNote = bookTitle(book);
 
@@ -104,60 +122,104 @@ function ModalPDF({
                                     className="ModalPDF-title"
                                     id="ModalPDF-title"
                                 >
-                                    Create Profile Book
+                                    Create PDF
                                 </h1>
                                 <div>
-                                    <p className="ModalPDF-details">
-                                        Creates a formatted Troop Profile Book
-                                        PDF file.
-                                    </p>
+                                    {/* Which document (until there's a Reports section) */}
                                     <label className="ModalPDF-troop">
-                                        Troop
+                                        Document
                                         <select
-                                            value={book}
-                                            onChange={(e) => onChooseBook(e.target.value)}
+                                            value={report ?? ""}
+                                            onChange={(e) => onChooseReport?.(e.target.value || null)}
                                             disabled={isGeneratingPDF}
                                         >
-                                            {troops.map((t) => (
-                                                <option key={t} value={t}>
-                                                    {fullName(t)}
-                                                </option>
-                                            ))}
-                                            {/* This season's babies, from every troop */}
-                                            <option value={BABIES_BOOK}>
-                                                Orphans/Babies ({currentBabySeason()})
-                                            </option>
+                                            {!report && <option value="">Choose…</option>}
+                                            {/* (A–Z) */}
+                                            <option value="amPlates">AM Plates List</option>
+                                            <option value="monitoring">Troop Monitoring Sheet</option>
+                                            <option value="profileBook">Troop Profile Book</option>
                                         </select>
                                     </label>
-                                    <p className="ModalPDF-subdetails">
-                                        {monkeyCount === 0 ? (
-                                            "No monkeys in this troop yet."
-                                        ) : (
-                                            <>
-                                                This Profile Book will contain{" "}
-                                                <span className="ModalPDF-line">
-                                                    <b>
-                                                        {monkeyCount} {plural}
-                                                    </b>{" "}
-                                                    from <b>{troopNote}</b>.
-                                                </span>
-                                            </>
-                                        )}
-                                    </p>
-                                    {monkeyCount > LARGE_PDF_THRESHOLD && (
-                                        <p className="ModalPDF-warning">
-                                            Large PDFs can take several minutes
-                                            to create.{" "}
-                                            <span className="ModalPDF-line">
-                                                Tip: pick a troop in the filter
-                                                first.
-                                            </span>
-                                        </p>
-                                    )}
+                                    {isAmPlates ? (
+                                        <>
+                                            <p className="ModalPDF-subdetails">
+                                                {plateCount === 0 ? (
+                                                    "No AM plates recorded yet: set them in each introcage monkey's Feeding."
+                                                ) : (
+                                                    <>
+                                                        Creates an AM Plates List for{" "}
+                                                        <span className="ModalPDF-line">
+                                                            <b>
+                                                                {plateMonkeys} {plateMonkeys === 1 ? "monkey" : "monkeys"}
+                                                            </b>{" "}
+                                                            from{" "}
+                                                            <b>
+                                                                {plateIntrocages} {plateIntrocages === 1 ? "introcage" : "introcages"}
+                                                            </b>
+                                                            .
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </p>
+                                        </>
+                                    ) : isProfileBook || isMonitoring ? (
+                                        <>
+                                            <label className="ModalPDF-troop">
+                                                Troop
+                                                <select
+                                                    value={book}
+                                                    onChange={(e) => onChooseBook(e.target.value)}
+                                                    disabled={isGeneratingPDF}
+                                                >
+                                                    {(isMonitoring ? monitorTroops : troops).map((t) => (
+                                                        <option key={t} value={t}>
+                                                            {fullName(t)}
+                                                        </option>
+                                                    ))}
+                                                    {/* This season's babies, from every troop (a
+                                                        Profile Book only: not a troop to monitor) */}
+                                                    {isProfileBook && (
+                                                        <option value={BABIES_BOOK}>
+                                                            Orphans/Babies ({currentBabySeason()})
+                                                        </option>
+                                                    )}
+                                                </select>
+                                            </label>
+                                            <p className="ModalPDF-subdetails">
+                                                {(isMonitoring ? monitoringCount : monkeyCount) === 0 ? (
+                                                    "No monkeys in this troop yet."
+                                                ) : (
+                                                    <>
+                                                        {isMonitoring
+                                                            ? "Creates a Troop Monitoring Sheet for"
+                                                            : "Creates a formatted Profile Book for"}{" "}
+                                                        <span className="ModalPDF-line">
+                                                            <b>
+                                                                {isMonitoring
+                                                                    ? `${monitoringCount} ${monitoringCount === 1 ? "monkey" : "monkeys"}`
+                                                                    : `${monkeyCount} ${plural}`}
+                                                            </b>{" "}
+                                                            from <b>{troopNote}</b>.
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </p>
+                                            {isProfileBook && monkeyCount > LARGE_PDF_THRESHOLD && (
+                                                <p className="ModalPDF-warning">
+                                                    Large PDFs can take several minutes
+                                                    to create.{" "}
+                                                    <span className="ModalPDF-line">
+                                                        Tip: pick a troop in the filter
+                                                        first.
+                                                    </span>
+                                                </p>
+                                            )}
+                                        </>
+                                    ) : null}
                                     {ready && (
                                         <p className="ModalPDF-ready" role="status">
                                             <IconCircleCheckFilled size={18} aria-hidden="true" />
-                                            Your Profile Book is ready ({readySize})
+                                            Your {REPORT_NAMES[report]} is ready ({readySize})
                                         </p>
                                     )}
                                     {status && (
@@ -190,7 +252,9 @@ function ModalPDF({
                                     ) : (
                                         <button
                                             disabled={
-                                                isGeneratingPDF || monkeyCount === 0
+                                                isGeneratingPDF ||
+                                                !report ||
+                                                (isAmPlates ? plateCount === 0 : isMonitoring ? monitoringCount === 0 : monkeyCount === 0)
                                             }
                                             className="ModalPDF-createBtn"
                                             onClick={createPDF}

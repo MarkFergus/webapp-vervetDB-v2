@@ -46,6 +46,13 @@ function Nav({
     pdfBook,
     pdfTroops,
     onChoosePdfBook,
+    pdfReport,
+    onChoosePdfReport,
+    pdfPlateCount,
+    pdfPlateIntrocages,
+    pdfPlateMonkeys,
+    pdfMonitoringCount,
+    pdfMonitorTroops,
     pdfReady,
     onSavePDF,
     isAccountOpen,
@@ -61,7 +68,9 @@ function Nav({
     showSearch = true, // false: no search box (the game)
     barsInert = false, // a pop-up is open: the side rail and bottom bar wait
 }) {
-    const { user, avatarUrl } = useAuth();
+    const { user, avatarUrl, role } = useAuth();
+    // Create PDF (Profile Books, the AM Plates List): staff only (any role)
+    const onCreatePdf = role ? togglePDFModal : undefined;
     const searchInputRef = useRef(null);
 
     // Computers: the side rail opened out (labels) or small (icons).
@@ -232,7 +241,7 @@ function Nav({
                         onClose={closeRailOver}
                         page={page}
                         onHome={onHome}
-                        onProfileBook={togglePDFModal}
+                        onProfileBook={onCreatePdf}
                         isGeneratingPDF={isGeneratingPDF}
                         onOffline={toggleOffline}
                         onAbout={toggleAbout}
@@ -243,6 +252,8 @@ function Nav({
                         onHome={onHome}
                         onMap={showMapNotice}
                         onAddPhotos={onAddPhotos}
+                        onProfileBook={onCreatePdf}
+                        isGeneratingPDF={isGeneratingPDF}
                         onAccount={toggleAccount}
                         signedIn={Boolean(user)}
                         avatarUrl={avatarUrl}
@@ -255,8 +266,8 @@ function Nav({
                         onAddMonkey={onAddMonkey}
                         // (staff: Map's place in the bottom bar is Add Photos)
                         onMap={onAddPhotos ? showMapNotice : undefined}
-                        onProfileBook={togglePDFModal}
-                        isGeneratingPDF={isGeneratingPDF}
+                        showGame={Boolean(onCreatePdf)}
+                        page={page}
                         onOffline={toggleOffline}
                         onAbout={toggleAbout}
                     />
@@ -279,6 +290,13 @@ function Nav({
                         book={pdfBook}
                         troops={pdfTroops}
                         onChooseBook={onChoosePdfBook}
+                        report={pdfReport}
+                        onChooseReport={onChoosePdfReport}
+                        plateCount={pdfPlateCount}
+                        plateIntrocages={pdfPlateIntrocages}
+                        plateMonkeys={pdfPlateMonkeys}
+                        monitoringCount={pdfMonitoringCount}
+                        monitorTroops={pdfMonitorTroops}
                         ready={pdfReady}
                         onSave={onSavePDF}
                     />

@@ -20,10 +20,12 @@ import "./NavBars.css";
 // The site's ways around, beside the top bar (Nav.jsx):
 //   SideRail   computers: down the left, YouTube-style. Small (icons with
 //              tiny labels) to start with; ☰ opens it out with full labels.
-//   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) · Game · You
+//   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) ·
+//              Game (staff: Create PDF) · You
 //   Drawer     phones: ☰ (top right) slides it in from the right: Add New
-//              Monkey (admins), Interactive Map (staff), Profile Book,
-//              Install & Use Offline, About
+//              Monkey (admins), Interactive Map (staff), Monkey Guesser
+//              Game (staff), Install & Use Offline, About
+// Create PDF is for staff only (any role), wherever it is
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
 
 const YEAR = new Date().getFullYear();
@@ -42,7 +44,7 @@ function monkeysLinkProps(page, onHome) {
     };
 }
 
-// Profile Book: the PDF icon, or an hourglass while one is being made
+// Create PDF: the PDF icon, or an hourglass while one is being made
 function ProfileBookIcon({ busy, size }) {
     return busy ? (
         <IconHourglassLow className="hourglass" stroke={1.75} size={size} aria-hidden="true" />
@@ -90,11 +92,13 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
     // Staff: photos already taken, matched to their monkeys
     const addPhotos =
         onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos");
-    const profileBook = button(
+    // Staff only (any role): Profile Books and the AM Plates List
+    const profileBook = onProfileBook && button(
         onProfileBook,
         <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
-        // (the small rail: just "Profile Book", to fit on one line)
-        isGeneratingPDF ? (open ? "Creating Profile Book…" : "Creating…") : open ? "Create Profile Book" : "Profile Book",
+        // (Profile Books and the AM Plates List; the small rail: just
+        // "Create PDF", which fits on one line)
+        isGeneratingPDF ? (open ? "Creating PDF…" : "Creating…") : "Create PDF",
         { disabled: isGeneratingPDF }
     );
     return (
@@ -153,7 +157,11 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
 //   onMap: the Interactive Map (for now, its "coming soon" notice)
 //   onAddPhotos: staff (editors / admins): Add Photos takes Map's place,
 //   opening the photo picker straight away (the quick way in for staff)
-export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedIn, avatarUrl, inert }) {
+//   onProfileBook: staff (any role): Create PDF takes the Game's place (the
+//   game's then in the ☰ menu)
+export function BottomBar({
+    page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onAccount, signedIn, avatarUrl, inert,
+}) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -185,7 +193,18 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
                     <span aria-hidden="true">Map</span>
                 </button>
             )}
-            {tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
+            {onProfileBook ? (
+                // Staff: Create PDF (Profile Books, the AM Plates List), used
+                // often, so here; the game is in the ☰ menu
+                <button type="button" className="BottomBar-tab" onClick={onProfileBook} disabled={isGeneratingPDF}>
+                    <span className="BottomBar-icon">
+                        <ProfileBookIcon busy={isGeneratingPDF} size={24} />
+                    </span>
+                    <span>{isGeneratingPDF ? "Creating…" : "Create PDF"}</span>
+                </button>
+            ) : (
+                tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")
+            )}
             <button
                 type="button"
                 className={`BottomBar-tab${signedIn ? " is-signed-in" : ""}`}
@@ -206,7 +225,8 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
 // ---- Phones: the drawer from the right ----
 //   onAddMonkey: admins only (Add New Monkey first)
 //   onMap: staff only (their bottom bar has Add Photos in Map's place)
-export function Drawer({ open, onClose, onAddMonkey, onMap, onProfileBook, isGeneratingPDF, onOffline, onAbout }) {
+//   showGame: staff (their bottom bar has Create PDF in the game's place)
+export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOffline, onAbout }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
     if (!open) return null;
@@ -240,10 +260,17 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, onProfileBook, isGen
                         Interactive Map
                     </button>
                 )}
-                <button type="button" className="Drawer-item" onClick={then(onProfileBook)} disabled={isGeneratingPDF}>
-                    <ProfileBookIcon busy={isGeneratingPDF} size={22} />
-                    {isGeneratingPDF ? "Creating Profile Book…" : "Create Profile Book"}
-                </button>
+                {showGame && (
+                    <a
+                        className="Drawer-item"
+                        href="#game"
+                        onClick={onClose}
+                        aria-current={page === "game" ? "page" : undefined}
+                    >
+                        <IconDeviceGamepad2 stroke={1.75} size={22} aria-hidden="true" />
+                        Monkey Guesser Game
+                    </a>
+                )}
                 <button type="button" className="Drawer-item" onClick={then(onOffline)}>
                     <IconDeviceMobileDown stroke={1.75} size={22} aria-hidden="true" />
                     Install & Use Offline

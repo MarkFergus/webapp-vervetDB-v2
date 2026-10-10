@@ -7,15 +7,15 @@
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-/* Centred when there's room; on a short screen (or with the phone keyboard
-   up) it starts at the top and the screen scrolls, so nothing is cut off */
+/* Near the top (--popup-top), growing downwards; on a short screen (or
+   with the phone keyboard up) the screen scrolls, so nothing is cut off */
 .AccountModal-windowbox {
     position: fixed;
     z-index: 1;
     inset: 0;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     padding: 16px 0;
     overflow-y: auto;
     pointer-events: none;
@@ -25,10 +25,17 @@
     position: relative;
     width: 96%;
     max-width: 380px;
-    margin: auto 0; /* centres it when there's room */
+    flex: none;
     background-color: #202020;
     border-radius: 10px;
     pointer-events: auto;
+}
+
+/* The gap above it (see --popup-top in index.css): shrinks if the window's
+   too tall for it, so a tall window starts further up */
+.AccountModal-windowbox::before {
+    content: "";
+    flex: 0 1 var(--popup-top);
 }
 
 /* The changelog: a little wider */

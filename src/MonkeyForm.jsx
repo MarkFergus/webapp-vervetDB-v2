@@ -6,6 +6,7 @@ import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import { deleteMonkey, saveMonkey, troopHome } from "./monkeyData";
 import { placeChoices } from "./enclosures";
+import { isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
@@ -74,6 +75,12 @@ function MonkeyForm({
         setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
+    // Feeding: for a monkey in an introcage (not a troop, or a care unit's
+    // area), once the database has it
+    const showFeeding = Boolean(form.feeding) && chosenIntrocage(form, choices)?.type === "introcage";
+    const setFeeding = (field, value) => setForm({ ...form, feeding: { ...form.feeding, [field]: value } });
+    // Babies' plates are always cut small with fruit
+    const baby = isBaby({ year: form.year });
 
     // Chip unknown: empties the box and leaves it (closing the phone
     // keyboard). "Clear" undoes it the same way; so does typing a number.
@@ -322,6 +329,94 @@ function MonkeyForm({
                         <span>Distinctive features / behaviours</span>
                         <textarea rows={3} value={form.desc} onChange={set("desc")} />
                     </label>
+
+                    {/* Feeding (introcage monkeys), at the bottom: who feeds it, and its AM
+                        plates and PM bowls if it's the Local Team */}
+                    {showFeeding && (
+                        <fieldset className="MonkeyForm-feeding">
+                            <legend>Feeding</legend>
+                            <div className="MonkeyForm-row MonkeyForm-feedRow">
+                                <label className="MonkeyForm-field">
+                                    <span>Fed By</span>
+                                    <select value={form.feeding.fedBy} onChange={(e) => setFeeding("fedBy", e.target.value)}>
+                                        <option value="localTeam">Local Team</option>
+                                        <option value="sickbay">Sickbay</option>
+                                    </select>
+                                </label>
+                            </div>
+                            {form.feeding.fedBy === "sickbay" ? (
+                                <p className="MonkeyForm-hint">
+                                    Sickbay delivers its plates (Special Plates on the AM Plates List).
+                                </p>
+                            ) : (
+                                <>
+                                    <div className="MonkeyForm-row MonkeyForm-feedRow">
+                                        <label className="MonkeyForm-field">
+                                            <span>AM Plates</span>
+                                            <select
+                                                value={form.feeding.amPlates}
+                                                onChange={(e) => setFeeding("amPlates", Number(e.target.value))}
+                                            >
+                                                <option value={1}>1 Plate</option>
+                                                <option value={2}>2 Plates</option>
+                                            </select>
+                                        </label>
+                                        <div className="MonkeyForm-checks" role="group" aria-label="AM plate extras">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={baby || form.feeding.amCutSmall}
+                                                    disabled={baby}
+                                                    onChange={(e) => setFeeding("amCutSmall", e.target.checked)}
+                                                />
+                                                Cut Small
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={baby || form.feeding.amFruit}
+                                                    disabled={baby}
+                                                    onChange={(e) => setFeeding("amFruit", e.target.checked)}
+                                                />
+                                                Add Fruit
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.feeding.amMetalPlate}
+                                                    onChange={(e) => setFeeding("amMetalPlate", e.target.checked)}
+                                                />
+                                                Metal Plate
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {baby && <p className="MonkeyForm-hint">Baby plates are always cut small with fruit.</p>}
+                                    <div className="MonkeyForm-row MonkeyForm-feedRow">
+                                        <label className="MonkeyForm-field">
+                                            <span>PM Bowls</span>
+                                            <select
+                                                value={form.feeding.pmBowls}
+                                                onChange={(e) => setFeeding("pmBowls", Number(e.target.value))}
+                                            >
+                                                <option value={1}>1 Bowl</option>
+                                                <option value={2}>2 Bowls</option>
+                                            </select>
+                                        </label>
+                                        <div className="MonkeyForm-checks" role="group" aria-label="PM bowl extras">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.feeding.pmCutSmall}
+                                                    onChange={(e) => setFeeding("pmCutSmall", e.target.checked)}
+                                                />
+                                                Cut Small
+                                            </label>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </fieldset>
+                    )}
                 </div>
 
                 <p className="MonkeyForm-problem" role="alert">

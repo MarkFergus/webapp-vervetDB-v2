@@ -28,6 +28,7 @@ test("a database row becomes the same shape as the old monkeysArr entries", () =
         chip: "",
         troop: "Camelot",
         introcage: null,
+        introcageType: null,
         enclosure: "Camelot",
         year: "", // unknown birth year
         img: ["https://i.ibb.co/q9WykWV/caryl-camelot-aug2023-min.webp"],
@@ -167,4 +168,35 @@ test("before enclosure-types.sql: the special enclosures load as a block and car
         ["Baby Care", "care_unit", "Care Units"],
         ["Dreamland", "area", "Care Units"],
     ]);
+});
+
+test("feeding: read and saved once the database has it, left out until then", async () => {
+    const fed = { ...row, introcage_id: 41, fed_by: "sickbay", am_plates: 2, am_cut_small: true, am_fruit: false,
+        am_metal_plate: true, pm_bowls: 1, pm_cut_small: true };
+    const monkey = toAppMonkey(fed);
+    expect(monkey.feeding).toEqual({
+        fedBy: "sickbay", amPlates: 2, amCutSmall: true, amFruit: false, amMetalPlate: true, pmBowls: 1, pmCutSmall: true,
+    });
+    expect(toDatabaseRow(monkey, {})).toMatchObject({
+        fed_by: "sickbay", am_plates: 2, am_cut_small: true, am_fruit: false, am_metal_plate: true, pm_bowls: 1, pm_cut_small: true,
+    });
+    expect(toAppMonkey(row)).not.toHaveProperty("feeding");
+    expect(toDatabaseRow(toAppMonkey(row), {})).not.toHaveProperty("fed_by");
+});
+
+test("before feeding.sql: the monkeys load without feeding", async () => {
+    fakeDatabase({
+        troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }]),
+        // (the feeding columns don't exist yet)
+        monkeys: (columns) =>
+            columns.includes("fed_by")
+                ? Promise.resolve({ data: null, error: { code: "42703", message: "column monkeys.fed_by does not exist" } })
+                : answer([hbMonkey]),
+        sections: answer(SECTIONS),
+        enclosures: answer(ENCLOSURES),
+    });
+    const data = await loadMonkeyData();
+    expect(data.monkeys.map((m) => m.name)).toEqual(["Bobo"]);
+    expect(data.monkeys[0]).not.toHaveProperty("feeding");
+    expect(data.enclosuresLive).toBe(true);
 });

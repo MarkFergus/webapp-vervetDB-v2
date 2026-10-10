@@ -1,7 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
+
+// Signed in as staff: making PDFs is for staff
+vi.mock("./auth", async (importOriginal) => (await import("./testStaff")).staffAuth(await importOriginal()));
 
 function setup() {
     const user = userEvent.setup();
@@ -54,7 +57,7 @@ test("search, filters and icon buttons have accessible names", async () => {
     const search = screen.getByRole("textbox", {
         name: "Search by name or chip number",
     });
-    expect(screen.getByRole("button", { name: "Profile Book" })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
     // The filters are in the Filters panel
     await user.click(screen.getByRole("button", { name: "Filters" }));
     expect(screen.getByRole("combobox", { name: "Filter by troop" })).toBeInTheDocument();
@@ -106,9 +109,9 @@ test("the number of results is announced when filters change", async () => {
 
 test("the PDF dialog closes with Escape and focus returns to the PDF button", async () => {
     const { user } = setup();
-    const pdfButton = screen.getByRole("button", { name: "Profile Book" });
+    const pdfButton = within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" });
     await user.click(pdfButton);
-    expect(screen.getByRole("dialog", { name: "Create Profile Book" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
 
     await user.keyboard("{Escape}");

@@ -1,4 +1,12 @@
 :root {
+    /* Pop-ups sit this far from the top (not centred), so they don't jump
+       about when what's in them changes; growing downwards. A window too
+       tall for the gap moves up instead (each pop-up's ::before spacer). */
+    --popup-top: min(12vh, 110px);
+    /* ...and the tall ones that change as you use them (a monkey's pop-up,
+       stepping from monkey to monkey; the edit forms) a set, smaller gap:
+       they scroll inside rather than move */
+    --popup-top-tall: min(4svh, 36px);
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     /* The site is dark only: scrollbars, dropdown menus and form boxes
        drawn by the browser are dark too, whatever the device's setting */

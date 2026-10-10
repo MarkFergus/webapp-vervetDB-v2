@@ -7,6 +7,8 @@ import { supabase } from "./supabase";
 import { AuthProvider } from "./auth";
 import { BUILT_IN_DATA } from "./monkeyData";
 import ShowPage from "./ShowPage";
+import { DEFAULT_FEEDING } from "./feeding";
+import { currentBabySeason } from "./ages";
 
 const EDITOR = { id: "editor-1", email: "editor@example.com" };
 const troopNames = BUILT_IN_DATA.troops.filter((t) => t !== "All Troops");
@@ -67,8 +69,8 @@ function fakeSupabase({ signedIn = true, refuse = false, admin = true, role } = 
 }
 
 // ShowPage with its own list, like App gives it
-function Harness({ editable = true, enclosuresLive = false }) {
-    const [monkeys, setMonkeys] = useState(startingMonkeys);
+function Harness({ editable = true, enclosuresLive = false, start = startingMonkeys }) {
+    const [monkeys, setMonkeys] = useState(start);
     return (
         <AuthProvider>
             <ShowPage
@@ -93,7 +95,13 @@ function Harness({ editable = true, enclosuresLive = false }) {
 function setup(options = {}) {
     fakeSupabase(options);
     const user = userEvent.setup();
-    render(<Harness editable={options.editable ?? true} enclosuresLive={options.enclosuresLive} />);
+    render(
+        <Harness
+            editable={options.editable ?? true}
+            enclosuresLive={options.enclosuresLive}
+            {...(options.start && { start: options.start })}
+        />
+    );
     return { user };
 }
 
@@ -508,4 +516,62 @@ test("phones: admins also find Add New Monkey in the ☰ drawer", async () => {
     await user.click(screen.getByRole("button", { name: "Menu" }));
     await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "Add New Monkey" }));
     expect(form()).toHaveAccessibleName("Add a monkey");
+});
+
+describe("feeding (introcage monkeys)", () => {
+    const HB_C1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
+    // Aroha in H&B C1, with the database's feeding
+    const withAroha = () =>
+        startingMonkeys().map((m) =>
+            m.name === "Aroha"
+                ? { ...m, troop: null, introcage: "H&B C1", introcageId: HB_C1.id, introcageType: "introcage",
+                    enclosure: "H&B", year: 2015, feeding: { ...DEFAULT_FEEDING } }
+                : m
+        );
+    const feeding = () => within(form()).queryByRole("group", { name: "Feeding" });
+
+    test("Fed By, AM plates and PM bowls; Sickbay hides the plates; saved with the monkey", async () => {
+        const { user } = setup({ enclosuresLive: true, start: withAroha });
+        await openEditFor(user, "Aroha");
+        expect(feeding()).not.toBeNull();
+        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Sickbay");
+        expect(within(feeding()).queryByLabelText("AM Plates")).toBeNull();
+        expect(within(feeding()).getByText(/Sickbay delivers its plates/)).toBeInTheDocument();
+        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
+        await user.selectOptions(within(feeding()).getByLabelText("AM Plates"), "2 Plates");
+        await user.click(within(feeding()).getByRole("checkbox", { name: "Metal Plate" }));
+        await user.click(within(within(feeding()).getByRole("group", { name: "PM bowl extras" })).getByRole("checkbox", { name: "Cut Small" }));
+        await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).toMatchObject({
+            introcage_id: HB_C1.id, fed_by: "local_team", am_plates: 2, am_cut_small: false, am_fruit: false,
+            am_metal_plate: true, pm_bowls: 1, pm_cut_small: true,
+        });
+        // Its pop-up: what it's fed
+        const dialog = await screen.findByRole("dialog", { name: "Aroha" });
+        expect(within(dialog).getByText("2 plates, metal plate")).toBeInTheDocument();
+        expect(within(dialog).getByText("1 bowl, cut small")).toBeInTheDocument();
+    });
+
+    test("not for a troop monkey: moving back to the troop hides it", async () => {
+        const { user } = setup({ enclosuresLive: true, start: withAroha });
+        await openEditFor(user, "Aroha");
+        await user.selectOptions(field("Location"), "troop");
+        expect(feeding()).toBeNull();
+    });
+
+    test("a baby's plate: always cut small + fruit", async () => {
+        const { user } = setup({ enclosuresLive: true, start: withAroha });
+        await openEditFor(user, "Aroha");
+        const amExtras = () => within(feeding()).getByRole("group", { name: "AM plate extras" });
+        await user.selectOptions(field("Birth year"), String(currentBabySeason()));
+        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeChecked();
+        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeDisabled();
+        expect(within(amExtras()).getByRole("checkbox", { name: "Add Fruit" })).toBeChecked();
+        expect(within(feeding()).getByText("Baby plates are always cut small with fruit.")).toBeInTheDocument();
+        // A grown-up again: their own ticks
+        await user.selectOptions(field("Birth year"), "2015");
+        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).not.toBeChecked();
+        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeEnabled();
+    });
 });

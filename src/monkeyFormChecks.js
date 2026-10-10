@@ -30,6 +30,8 @@ export function formFromMonkey(monkey, choices = []) {
         location: monkey.introcage ? String(monkey.introcageId ?? "") : troop && "troop",
         // undefined: the database has no introcages yet (so it isn't saved)
         introcageId: monkey.introcageId,
+        // undefined: the database has no feeding yet (so it isn't saved)
+        feeding: monkey.feeding && { ...monkey.feeding },
         sex: monkey.sex ?? "",
         year: monkey.year === "" ? "" : String(monkey.year),
         // A chip of null means "unknown" (an empty chip means "no chip")
@@ -50,7 +52,7 @@ export function emptyForm(troop = "") {
     };
 }
 
-// The introcage chosen in the form ({ id, name }), or null
+// The introcage or area chosen in the form ({ id, name, type }), or null
 export function chosenIntrocage(form, choices) {
     if (!form.location || form.location === "troop") return null;
     const choice = choices.find((c) => c.key === form.troop);
@@ -129,6 +131,9 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
             // Back with the troop: no introcage (left out if the database
             // has no introcages, or for a new troop monkey)
             introcageId: introcage ? introcage.id : form.introcageId === undefined ? undefined : null,
+            // Feeding: kept as it is whether it shows or not (it only means
+            // something in an introcage), so a move back finds it again
+            ...(form.feeding && { feeding: form.feeding }),
             sex,
             year,
             chip: chipResult.error ? "" : chipResult.chip,

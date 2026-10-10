@@ -10,7 +10,7 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA } from "./monkeyData";
+import { BUILT_IN_DATA, troopHome } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -33,6 +33,8 @@ import {
 import EnclosuresPage from "./EnclosuresPage";
 import Game from "./Game";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
+import { amSummary, summaryDate } from "./feeding";
+import { monitoredTroops, monitoringGroups } from "./monitoring";
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { SECTIONS, inSection } from "./sections";
@@ -241,6 +243,23 @@ function ShowPage({
         [monkeys, pdfBook]
     );
     const pdfMonkeyCount = pdfSections.reduce((n, s) => n + s.monkeys.length, 0);
+    // Which PDF: null (not chosen yet), "profileBook", or "amPlates" (the
+    // AM Plates List). Chosen afresh each time the pop-up opens.
+    const [pdfReport, setPdfReport] = useState(null);
+    // The AM Plates List's groups, and its Local Team plates
+    const amGroups = useMemo(() => amSummary(monkeys, enclosures), [monkeys, enclosures]);
+    const pdfPlateCount = amGroups.reduce((n, g) => n + g.plates, 0);
+    // (one row per introcage with Local Team plates)
+    const pdfPlateIntrocages = amGroups.reduce((n, g) => n + g.rows.length, 0);
+    const pdfPlateMonkeys = amGroups.reduce((n, g) => n + g.monkeys, 0);
+    // The troops that are monitored (not the Bandits), and the Troop
+    // Monitoring Sheet's monkeys (the troop chosen for a book)
+    const monitorTroops = useMemo(
+        () => monitoredTroops(troops.filter((t) => t !== "All Troops"), enclosures, troopHome),
+        [troops, enclosures]
+    );
+    const monitoring = useMemo(() => monitoringGroups(monkeys, pdfBook), [monkeys, pdfBook]);
+    const pdfMonitoringCount = monitoring.reduce((n, g) => n + g.monkeys.length, 0);
 
     // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
@@ -439,19 +458,71 @@ function ShowPage({
     function togglePDFModal() {
         // Opening it while looking at one troop: that troop to start with
         if (!isPDFModalOpen && troopNames.includes(troopFilter)) setPdfBook(troopFilter);
+        if (!isPDFModalOpen) setPdfReport(null);
         setIsPDFModalOpen((open) => !open);
         setPdfError(null);
         setPdfReady(null);
     }
-    // Choosing another book: the finished one (if any) no longer applies
+    // Choosing another book or PDF: the finished one (if any) no longer applies
     function choosePdfBook(book) {
         setPdfBook(book);
         setPdfReady(null);
+    }
+    function choosePdfReport(report) {
+        setPdfReport(report);
+        setPdfReady(null);
+        // (Orphans/Babies is a Profile Book only, and the Bandits aren't
+        // monitored: the first monitored troop instead)
+        if (report === "monitoring" && !monitorTroops.includes(pdfBook)) setPdfBook(monitorTroops[0]);
+    }
+    // A Troop Monitoring Sheet: no photos, so quick
+    async function createMonitoring() {
+        setIsGeneratingPDF(true);
+        setPdfError(null);
+        setPdfProgress({ done: 0, total: 0 });
+        try {
+            const [{ pdf }, { default: MonitoringPDF }] = await Promise.all([
+                import("@react-pdf/renderer"),
+                import("./MonitoringPDF"),
+            ]);
+            const title = `${fullName(pdfBook)} Troop Monitoring`;
+            const blob = await pdf(<MonitoringPDF title={title} groups={monitoring} />).toBlob();
+            const date = new Date().toISOString().slice(0, 10);
+            setPdfReady({ blob, filename: `monitoring_sheet_${pdfBook.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf` });
+        } catch (err) {
+            console.error(err);
+            setPdfError("Something went wrong creating the PDF. Please try again.");
+        } finally {
+            setIsGeneratingPDF(false);
+            setPdfProgress(null);
+        }
+    }
+    // The AM Plates List: no photos, so quick
+    async function createAmPlates() {
+        setIsGeneratingPDF(true);
+        setPdfError(null);
+        setPdfProgress({ done: 0, total: 0 });
+        try {
+            const [{ pdf }, { default: AmPlatesPDF }] = await Promise.all([
+                import("@react-pdf/renderer"),
+                import("./AmPlatesPDF"),
+            ]);
+            const blob = await pdf(<AmPlatesPDF groups={amGroups} date={summaryDate()} />).toBlob();
+            setPdfReady({ blob, filename: `am_plates_${new Date().toISOString().slice(0, 10)}.pdf` });
+        } catch (err) {
+            console.error(err);
+            setPdfError("Something went wrong creating the PDF. Please try again.");
+        } finally {
+            setIsGeneratingPDF(false);
+            setPdfProgress(null);
+        }
     }
     // Builds the chosen Profile Book, then offers Save PDF. Saving needs its
     // own tap: some browsers (Firefox on Android) only allow a download
     // within a few seconds of a tap, and making a book takes longer.
     async function createPDF() {
+        if (pdfReport === "amPlates") return createAmPlates();
+        if (pdfReport === "monitoring") return createMonitoring();
         const monkeys = pdfSections.flatMap((s) => s.monkeys);
         setIsGeneratingPDF(true);
         setPdfError(null);
@@ -629,6 +700,13 @@ function ShowPage({
                     pdfBook={pdfBook}
                     pdfTroops={troopNames}
                     onChoosePdfBook={choosePdfBook}
+                    pdfReport={pdfReport}
+                    onChoosePdfReport={choosePdfReport}
+                    pdfPlateCount={pdfPlateCount}
+                    pdfPlateIntrocages={pdfPlateIntrocages}
+                    pdfPlateMonkeys={pdfPlateMonkeys}
+                    pdfMonitoringCount={pdfMonitoringCount}
+                    pdfMonitorTroops={monitorTroops}
                     pdfReady={pdfReady}
                     onSavePDF={() => {
                         downloadBlob(pdfReady.blob, pdfReady.filename);

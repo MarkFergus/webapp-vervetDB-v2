@@ -5,14 +5,25 @@
     z-index: 20;
     inset: 0;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    padding-bottom: 3svh;
+    box-sizing: border-box;
     background-color: rgba(0, 0, 0, 0.85);
 }
+
+/* The gap above it (see --popup-top in index.css): shrinks if the window's
+   too tall for it, so a tall window starts further up */
+.PhotoCropper::before {
+    content: "";
+    flex: 0 1 var(--popup-top);
+}
+
 
 .PhotoCropper-window {
     width: min(94vw, 560px);
     max-height: 94svh;
+    flex: none;
     display: flex;
     flex-direction: column;
     gap: 12px;

@@ -19,6 +19,9 @@ const TIMEOUT_MS = 10000;
 // introcage_id: its introcage, for monkeys in one)
 const OLD_MONKEY_COLUMNS = "id, name, sex, chip, birth_year, photos, bio, description, troops (name)";
 const NEW_MONKEY_COLUMNS = `${OLD_MONKEY_COLUMNS}, introcage_id`;
+// ...and its feeding (once feeding.sql has run)
+const FEEDING_MONKEY_COLUMNS =
+    `${NEW_MONKEY_COLUMNS}, fed_by, am_plates, am_cut_small, am_fruit, am_metal_plate, pm_bowls, pm_cut_small`;
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
 
@@ -53,6 +56,8 @@ export function toAppMonkey(row) {
         chip: row.chip,
         troop,
         introcage: introcage?.name ?? null,
+        // "introcage", or "area" (a care unit's): feeding is for introcages
+        introcageType: introcage?.type ?? null,
         enclosure: introcage ? places.byId[introcage.parentId]?.name ?? null : places.homeOf(troop),
         year: row.birth_year ?? "",
         img: row.photos,
@@ -61,6 +66,18 @@ export function toAppMonkey(row) {
     };
     // Only once the database has introcages: saved back as it is
     if ("introcage_id" in row) monkey.introcageId = row.introcage_id;
+    // Once the database has feeding (see feeding.js)
+    if ("fed_by" in row) {
+        monkey.feeding = {
+            fedBy: row.fed_by === "sickbay" ? "sickbay" : "localTeam",
+            amPlates: row.am_plates,
+            amCutSmall: row.am_cut_small,
+            amFruit: row.am_fruit,
+            amMetalPlate: row.am_metal_plate,
+            pmBowls: row.pm_bowls,
+            pmCutSmall: row.pm_cut_small,
+        };
+    }
     return monkey;
 }
 
@@ -79,6 +96,18 @@ export function toDatabaseRow(monkey, troopIds) {
         description: monkey.desc,
     };
     if (monkey.introcageId !== undefined) row.introcage_id = monkey.introcageId ?? null;
+    if (monkey.feeding) {
+        const f = monkey.feeding;
+        Object.assign(row, {
+            fed_by: f.fedBy === "sickbay" ? "sickbay" : "local_team",
+            am_plates: f.amPlates,
+            am_cut_small: f.amCutSmall,
+            am_fruit: f.amFruit,
+            am_metal_plate: f.amMetalPlate,
+            pm_bowls: f.pmBowls,
+            pm_cut_small: f.pmCutSmall,
+        });
+    }
     return row;
 }
 
@@ -140,10 +169,20 @@ function throwIfError(...results) {
     for (const r of results) if (r.error) throw r.error;
 }
 
+// The monkeys with their feeding, or without it until feeding.sql has run
+// (a missing column). { result, columns }
+async function loadMonkeys() {
+    const withFeeding = await supabase.from("monkeys").select(FEEDING_MONKEY_COLUMNS).order("id");
+    if (withFeeding.error?.code === "42703") {
+        return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
+    }
+    return { result: withFeeding, columns: FEEDING_MONKEY_COLUMNS };
+}
+
 async function loadWithEnclosures() {
-    const [troops, monkeys, sections, enclosures] = await Promise.all([
+    const [troops, { result: monkeys, columns }, sections, enclosures] = await Promise.all([
         supabase.from("troops").select("id, name, enclosure_id").order("sort_order"),
-        supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"),
+        loadMonkeys(),
         supabase.from("sections").select("id, name").order("sort_order"),
         supabase
             .from("enclosures")
@@ -158,7 +197,7 @@ async function loadWithEnclosures() {
     // Introcages and areas: the same section as their enclosure
     const byId = Object.fromEntries(list.map((e) => [e.id, e]));
     for (const e of list) if (e.parentId) e.section = byId[e.parentId]?.section ?? null;
-    monkeyColumns = NEW_MONKEY_COLUMNS;
+    monkeyColumns = columns;
     places = makePlaces(list, Object.fromEntries(troops.data.map((t) => [t.name, t.enclosure_id])));
     return {
         troops: troops.data,
