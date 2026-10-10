@@ -125,7 +125,8 @@ function rowText(introcage, monkeys, plates) {
 }
 
 // The summary, group by group:
-// [{ title, note, plates, monkeys (the Local Team's: the plates are for),
+// [{ title, note, plates, cutSmall (how many of them, with or without
+//    fruit), monkeys (the Local Team's: the plates are for),
 //    counts: ["6 cut small", "5 on metal plates"], rows: ["Ace/Clare x2", …],
 //    sickbay: "Roman & Queenie" or "" }]
 // From every introcage monkey (enclosures: the site's list, for the
@@ -170,7 +171,8 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
         const metal = allPlates.filter((p) => p.metal).length;
         if (metal) counts.push(`${metal} on metal plates`);
         return {
-            title: group.title, note: group.note, plates: allPlates.length, monkeys: monkeyCount, counts, rows,
+            title: group.title, note: group.note, plates: allPlates.length,
+            cutSmall: allPlates.filter((p) => p.cutSmall).length, monkeys: monkeyCount, counts, rows,
             sickbay: namesText(sickbay),
         };
     });

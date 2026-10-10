@@ -111,6 +111,8 @@ describe("the AM Plates List", () => {
         expect(bottom.rows).toEqual(["Robert A group x5 (metal plates)", "Mini/Minkey x2 (cut small + fruit)"]);
         expect(bottom.counts).toEqual(["2 cut small + fruit", "5 on metal plates"]);
         expect(bottom.plates).toBe(7);
+        // (cut small, with or without fruit: for the total at the bottom)
+        expect(bottom.cutSmall).toBe(2);
     });
 
     test("fed by Sickbay: not counted, listed under the group", () => {

@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
 
 function AmPlatesPDF({ groups, date }) {
     const total = groups.reduce((n, g) => n + g.plates, 0);
+    const cutSmall = groups.reduce((n, g) => n + g.cutSmall, 0);
     return (
         <Document title={`AM Plates List (${date})`}>
             <Page size="A4" style={styles.page}>
@@ -137,7 +138,7 @@ function AmPlatesPDF({ groups, date }) {
                     </View>
                 </View>
                 <Text style={styles.footer}>
-                    {total} plates from the Local Team, plus Sickbay's special plates
+                    Total: {total} {total === 1 ? "plate" : "plates"} ({cutSmall} cut small) + Sickbay&apos;s special plates
                 </Text>
             </Page>
         </Document>
