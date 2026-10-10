@@ -12,7 +12,7 @@ import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
 //   Computers: the menu button (opens the side rail out or back) and the
-//   logo; search in the middle; + Add (admins) and the account circle
+//   logo; search in the middle; + New (admins) and the account circle
 //   (signed in: the account menu, AccountMenu.jsx). The
 //   side rail down the left.
 //   Phones: the logo, search, and the menu button (the drawer from the
@@ -61,7 +61,7 @@ function Nav({
     toggleAbout,
     isOfflineOpen,
     toggleOffline,
-    onAddMonkey, // admins only: "+ Add" (computers), Add New Monkey (the drawer)
+    onAddMonkey, // admins only: "+ New" (computers), Add New Monkey (the drawer)
     onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
@@ -200,12 +200,12 @@ function Nav({
                     <div className="Nav-spacer" />
                 )}
 
-                {/* Computers: + Add (admins), then the account circle */}
+                {/* Computers: + New (admins), then the account circle */}
                 <div className="Nav-buttons">
                     {onAddMonkey && (
                         <button type="button" className="Nav-add" onClick={onAddMonkey} aria-label="Add New Monkey">
                             <IconPlus stroke={2} size={20} aria-hidden="true" />
-                            Add
+                            New
                         </button>
                     )}
                     {/* Sign in, or (signed in) the account menu */}

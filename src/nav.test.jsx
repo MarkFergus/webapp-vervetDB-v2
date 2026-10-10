@@ -217,10 +217,11 @@ describe("computers: the side rail", () => {
         expect(await screen.findByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
     });
 
-    test("admins: + Add in the top bar, before the account circle", async () => {
+    test("admins: + New in the top bar, before the account circle", async () => {
         setup({ signedIn: true, admin: true });
         await waitFor(() => expect(screen.getByRole("button", { name: "Add New Monkey" })).toBeInTheDocument());
         expect(document.querySelector(".Nav-buttons > :first-child")).toHaveAccessibleName("Add New Monkey");
+        expect(document.querySelector(".Nav-buttons > :first-child")).toHaveTextContent(/^New$/);
     });
 });
 
