@@ -21,7 +21,7 @@ const MAP_HEIGHT = 841.9;
 const LABEL = "http://www.inkscape.org/namespaces/inkscape";
 
 // Enclosure name → its shape's label in the map, where they differ (the
-// special enclosures aren't "… troop")
+// block and Quarantine aren't "… troop")
 const MAP_LABELS = { "D&D": "Dino & Daniel troop", "Bachelor Block": "Bachelor block", Quarantine: "Quarantine" };
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
 
@@ -31,10 +31,7 @@ export const SECTION_COLOURS = {
     Middle: "#25c4f8",
     Bottom: "#ff4d6a",
     Sickbay: "#ffe14d",
-    // The care areas for new intakes: one colour, as they share a purpose
-    "Baby Care": "#c77dff",
-    Quarantine: "#c77dff",
-    "Sickbay Care Unit": "#c77dff",
+    "Care Units": "#c77dff",
 };
 
 // The map is loaded once, then each enclosure's outline is worked out once

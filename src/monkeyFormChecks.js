@@ -12,10 +12,11 @@ export const MAX_PHOTOS = 5;
 const isPlaceholder = (url) => url === PLACEHOLDER_PHOTO;
 
 // Where a monkey lives, in the form: troop = the Enclosure box's choice (the
-// troop whose enclosure it's in or beside, or "enclosure:<id>" for a special
-// enclosure such as Quarantine), location = "troop" (with that troop) or an
-// introcage's id as text (the Location box; a special enclosure has no troop,
-// so always one of its cages). choices: see placeChoices in enclosures.js.
+// troop whose enclosure it's in or beside, or "enclosure:<id>" for a block
+// or care unit such as Quarantine), location = "troop" (with that troop) or
+// an introcage's or area's id as text (the Location box; a block or care
+// unit has no troop, so always one of its introcages / areas). choices: see
+// placeChoices in enclosures.js.
 
 // A monkey (as used on the site) → what the form's boxes start with
 export function formFromMonkey(monkey, choices = []) {
@@ -88,8 +89,8 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
     const choice = choices.find((c) => c.key === form.troop);
     if (!choice) {
         errors.troop = "Please choose an enclosure.";
-    } else if ((form.location !== "troop" || choice.special) && !introcage) {
-        // (a special enclosure: one of its cages)
+    } else if ((form.location !== "troop" || choice.noTroop) && !introcage) {
+        // (a block or care unit: one of its introcages / areas)
         errors.location = "Please choose a location.";
     }
 

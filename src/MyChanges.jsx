@@ -19,7 +19,7 @@ const KINDS = {
 };
 
 // Shown beside an enclosure's name (monkeys show their troop instead)
-const SUBJECTS = { enclosure: "Enclosure", introcage: "Introcage" };
+const SUBJECTS = { enclosure: "Enclosure", introcage: "Introcage", area: "Area" };
 
 // "Today", "Yesterday", or e.g. "3 October 2026"
 export function dayLabel(date, now = new Date()) {

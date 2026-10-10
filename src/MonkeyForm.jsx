@@ -30,10 +30,15 @@ function MonkeyForm({
 }) {
     const isNew = !monkey;
     const { isAdmin } = useAuth();
+    // A new arrival always starts in a care unit (so its first location is
+    // on record); it's moved to its long-term home afterwards, with Edit
+    const careUnitsOnly = isNew && enclosuresLive;
     // Enclosure → its troop and introcages, for the Enclosure + Location boxes
-    const [choices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive));
+    const [choices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive, careUnitsOnly));
     const [initial] = useState(() =>
-        isNew ? emptyForm(troops.includes(defaultTroop) ? defaultTroop : "") : formFromMonkey(monkey, choices)
+        isNew
+            ? emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : "")
+            : formFromMonkey(monkey, choices)
     );
     const [form, setForm] = useState(initial);
     const [errors, setErrors] = useState({});
@@ -61,12 +66,12 @@ function MonkeyForm({
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
     // A new enclosure: with its troop to start with
-    // (a special enclosure has no troop: a cage needs choosing, unless it
-    // has only one, like Sickbay Care Unit)
+    // (a block or care unit has no troop: an introcage / area needs
+    // choosing, unless it has only one, like Quarantine)
     const chooseEnclosure = (event) => {
         const chosen = choices.find((c) => c.key === event.target.value);
-        const onlyArea = chosen?.special && chosen.introcages.length === 1 ? String(chosen.introcages[0].id) : "";
-        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.special ? "troop" : onlyArea });
+        const onlyArea = chosen?.noTroop && chosen.introcages.length === 1 ? String(chosen.introcages[0].id) : "";
+        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
 
@@ -162,7 +167,7 @@ function MonkeyForm({
                         or in one of that enclosure's introcages */}
                     <div className="MonkeyForm-row">
                         <label className="MonkeyForm-field">
-                            <span>Enclosure <em>(required)</em></span>
+                            <span>{careUnitsOnly ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
                             <select
                                 value={form.troop}
                                 onChange={chooseEnclosure}
@@ -189,7 +194,7 @@ function MonkeyForm({
                                 {choice && form.location === "" && <option value="">Choose…</option>}
                                 {choice && (
                                     <>
-                                        {!choice.special && <option value="troop">{fullName(choice.troop)} Troop</option>}
+                                        {!choice.noTroop && <option value="troop">{fullName(choice.troop)} Troop</option>}
                                         {choice.introcages.map((i) => (
                                             <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
                                         ))}
@@ -199,6 +204,11 @@ function MonkeyForm({
                             {errorFor("location")}
                         </label>
                     </div>
+                    {careUnitsOnly && (
+                        <p className="MonkeyForm-hint">
+                            New arrivals start in a care unit. Once they have a long-term home, move them there with Edit.
+                        </p>
+                    )}
 
                     <div className="MonkeyForm-row">
                         <label className="MonkeyForm-field">

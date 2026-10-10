@@ -24,6 +24,7 @@ import { fullName, homeName, inIntrocage, placeName } from "./places";
 import {
     enclosureFromRoute,
     introcageMonkeys,
+    isInside,
     isEnclosuresRoute,
     placeHash,
     residents,
@@ -406,7 +407,7 @@ function ShowPage({
         const place = page && {
             name: page.name,
             monkeys:
-                page.type === "introcage"
+                isInside(page)
                     ? residents(page, monkeys)
                     : [...troopMonkeys(page, monkeys), ...introcageMonkeys(page, monkeys)],
         };

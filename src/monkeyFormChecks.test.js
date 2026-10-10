@@ -2,11 +2,11 @@ import { checkForm, emptyForm, formFromMonkey, PLACEHOLDER_PHOTO } from "./monke
 
 // The Enclosure + Location choices (see placeChoices)
 const CHOICES = [
-    { key: "Goliath", troop: "Goliath", enclosure: "Goliath", special: false, introcages: [{ id: 21, name: "Goliath A" }] },
-    { key: "H&B", troop: "H&B", enclosure: "H&B", special: false, introcages: [{ id: 30, name: "H&B C1" }] },
-    { key: "Bandits", troop: "Bandits", enclosure: "Bandits", special: false, introcages: [] },
-    // A special enclosure: no troop, just its cages
-    { key: "enclosure:90", troop: null, enclosure: "Quarantine", special: true, introcages: [{ id: 91, name: "Quarantine A" }] },
+    { key: "Goliath", troop: "Goliath", enclosure: "Goliath", noTroop: false, introcages: [{ id: 21, name: "Goliath A" }] },
+    { key: "H&B", troop: "H&B", enclosure: "H&B", noTroop: false, introcages: [{ id: 30, name: "H&B C1" }] },
+    { key: "Bandits", troop: "Bandits", enclosure: "Bandits", noTroop: false, introcages: [] },
+    // A care unit: no troop, just its areas
+    { key: "enclosure:90", troop: null, enclosure: "Baby Care", noTroop: true, introcages: [{ id: 91, name: "Dreamland" }] },
 ];
 const THIS_YEAR = 2026;
 const valid = {
@@ -179,17 +179,17 @@ describe("where the monkey lives", () => {
         expect(check({ troop: "Bandits" }).values).toMatchObject({ troop: "Bandits", introcage: null });
     });
 
-    test("a special enclosure (Quarantine): in one of its cages, never a troop", () => {
+    test("a care unit (Baby Care): in one of its areas, never a troop", () => {
         expect(check({ troop: "enclosure:90", location: "91" }).values).toMatchObject({
-            troop: null, introcage: "Quarantine A", introcageId: 91,
+            troop: null, introcage: "Dreamland", introcageId: 91,
         });
-        // No cage chosen: asked for one
+        // No area chosen: asked for one
         expect(check({ troop: "enclosure:90", location: "troop" }).errors.location).toBe("Please choose a location.");
         expect(check({ troop: "enclosure:90", location: "" }).errors.location).toBe("Please choose a location.");
     });
 
-    test("a monkey in a special enclosure's cage fills the form with that enclosure", () => {
-        const monkey = { name: "Nova", troop: null, introcage: "Quarantine A", introcageId: 91, enclosure: "Quarantine",
+    test("a monkey in a care unit's area fills the form with that unit", () => {
+        const monkey = { name: "Nova", troop: null, introcage: "Dreamland", introcageId: 91, enclosure: "Baby Care",
             sex: "female", year: "", chip: "", img: [PLACEHOLDER_PHOTO], bio: "", desc: "" };
         expect(formFromMonkey(monkey, CHOICES)).toMatchObject({ troop: "enclosure:90", location: "91" });
     });

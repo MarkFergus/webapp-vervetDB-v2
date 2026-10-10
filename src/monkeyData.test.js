@@ -73,9 +73,9 @@ test("loads troops (All Troops first), monkeys, sections and enclosures", async 
     // Introcages take their enclosure's section; established is month + year
     expect(data.enclosures).toEqual([
         { id: 40, name: "H&B", type: "troop", parentId: null, section: "Bottom", established: "2014-03",
-            description: "By the river", features: "Pool", size: 600, photos: [], sortOrder: 12, special: false },
+            description: "By the river", features: "Pool", size: 600, photos: [], sortOrder: 12 },
         { id: 41, name: "H&B C1", type: "introcage", parentId: 40, section: "Bottom", established: null,
-            description: "", features: "", size: null, photos: [], sortOrder: 3, special: false },
+            description: "", features: "", size: null, photos: [], sortOrder: 3 },
     ]);
     const [bobo, inC1] = data.monkeys;
     expect(bobo).toMatchObject({ troop: "H&B", introcage: null, introcageId: null, enclosure: "H&B" });
@@ -141,4 +141,30 @@ test("gives up after 10 seconds if the database doesn't answer", async () => {
     const check = expect(loading).rejects.toThrow("took too long");
     await vi.advanceTimersByTimeAsync(10000);
     await check;
+});
+
+test("before enclosure-types.sql: the special enclosures load as a block and care units", async () => {
+    const blank = { established: null, description: "", features: "", size: null, photos: [] };
+    fakeDatabase({
+        troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }]),
+        monkeys: answer([hbMonkey]),
+        sections: answer([{ id: 1, name: "Bottom" }, { id: 5, name: "Baby Care" }]),
+        enclosures: answer([
+            ...ENCLOSURES.map((e) => ({ ...e, special: false })),
+            { ...blank, id: 50, name: "Bachelor Block", type: "troop", parent_id: null, section_id: 1, sort_order: 100, special: true },
+            { ...blank, id: 51, name: "Bachelor Block A", type: "introcage", parent_id: 50, section_id: null, sort_order: 1, special: false },
+            { ...blank, id: 60, name: "Baby Care", type: "troop", parent_id: null, section_id: 5, sort_order: 101, special: true },
+            { ...blank, id: 61, name: "Dreamland", type: "introcage", parent_id: 60, section_id: null, sort_order: 1, special: false },
+        ]),
+    });
+    const data = await loadMonkeyData();
+    expect(data.sections).toEqual(["Bottom", "Care Units"]);
+    expect(data.enclosures.map((e) => [e.name, e.type, e.section])).toEqual([
+        ["H&B", "troop", "Bottom"],
+        ["H&B C1", "introcage", "Bottom"],
+        ["Bachelor Block", "block", "Bottom"],
+        ["Bachelor Block A", "introcage", "Bottom"],
+        ["Baby Care", "care_unit", "Care Units"],
+        ["Dreamland", "area", "Care Units"],
+    ]);
 });

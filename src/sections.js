@@ -1,6 +1,6 @@
-// The sanctuary's sections and the troops in each, and the special
-// enclosures (Bachelor Block, and the care areas for new intakes: their
-// monkeys are in their cages / areas).
+// The sanctuary's sections and the troops in each, and the enclosures
+// without a troop (Bachelor Block, and the care units: their monkeys are in
+// their introcages / areas).
 // Used by the Filters panel's Location filter. A troop added later shows
 // under "All Sections" until it's put in a section here.
 //   chip: how a chosen section reads in the filter chips under the toolbar
@@ -14,8 +14,8 @@ export const SECTIONS = [
         troops: ["Skrow", "Robert", "Skunkey", "H&B", "Jalamango"],
     },
     { id: "sickbay", label: "Sickbay", chip: "Sickbay section", troops: ["James", "Global"] },
-    // The care areas for new intakes: not in a section, so each a "section"
-    // of its own. Just Baby Care for now: Quarantine and Sickbay Care Unit
+    // The care units, where new arrivals go: just Baby Care, as a filter of
+    // its own for now: Quarantine and Sickbay Care Unit
     // aren't needed as filters here (user, 2026-10-09), so they're left out
     // (choosing any section leaves their monkeys out)
     { id: "babyCare", label: "Baby Care", chip: "Baby Care", troops: ["Baby Care"] },

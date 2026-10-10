@@ -648,7 +648,7 @@
     color: #8a877e;
 }
 
-/* A special enclosure's first box: across the whole row, saying what it is */
+/* A block or care unit's first box: across the whole row, saying what it is */
 .Enclosures-stats .Enclosures-statKind {
     grid-column: 1 / -1;
 }

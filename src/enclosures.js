@@ -6,6 +6,21 @@ import { ageInYears } from "./ages";
 
 const byName = (a, b) => a.name.localeCompare(b.name);
 
+// The kinds of enclosure (supabase/enclosure-types.sql). Enclosures:
+//   troop      a troop enclosure (Robert): a troop, plus its introcages
+//   block      Bachelor Block: introcages, no troop
+//   care_unit  Baby Care, Quarantine, Sickbay Care Unit: where new arrivals
+//              go; areas, no troop
+// and inside them, where monkeys not in a troop live: introcage (in a
+// troop enclosure or block) and area (in a care unit)
+export const isInside = (place) => place.type === "introcage" || place.type === "area";
+export const isEnclosure = (place) => !isInside(place);
+export const hasTroop = (place) => place.type === "troop";
+export const isCareUnit = (place) => place.type === "care_unit";
+export const TYPE_NAMES = {
+    troop: "Troop Enclosure", block: "Block", care_unit: "Care Unit", introcage: "Introcage", area: "Area",
+};
+
 // Links: by id, so renaming an enclosure never breaks a link or a QR code
 export const enclosureHash = (enclosure) => `#enclosure/${enclosure.id}`;
 export const ENCLOSURES_HASH = "#enclosures";
@@ -17,19 +32,35 @@ export function enclosureFromRoute(route, enclosures) {
     return match ? enclosures.find((e) => e.id === Number(match[1])) ?? null : null;
 }
 
-// A troop enclosure's introcages, in order
+// An enclosure's introcages / areas, in order
 export function introcagesOf(enclosure, enclosures) {
     return enclosures
         .filter((e) => e.parentId === enclosure.id)
         .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-// The page of where a monkey lives: its introcage's, or its troop's
-// enclosure's ("#enclosure/57"), or null if it has none (the Bandits)
+// A care unit that's one space (Quarantine): its one area, named the same
+// as itself, or null. The website shows the unit instead of the area.
+export function soleArea(enclosure, enclosures) {
+    if (!isCareUnit(enclosure)) return null;
+    const areas = introcagesOf(enclosure, enclosures);
+    return areas.length === 1 && areas[0].name === enclosure.name ? areas[0] : null;
+}
+// Is this area its care unit's only one (see soleArea)?
+export function isSoleArea(place, enclosures) {
+    if (place.type !== "area") return false;
+    const unit = enclosures.find((e) => e.id === place.parentId);
+    return Boolean(unit) && soleArea(unit, enclosures)?.id === place.id;
+}
+
+// The page of where a monkey lives: its introcage's or area's (a one-area
+// care unit's: the unit's), or its troop's enclosure's ("#enclosure/57"),
+// or null if it has none (the Bandits)
 export function placeHash(monkey, enclosures) {
-    const place = inIntrocage(monkey)
-        ? enclosures.find((e) => e.type === "introcage" && e.name === monkey.introcage)
-        : enclosures.find((e) => e.type === "troop" && e.name === homeName(monkey));
+    let place = inIntrocage(monkey)
+        ? enclosures.find((e) => isInside(e) && e.name === monkey.introcage)
+        : enclosures.find((e) => hasTroop(e) && e.name === homeName(monkey));
+    if (place && isSoleArea(place, enclosures)) place = enclosures.find((e) => e.id === place.parentId);
     return place ? enclosureHash(place) : null;
 }
 
@@ -43,23 +74,19 @@ export function introcageCode(introcage, parent) {
 export const troopMonkeys = (enclosure, monkeys) =>
     monkeys.filter((m) => !inIntrocage(m) && homeName(m) === enclosure.name).sort(byName);
 
-// Monkeys in any of a troop enclosure's introcages
+// Monkeys in any of an enclosure's introcages / areas
 export const introcageMonkeys = (enclosure, monkeys) =>
     monkeys.filter((m) => inIntrocage(m) && homeName(m) === enclosure.name).sort(byName);
 
 // How many monkeys an enclosure has, as its card and the Monkeys sort
-// count them: a troop enclosure's troop, or (a special enclosure, which has
-// no troop) the monkeys in its cages
+// count them: a troop enclosure's troop, or (a block or care unit, which
+// has no troop) the monkeys in its introcages / areas
 export const monkeyCount = (enclosure, monkeys) =>
-    (enclosure.special ? introcageMonkeys(enclosure, monkeys) : troopMonkeys(enclosure, monkeys)).length;
+    (hasTroop(enclosure) ? troopMonkeys(enclosure, monkeys) : introcageMonkeys(enclosure, monkeys)).length;
 
-// A care area for new intakes (Baby Care, Quarantine, Sickbay Care Unit):
-// a special enclosure that's a "section" of its own (no real section)
-export const isCareArea = (enclosure) => Boolean(enclosure.special) && enclosure.section === enclosure.name;
-
-// What its introcages are called on screen: a care area's are "areas"
-// (Dreamland, Quarantine A), everyone else's "introcages"
-export const introcageWord = (enclosure) => (isCareArea(enclosure) ? "area" : "introcage");
+// What the places inside it are called on screen: a care unit's are
+// "areas" (Dreamland), everyone else's "introcages"
+export const introcageWord = (enclosure) => (isCareUnit(enclosure) ? "area" : "introcage");
 
 // Who's in one introcage
 export const residents = (introcage, monkeys) => monkeys.filter((m) => m.introcage === introcage.name).sort(byName);
@@ -76,25 +103,26 @@ export function establishedText(established) {
     return new Date(year, month - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-// The troop enclosures, grouped by section in the sections' order:
-// [{ section, enclosures: [...] }] (sections with none left out)
+// The enclosures (not what's inside them), grouped by section in the
+// sections' order: [{ section, enclosures: [...] }] (sections with none
+// left out)
 export function bySection(enclosures, sections) {
-    const troopEnclosures = enclosures.filter((e) => e.type === "troop").sort((a, b) => a.sortOrder - b.sortOrder);
+    const all = enclosures.filter(isEnclosure).sort((a, b) => a.sortOrder - b.sortOrder);
     return sections
-        .map((section) => ({ section, enclosures: troopEnclosures.filter((e) => e.section === section) }))
+        .map((section) => ({ section, enclosures: all.filter((e) => e.section === section) }))
         .filter((group) => group.enclosures.length > 0);
 }
 
-// Stepping through the records (previous / next on a record page): troop
-// enclosures through the troop enclosures, introcages through every
-// introcage, enclosure by enclosure, in section order (round from the last
-// to the first). { prev, next, number, total }, or null if it isn't listed.
+// Stepping through the records (previous / next on a record page):
+// enclosures through the enclosures, introcages and areas through every
+// introcage and area, enclosure by enclosure, in section order (round from
+// the last to the first; a one-area care unit's area left out: it's shown
+// as the unit). { prev, next, number, total }, or null if it isn't listed.
 export function stepsFrom(enclosure, enclosures, sections) {
-    const troopEnclosures = bySection(enclosures, sections).flatMap((group) => group.enclosures);
-    const all =
-        enclosure.type === "introcage"
-            ? troopEnclosures.flatMap((e) => introcagesOf(e, enclosures))
-            : troopEnclosures;
+    const inOrder = bySection(enclosures, sections).flatMap((group) => group.enclosures);
+    const all = isInside(enclosure)
+        ? inOrder.flatMap((e) => (soleArea(e, enclosures) ? [] : introcagesOf(e, enclosures)))
+        : inOrder;
     const index = all.findIndex((e) => e.id === enclosure.id);
     if (index === -1 || all.length < 2) return null;
     return {
@@ -106,37 +134,39 @@ export function stepsFrom(enclosure, enclosures, sections) {
 }
 
 // What the monkey form's Enclosure and Location boxes offer, in the troops'
-// order, then the special enclosures: [{ key (the Enclosure box's value: the
-// troop's name, or "enclosure:<id>" for a special enclosure), troop (null for
-// a special enclosure: its monkeys are always in one of its cages),
-// enclosure ("Robert", or the troop's name if it has no enclosure, like the
-// Bandits), special, introcages: [{ id, name }] }]. homeOf(troop) gives a
-// troop's enclosure name. withIntrocages false: troops only (the database
-// can't save introcage monkeys yet).
-export function placeChoices(troops, enclosures, homeOf, withIntrocages = true) {
+// order, then the blocks and care units: [{ key (the Enclosure box's value:
+// the troop's name, or "enclosure:<id>" for a block or care unit), troop
+// (null for a block or care unit: its monkeys are always in one of its
+// introcages / areas), enclosure ("Robert", or the troop's name if it has
+// no enclosure, like the Bandits), noTroop, introcages: [{ id, name }] }].
+// homeOf(troop) gives a troop's enclosure name. withIntrocages false:
+// troops only (the database can't save introcage monkeys yet).
+// careUnitsOnly: just the care units (a new arrival always starts in one).
+export function placeChoices(troops, enclosures, homeOf, withIntrocages = true, careUnitsOnly = false) {
     const cagesOf = (enclosure) => introcagesOf(enclosure, enclosures).map((e) => ({ id: e.id, name: e.name }));
     const troopChoices = troops.map((troop) => {
-        const enclosure = enclosures.find((e) => e.type === "troop" && e.name === homeOf(troop));
+        const enclosure = enclosures.find((e) => hasTroop(e) && e.name === homeOf(troop));
         return {
             key: troop,
             troop,
             enclosure: enclosure?.name ?? troop,
-            special: false,
+            noTroop: false,
             introcages: enclosure && withIntrocages ? cagesOf(enclosure) : [],
         };
     });
     if (!withIntrocages) return troopChoices;
-    const specialChoices = enclosures
-        .filter((e) => e.type === "troop" && e.special)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
+    const otherChoices = enclosures
+        .filter((e) => isEnclosure(e) && !hasTroop(e) && (!careUnitsOnly || isCareUnit(e)))
+        // (blocks before care units, each in their order)
+        .sort((a, b) => isCareUnit(a) - isCareUnit(b) || a.sortOrder - b.sortOrder)
         .map((enclosure) => ({
             key: `enclosure:${enclosure.id}`,
             troop: null,
             enclosure: enclosure.name,
-            special: true,
+            noTroop: true,
             introcages: cagesOf(enclosure),
         }));
-    return [...troopChoices, ...specialChoices];
+    return careUnitsOnly ? otherChoices : [...troopChoices, ...otherChoices];
 }
 
 // 1 → "1st", 2 → "2nd", 3 → "3rd", 11 → "11th", 22 → "22nd"
@@ -158,13 +188,13 @@ export function rankOf(item, items, valueOf) {
 
 // The troop enclosures in order of size, and of how many troop monkeys
 // they have: e.g. 3 (the 3rd largest), or null if its size isn't recorded
-// (special enclosures aren't counted: they have no troop)
+// (blocks and care units aren't counted: they have no troop)
 export function sizeRank(enclosure, enclosures) {
-    const troopEnclosures = enclosures.filter((e) => e.type === "troop" && !e.special);
+    const troopEnclosures = enclosures.filter(hasTroop);
     return rankOf(enclosure, troopEnclosures, (e) => e.size ?? null);
 }
 export function troopRank(enclosure, enclosures, monkeys) {
-    const troopEnclosures = enclosures.filter((e) => e.type === "troop" && !e.special);
+    const troopEnclosures = enclosures.filter(hasTroop);
     return rankOf(enclosure, troopEnclosures, (e) => troopMonkeys(e, monkeys).length);
 }
 

@@ -4,18 +4,17 @@
 // are only for the built-in copy; the database gives each its own.
 //
 // An enclosure, as the rest of the site uses it:
-//   { id, name, type: "troop" | "introcage", parentId (introcages),
-//     special (true: a special enclosure, not a troop's home, e.g.
-//     Quarantine; its cages are its introcages),
-//     section (introcages: their enclosure's), established ("2014-03" or null),
-//     description, features, size (square metres, or null), photos, sortOrder,
-//     introcages only: troopDoor, plateSlot (true / false / null = not
-//     recorded), sleepingPerches (1–10 or null) }
+//   { id, name, type ("troop" | "block" | "care_unit", and inside them
+//     "introcage" | "area": see enclosures.js), parentId (introcages and
+//     areas), section (introcages and areas: their enclosure's),
+//     established ("2014-03" or null), description, features, size (square
+//     metres, or null), photos, sortOrder,
+//     introcages and areas only: troopDoor, plateSlot (true / false / null
+//     = not recorded), sleepingPerches (1–10 or null) }
 
-// (Baby Care, Quarantine and Sickbay Care Unit: the care areas for new
-// intakes, not real sections but each a "section" of its own, holding just
-// itself: supabase/care-areas.sql)
-export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay", "Baby Care", "Quarantine", "Sickbay Care Unit"];
+// (Care Units: Baby Care, Quarantine and Sickbay Care Unit, where new
+// arrivals go: supabase/enclosure-types.sql)
+export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay", "Care Units"];
 
 // Troop enclosure → its section and introcage codes, in order
 const LAYOUT = [
@@ -36,16 +35,15 @@ const LAYOUT = [
     ["James", "Sickbay", ["A", "B"]],
 ];
 
-// Special enclosures (not a troop's home: supabase/special-enclosures.sql
-// and care-areas.sql), listed after the troop enclosures in their sections,
-// with their cages / areas (full names; Sickbay Care Unit is one area,
-// named the same as itself)
-const cages = (name, codes) => codes.map((code) => `${name} ${code}`);
-const SPECIAL = [
-    ["Bachelor Block", "Top", cages("Bachelor Block", ["A", "B"])],
-    ["Quarantine", "Quarantine", cages("Quarantine", ["A", "B", "C", "D", "E", "F"])],
-    ["Baby Care", "Baby Care", ["Dreamland", "Neverland", "Disneyland"]],
-    ["Sickbay Care Unit", "Sickbay Care Unit", ["Sickbay Care Unit"]],
+// The enclosures without a troop (supabase/enclosure-types.sql), listed
+// after the troop enclosures in their sections: the block with its
+// introcages, and the care units with their areas (full names; Quarantine
+// and Sickbay Care Unit are each one area, named the same as themselves)
+const OTHERS = [
+    ["Bachelor Block", "block", "Top", ["Bachelor Block A", "Bachelor Block B"]],
+    ["Baby Care", "care_unit", "Care Units", ["Dreamland", "Neverland", "Disneyland"]],
+    ["Quarantine", "care_unit", "Care Units", ["Quarantine"]],
+    ["Sickbay Care Unit", "care_unit", "Care Units", ["Sickbay Care Unit"]],
 ];
 
 // Introcages with their own name instead of "<enclosure> <code>"
@@ -81,17 +79,17 @@ function build() {
             });
         });
     });
-    // The special enclosures and their cages (ids after the others, so
-    // theirs stay the same)
-    SPECIAL.forEach(([name, section, areas], i) => {
-        const parent = { ...blank, id: ++id, name, type: "troop", parentId: null, section, sortOrder: 100 + i, special: true };
+    // The enclosures without a troop and what's inside them (ids after the
+    // others, so theirs stay the same)
+    OTHERS.forEach(([name, type, section, inside], i) => {
+        const parent = { ...blank, id: ++id, name, type, parentId: null, section, sortOrder: 100 + i };
         list.push(parent);
-        areas.forEach((area, j) => {
+        inside.forEach((area, j) => {
             list.push({
                 ...blank,
                 id: ++id,
                 name: area,
-                type: "introcage",
+                type: type === "care_unit" ? "area" : "introcage",
                 troopDoor: null,
                 plateSlot: null,
                 sleepingPerches: null,

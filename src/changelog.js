@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.7.0",
+        date: "2026-10-10",
+        changes: [
+            "New enclosure types: Troop Enclosure, Block (Bachelor Block) and Care Unit",
+            "Improved the care units: Baby Care, Quarantine and Sickbay Care Unit together, after Sickbay",
+            "Improved Quarantine: one area instead of cages A–F",
+            "Improved Add Monkey: new arrivals start in a care unit, then move to their home with Edit",
+        ],
+    },
+    {
         version: "1.6.0",
         date: "2026-10-09",
         changes: [
