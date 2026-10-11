@@ -18,11 +18,11 @@ import "./MonkeyForm.css";
 //   enclosures: for the Location box's introcages (only offered when
 //               enclosuresLive: the database can save them)
 //   onSaved(savedMonkey) / onDeleted(id): after a successful save / delete
-// Birth years to choose from: this year back to 2000, or back to `current`
+// Birth years to choose from: this year back to 1997, or back to `current`
 // if it's older (so an existing record never loses its year)
 function birthYears(current) {
     const thisYear = new Date().getFullYear();
-    const oldest = Math.min(2000, Number(current) || 2000);
+    const oldest = Math.min(1997, Number(current) || 1997);
     return Array.from({ length: thisYear - oldest + 1 }, (_, i) => String(thisYear - i));
 }
 
@@ -228,7 +228,7 @@ function MonkeyForm({
                         </label>
                         <label className="MonkeyForm-field">
                             <span>Birth year</span>
-                            {/* This year back to 2000 (or further, if this
+                            {/* This year back to 1997 (or further, if this
                                 monkey's recorded year is older) */}
                             <select
                                 value={form.year}

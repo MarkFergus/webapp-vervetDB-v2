@@ -44,7 +44,7 @@ test("Filters opens the panel, ready to use; Escape closes it and returns to the
     expect(filtersButton()).toHaveFocus();
 });
 
-test("birth years: this year back to 2000", async () => {
+test("birth years: this year back to 1997", async () => {
     const { user } = setup();
     await user.click(filtersButton());
     const years = within(screen.getByRole("combobox", { name: "Filter by year" }))
@@ -54,8 +54,8 @@ test("birth years: this year back to 2000", async () => {
     // ("Choose a year…" only shows in the box, not in the list)
     expect(years[0]).toBe("Any year");
     expect(years[1]).toBe(String(thisYear));
-    expect(years.at(-1)).toBe("2000");
-    expect(years).toHaveLength(thisYear - 2000 + 2);
+    expect(years.at(-1)).toBe("1997");
+    expect(years).toHaveLength(thisYear - 1997 + 2);
 });
 
 test.each([

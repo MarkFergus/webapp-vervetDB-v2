@@ -23,6 +23,8 @@ export const CHANGELOG = [
     {
         version: "1.8.0",
         date: "2026-10-10",
+        // a significant release: "Major Update" beside it in About
+        major: true,
         changes: [
             "New Feeding record for introcage monkeys",
             "New options for Create PDFs: AM Plates List and Troop Monitoring Sheets",

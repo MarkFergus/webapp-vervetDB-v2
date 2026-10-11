@@ -245,14 +245,14 @@ test("problems are explained and nothing is saved until they're fixed", async ()
     expect(saved.updates).toHaveLength(0);
 });
 
-test("birth year: chosen from this year back to 2000, or Unknown", async () => {
+test("birth year: chosen from this year back to 1997, or Unknown", async () => {
     const { user } = setup();
     await openEditFor(user, "Aroha");
     const years = within(field("Birth year")).getAllByRole("option").map((o) => o.textContent);
     const thisYear = new Date().getFullYear();
     expect(years[0]).toBe("Unknown");
     expect(years[1]).toBe(String(thisYear));
-    expect(years.at(-1)).toBe("2000");
+    expect(years.at(-1)).toBe("1997");
 
     await user.selectOptions(field("Birth year"), "Unknown");
     await user.click(within(form()).getByRole("button", { name: "Save" }));

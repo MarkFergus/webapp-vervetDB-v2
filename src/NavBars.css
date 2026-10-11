@@ -26,7 +26,7 @@
 }
 
 /* Wide screens: the rail opened out moves the page over */
-@media (min-width: 1280px) {
+@media (min-width: 960px) {
     :root.rail-open {
         --rail-width: var(--rail-open);
     }
@@ -41,6 +41,7 @@
         left: 0;
         display: flex;
         flex-direction: column;
+        box-sizing: border-box; /* the widths include the padding: the page moves over by just that much */
         width: var(--rail-small);
         padding: 4px 4px 12px;
         overflow-y: auto;

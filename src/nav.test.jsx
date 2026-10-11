@@ -179,7 +179,7 @@ describe("computers: the side rail", () => {
         expect(railButton()).toHaveAttribute("aria-expanded", "true");
         expect([...rail().querySelectorAll("h2")].map((h) => h.textContent)).toEqual(["Browse", "Tools", "App"]);
         expect(railItems()).toEqual([
-            "Monkeys", "Enclosures", "Interactive Map", "Monkey Guesser Game", "Install & Use Offline", "About",
+            "Monkeys", "Enclosures", "Interactive Map", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(document.documentElement).toHaveClass("rail-open");
         expect(localStorage.getItem("vervetdb-rail")).toBe("open");

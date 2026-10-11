@@ -26,9 +26,9 @@ export const SEXES = [
     { id: "male", label: "Male" },
 ];
 
-// Birth years to choose from: this year back to 2000
+// Birth years to choose from: this year back to 1997
 const thisYear = new Date().getFullYear();
-export const FILTER_YEARS = Array.from({ length: thisYear - 1999 }, (_, i) => thisYear - i);
+export const FILTER_YEARS = Array.from({ length: thisYear - 1996 }, (_, i) => thisYear - i);
 
 // Pills where several can be on at once, like the game's troop picker:
 // "All Sections" (dashed) is on when none are; tapping another adds or

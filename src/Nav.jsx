@@ -22,7 +22,7 @@ import "./Nav.css";
 // that's remembered on this device); on narrower ones it slides out over
 // the page instead, YouTube-style, until something's picked.
 const RAIL_KEY = "vervetdb-rail";
-const WIDE = "(min-width: 1280px)";
+const WIDE = "(min-width: 960px)";
 const isWide = () => window.matchMedia?.(WIDE).matches ?? true;
 function savedRailOpen() {
     try {

@@ -120,8 +120,8 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
                 )}
                 {/* The small rail: the tools straight after (no headings) */}
                 {!open && addPhotos}
-                {!open && map}
                 {!open && profileBook}
+                {!open && map}
                 {!open &&
                     item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
             </div>
@@ -130,12 +130,12 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
                     <div className="SideRail-group">
                         <h2 className="SideRail-heading">Tools</h2>
                         {addPhotos}
-                        {map}
                         {profileBook}
+                        {map}
                         {item(
                             { href: "#game", "aria-current": page === "game" ? "page" : undefined },
                             IconDeviceGamepad2,
-                            "Monkey Guesser Game"
+                            "Monkey Guesser"
                         )}
                     </div>
                     <div className="SideRail-group">
