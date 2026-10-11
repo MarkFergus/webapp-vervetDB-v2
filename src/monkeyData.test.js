@@ -144,32 +144,6 @@ test("gives up after 10 seconds if the database doesn't answer", async () => {
     await check;
 });
 
-test("before enclosure-types.sql: the special enclosures load as a block and care units", async () => {
-    const blank = { established: null, description: "", features: "", size: null, photos: [] };
-    fakeDatabase({
-        troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }]),
-        monkeys: answer([hbMonkey]),
-        sections: answer([{ id: 1, name: "Bottom" }, { id: 5, name: "Baby Care" }]),
-        enclosures: answer([
-            ...ENCLOSURES.map((e) => ({ ...e, special: false })),
-            { ...blank, id: 50, name: "Bachelor Block", type: "troop", parent_id: null, section_id: 1, sort_order: 100, special: true },
-            { ...blank, id: 51, name: "Bachelor Block A", type: "introcage", parent_id: 50, section_id: null, sort_order: 1, special: false },
-            { ...blank, id: 60, name: "Baby Care", type: "troop", parent_id: null, section_id: 5, sort_order: 101, special: true },
-            { ...blank, id: 61, name: "Dreamland", type: "introcage", parent_id: 60, section_id: null, sort_order: 1, special: false },
-        ]),
-    });
-    const data = await loadMonkeyData();
-    expect(data.sections).toEqual(["Bottom", "Care Units"]);
-    expect(data.enclosures.map((e) => [e.name, e.type, e.section])).toEqual([
-        ["H&B", "troop", "Bottom"],
-        ["H&B C1", "introcage", "Bottom"],
-        ["Bachelor Block", "block", "Bottom"],
-        ["Bachelor Block A", "introcage", "Bottom"],
-        ["Baby Care", "care_unit", "Care Units"],
-        ["Dreamland", "area", "Care Units"],
-    ]);
-});
-
 test("feeding: read and saved once the database has it, left out until then", async () => {
     const fed = { ...row, introcage_id: 41, fed_by: "sickbay", am_plates: 2, am_cut_small: true, am_fruit: false,
         am_metal_plate: true, pm_bowls: 1, pm_cut_small: true };

@@ -1,8 +1,11 @@
 // The Troop Monitoring Sheet: a troop's monkeys, A–Z, to tick off during
 // monitoring. The troop first (the grown-ups, and anyone whose birth year
 // isn't known), then the youngest four birth years, each under its own
-// heading (they're small, so easier to tell apart this way). Troop monkeys
-// only: introcage monkeys are on the monitoring notes.
+// heading (they're small, so easier to tell apart this way). Then, in
+// sections of their own at the end, the monkeys in the introcages at the
+// troop's enclosure (troop adults are sometimes in one for a while, so
+// they're not missed), by introcage; and the Bachelor Block's monkeys on
+// Gismo's sheet.
 import { currentBabySeason } from "./ages";
 
 // The troops that are monitored: the ones living in an enclosure in one
@@ -17,20 +20,35 @@ export function monitoredTroops(troops, enclosures, homeOf) {
     });
 }
 
+// A block (no troop of its own) whose monkeys are monitored on a troop's
+// sheet, under its own heading: Gismo's sheet has the Bachelor Block
+export const SHEET_BLOCKS = { Gismo: "Bachelor Block" };
+
 // How many of the youngest birth years get their own heading
 export const YOUNG_YEARS = 4;
 
 const byName = (a, b) => a.name.localeCompare(b.name);
 
-// [{ title (null for the troop), monkeys }], empty groups left out
-export function monitoringGroups(monkeys, troop, today = new Date()) {
+// By introcage ("Goliath B" before "Goliath B1", "A2" before "A10"), then name
+const byCage = (a, b) => a.introcage.localeCompare(b.introcage, undefined, { numeric: true }) || byName(a, b);
+
+// [{ title (null for the troop), monkeys }], empty groups left out.
+//   home: the troop's enclosure (the same name as the troop, by default)
+export function monitoringGroups(monkeys, troop, today = new Date(), home = troop) {
     const inTroop = monkeys.filter((m) => m.troop === troop && !m.introcage).sort(byName);
+    // Monkeys in an introcage (not a care unit's area) of an enclosure
+    const inCages = (enclosure) =>
+        monkeys
+            .filter((m) => m.introcage && m.introcageType !== "area" && m.enclosure === enclosure)
+            .sort(byCage);
     const newest = currentBabySeason(today);
     const years = Array.from({ length: YOUNG_YEARS }, (_, i) => newest - (YOUNG_YEARS - 1) + i);
     const isYoung = (m) => years.includes(Number(m.year));
     return [
         { title: null, monkeys: inTroop.filter((m) => !isYoung(m)) },
         ...years.map((year) => ({ title: `Orphans ${year}`, monkeys: inTroop.filter((m) => Number(m.year) === year) })),
+        { title: "Introcages", monkeys: inCages(home) },
+        ...(SHEET_BLOCKS[troop] ? [{ title: SHEET_BLOCKS[troop], monkeys: inCages(SHEET_BLOCKS[troop]) }] : []),
     ].filter((g) => g.monkeys.length > 0);
 }
 

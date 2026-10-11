@@ -344,9 +344,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     .ShowPage-monkeys {
         margin: 8px 24px;
         display: grid;
-        /* Cards 280px+, but never fewer than 2 a row (just above phone
-           width, two 280px cards don't quite fit) */
-        grid-template-columns: repeat(auto-fill, minmax(min(280px, calc(50% - 8px)), 1fr));
+        /* Cards 240px+, but never fewer than 2 a row: the same size and
+           spacing as the Enclosures cards (EnclosuresPage.css) */
+        grid-template-columns: repeat(auto-fill, minmax(min(240px, calc(50% - 8px)), 1fr));
+        gap: 24px 16px;
     }
 
     .ShowPage-nav {
@@ -422,7 +423,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         margin: 8px 12px;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px 10px;
+        gap: 20px 10px; /* (as the Enclosures cards) */
         align-items: start;
     }
 }

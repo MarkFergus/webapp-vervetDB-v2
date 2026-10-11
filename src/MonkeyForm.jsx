@@ -6,7 +6,7 @@ import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import { deleteMonkey, saveMonkey, troopHome } from "./monkeyData";
 import { placeChoices } from "./enclosures";
-import { isBaby } from "./feeding";
+import { BABY_FEEDING, isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
@@ -357,10 +357,12 @@ function MonkeyForm({
                             ) : (
                                 <>
                                     <div className="MonkeyForm-row MonkeyForm-feedRow">
+                                        {/* A baby's feed is fixed (see BABY_FEEDING): shown, but locked */}
                                         <label className="MonkeyForm-field">
                                             <span>AM Plates</span>
                                             <select
-                                                value={form.feeding.amPlates}
+                                                value={baby ? BABY_FEEDING.amPlates : form.feeding.amPlates}
+                                                disabled={baby}
                                                 onChange={(e) => setFeeding("amPlates", Number(e.target.value))}
                                             >
                                                 <option value={1}>1 Plate</option>
@@ -396,12 +398,12 @@ function MonkeyForm({
                                             </label>
                                         </div>
                                     </div>
-                                    {baby && <p className="MonkeyForm-hint">Baby plates are always cut small with fruit.</p>}
                                     <div className="MonkeyForm-row MonkeyForm-feedRow">
                                         <label className="MonkeyForm-field">
                                             <span>PM Bowls</span>
                                             <select
-                                                value={form.feeding.pmBowls}
+                                                value={baby ? BABY_FEEDING.pmBowls : form.feeding.pmBowls}
+                                                disabled={baby}
                                                 onChange={(e) => setFeeding("pmBowls", Number(e.target.value))}
                                             >
                                                 <option value={1}>1 Bowl</option>
@@ -412,7 +414,8 @@ function MonkeyForm({
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={form.feeding.pmCutSmall}
+                                                    checked={baby || form.feeding.pmCutSmall}
+                                                    disabled={baby}
                                                     onChange={(e) => setFeeding("pmCutSmall", e.target.checked)}
                                                 />
                                                 Cut Small

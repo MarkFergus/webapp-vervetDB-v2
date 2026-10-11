@@ -76,6 +76,9 @@ const styles = StyleSheet.create({
     count: {
         fontSize: 9.5,
     },
+    babyRow: {
+        marginTop: 3,
+    },
     sickbay: {
         marginTop: 6,
         fontStyle: "italic",
@@ -121,6 +124,10 @@ function AmPlatesPDF({ groups, date }) {
                             <View style={[styles.cell, styles.detailCell]}>
                                 {/* (each cage's entry kept on one line: wraps only after a comma) */}
                                 <Text>{group.rows.map((row) => row.replace(/ /g, " ")).join(", ")}</Text>
+                                {/* (a cage with babies: a line of its own each) */}
+                                {group.babyRows.map((row) => (
+                                    <Text key={row} style={styles.babyRow}>{row}</Text>
+                                ))}
                                 {group.sickbay && <Text style={styles.sickbay}>{group.sickbay} fed by Sickbay</Text>}
                             </View>
                         </View>

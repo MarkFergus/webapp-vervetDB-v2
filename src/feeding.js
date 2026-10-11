@@ -25,17 +25,19 @@ export const hasFeeding = (monkey) => Boolean(monkey.feeding) && monkey.introcag
 // says; that comes back into force when it returns), else its Fed By
 export const fedBy = (monkey) => (monkey.inSickbay ? "sickbay" : monkey.feeding.fedBy);
 
-// Babies' plates are always cut small with fruit
 export const isBaby = (monkey, today = new Date()) => ageInYears(monkey.year, today) === 0;
 
-// The AM plate as it's made: a baby's always cut small + fruit
+// A baby's feed is fixed, whatever is recorded: 1 AM plate, cut small + fruit,
+// and 1 PM bowl, cut small (babies in a cage share one plate: see amSummary)
+export const BABY_FEEDING = { amPlates: 1, amCutSmall: true, amFruit: true, pmBowls: 1, pmCutSmall: true };
+
+// The AM plate as it's made
 export function amPlate(monkey, today = new Date()) {
-    const f = monkey.feeding;
-    const baby = isBaby(monkey, today);
+    const f = isBaby(monkey, today) ? { ...monkey.feeding, ...BABY_FEEDING } : monkey.feeding;
     return {
         plates: f.amPlates,
-        cutSmall: f.amCutSmall || baby,
-        fruit: f.amFruit || baby,
+        cutSmall: f.amCutSmall,
+        fruit: f.amFruit,
         metal: f.amMetalPlate,
     };
 }
@@ -59,8 +61,8 @@ export function amText(monkey, today = new Date()) {
 }
 
 // "1 bowl, cut small"
-export function pmText(monkey) {
-    const f = monkey.feeding;
+export function pmText(monkey, today = new Date()) {
+    const f = isBaby(monkey, today) ? { ...monkey.feeding, ...BABY_FEEDING } : monkey.feeding;
     return [plural(f.pmBowls, "bowl"), f.pmCutSmall && "cut small"].filter(Boolean).join(", ");
 }
 
@@ -114,8 +116,12 @@ const shortName = (name) => name.replace("Calypso's Corner", "Calypso");
 // One introcage's line: "Ace/Clare x2 (cut small)", "Goliath B1 group x4",
 // "Leelo/Leila x3 (1 cut small)". plates: [{ cutSmall, fruit, metal }],
 // one per plate.
-function rowText(introcage, monkeys, plates) {
-    const label = monkeys.length <= 3 ? monkeys.map((m) => m.name).join("/") : `${shortName(introcage.name)} group`;
+function rowText(introcage, monkeys, plates, babyGroup = false) {
+    const label = babyGroup
+        ? `${shortName(introcage.name)} babies`
+        : monkeys.length <= 3
+          ? monkeys.map((m) => m.name).join("/")
+          : `${shortName(introcage.name)} group`;
     const count = plates.length > 1 ? ` x${plates.length}` : "";
     const all = (n) => n === plates.length;
     const extras = [];
@@ -132,6 +138,9 @@ function rowText(introcage, monkeys, plates) {
 // [{ title, note, plates, cutSmall (how many of them, with or without
 //    fruit), monkeys (the Local Team's: the plates are for),
 //    counts: ["6 cut small", "5 on metal plates"], rows: ["Ace/Clare x2", …],
+//    babyRows: ["Gismo A babies x3 (cut small + fruit)", …] (a cage with
+//    babies: one plate for all its babies and one for each adult, all cut
+//    small + fruit; each on a line of its own, after the rows),
 //    sickbay: "Roman & Queenie" or "" }]
 // From every introcage monkey (enclosures: the site's list, for the
 // introcages and their order).
@@ -148,6 +157,7 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
     const fed = monkeys.filter(hasFeeding);
     return AM_GROUPS.map((group) => {
         const rows = [];
+        const babyRows = [];
         const sickbay = [];
         const allPlates = [];
         let monkeyCount = 0;
@@ -160,6 +170,22 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
             sickbay.push(...here.filter((m) => fedBy(m) === "sickbay").map((m) => m.name));
             if (!local.length) continue;
             monkeyCount += local.length;
+            const babies = local.filter((m) => isBaby(m, today));
+            if (babies.length) {
+                // A cage with babies: they share one plate, and each adult
+                // has the plates they need (almost always 1), all cut small
+                // + fruit (whatever their own setting, so the babies aren't
+                // left with food too big); a metal plate still as set
+                const adults = local.filter((m) => !babies.includes(m));
+                const plate = (metal) => ({ cutSmall: true, fruit: true, metal });
+                const plates = [
+                    plate(babies.some((m) => m.feeding.amMetalPlate)),
+                    ...adults.flatMap((m) => Array.from({ length: m.feeding.amPlates }, () => plate(m.feeding.amMetalPlate))),
+                ];
+                allPlates.push(...plates);
+                babyRows.push(rowText(introcage, local, plates, true));
+                continue;
+            }
             const plates = local.flatMap((m) => {
                 const p = amPlate(m, today);
                 return Array.from({ length: p.plates }, () => p);
@@ -176,7 +202,7 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
         if (metal) counts.push(`${metal} on metal plates`);
         return {
             title: group.title, note: group.note, plates: allPlates.length,
-            cutSmall: allPlates.filter((p) => p.cutSmall).length, monkeys: monkeyCount, counts, rows,
+            cutSmall: allPlates.filter((p) => p.cutSmall).length, monkeys: monkeyCount, counts, rows, babyRows,
             sickbay: namesText(sickbay),
         };
     });

@@ -139,7 +139,10 @@ function MonitoringPDF({ title, groups }) {
     const PADDING = 6;
     const signWidth = 3 + fontSize * 0.95;
     const names = groups.flatMap((g) => g.monkeys);
-    const nameWidth = Math.max(60, ...names.map((m) => textWidth(m.name, fontSize) + signWidth + PADDING));
+    // (a monkey in an introcage: its introcage after the name, smaller)
+    const cageSize = fontSize * 0.8;
+    const cageWidth = (m) => (m.introcage ? 3 + textWidth(m.introcage, cageSize) : 0);
+    const nameWidth = Math.max(60, ...names.map((m) => textWidth(m.name, fontSize) + cageWidth(m) + signWidth + PADDING));
     const checkSize = (check) => Math.min(fontSize, (fontSize * (nameWidth - PADDING)) / textWidth(check, fontSize, true));
     const nameCell = [styles.nameCell, { width: nameWidth, height }];
     return (
@@ -181,6 +184,9 @@ function MonitoringPDF({ title, groups }) {
                                         <View key={monkey.id ?? monkey.name} style={styles.row} wrap={false}>
                                             <View style={[...nameCell, tint]}>
                                                 <Text style={{ fontSize }}>{monkey.name}</Text>
+                                                {monkey.introcage && (
+                                                    <Text style={{ fontSize: cageSize, color: "#444" }}>{monkey.introcage}</Text>
+                                                )}
                                                 <SexSign sex={monkey.sex} size={fontSize * 0.95} />
                                             </View>
                                             <Boxes height={height} style={tint} />

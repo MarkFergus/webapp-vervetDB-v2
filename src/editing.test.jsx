@@ -560,18 +560,26 @@ describe("feeding (introcage monkeys)", () => {
         expect(feeding()).toBeNull();
     });
 
-    test("a baby's plate: always cut small + fruit", async () => {
+    test("a baby's feed is locked: 1 plate, cut small + fruit, 1 bowl, cut small", async () => {
         const { user } = setup({ enclosuresLive: true, start: withAroha });
         await openEditFor(user, "Aroha");
         const amExtras = () => within(feeding()).getByRole("group", { name: "AM plate extras" });
+        const pmExtras = () => within(feeding()).getByRole("group", { name: "PM bowl extras" });
         await user.selectOptions(field("Birth year"), String(currentBabySeason()));
-        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeChecked();
-        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeDisabled();
-        expect(within(amExtras()).getByRole("checkbox", { name: "Add Fruit" })).toBeChecked();
-        expect(within(feeding()).getByText("Baby plates are always cut small with fruit.")).toBeInTheDocument();
-        // A grown-up again: their own ticks
+        expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toBeDisabled();
+        expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toHaveDisplayValue("1 Plate");
+        for (const name of ["Cut Small", "Add Fruit"]) {
+            expect(within(amExtras()).getByRole("checkbox", { name })).toBeChecked();
+            expect(within(amExtras()).getByRole("checkbox", { name })).toBeDisabled();
+        }
+        expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toBeDisabled();
+        expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toHaveDisplayValue("1 Bowl");
+        expect(within(pmExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeChecked();
+        expect(within(pmExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeDisabled();
+        // A grown-up again: their own settings
         await user.selectOptions(field("Birth year"), "2015");
-        expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).not.toBeChecked();
+        expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toBeEnabled();
+        expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toBeEnabled();
         expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeEnabled();
     });
 });

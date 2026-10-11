@@ -29,13 +29,58 @@ test("the years move on each November", () => {
     expect(groups.map((g) => g.title)).toEqual([null, "Orphans 2026"]); // 2022s are grown-ups now
 });
 
-test("troop monkeys only: not other troops, nor the troop's introcage monkeys", () => {
-    const groups = monitoringGroups(
-        [monkey("Abel", 2008), monkey("Bobo", 2010, { troop: "Goliath" }), monkey("Kesie", 2010, { troop: null, introcage: "Gismo A" })],
-        "Gismo",
-        TODAY
-    );
+test("not other troops' monkeys", () => {
+    const groups = monitoringGroups([monkey("Abel", 2008), monkey("Bobo", 2010, { troop: "Goliath" })], "Gismo", TODAY);
     expect(groups.flatMap((g) => g.monkeys.map((m) => m.name))).toEqual(["Abel"]);
+});
+
+describe("the introcage monkeys at the end", () => {
+    const cage = (name, introcage, enclosure, extra = {}) =>
+        monkey(name, 2008, { troop: null, introcage, enclosure, introcageType: "introcage", ...extra });
+    const names = (groups, title) => groups.find((g) => g.title === title)?.monkeys.map((m) => m.name);
+
+    test("the troop enclosure's introcage monkeys: an Introcages section, by introcage then name", () => {
+        const groups = monitoringGroups(
+            [
+                monkey("Abel", 2008),
+                cage("Zed", "Gismo A", "Gismo"), cage("Kit", "Gismo A10", "Gismo"), cage("Ann", "Gismo A2", "Gismo"),
+                cage("Bo", "Gismo A", "Gismo"),
+                cage("Far", "Goliath A", "Goliath"), // another enclosure's
+                cage("Baby", "Gismo C", "Gismo", { year: 2025 }), // (babies too: by introcage, not Orphans)
+            ],
+            "Gismo",
+            TODAY
+        );
+        expect(groups.map((g) => g.title)).toEqual([null, "Introcages"]);
+        expect(names(groups, "Introcages")).toEqual(["Bo", "Zed", "Ann", "Kit", "Baby"]);
+    });
+
+    test("their introcage is on the monkey, for the sheet to show", () => {
+        const groups = monitoringGroups([cage("Zed", "Gismo A", "Gismo")], "Gismo", TODAY);
+        expect(groups[0].monkeys[0].introcage).toBe("Gismo A");
+    });
+
+    test("the Bachelor Block is on Gismo's sheet, in a section of its own", () => {
+        const all = [
+            cage("Rex", "Bachelor Block B", "Bachelor Block"), cage("Max", "Bachelor Block A", "Bachelor Block"),
+            cage("Zed", "Gismo A", "Gismo"),
+        ];
+        const gismo = monitoringGroups(all, "Gismo", TODAY);
+        expect(gismo.map((g) => g.title)).toEqual(["Introcages", "Bachelor Block"]);
+        expect(names(gismo, "Bachelor Block")).toEqual(["Max", "Rex"]);
+        // ...and only there
+        expect(monitoringGroups(all, "Goliath", TODAY)).toEqual([]);
+    });
+
+    test("a care unit's areas aren't included", () => {
+        const area = cage("Ziggy", "Dreamland", "Gismo", { introcageType: "area" });
+        expect(monitoringGroups([area], "Gismo", TODAY)).toEqual([]);
+    });
+
+    test("the troop's enclosure can have another name", () => {
+        const groups = monitoringGroups([cage("Zed", "D&D A", "D&D")], "Dino & Daniel", TODAY, "D&D");
+        expect(names(groups, "Introcages")).toEqual(["Zed"]);
+    });
 });
 
 test("the checks at the top, and 15 sessions across", () => {

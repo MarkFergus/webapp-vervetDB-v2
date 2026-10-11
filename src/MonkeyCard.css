@@ -120,10 +120,6 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    ♂ / ♀ icon, so the details fit on one line: "Global · ♀ · 7 yrs old".
    A long troop name is shortened with "…" rather than pushing the rest off. */
 @media (max-width: 624px) {
-    .MonkeyCard-image {
-        border-radius: 10px;
-    }
-
     .MonkeyCard-info-name {
         font-size: 15px;
     }

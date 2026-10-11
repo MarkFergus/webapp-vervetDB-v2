@@ -33,7 +33,11 @@ describe("a monkey's feeding", () => {
     });
 
     test("babies' plates are always cut small with fruit", () => {
-        expect(amText(monkey("Tiny", "Goliath B", {}, { year: 2025 }), TODAY)).toBe("1 plate, cut small + fruit");
+        // 1 plate, cut small + fruit and 1 bowl, cut small, whatever is recorded
+        const tiny = monkey("Tiny", "Goliath B", { amPlates: 2, pmBowls: 2 }, { year: 2025 });
+        expect(amText(tiny, TODAY)).toBe("1 plate, cut small + fruit");
+        expect(pmText(tiny, TODAY)).toBe("1 bowl, cut small");
+        expect(amText(monkey("Tiny", "Goliath B", { amMetalPlate: true }, { year: 2025 }), TODAY)).toBe("1 plate, cut small + fruit, metal plate");
         expect(amText(monkey("Tiny", "Goliath B", {}, { year: 2024 }), TODAY)).toBe("1 plate");
     });
 });
@@ -104,15 +108,49 @@ describe("the AM Plates List", () => {
             [
                 ...["Q", "A", "T", "O", "X"].map((n) => monkey(n, "Robert A", { amMetalPlate: true })),
                 monkey("Minkey", "Robert C", { amCutSmall: true, amFruit: true }),
-                monkey("Mini", "Robert C", {}, { year: 2025 }), // a baby
+                monkey("Mini", "Robert D", {}, { year: 2025 }), // a baby on her own
             ],
             "Bottom Section"
         );
-        expect(bottom.rows).toEqual(["Robert A group x5 (metal plates)", "Mini/Minkey x2 (cut small + fruit)"]);
+        expect(bottom.rows).toEqual(["Robert A group x5 (metal plates)", "Minkey (cut small + fruit)"]);
+        expect(bottom.babyRows).toEqual(["Robert D babies (cut small + fruit)"]);
         expect(bottom.counts).toEqual(["2 cut small + fruit", "5 on metal plates"]);
         expect(bottom.plates).toBe(7);
         // (cut small, with or without fruit: for the total at the bottom)
         expect(bottom.cutSmall).toBe(2);
+    });
+
+    test("a cage with babies: one shared plate for them, one for each adult, all cut small + fruit, on lines at the end", () => {
+        const top = group(
+            [
+                monkey("Mum", "Gismo A", { amPlates: 2 }), monkey("Aunt", "Gismo A", { amMetalPlate: true }),
+                monkey("Bub", "Gismo A", {}, { year: 2025 }), monkey("Bea", "Gismo A", {}, { year: 2025 }),
+                monkey("Ace", "Gismo C"),
+                monkey("Mama", "Goliath A"), monkey("Pip", "Goliath A", {}, { year: 2025 }),
+            ],
+            "Top Section"
+        );
+        // (the babies share 1; each adult has the plates she needs, cut small + fruit
+        // whatever her setting: Mum needs 2, Aunt 1, so 1 + 2 + 1 = 4)
+        expect(top.babyRows).toEqual(["Goliath A babies x2 (cut small + fruit)", "Gismo A babies x4 (cut small + fruit, 1 on metal plates)"]);
+        expect(top.rows).toEqual(["Ace"]);
+        expect(top.plates).toBe(7);
+        expect(top.monkeys).toBe(7);
+        expect(top.cutSmall).toBe(6);
+        expect(top.counts).toEqual(["6 cut small + fruit", "1 on metal plates"]);
+    });
+
+    test("a Sickbay-fed baby isn't counted; the adult then has her own setting", () => {
+        const top = group(
+            [
+                monkey("Mama", "Goliath A", { amPlates: 2 }),
+                monkey("Pip", "Goliath A", { fedBy: "sickbay" }, { year: 2025 }),
+            ],
+            "Top Section"
+        );
+        expect(top.babyRows).toEqual([]);
+        expect(top.rows).toEqual(["Mama x2"]);
+        expect(top.sickbay).toBe("Pip");
     });
 
     test("fed by Sickbay: not counted, listed under the group", () => {

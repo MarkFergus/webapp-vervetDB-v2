@@ -144,23 +144,6 @@ function toAppEnclosure(row, sectionNames) {
     return enclosure;
 }
 
-// Until enclosure-types.sql has run: the "special" enclosures as the new
-// types (one in a "section" of its own is a care unit, in Care Units; the
-// other a block; a care unit's introcages are its areas). rows: the
-// database's, in the same order as list.
-const OLD_CARE_SECTIONS = ["Baby Care", "Quarantine", "Sickbay Care Unit"];
-function fromOldTypes(rows, list, sections) {
-    if (!rows.some((row) => "special" in row)) return sections;
-    list.forEach((e, i) => {
-        if (!rows[i].special) return;
-        if (e.section === e.name) Object.assign(e, { type: "care_unit", section: "Care Units" });
-        else e.type = "block";
-    });
-    const byId = Object.fromEntries(list.map((e) => [e.id, e]));
-    for (const e of list) if (e.parentId && byId[e.parentId]?.type === "care_unit") e.type = "area";
-    return [...sections.filter((s) => !OLD_CARE_SECTIONS.includes(s)), "Care Units"];
-}
-
 // An introcage's Troop Door, Plate Slot (true / false, or null: not
 // recorded) and Sleeping Perches (1–10, or null)
 const introcageDetails = (row) => ({
@@ -202,7 +185,7 @@ async function loadWithEnclosures() {
     throwIfError(troops, monkeys, sections, enclosures);
     const sectionNames = Object.fromEntries(sections.data.map((s) => [s.id, s.name]));
     const list = enclosures.data.map((row) => toAppEnclosure(row, sectionNames));
-    const sectionList = fromOldTypes(enclosures.data, list, sections.data.map((s) => s.name));
+    const sectionList = sections.data.map((s) => s.name);
     // Introcages and areas: the same section as their enclosure
     const byId = Object.fromEntries(list.map((e) => [e.id, e]));
     for (const e of list) if (e.parentId) e.section = byId[e.parentId]?.section ?? null;

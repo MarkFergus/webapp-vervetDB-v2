@@ -255,7 +255,7 @@ function ShowPage({
     const amGroups = useMemo(() => amSummary(monkeys, enclosures), [monkeys, enclosures]);
     const pdfPlateCount = amGroups.reduce((n, g) => n + g.plates, 0);
     // (one row per introcage with Local Team plates)
-    const pdfPlateIntrocages = amGroups.reduce((n, g) => n + g.rows.length, 0);
+    const pdfPlateIntrocages = amGroups.reduce((n, g) => n + g.rows.length + g.babyRows.length, 0);
     const pdfPlateMonkeys = amGroups.reduce((n, g) => n + g.monkeys, 0);
     // The troops that are monitored (not the Bandits), and the Troop
     // Monitoring Sheet's monkeys (the troop chosen for a book)
@@ -263,7 +263,7 @@ function ShowPage({
         () => monitoredTroops(troops.filter((t) => t !== "All Troops"), enclosures, troopHome),
         [troops, enclosures]
     );
-    const monitoring = useMemo(() => monitoringGroups(monkeys, pdfBook), [monkeys, pdfBook]);
+    const monitoring = useMemo(() => monitoringGroups(monkeys, pdfBook, new Date(), troopHome(pdfBook) ?? pdfBook), [monkeys, pdfBook]);
     const pdfMonitoringCount = monitoring.reduce((n, g) => n + g.monkeys.length, 0);
 
     // Only recalculated when the data, search, a filter or the sort changes
