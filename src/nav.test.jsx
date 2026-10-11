@@ -55,12 +55,14 @@ describe("top bar", () => {
 describe("phones: the drawer (☰, from the right)", () => {
     const drawer = () => screen.queryByRole("dialog", { name: "Menu" });
     const drawerItems = () => [...drawer().querySelectorAll(".Drawer-item")].map((i) => i.textContent);
+    const drawerHeadings = () => [...drawer().querySelectorAll("h2")].map((h) => h.textContent);
 
     test("visitors: Install & Use Offline and About (the game's in the bottom bar); Escape closes it, back to ☰", async () => {
         const { user, menuButton } = setup();
         expect(drawer()).toBeNull();
         await user.click(menuButton());
         expect(drawerItems()).toEqual(["Install & Use Offline", "About"]);
+        expect(drawerHeadings()).toEqual(["App"]); // (no Tools: nothing in it)
         expect(within(drawer()).getByRole("button", { name: "Close menu" })).toHaveFocus();
         await user.keyboard("{Escape}");
         expect(drawer()).toBeNull();
@@ -71,7 +73,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        const game = within(drawer()).getByRole("link", { name: "Monkey Guesser Game" });
+        const game = within(drawer()).getByRole("link", { name: "Monkey Guesser" });
         expect(game).toHaveAttribute("href", "#game");
         await user.click(game);
         expect(drawer()).toBeNull();
@@ -82,7 +84,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
         // (staff: Interactive Map here, as Add Photos has its place in the bottom bar)
-        expect(drawerItems()).toEqual(["Add New Monkey", "Interactive Map", "Monkey Guesser Game", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Add New Monkey", "Interactive Map", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerHeadings()).toEqual(["Tools", "App"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
         expect(screen.getByRole("dialog", { name: "Add a monkey" })).toBeInTheDocument();
@@ -92,7 +95,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Interactive Map", "Monkey Guesser Game", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Interactive Map", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 

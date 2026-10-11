@@ -342,8 +342,8 @@
     display: flex;
     flex-direction: column;
     width: min(300px, 85vw);
-    padding: 10px 10px calc(16px + env(safe-area-inset-bottom));
-    background-color: #242224;
+    padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
+    background-color: #1f1f1f;
     box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
     animation: Drawer-slide 0.22s ease-out;
 }
@@ -409,19 +409,45 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Tools, App: like the opened-out side rail's groups */
+.Drawer-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.Drawer-group + .Drawer-group {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #333133;
+}
+
+.Drawer-heading {
+    margin: 4px 12px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8a877e;
+}
+
 .Drawer-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 13px 12px;
+    gap: 18px;
+    padding: 12px;
     font-family: inherit;
     font-size: 15px;
+    line-height: 1.2;
     text-align: left;
     color: #d1cfc7;
     background: none;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
+}
+
+.Drawer-item svg {
+    flex-shrink: 0;
 }
 
 /* (the game: a link, looking the same as the buttons) */
@@ -431,12 +457,33 @@ a.Drawer-item {
 
 .Drawer-item:hover:not(:disabled) {
     color: white;
-    background-color: #343234;
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .Drawer-item:disabled {
     opacity: 0.6;
     cursor: default;
+}
+
+.Drawer-item:focus-visible {
+    outline: 2px solid #25c4f8;
+    outline-offset: -2px;
+}
+
+/* The page you're on: bold, its icon green (as in the side rail) */
+.Drawer-item[aria-current="page"] {
+    font-weight: 700;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.Drawer-item[aria-current="page"] svg {
+    color: #47b028;
+}
+
+/* Interactive Map: dimmer, as it isn't ready yet (as in the side rail) */
+.Drawer-item.is-soon {
+    color: #8a877e;
 }
 
 .Drawer-footer {

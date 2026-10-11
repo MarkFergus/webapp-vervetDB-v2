@@ -22,9 +22,10 @@ import "./NavBars.css";
 //              tiny labels) to start with; ☰ opens it out with full labels.
 //   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) ·
 //              Game (staff: Create PDF) · You
-//   Drawer     phones: ☰ (top right) slides it in from the right: Add New
-//              Monkey (admins), Interactive Map (staff), Monkey Guesser
-//              Game (staff), Install & Use Offline, About
+//   Drawer     phones: ☰ (top right) slides it in from the right, in groups
+//              like the opened-out side rail: Tools (Add New Monkey (admins),
+//              Interactive Map (staff), Monkey Guesser (staff)), then App
+//              (Install & Use Offline, About)
 // Create PDF is for staff only (any role), wherever it is
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
 
@@ -223,6 +224,7 @@ export function BottomBar({
 }
 
 // ---- Phones: the drawer from the right ----
+// In groups, like the opened-out side rail (Tools only if there's any)
 //   onAddMonkey: admins only (Add New Monkey first)
 //   onMap: staff only (their bottom bar has Add Photos in Map's place)
 //   showGame: staff (their bottom bar has Create PDF in the game's place)
@@ -248,37 +250,45 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOf
                         <IconX stroke={2} size={22} />
                     </button>
                 </div>
-                {onAddMonkey && (
-                    <button type="button" className="Drawer-item" onClick={then(onAddMonkey)}>
-                        <IconPlus stroke={1.75} size={22} aria-hidden="true" />
-                        Add New Monkey
+                {(onAddMonkey || onMap || showGame) && (
+                    <div className="Drawer-group">
+                        <h2 className="Drawer-heading">Tools</h2>
+                        {onAddMonkey && (
+                            <button type="button" className="Drawer-item" onClick={then(onAddMonkey)}>
+                                <IconPlus stroke={1.75} size={24} aria-hidden="true" />
+                                Add New Monkey
+                            </button>
+                        )}
+                        {onMap && (
+                            <button type="button" className="Drawer-item is-soon" onClick={then(onMap)}>
+                                <IconMap stroke={1.75} size={24} aria-hidden="true" />
+                                Interactive Map
+                            </button>
+                        )}
+                        {showGame && (
+                            <a
+                                className="Drawer-item"
+                                href="#game"
+                                onClick={onClose}
+                                aria-current={page === "game" ? "page" : undefined}
+                            >
+                                <IconDeviceGamepad2 stroke={1.75} size={24} aria-hidden="true" />
+                                Monkey Guesser
+                            </a>
+                        )}
+                    </div>
+                )}
+                <div className="Drawer-group">
+                    <h2 className="Drawer-heading">App</h2>
+                    <button type="button" className="Drawer-item" onClick={then(onOffline)}>
+                        <IconDeviceMobileDown stroke={1.75} size={24} aria-hidden="true" />
+                        Install & Use Offline
                     </button>
-                )}
-                {onMap && (
-                    <button type="button" className="Drawer-item" onClick={then(onMap)}>
-                        <IconMap stroke={1.75} size={22} aria-hidden="true" />
-                        Interactive Map
+                    <button type="button" className="Drawer-item" onClick={then(onAbout)}>
+                        <IconInfoCircle stroke={1.75} size={24} aria-hidden="true" />
+                        About
                     </button>
-                )}
-                {showGame && (
-                    <a
-                        className="Drawer-item"
-                        href="#game"
-                        onClick={onClose}
-                        aria-current={page === "game" ? "page" : undefined}
-                    >
-                        <IconDeviceGamepad2 stroke={1.75} size={22} aria-hidden="true" />
-                        Monkey Guesser Game
-                    </a>
-                )}
-                <button type="button" className="Drawer-item" onClick={then(onOffline)}>
-                    <IconDeviceMobileDown stroke={1.75} size={22} aria-hidden="true" />
-                    Install & Use Offline
-                </button>
-                <button type="button" className="Drawer-item" onClick={then(onAbout)}>
-                    <IconInfoCircle stroke={1.75} size={22} aria-hidden="true" />
-                    About
-                </button>
+                </div>
                 <p className="Drawer-footer">© {YEAR} Vervet Monkey Foundation</p>
             </div>
         </div>
