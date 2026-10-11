@@ -1,6 +1,6 @@
 // Feeding and the AM Plates List (examples from the plates board's sheet)
 import enclosuresArr from "./enclosuresArr";
-import { AM_GROUPS, DEFAULT_FEEDING, amSummary, amText, groupOf, hasFeeding, namesText, pmText, summaryDate } from "./feeding";
+import { AM_GROUPS, DEFAULT_FEEDING, amSummary, amText, fedBy, groupOf, hasFeeding, namesText, pmText, summaryDate } from "./feeding";
 
 const TODAY = new Date(2026, 9, 10); // 10 Oct 2026: babies are the 2025 season
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
@@ -128,6 +128,23 @@ describe("the AM Plates List", () => {
         expect(top.rows).toEqual(["Seuntjie"]);
         expect(top.plates).toBe(1);
         expect(top.sickbay).toBe("Nita, Rocio & Armies");
+    });
+
+    test("in Sickbay for now: fed by Sickbay, and back to its own Fed By after", () => {
+        const monkeys = [
+            monkey("Seuntjie", "Goliath A", {}, { inSickbay: true }),
+            monkey("Nita", "Goliath A"),
+            // already fed by Sickbay: nothing changes
+            monkey("Rocio", "Goliath A", { fedBy: "sickbay" }, { inSickbay: true }),
+        ];
+        const top = group(monkeys, "Top Section");
+        expect(top.rows).toEqual(["Nita"]);
+        expect(top.sickbay).toBe("Rocio & Seuntjie");
+        expect(fedBy(monkeys[0])).toBe("sickbay");
+        // Back home: its stored Fed By (Local Team) applies again
+        const back = group([{ ...monkeys[0], inSickbay: false }, monkeys[1]], "Top Section");
+        expect(back.rows).toEqual(["Nita/Seuntjie x2"]);
+        expect(back.sickbay).toBe("");
     });
 
     test("troop monkeys and care units' areas aren't on it; an empty group is 0", () => {

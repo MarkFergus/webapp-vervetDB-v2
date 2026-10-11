@@ -344,6 +344,12 @@ function MonkeyForm({
                                     </select>
                                 </label>
                             </div>
+                            {monkey?.inSickbay && (
+                                <p className="MonkeyForm-hint">
+                                    Currently in Sickbay, so fed by Sickbay until they return. This setting applies
+                                    again then.
+                                </p>
+                            )}
                             {form.feeding.fedBy === "sickbay" ? (
                                 <p className="MonkeyForm-hint">
                                     Sickbay delivers its plates (Special Plates on the AM Plates List).

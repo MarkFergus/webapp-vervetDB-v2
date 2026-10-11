@@ -41,6 +41,7 @@ import {
     TYPE_NAMES,
     establishedText,
     introcageMonkeys,
+    isNewArrival,
     introcageWord,
     introcagesOf,
     monkeyCount,
@@ -437,6 +438,8 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
                             year={m.year}
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
+                            inSickbay={m.inSickbay}
+                            newArrival={isNewArrival(m)}
                             chip={m.chip}
                             img={m.img[0]}
                             onClick={() => onOpen(m, monkeys)}

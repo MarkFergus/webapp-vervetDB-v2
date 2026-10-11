@@ -203,3 +203,28 @@
     background-color: rgba(0, 0, 0, 0.75);
     border-radius: 4px;
 }
+
+/* In Sickbay: a small first-aid kit in the thumbnail's top left corner */
+.MonkeyRow-sickbay {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    display: flex;
+    padding: 2px;
+    color: #1f1f1f;
+    background-color: #f5b83d;
+    border-radius: 4px;
+}
+
+/* New Arrival: neon orange sparkle, bottom left of the thumbnail */
+.MonkeyRow-newArrival {
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    display: flex;
+    padding: 2px;
+    color: #1f1f1f;
+    background-color: #ff7a1a;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(255, 122, 26, 0.85);
+}

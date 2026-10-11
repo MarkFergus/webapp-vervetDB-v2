@@ -74,9 +74,27 @@ export function introcageCode(introcage, parent) {
 export const troopMonkeys = (enclosure, monkeys) =>
     monkeys.filter((m) => !inIntrocage(m) && homeName(m) === enclosure.name).sort(byName);
 
-// Monkeys in any of an enclosure's introcages / areas
-export const introcageMonkeys = (enclosure, monkeys) =>
-    monkeys.filter((m) => inIntrocage(m) && homeName(m) === enclosure.name).sort(byName);
+// A new arrival: living in a care unit's area (Baby Care, Quarantine, Sickbay
+// Care Unit), until it's moved to a permanent location
+export const isNewArrival = (monkey) => monkey.introcageType === "area";
+
+// The Sickbay Care Unit also lists the monkeys who are in Sickbay for now
+// from elsewhere (their In Sickbay flag), next to its own new arrivals.
+export const SICKBAY_UNIT = "Sickbay Care Unit";
+export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && enclosure.name === SICKBAY_UNIT;
+
+// Monkeys in any of an enclosure's introcages / areas (the Sickbay Care
+// Unit: and everyone in Sickbay for now). NOTE: a visitor is counted both
+// here and at home, so Sickbay's number is who is really there. A total for
+// the whole sanctuary mustn't add the enclosures up: count each monkey once,
+// at its home (homeName).
+export function introcageMonkeys(enclosure, monkeys) {
+    const own = monkeys.filter((m) => inIntrocage(m) && homeName(m) === enclosure.name);
+    const visitors = isSickbayUnit(enclosure)
+        ? monkeys.filter((m) => m.inSickbay && homeName(m) !== enclosure.name)
+        : [];
+    return [...own, ...visitors].sort(byName);
+}
 
 // How many monkeys an enclosure has, as its card and the Monkeys sort
 // count them: a troop enclosure's troop, or (a block or care unit, which

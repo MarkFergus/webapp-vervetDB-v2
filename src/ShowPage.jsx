@@ -10,7 +10,7 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA, troopHome } from "./monkeyData";
+import { BUILT_IN_DATA, saveSickbay, troopHome } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -25,6 +25,7 @@ import {
     enclosureFromRoute,
     introcageMonkeys,
     isInside,
+    isNewArrival,
     isEnclosuresRoute,
     placeHash,
     residents,
@@ -450,6 +451,14 @@ function ShowPage({
         setEditing(null);
         openModal(saved, modalList && modalList.map((m) => (m.id === saved.id ? saved : m)));
     }
+    // Move to Sickbay / Return: saved straight away, and the pop-up stays open
+    async function handleSickbay(monkey, details) {
+        const saved = await saveSickbay(monkey.id, details);
+        onMonkeySaved(saved);
+        showInAddress(saved);
+        setSelectedMonkey(saved);
+        setModalList((list) => list && list.map((m) => (m.id === saved.id ? saved : m)));
+    }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
         setEditing(null);
@@ -684,6 +693,8 @@ function ShowPage({
                     }
                     onEdit={canEdit ? startEdit : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
+                    // (only once the database has Sickbay)
+                    onSickbay={canEdit && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}
                     placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}
                 />
             </div>
@@ -888,6 +899,8 @@ function ShowPage({
                             year={m.year}
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
+                            inSickbay={m.inSickbay}
+                            newArrival={isNewArrival(m)}
                             chip={m.chip}
                             img={m.img[0]}
                         />
@@ -904,6 +917,8 @@ function ShowPage({
                             year={m.year}
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
+                            inSickbay={m.inSickbay}
+                            newArrival={isNewArrival(m)}
                             img={m.img[0]}
                         />
                     ))}

@@ -21,6 +21,10 @@ export const DEFAULT_FEEDING = {
 // has feeding)?
 export const hasFeeding = (monkey) => Boolean(monkey.feeding) && monkey.introcageType === "introcage";
 
+// Who feeds it right now: Sickbay while it's in Sickbay (whatever its Fed By
+// says; that comes back into force when it returns), else its Fed By
+export const fedBy = (monkey) => (monkey.inSickbay ? "sickbay" : monkey.feeding.fedBy);
+
 // Babies' plates are always cut small with fruit
 export const isBaby = (monkey, today = new Date()) => ageInYears(monkey.year, today) === 0;
 
@@ -152,8 +156,8 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
             const here = fed
                 .filter((m) => m.introcage === introcage.name)
                 .sort((a, b) => a.name.localeCompare(b.name));
-            const local = here.filter((m) => m.feeding.fedBy !== "sickbay");
-            sickbay.push(...here.filter((m) => m.feeding.fedBy === "sickbay").map((m) => m.name));
+            const local = here.filter((m) => fedBy(m) !== "sickbay");
+            sickbay.push(...here.filter((m) => fedBy(m) === "sickbay").map((m) => m.name));
             if (!local.length) continue;
             monkeyCount += local.length;
             const plates = local.flatMap((m) => {

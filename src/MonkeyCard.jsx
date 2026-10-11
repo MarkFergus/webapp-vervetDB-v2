@@ -1,4 +1,4 @@
-import { IconCameraPlus, IconMars, IconVenus } from "@tabler/icons-react";
+import { IconCameraPlus, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -17,7 +17,9 @@ function SexIcon({ sex }) {
 // Buttons may only contain inline elements, hence spans rather than divs.
 //   troop: where it lives, its troop or introcage ("Goliath", "H&B C1")
 //   inIntrocage: true for introcage monkeys
-function MonkeyCard({ name, sex, year, troop, inIntrocage = false, img, onClick }) {
+//   inSickbay: true while it's in Sickbay (a badge, top left of the photo)
+//   newArrival: true while it lives in a care unit (a badge, top left)
+function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = false, newArrival = false, img, onClick }) {
     const photoNeeded = isPlaceholderPhoto(img);
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
     const label = [
@@ -25,6 +27,8 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, img, onClick 
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
+        ...(newArrival ? ["new arrival"] : []),
+        ...(inSickbay ? ["in Sickbay"] : []),
         ...(photoNeeded ? ["photo needed"] : []),
     ].join(", ");
 
@@ -42,6 +46,22 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, img, onClick 
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 ></img>
+                {(newArrival || inSickbay) && (
+                    <span className="MonkeyCard-badges">
+                        {newArrival && (
+                            <span className="MonkeyCard-newArrival">
+                                <IconSparkles size={14} aria-hidden="true" />
+                                New Arrival
+                            </span>
+                        )}
+                        {inSickbay && (
+                            <span className="MonkeyCard-sickbay">
+                                <IconFirstAidKit size={14} aria-hidden="true" />
+                                In Sickbay
+                            </span>
+                        )}
+                    </span>
+                )}
                 {/* Still the grey placeholder: a small badge on the photo,
                     like YouTube's video length */}
                 {photoNeeded && (

@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.9.0",
+        date: "2026-10-11",
+        changes: [
+            "New In Sickbay for staff: Move to Sickbay and Return under More Actions on a monkey",
+            "New In Sickbay badge on monkeys; the AM Plates List counts them as fed by Sickbay until they return",
+            "Improved the Sickbay Care Unit: it also lists monkeys in Sickbay for now",
+            "New Arrival badge on monkeys living in a care unit",
+        ],
+    },
+    {
         version: "1.8.0",
         date: "2026-10-10",
         // a significant release: "Major Update" beside it in About

@@ -1,4 +1,4 @@
-import { IconCameraPlus, IconMars, IconVenus } from "@tabler/icons-react";
+import { IconCameraPlus, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -26,13 +26,17 @@ export function MonkeyListHeader() {
 // A button, so it can be reached with Tab and opened with Enter or Space.
 //   troop: where it lives, its troop or introcage; inIntrocage: true for
 //   introcage monkeys (see MonkeyCard)
-function MonkeyRow({ name, sex, year, troop, inIntrocage = false, chip, img, onClick }) {
+//   inSickbay: true while it's in Sickbay (a small badge on the photo)
+//   newArrival: true while it lives in a care unit (a small badge, bottom left)
+function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, newArrival = false, chip, img, onClick }) {
     // The same as the cards, e.g. "Abby, female, born 2018, Global troop"
     const label = [
         name,
         sex || "sex unknown",
         year ? `born ${year}` : "birth year unknown",
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
+        ...(newArrival ? ["new arrival"] : []),
+        ...(inSickbay ? ["in Sickbay"] : []),
         ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
     ].join(", ");
     const sexWord = sex === "male" ? "Male" : sex === "female" ? "Female" : "–";
@@ -50,6 +54,16 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, chip, img, onC
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 />
+                {inSickbay && (
+                    <span className="MonkeyRow-sickbay" title="In Sickbay">
+                        <IconFirstAidKit size={12} aria-hidden="true" />
+                    </span>
+                )}
+                {newArrival && (
+                    <span className="MonkeyRow-newArrival" title="New Arrival">
+                        <IconSparkles size={12} aria-hidden="true" />
+                    </span>
+                )}
                 {/* Still the grey placeholder: a small camera badge */}
                 {isPlaceholderPhoto(img) && (
                     <span className="MonkeyRow-photoNeeded" title="Photo needed">

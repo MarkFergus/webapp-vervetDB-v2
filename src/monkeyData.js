@@ -22,6 +22,8 @@ const NEW_MONKEY_COLUMNS = `${OLD_MONKEY_COLUMNS}, introcage_id`;
 // ...and its feeding (once feeding.sql has run)
 const FEEDING_MONKEY_COLUMNS =
     `${NEW_MONKEY_COLUMNS}, fed_by, am_plates, am_cut_small, am_fruit, am_metal_plate, pm_bowls, pm_cut_small`;
+// ...and whether it's in Sickbay (once sickbay.sql has run)
+const SICKBAY_MONKEY_COLUMNS = `${FEEDING_MONKEY_COLUMNS}, in_sickbay, sickbay_since, sickbay_note`;
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
 
@@ -77,6 +79,12 @@ export function toAppMonkey(row) {
             pmBowls: row.pm_bowls,
             pmCutSmall: row.pm_cut_small,
         };
+    }
+    // Once the database has Sickbay (see sickbay.sql)
+    if ("in_sickbay" in row) {
+        monkey.inSickbay = row.in_sickbay;
+        monkey.sickbaySince = row.sickbay_since;
+        monkey.sickbayNote = row.sickbay_note;
     }
     return monkey;
 }
@@ -169,14 +177,15 @@ function throwIfError(...results) {
     for (const r of results) if (r.error) throw r.error;
 }
 
-// The monkeys with their feeding, or without it until feeding.sql has run
-// (a missing column). { result, columns }
+// The monkeys with their Sickbay and feeding, or without them until
+// sickbay.sql / feeding.sql has run (a missing column). { result, columns }
 async function loadMonkeys() {
-    const withFeeding = await supabase.from("monkeys").select(FEEDING_MONKEY_COLUMNS).order("id");
-    if (withFeeding.error?.code === "42703") {
-        return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
+    let result;
+    for (const columns of [SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
+        result = await supabase.from("monkeys").select(columns).order("id");
+        if (result.error?.code !== "42703") return { result, columns };
     }
-    return { result: withFeeding, columns: FEEDING_MONKEY_COLUMNS };
+    return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
 }
 
 async function loadWithEnclosures() {
@@ -287,6 +296,24 @@ export async function saveMonkeyPhotos(id, photos) {
     const { data, error } = await supabase.from("monkeys").update({ photos }).eq("id", id).select(monkeyColumns).single();
     if (error) {
         console.error("Saving photos failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppMonkey(data);
+}
+
+// Moves a monkey into Sickbay (with the date and a few words, both optional)
+// or back home (inSickbay false), leaving everything else as it is. Its home
+// and its Fed By don't change: the AM Plates List just counts it as fed by
+// Sickbay while it's in. Returns the saved monkey (site shape).
+export async function saveSickbay(id, { inSickbay, since = null, note = "" }) {
+    const row = {
+        in_sickbay: inSickbay,
+        sickbay_since: inSickbay ? since || null : null,
+        sickbay_note: inSickbay ? note.trim() || null : null,
+    };
+    const { data, error } = await supabase.from("monkeys").update(row).eq("id", id).select(monkeyColumns).single();
+    if (error) {
+        console.error("Saving Sickbay failed:", error);
         throw saveProblem(error);
     }
     return toAppMonkey(data);

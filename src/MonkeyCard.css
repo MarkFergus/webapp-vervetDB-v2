@@ -189,3 +189,35 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     background-color: rgba(0, 0, 0, 0.75);
     border-radius: 6px;
 }
+
+/* "In Sickbay": top left of the photo (the corner Photo Needed doesn't use) */
+.MonkeyCard-badges {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.MonkeyCard-sickbay,
+.MonkeyCard-newArrival {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
+    color: #1f1f1f;
+    background-color: #f5b83d;
+    border-radius: 6px;
+}
+
+/* "New Arrival": neon orange, so it can't be missed */
+.MonkeyCard-newArrival {
+    color: #1f1f1f;
+    background-color: #ff7a1a;
+    box-shadow: 0 0 8px rgba(255, 122, 26, 0.85);
+}

@@ -11,6 +11,9 @@ import {
     IconShare,
     IconCameraPlus,
     IconPhotoPlus,
+    IconFirstAidKit,
+    IconSparkles,
+    IconChevronDown,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -23,8 +26,19 @@ import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import { placeLabel } from "./places";
-import { amText, hasFeeding, pmText } from "./feeding";
+import { isNewArrival } from "./enclosures";
+import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import "./Modal.css";
+
+// Today as the date box wants it ("2026-10-11"), in the browser's own time
+const todayText = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+// What "Return to ..." goes back to
+const homeWord = (monkey) =>
+    monkey.introcageType === "area" ? "Area" : monkey.introcage ? "Introcage" : "Troop";
 
 function Modal({
     isModalOpen,
@@ -35,6 +49,7 @@ function Modal({
     nextMonkey,
     onEdit, // given only to editors: shows the Edit button
     onAddPhotos, // editors too: Add Photos, for this monkey
+    onSickbay, // editors too: Move to Sickbay / Return, async (monkey, { inSickbay, since, note })
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
 }) {
@@ -49,6 +64,31 @@ function Modal({
     // Firefox's home-screen app: the picture shown here to press and hold
     const [preview, setPreview] = useState(null);
     const closeButtonRef = useRef(null);
+    // Move to Sickbay: the little form (date and note) while it's open
+    const [moreOpen, setMoreOpen] = useState(false);
+    const [sickbayForm, setSickbayForm] = useState(null);
+    const [sickbayBusy, setSickbayBusy] = useState(false);
+    const [sickbayProblem, setSickbayProblem] = useState(null);
+
+    // Saves straight away; the pop-up stays open, now with the new state
+    async function changeSickbay(inSickbay) {
+        setSickbayBusy(true);
+        setSickbayProblem(null);
+        try {
+            await onSickbay(monkey, { inSickbay, since: sickbayForm?.since, note: sickbayForm?.note });
+            setSickbayForm(null);
+            setMoreOpen(false);
+        } catch (err) {
+            setSickbayProblem(err.message);
+        } finally {
+            setSickbayBusy(false);
+        }
+    }
+    function resetSickbay() {
+        setMoreOpen(false);
+        setSickbayForm(null);
+        setSickbayProblem(null);
+    }
 
     // Phones open their share menu (e.g. WhatsApp) with a link to this
     // monkey; computers copy the link
@@ -92,9 +132,11 @@ function Modal({
         onClose();
         setCurrentIndex(0);
         setShareStatus(null);
+        resetSickbay();
     }
     function handleClick(direction) {
         handlePrevNext(direction);
+        resetSickbay();
         setCurrentIndex(0);
         setSlideFrom(null);
         setShareStatus(null);
@@ -296,6 +338,19 @@ function Modal({
                                         ) : (
                                             <li className="is-troop">{monkey.introcage ? <PlaceName name={monkey.introcage} /> : <PlaceName name={monkey.troop} suffix=" Troop" />}</li>
                                         )}
+                                        {isNewArrival(monkey) && (
+                                            <li className="is-newArrival">
+                                                <IconSparkles size={15} stroke={2} aria-hidden="true" />
+                                                New Arrival
+                                            </li>
+                                        )}
+                                        {/* (right after where it lives) */}
+                                        {monkey.inSickbay && (
+                                            <li className="is-sickbay">
+                                                <IconFirstAidKit size={15} stroke={2} aria-hidden="true" />
+                                                In Sickbay
+                                            </li>
+                                        )}
                                         <li>
                                             {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}
                                             {monkey.sex === "female" && <IconVenus size={15} stroke={2} aria-hidden="true" />}
@@ -319,12 +374,115 @@ function Modal({
                                     {hasFeeding(monkey) && (
                                         <section className="Modal-section">
                                             <h2 className="Modal-label">Feeding</h2>
-                                            {monkey.feeding.fedBy === "sickbay" ? (
-                                                <p>Fed by Sickbay</p>
+                                            {fedBy(monkey) === "sickbay" ? (
+                                                <p>
+                                                    Fed by Sickbay
+                                                    {monkey.feeding.fedBy !== "sickbay" && " while in Sickbay"}
+                                                </p>
                                             ) : (
                                                 <p className="Modal-feeding">
                                                     <span><b>AM food:</b> {amText(monkey)}</span>
                                                     <span><b>PM food:</b> {pmText(monkey)}</span>
+                                                </p>
+                                            )}
+                                        </section>
+                                    )}
+                                    {/* In Sickbay: since when and why (the pill says it
+                                        in short; nothing at all when it isn't) */}
+                                    {monkey.inSickbay && (monkey.sickbaySince || monkey.sickbayNote) && (
+                                        <section className="Modal-section">
+                                            <h2 className="Modal-label">Sickbay</h2>
+                                            <p>
+                                                {[
+                                                    monkey.sickbaySince &&
+                                                        `Since ${summaryDate(new Date(`${monkey.sickbaySince}T00:00:00`))}`,
+                                                    monkey.sickbayNote,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(" · ")}
+                                            </p>
+                                        </section>
+                                    )}
+                                    {/* More Actions (editors): quick actions that aren't
+                                        needed often, folded away. Just Sickbay for now. */}
+                                    {onSickbay && (
+                                        <section className="Modal-moreActions">
+                                            <button
+                                                type="button"
+                                                className="Modal-moreToggle"
+                                                aria-expanded={moreOpen}
+                                                onClick={() => setMoreOpen((open) => !open)}
+                                            >
+                                                More Actions
+                                                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
+                                            </button>
+                                            {moreOpen && (
+                                                <div className="Modal-moreRow">
+                                                    {!sickbayForm && (
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-sickbay"
+                                                            disabled={sickbayBusy}
+                                                            onClick={() =>
+                                                                monkey.inSickbay
+                                                                    ? changeSickbay(false)
+                                                                    : setSickbayForm({ since: todayText(), note: "" })
+                                                            }
+                                                        >
+                                                            <IconFirstAidKit size={18} aria-hidden="true" />
+                                                            {sickbayBusy
+                                                                ? "Saving…"
+                                                                : monkey.inSickbay
+                                                                  ? `Return to ${homeWord(monkey)}`
+                                                                  : "Move to Sickbay"}
+                                                        </button>
+                                                    )}
+                                                    {sickbayForm && (
+                                                        <div className="Modal-sickbayForm">
+                                                            <label>
+                                                                <span>Date Moved</span>
+                                                                <input
+                                                                    type="date"
+                                                                    value={sickbayForm.since}
+                                                                    max={todayText()}
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
+                                                                />
+                                                            </label>
+                                                            <label>
+                                                                <span>Note (optional)</span>
+                                                                <input
+                                                                    type="text"
+                                                                    value={sickbayForm.note}
+                                                                    maxLength={200}
+                                                                    placeholder="e.g. leg wound"
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
+                                                                />
+                                                            </label>
+                                                            <div className="Modal-sickbayActions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="Modal-edit is-confirm"
+                                                                    disabled={sickbayBusy}
+                                                                    onClick={() => changeSickbay(true)}
+                                                                >
+                                                                    {sickbayBusy ? "Saving…" : "Confirm"}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="Modal-edit is-quiet"
+                                                                    disabled={sickbayBusy}
+                                                                    onClick={resetSickbay}
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {sickbayProblem && (
+                                                <p className="Modal-sickbayProblem" role="alert">
+                                                    {sickbayProblem}
                                                 </p>
                                             )}
                                         </section>
