@@ -168,7 +168,7 @@ function ShowPage({
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
-    const { isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
+    const { user, role, isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
@@ -697,6 +697,10 @@ function ShowPage({
                     }
                     onEdit={canEdit ? startEdit : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
+                    // Integration Summaries: staff (any role) see them; editors add
+                    staff={
+                        role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin } : null
+                    }
                     // (only once the database has Sickbay)
                     onSickbay={canEdit && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}
                     placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}

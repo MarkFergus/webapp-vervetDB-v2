@@ -27,6 +27,7 @@ import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import { placeLabel } from "./places";
 import { isNewArrival } from "./enclosures";
+import { IntegrationForm, IntegrationList, newReportDates, useIntegration } from "./IntegrationReports";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import "./Modal.css";
 
@@ -50,6 +51,7 @@ function Modal({
     onEdit, // given only to editors: shows the Edit button
     onAddPhotos, // editors too: Add Photos, for this monkey
     onSickbay, // editors too: Move to Sickbay / Return, async (monkey, { inSickbay, since, note })
+    staff, // { canSee, canAdd, userId, isAdmin } for Integration Reports (staff only), or null
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
 }) {
@@ -69,6 +71,10 @@ function Modal({
     const [sickbayForm, setSickbayForm] = useState(null);
     const [sickbayBusy, setSickbayBusy] = useState(false);
     const [sickbayProblem, setSickbayProblem] = useState(null);
+    // Integration Reports: its form (the + button) and the fold-out list
+    const integration = useIntegration(monkey?.id, staff);
+    const [integrationForm, setIntegrationForm] = useState(false);
+    const [listOpen, setListOpen] = useState(false);
 
     // Saves straight away; the pop-up stays open, now with the new state
     async function changeSickbay(inSickbay) {
@@ -86,6 +92,8 @@ function Modal({
     }
     function resetSickbay() {
         setMoreOpen(false);
+        setIntegrationForm(false);
+        setListOpen(false);
         setSickbayForm(null);
         setSickbayProblem(null);
     }
@@ -404,21 +412,24 @@ function Modal({
                                         </section>
                                     )}
                                     {/* More Actions (editors): quick actions that aren't
-                                        needed often, folded away. Just Sickbay for now. */}
-                                    {onSickbay && (
+                                        needed often, folded away. Under it (staff): the
+                                        Integration Reports list. */}
+                                    {(onSickbay || integration.canAdd || (integration.available && integration.entries.length > 0)) && (
                                         <section className="Modal-moreActions">
-                                            <button
-                                                type="button"
-                                                className="Modal-moreToggle"
-                                                aria-expanded={moreOpen}
-                                                onClick={() => setMoreOpen((open) => !open)}
-                                            >
-                                                More Actions
-                                                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
-                                            </button>
+                                            {(onSickbay || integration.canAdd) && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-moreToggle"
+                                                    aria-expanded={moreOpen}
+                                                    onClick={() => setMoreOpen((open) => !open)}
+                                                >
+                                                    More Actions
+                                                    <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
+                                                </button>
+                                            )}
                                             {moreOpen && (
                                                 <div className="Modal-moreRow">
-                                                    {!sickbayForm && (
+                                                    {onSickbay && !sickbayForm && !integrationForm && (
                                                         <button
                                                             type="button"
                                                             className="Modal-edit is-sickbay"
@@ -436,6 +447,30 @@ function Modal({
                                                                   ? `Return to ${homeWord(monkey)}`
                                                                   : "Move to Sickbay"}
                                                         </button>
+                                                    )}
+                                                    {integration.canAdd && !sickbayForm && !integrationForm && (
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-sickbay"
+                                                            onClick={() => setIntegrationForm(true)}
+                                                        >
+                                                            + Integration Report
+                                                        </button>
+                                                    )}
+                                                    {integrationForm && (
+                                                        <IntegrationForm
+                                                            initial={{ ...newReportDates(), report: "" }}
+                                                            onSave={async (values) => {
+                                                                await integration.add(values);
+                                                                setIntegrationForm(false);
+                                                                setMoreOpen(false);
+                                                                setListOpen(true);
+                                                            }}
+                                                            onCancel={() => {
+                                                                setIntegrationForm(false);
+                                                                setMoreOpen(false);
+                                                            }}
+                                                        />
                                                     )}
                                                     {sickbayForm && (
                                                         <div className="Modal-sickbayForm">
@@ -485,6 +520,11 @@ function Modal({
                                                     {sickbayProblem}
                                                 </p>
                                             )}
+                                            <IntegrationList
+                                                integration={integration}
+                                                open={listOpen}
+                                                onToggle={() => setListOpen((open) => !open)}
+                                            />
                                         </section>
                                     )}
                                 </div>

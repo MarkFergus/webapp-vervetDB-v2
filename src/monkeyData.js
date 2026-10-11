@@ -407,3 +407,71 @@ export async function deleteMaintenance(id) {
     }
     if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete log entries.");
 }
+
+// ---- Integration reports: staff reports on how a monkey's integration is going ----
+
+// An entry, as the site uses it: { id, from ("2026-10-04"), to, report,
+// loggedBy (the writer's account id), loggedByName, loggedAt }
+const toAppReport = (row) => ({
+    id: row.id,
+    from: row.from_date,
+    to: row.to_date,
+    report: row.report,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+    loggedAt: row.logged_at,
+});
+const REPORT_COLUMNS = "id, from_date, to_date, report, logged_by, logged_by_name, logged_at";
+
+// A monkey's reports, newest period first. Throws if the database hasn't
+// got them yet (integration-reports.sql) or can't be reached.
+export async function loadIntegration(monkeyId) {
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .select(REPORT_COLUMNS)
+        .eq("monkey_id", monkeyId)
+        .order("to_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw error;
+    return data.map(toAppReport);
+}
+
+// Adds an entry ({ from, to, report }); who and when are filled in by the
+// database. Returns the saved entry.
+export async function addIntegration(monkeyId, { from, to, report }) {
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .insert({ monkey_id: monkeyId, from_date: from, to_date: to, report })
+        .select(REPORT_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Adding an integration report failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppReport(data);
+}
+
+// Changes an entry's period or report (admins, or whoever wrote it)
+export async function saveIntegration(id, { from, to, report }) {
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .update({ from_date: from, to_date: to, report })
+        .eq("id", id)
+        .select(REPORT_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Saving an integration report failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppReport(data);
+}
+
+// Deletes an entry (admins, or whoever wrote it)
+export async function deleteIntegration(id) {
+    const { data, error } = await supabase.from("integration_reports").delete().eq("id", id).select("id");
+    if (error) {
+        console.error("Deleting an integration report failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it, can delete it.");
+}
