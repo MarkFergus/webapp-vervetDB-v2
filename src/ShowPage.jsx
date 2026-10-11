@@ -24,7 +24,9 @@ import { fullName, homeName, inIntrocage, placeName } from "./places";
 import {
     enclosureFromRoute,
     introcageMonkeys,
+    isCareUnit,
     isInside,
+    SICKBAY_UNIT,
     isNewArrival,
     isEnclosuresRoute,
     placeHash,
@@ -99,7 +101,9 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
             // see matchesLocation)
             (inIntrocage(monkey)
                 ? homeName(monkey).toLowerCase() === troopFilter.toLowerCase()
-                : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase()));
+                : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase())) ||
+            // The Sickbay Care Unit also has the monkeys in Sickbay for now
+            (troopFilter === SICKBAY_UNIT && Boolean(monkey.inSickbay));
         const matchesYear =
             yearFilter === "All Years" ||
             // Number() on both sides in case a year is entered as text
@@ -791,6 +795,7 @@ function ShowPage({
                         onClose={() => setFiltersOpen(false)}
                         buttonRef={filtersButtonRef}
                         troops={troops}
+                        careUnits={enclosures.filter(isCareUnit).map((e) => e.name)}
                         filters={filters}
                         onChange={setFilter}
                         onClear={clearFilters}
@@ -996,7 +1001,7 @@ function ShowPage({
                     troopIds={troopIds}
                     enclosures={enclosures}
                     enclosuresLive={enclosuresLive}
-                    defaultTroop={troopFilter}
+                    defaultTroop={troopNames.includes(troopFilter) ? troopFilter : NO_FILTERS.troop}
                     onClose={() => setEditing(null)}
                     onSaved={handleSaved}
                     onDeleted={handleDeleted}

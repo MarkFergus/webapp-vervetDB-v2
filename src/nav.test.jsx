@@ -234,11 +234,11 @@ describe("filter / sort toolbar", () => {
         const filtersButton = () => screen.getByRole("button", { name: /^Filters/ });
         expect(filtersButton()).not.toHaveClass("is-active");
         await user.click(filtersButton());
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
         expect(filtersButton()).toHaveClass("is-active");
         expect(filtersButton()).toHaveAccessibleName("Filters (1 on)");
 
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "All Troops");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "All Troops");
         expect(filtersButton()).not.toHaveClass("is-active");
     });
 

@@ -133,14 +133,14 @@ test("Sex, and filters combine", async () => {
     await user.click(sexPill("Male")); // Male off: females only
     expectShowing(monkeysArr.filter((m) => m.sex === "female").length);
 
-    await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
     expectShowing(monkeysArr.filter((m) => m.sex === "female" && m.troop === "Goliath").length);
 });
 
 test("filters in use show as chips: remove one, or Clear All", async () => {
     const { user } = setup();
     await user.click(filtersButton());
-    await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
     await user.click(ageButton("Adults"));
     await user.click(sexPill("Female")); // Female off: males only
     await user.click(within(panel()).getByRole("button", { name: /^Show / }));
@@ -235,7 +235,7 @@ describe("Location", () => {
         const { user } = setupWithIntrocage();
         const showButton = () => screen.getByRole("button", { name: /^Show \d+ monkeys?$/ });
         await user.click(filtersButton());
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "H&B");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "H&B");
         // Both on: the troop and its introcages
         expectShowing(hbTroop.length + 1);
         expect(showButton()).toHaveTextContent(`Show ${hbTroop.length + 1} monkeys`);
@@ -250,7 +250,7 @@ describe("Location", () => {
         expect(showButton()).toHaveTextContent("Show 1 monkey");
         expect(chips()).toEqual(["In introcages", "Holt & Barrington"]);
         // Another troop: nobody in its introcages
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Goliath");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
         expect(screen.getByText("No monkeys found")).toBeInTheDocument();
     });
 
@@ -268,7 +268,7 @@ describe("Location", () => {
     const sectionPill = (name) =>
         within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
     const troopList = () =>
-        within(screen.getByRole("combobox", { name: "Filter by troop" }))
+        within(screen.getByRole("combobox", { name: "Filter by enclosure" }))
             .getAllByRole("option")
             .map((o) => o.textContent);
     const TOP = ["Goliath", "Gismo", "D&D", "Royal"];
@@ -277,7 +277,7 @@ describe("Location", () => {
     test("choosing a troop turns \"All Sections\" off (dashed), and All Troops turns it back on", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        const troop = screen.getByRole("combobox", { name: "Filter by troop" });
+        const troop = screen.getByRole("combobox", { name: "Filter by enclosure" });
         await user.selectOptions(troop, "Goliath");
         expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
         await user.selectOptions(troop, "All Troops");
@@ -291,7 +291,7 @@ describe("Location", () => {
         await user.click(sectionPill("Top"));
         expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
         expectShowing(monkeysArr.filter((m) => TOP.includes(m.troop)).length);
-        expect(troopList()).toEqual(["All Troops", ...TOP.map((t) => fullName(t))]); // (full names)
+        expect(troopList()).toEqual(["All Enclosures", ...TOP.map((t) => fullName(t))]); // (full names)
     });
 
     test("several sections at once; each a chip that removes just it", async () => {
@@ -318,12 +318,12 @@ describe("Location", () => {
     test("changing sections drops a troop that isn't in them", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by troop" }), "Skrow");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Skrow");
         await user.click(sectionPill("Bottom"));
-        expect(screen.getByRole("combobox", { name: "Filter by troop" })).toHaveValue("Skrow"); // Skrow is Bottom
+        expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toHaveValue("Skrow"); // Skrow is Bottom
         await user.click(sectionPill("Bottom")); // off: back to all sections
         await user.click(sectionPill("Sickbay"));
-        expect(screen.getByRole("combobox", { name: "Filter by troop" })).toHaveValue("All Troops");
+        expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toHaveValue("All Troops");
         expectShowing(monkeysArr.filter((m) => SICKBAY.includes(m.troop)).length);
     });
 
@@ -331,7 +331,7 @@ describe("Location", () => {
         const { user } = setup();
         await user.click(filtersButton());
         await user.click(sectionPill("Bandits"));
-        expect(troopList()).toEqual(["All Troops"]); // none in the built-in copy of the data
+        expect(troopList()).toEqual(["All Enclosures"]); // none in the built-in copy of the data
         expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual(["Bandits"]);
     });
 
@@ -409,4 +409,43 @@ test("computers: the filter dropdown leaves the page scrollable", async () => {
     const { user } = setup();
     await user.click(filtersButton());
     expect(document.documentElement.style.overflow).toBe("");
+});
+
+describe("the Enclosures box and the Care Units section", () => {
+    const optionTexts = () =>
+        within(screen.getByRole("combobox", { name: "Filter by enclosure" }))
+            .getAllByRole("option")
+            .map((o) => o.textContent);
+
+    test("troop enclosures, then the care units; the Bandits aren't in the list", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage troops={["All Troops", "Goliath", "Bandits"]} />);
+        await user.click(filtersButton());
+        expect(optionTexts()).toEqual(["All Enclosures", "Goliath", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+    });
+
+    test("the Care Units section narrows the box to the three care units", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage />);
+        await user.click(filtersButton());
+        await user.click(within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name: "Care Units" }));
+        expect(optionTexts()).toEqual(["All Enclosures", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+    });
+
+    test("Sickbay Care Unit shows its monkeys and those in Sickbay for now", async () => {
+        const user = userEvent.setup();
+        const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
+        const monkeys = [
+            { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" },
+            { ...base, id: 2, name: "Nita", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
+            { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: false },
+        ];
+        render(<ShowPage monkeys={monkeys} />);
+        await user.click(filtersButton());
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Sickbay Care Unit");
+        expect(shownNames().sort()).toEqual(["Nita", "Ziggy"]);
+        // Its home still has her too
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
+        expect(shownNames().sort()).toEqual(["Nita", "Rocio"]);
+    });
 });

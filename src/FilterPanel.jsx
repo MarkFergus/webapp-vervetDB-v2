@@ -107,7 +107,7 @@ function PairPills({ label, options, value, onChange, hideLabel = false }) {
 //   filters: { location, section, troop, year, age, sex }; onChange(field, value)
 //   open / onClose; buttonRef: the Filters button (focus goes back to it)
 //   anyOn: some filter is in use (otherwise Clear All is greyed out)
-function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onClear, count, anyOn }) {
+function FilterPanel({ open, onClose, buttonRef, troops, careUnits = [], filters, onChange, onClear, count, anyOn }) {
     const panelRef = useRef(null);
 
     // Open: focus the first choice. Escape or a click outside closes it.
@@ -186,21 +186,23 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                         allOff={filters.troop !== "All Troops"}
                     />
                     <label className="FilterPanel-section">
-                        <span className="FilterPanel-label">Troop</span>
+                        <span className="FilterPanel-label">Enclosures</span>
                         {/* Pink, so it stands out: most people go straight here */}
                         <select
                             id="troops"
                             className="FilterPanel-troop"
-                            aria-label="Filter by troop"
+                            aria-label="Filter by enclosure"
                             value={filters.troop}
                             onChange={(e) => onChange("troop", e.target.value)}
                         >
-                            {/* Only the troops in the chosen sections */}
-                            {troops
+                            {/* The troops' enclosures, then the care units; only
+                                those in the chosen sections. (The Bandits are
+                                a section of their own, above.) */}
+                            {[...troops.filter((t) => t !== "Bandits"), ...careUnits]
                                 .filter((t) => t === "All Troops" || inSection(t, filters.section))
                                 .map((t) => (
                                     <option key={t} value={t}>
-                                        {fullName(t)}
+                                        {t === "All Troops" ? "All Enclosures" : fullName(t)}
                                     </option>
                                 ))}
                         </select>

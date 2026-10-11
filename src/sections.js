@@ -14,11 +14,14 @@ export const SECTIONS = [
         troops: ["Skrow", "Robert", "Skunkey", "H&B", "Jalamango"],
     },
     { id: "sickbay", label: "Sickbay", chip: "Sickbay section", troops: ["James", "Global"] },
-    // The care units, where new arrivals go: just Baby Care, as a filter of
-    // its own for now: Quarantine and Sickbay Care Unit
-    // aren't needed as filters here (user, 2026-10-09), so they're left out
-    // (choosing any section leaves their monkeys out)
-    { id: "babyCare", label: "Baby Care", chip: "Baby Care", troops: ["Baby Care"] },
+    // The care units, where new arrivals go (choosing any other section
+    // leaves their monkeys out)
+    {
+        id: "careUnits",
+        label: "Care Units",
+        chip: "Care Units",
+        troops: ["Baby Care", "Quarantine", "Sickbay Care Unit"],
+    },
     // The wild troop at the sanctuary: not in a section, so a "section" of its own
     { id: "bandits", label: "Bandits", chip: "Bandits", troops: ["Bandits"] },
 ];

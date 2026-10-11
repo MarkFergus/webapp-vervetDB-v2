@@ -559,11 +559,12 @@ describe("enclosures without a troop: Bachelor Block (a block) and the care unit
         expect(sizeRank(sized.find((e) => e.name === "Goliath"), sized)).toBe(1);
     });
 
-    test("filtering by section: Baby Care is a filter of its own; Quarantine and Sickbay Care Unit aren't filters", () => {
-        expect(inSection("Baby Care", ["babyCare"])).toBe(true);
-        expect(SECTIONS.map((s) => s.label)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Baby Care", "Bandits"]);
-        expect(inSection("Quarantine", ["sickbay"])).toBe(false);
-        expect(inSection("Sickbay Care Unit", ["sickbay"])).toBe(false);
+    test("filtering by section: Care Units is one filter for all three; the other sections leave them out", () => {
+        for (const unit of ["Baby Care", "Quarantine", "Sickbay Care Unit"]) {
+            expect(inSection(unit, ["careUnits"])).toBe(true);
+            expect(inSection(unit, ["sickbay"])).toBe(false);
+        }
+        expect(SECTIONS.map((s) => s.label)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Care Units", "Bandits"]);
         expect(inSection("Bachelor Block", ["top"])).toBe(true);
     });
 

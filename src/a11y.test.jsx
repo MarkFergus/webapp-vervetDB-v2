@@ -60,7 +60,7 @@ test("search, filters and icon buttons have accessible names", async () => {
     expect(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
     // The filters are in the Filters panel
     await user.click(screen.getByRole("button", { name: "Filters" }));
-    expect(screen.getByRole("combobox", { name: "Filter by troop" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter by year" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Category" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Sex" })).toBeInTheDocument();
@@ -100,7 +100,7 @@ test("the number of results is announced when filters change", async () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: "Filters" }));
     await user.selectOptions(
-        screen.getByRole("combobox", { name: "Filter by troop" }),
+        screen.getByRole("combobox", { name: "Filter by enclosure" }),
         "Goliath"
     );
     const count = monkeysArr.filter((m) => m.troop === "Goliath").length;
