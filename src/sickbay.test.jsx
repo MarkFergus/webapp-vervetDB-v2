@@ -119,7 +119,7 @@ describe("Released (new rescues)", () => {
         const onRelease = vi.fn().mockResolvedValue();
         openRelease(rescue, onRelease);
         await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
-        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         expect(screen.getByLabelText("Date Released")).toBeInTheDocument();
         await userEvent.type(screen.getByLabelText("Release Details"), "Back to the wild at Tzaneen");
         expect(screen.getByText(/will no longer appear in the app/)).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe("Released (new rescues)", () => {
         const onRelease = vi.fn();
         openRelease(rescue, onRelease);
         await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
-        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(onRelease).not.toHaveBeenCalled();
         expect(screen.queryByLabelText("Release Details")).not.toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("Released (new rescues)", () => {
         const onRelease = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
         openRelease(rescue, onRelease);
         await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
-        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
     });

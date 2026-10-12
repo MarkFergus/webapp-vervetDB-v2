@@ -448,4 +448,23 @@ describe("the Enclosures box and the Care Units section", () => {
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
         expect(shownNames().sort()).toEqual(["Nita", "Rocio"]);
     });
+
+    test("the Care Units section also has the monkeys in Sickbay for now, and none twice", async () => {
+        const user = userEvent.setup();
+        const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
+        const monkeys = [
+            { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" },
+            { ...base, id: 2, name: "Nita", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
+            { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: false },
+        ];
+        render(<ShowPage monkeys={monkeys} />);
+        await user.click(filtersButton());
+        const pill = (name) => within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
+        await user.click(pill("Care Units"));
+        expect(shownNames().sort()).toEqual(["Nita", "Ziggy"]);
+        // Both places chosen (Top has Goliath): Nita is one monkey, counted once
+        await user.click(pill("Top"));
+        expect(shownNames().sort()).toEqual(["Nita", "Rocio", "Ziggy"]);
+        expectShowing(3);
+    });
 });

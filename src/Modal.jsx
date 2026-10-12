@@ -12,6 +12,8 @@ import {
     IconCameraPlus,
     IconPhotoPlus,
     IconFirstAidKit,
+    IconDoorExit,
+    IconTrees,
     IconSparkles,
     IconChevronDown,
 } from "@tabler/icons-react";
@@ -478,7 +480,12 @@ function Modal({
                                                                     : setSickbayForm({ since: todayText(), note: "" })
                                                             }
                                                         >
-                                                            <IconFirstAidKit size={18} aria-hidden="true" />
+                                                            {/* (the door when returning, the first-aid kit when moving in) */}
+                                                            {monkey.inSickbay ? (
+                                                                <IconDoorExit size={18} aria-hidden="true" />
+                                                            ) : (
+                                                                <IconFirstAidKit size={18} aria-hidden="true" />
+                                                            )}
                                                             {sickbayBusy
                                                                 ? "Saving…"
                                                                 : monkey.inSickbay
@@ -492,7 +499,8 @@ function Modal({
                                                             className="Modal-edit is-sickbay"
                                                             onClick={() => setReleaseForm({ date: todayText(), details: "" })}
                                                         >
-                                                            Released
+                                                            <IconTrees size={18} aria-hidden="true" />
+                                                            Released to Wild
                                                         </button>
                                                     )}
                                                     {integration.canAdd && !sickbayForm && !integrationForm && !releaseForm && (

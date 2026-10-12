@@ -117,7 +117,10 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         return (
             matchesLocation &&
             matchesTroop &&
-            inSection(homeName(monkey), section) &&
+            // A monkey in Sickbay for now is also at the Sickbay Care Unit (so in the
+            // Care Units section). It is one monkey in the list whichever of its
+            // places are chosen, so it is shown and counted once.
+            (inSection(homeName(monkey), section) || (Boolean(monkey.inSickbay) && inSection(SICKBAY_UNIT, section))) &&
             matchesYear &&
             matchesSearch &&
             matchesSex &&
