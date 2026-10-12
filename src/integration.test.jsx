@@ -111,13 +111,20 @@ describe("the list", () => {
         expect(screen.queryByText("Newer")).not.toBeInTheDocument();
         await userEvent.click(toggle);
         expect(screen.getByText("Newer")).toBeInTheDocument();
-        expect(screen.getAllByText(/Sam · 8th Oct 2026/)).toHaveLength(2);
+        expect(screen.getAllByText("Added by Sam on 8th Oct 2026")).toHaveLength(2);
     });
 
     test("visitors see nothing, and nothing is loaded for them", () => {
         open(null);
         expect(loadIntegration).not.toHaveBeenCalled();
         expect(screen.queryByRole("button", { name: /Integration/ })).not.toBeInTheDocument();
+    });
+
+    test("hidden until there is at least one report", async () => {
+        open(EDITOR);
+        await moreActions();
+        await waitFor(() => expect(loadIntegration).toHaveBeenCalled());
+        expect(screen.queryByRole("button", { name: /^Integration Reports/ })).not.toBeInTheDocument();
     });
 
     test("maintenance staff can read them but not add", async () => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
+import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
 import { addIntegration, deleteIntegration, loadIntegration, saveIntegration } from "./monkeyData";
 import { summaryDate } from "./feeding";
 import "./IntegrationReports.css";
@@ -147,7 +147,8 @@ export function IntegrationList({ integration, open, onToggle }) {
     const [deleting, setDeleting] = useState(null); // an entry id, to confirm
     const [problem, setProblem] = useState(null);
     const { entries } = integration;
-    if (!integration.available || (entries.length === 0 && !integration.canAdd)) return null;
+    // Hidden until there is at least one report
+    if (!integration.available || entries.length === 0) return null;
 
     async function remove(id) {
         setProblem(null);
@@ -167,7 +168,6 @@ export function IntegrationList({ integration, open, onToggle }) {
             </button>
             {open && (
                 <ul>
-                    {entries.length === 0 && <li className="Integration-none">No reports yet.</li>}
                     {entries.map((entry) => (
                         <li key={entry.id}>
                             {editing === entry.id ? (
@@ -181,32 +181,48 @@ export function IntegrationList({ integration, open, onToggle }) {
                                 />
                             ) : (
                                 <>
-                                    <b className="Integration-period">{periodText(entry.from, entry.to)}</b>
+                                    {/* The dates on the left; small Edit / Delete icons on
+                                        the right (admins, or whoever wrote it) */}
+                                    <div className="Integration-head">
+                                        <b className="Integration-period">{periodText(entry.from, entry.to)}</b>
+                                        {integration.canChange(entry) && deleting !== entry.id && (
+                                            <span className="Integration-icons">
+                                                <button
+                                                    type="button"
+                                                    className="Integration-icon is-edit"
+                                                    aria-label="Edit"
+                                                    title="Edit"
+                                                    onClick={() => setEditing(entry.id)}
+                                                >
+                                                    <IconPencil size={17} aria-hidden="true" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="Integration-icon is-delete"
+                                                    aria-label="Delete"
+                                                    title="Delete"
+                                                    onClick={() => setDeleting(entry.id)}
+                                                >
+                                                    <IconTrash size={17} aria-hidden="true" />
+                                                </button>
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="Integration-text">{entry.report}</p>
                                     <span className="Integration-by">
-                                        {entry.loggedByName ?? "Staff"} · {summaryDate(new Date(entry.loggedAt))}
+                                        Added by {entry.loggedByName ?? "Staff"} on {summaryDate(new Date(entry.loggedAt))}
                                     </span>
-                                    {integration.canChange(entry) &&
-                                        (deleting === entry.id ? (
-                                            <span className="Integration-actions">
-                                                <span>Delete this report?</span>
-                                                <button type="button" className="Modal-edit is-confirm" onClick={() => remove(entry.id)}>
-                                                    Confirm
-                                                </button>
-                                                <button type="button" className="Modal-edit is-quiet" onClick={() => setDeleting(null)}>
-                                                    Cancel
-                                                </button>
-                                            </span>
-                                        ) : (
-                                            <span className="Integration-actions">
-                                                <button type="button" className="Modal-edit is-quiet" onClick={() => setEditing(entry.id)}>
-                                                    Edit
-                                                </button>
-                                                <button type="button" className="Modal-edit is-quiet" onClick={() => setDeleting(entry.id)}>
-                                                    Delete
-                                                </button>
-                                            </span>
-                                        ))}
+                                    {deleting === entry.id && (
+                                        <span className="Integration-actions">
+                                            <span>Delete this report?</span>
+                                            <button type="button" className="Modal-edit is-confirm" onClick={() => remove(entry.id)}>
+                                                Confirm
+                                            </button>
+                                            <button type="button" className="Modal-edit is-quiet" onClick={() => setDeleting(null)}>
+                                                Cancel
+                                            </button>
+                                        </span>
+                                    )}
                                 </>
                             )}
                         </li>

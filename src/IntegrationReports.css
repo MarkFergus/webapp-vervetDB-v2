@@ -45,7 +45,7 @@
 }
 
 .Integration-count {
-    margin-top: -6px;
+    margin: -6px 0 -4px; /* (Confirm and Cancel sit close under the report) */
     font-size: 12px;
     color: #8a877e;
     text-align: right;
@@ -64,6 +64,12 @@
 }
 
 /* The list: one entry per row, newest period first */
+.Integration-list {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .Integration-list ul {
     margin: 8px 0 0;
     padding: 0;
@@ -75,8 +81,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-    padding: 10px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 0 12px; /* (no lines between reports: the lines mark the page's sections) */
 }
 
 .Integration-period {
@@ -101,4 +106,39 @@
 .Integration-none {
     font-size: 14px;
     color: #8a877e;
+}
+
+/* The dates on the left, Edit / Delete icons on the right of the same line */
+.Integration-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.Integration-icons {
+    display: flex;
+    gap: 2px;
+}
+
+.Integration-icon {
+    display: flex;
+    padding: 4px;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Integration-icon.is-edit {
+    color: #25c4f8;
+}
+
+.Integration-icon.is-delete {
+    color: #ff6b6b;
+}
+
+.Integration-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }

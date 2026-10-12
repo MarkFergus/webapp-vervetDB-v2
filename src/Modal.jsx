@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
     IconSquareRoundedX,
@@ -66,6 +66,11 @@ function Modal({
     // Firefox's home-screen app: the picture shown here to press and hold
     const [preview, setPreview] = useState(null);
     const closeButtonRef = useRef(null);
+    // The part that scrolls (photo and details): back to the top for each monkey
+    const scrollRef = useRef(null);
+    useEffect(() => {
+        scrollRef.current?.scrollTo?.(0, 0);
+    }, [monkey?.id]);
     // Move to Sickbay: the little form (date and note) while it's open
     const [moreOpen, setMoreOpen] = useState(false);
     const [sickbayForm, setSickbayForm] = useState(null);
@@ -256,6 +261,9 @@ function Modal({
                                         <IconChevronRight size={22} stroke={2} aria-hidden="true" />
                                     </button>
                                 </div>
+                                {/* The photo and details scroll; the name and arrows above
+                                    and the buttons below stay in view */}
+                                <div className="Modal-scroll" ref={scrollRef}>
                                 {/* Phones: swipe the photo left / right for the next /
                                     previous one; it follows the finger */}
                                 <div
@@ -414,19 +422,17 @@ function Modal({
                                     {/* More Actions (editors): quick actions that aren't
                                         needed often, folded away. Under it (staff): the
                                         Integration Reports list. */}
-                                    {(onSickbay || integration.canAdd || (integration.available && integration.entries.length > 0)) && (
+                                    {(onSickbay || integration.canAdd) && (
                                         <section className="Modal-moreActions">
-                                            {(onSickbay || integration.canAdd) && (
-                                                <button
-                                                    type="button"
-                                                    className="Modal-moreToggle"
-                                                    aria-expanded={moreOpen}
-                                                    onClick={() => setMoreOpen((open) => !open)}
-                                                >
-                                                    More Actions
-                                                    <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                className="Modal-moreToggle"
+                                                aria-expanded={moreOpen}
+                                                onClick={() => setMoreOpen((open) => !open)}
+                                            >
+                                                More Actions
+                                                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
+                                            </button>
                                             {moreOpen && (
                                                 <div className="Modal-moreRow">
                                                     {onSickbay && !sickbayForm && !integrationForm && (
@@ -520,16 +526,28 @@ function Modal({
                                                     {sickbayProblem}
                                                 </p>
                                             )}
-                                            <IntegrationList
-                                                integration={integration}
-                                                open={listOpen}
-                                                onToggle={() => setListOpen((open) => !open)}
-                                            />
                                         </section>
                                     )}
+                                    {/* (its own section, with its own line above: only
+                                        once there's a report) */}
+                                    <IntegrationList
+                                        integration={integration}
+                                        open={listOpen}
+                                        onToggle={() => setListOpen((open) => !open)}
+                                    />
                                 </div>
-                                {/* Edit and Photos (editors only) on the left;
-                                    Share and Save image on the right */}
+                                </div>
+                                {/* Pinned to the bottom: the message, then Edit and Photos
+                                    (editors only) on the left; Share and Save image on the right */}
+                                <div className="Modal-bar">
+                                <p className="Modal-shareStatus" role="status">
+                                    {shareStatus === "copied" &&
+                                        "Link copied. Paste it into a message to share this monkey."}
+                                    {shareStatus === "failed" &&
+                                        "Sorry, your browser wouldn't let us copy the link."}
+                                    {shareStatus === "imageFailed" &&
+                                        "Sorry, the picture couldn't be made. Please try again."}
+                                </p>
                                 <div className="Modal-footer">
                                     {onEdit && (
                                         <button
@@ -571,15 +589,8 @@ function Modal({
                                         <span className="Modal-editLabel">{shareStatus === "saving" ? "Saving…" : "Save image"}</span>
                                     </button>
                                 </div>
+                                </div>
                                 <ImagePreview image={preview} onClose={() => setPreview(null)} />
-                                <p className="Modal-shareStatus" role="status">
-                                    {shareStatus === "copied" &&
-                                        "Link copied. Paste it into a message to share this monkey."}
-                                    {shareStatus === "failed" &&
-                                        "Sorry, your browser wouldn't let us copy the link."}
-                                    {shareStatus === "imageFailed" &&
-                                        "Sorry, the picture couldn't be made. Please try again."}
-                                </p>
                             </motion.div>
                         </div>
                     </motion.div>

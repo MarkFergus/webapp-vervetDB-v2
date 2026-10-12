@@ -34,9 +34,11 @@
     flex: 0 1 auto;
     min-height: 0;
     background-color: #2a282a;
-    overflow: auto;
+    /* The name and buttons stay put; only the middle (.Modal-scroll) scrolls */
+    overflow: hidden;
     border-radius: 10px;
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 /* The gap above it: always the same (--popup-top-tall), so it never moves
@@ -48,7 +50,27 @@
 }
 
 .Modal-content {
-    padding-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* The photo and details: the part that scrolls */
+.Modal-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 12px;
+}
+
+/* The buttons (and the share message above them), always in view, with a
+   faint line above to set them apart */
+.Modal-bar {
+    flex: none;
+    padding: 10px 0 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .Modal-close {
@@ -83,7 +105,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 20px 12px 0; /* a little room after the details */
+    margin: 0 12px;
 }
 
 .Modal-footer-spacer {
@@ -96,7 +118,7 @@
 }
 
 .Modal-shareStatus {
-    margin: 6px 12px 0;
+    margin: 0 12px 8px;
     font-size: 13px;
     text-align: right;
     color: #b6b2a5;
@@ -161,11 +183,11 @@
 
 @media (min-width: 500px) {
     .Modal-footer {
-        margin: 20px 20px 0;
+        margin: 0 20px;
     }
 
     .Modal-shareStatus {
-        margin: 6px 20px 0;
+        margin: 0 20px 8px;
     }
 }
 
@@ -180,6 +202,7 @@
 }
 
 .Modal-header {
+    flex: none;
     display: flex;
     justify-content: center;
     align-items: center;
