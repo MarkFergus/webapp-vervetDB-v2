@@ -590,7 +590,8 @@
     color: #b6b2a5;
 }
 
-.Modal-sickbayForm input {
+.Modal-sickbayForm input,
+.Modal-sickbayForm textarea {
     box-sizing: border-box;
     width: 100%;
     max-width: 320px;
@@ -629,4 +630,21 @@
 .Modal-edit.is-confirm:hover:not(:disabled) {
     color: #1f1f1f;
     background-color: #4cd480;
+}
+
+.Modal-sickbayForm textarea {
+    resize: vertical;
+    line-height: 1.4;
+}
+
+.Modal-releaseNote {
+    margin: 0;
+    font-size: 13px;
+    color: #b6b2a5;
+}
+
+/* Arrival Info: line breaks kept */
+.Modal-section p.Modal-arrival {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }

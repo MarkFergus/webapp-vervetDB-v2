@@ -88,7 +88,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         expect(drawerHeadings()).toEqual(["Tools", "App"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
-        expect(screen.getByRole("dialog", { name: "Add a monkey" })).toBeInTheDocument();
+        expect(screen.getByRole("dialog", { name: "Add New Monkey" })).toBeInTheDocument();
     });
 
     test("editors: no Add New Monkey (adding monkeys is for admins)", async () => {

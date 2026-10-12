@@ -14,6 +14,10 @@ vi.mock("./monkeyData", async (importOriginal) => {
     return {
         ...original,
         loadMonkeyData: vi.fn(async () => original.BUILT_IN_DATA),
+        // (no Arrival Info: as if arrival-info.sql hasn't run)
+        loadArrivalInfo: vi.fn(async () => {
+            throw new Error("No database in tests");
+        }),
     };
 });
 

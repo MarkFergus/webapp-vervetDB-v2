@@ -43,7 +43,11 @@ test("a database row becomes the same shape as the old monkeysArr entries", () =
 function fakeDatabase(results) {
     vi.spyOn(supabase, "from").mockImplementation((table) => ({
         select: (columns) => ({
-            order: () => (typeof results[table] === "function" ? results[table](columns) : results[table]),
+            order: () => {
+                const answer = typeof results[table] === "function" ? results[table](columns) : results[table];
+                // (can be filtered further: .neq)
+                return Object.assign(Promise.resolve(answer), { neq: () => answer });
+            },
         }),
     }));
 }

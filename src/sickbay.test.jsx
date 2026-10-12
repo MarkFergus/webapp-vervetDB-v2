@@ -109,3 +109,48 @@ describe("the Sickbay Care Unit's list", () => {
         expect(introcageMonkeys(unit, [{ ...newcomer, inSickbay: true }])).toHaveLength(1);
     });
 });
+
+describe("Released (new rescues)", () => {
+    const rescue = { ...MONKEY, introcage: "Quarantine", introcageType: "area", enclosure: "Quarantine", status: "sanctuary" };
+    const openRelease = (monkey, onRelease) =>
+        render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} onRelease={onRelease} />);
+
+    test("Released asks the date (today) and release details, then Confirm", async () => {
+        const onRelease = vi.fn().mockResolvedValue();
+        openRelease(rescue, onRelease);
+        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        expect(screen.getByLabelText("Date Released")).toBeInTheDocument();
+        await userEvent.type(screen.getByLabelText("Release Details"), "Back to the wild at Tzaneen");
+        expect(screen.getByText(/will no longer appear in the app/)).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+        await waitFor(() => expect(onRelease).toHaveBeenCalledTimes(1));
+        const [monkey, details] = onRelease.mock.calls[0];
+        expect(monkey.id).toBe(1);
+        expect(details).toEqual({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), details: "Back to the wild at Tzaneen" });
+    });
+
+    test("Cancel closes it without saving", async () => {
+        const onRelease = vi.fn();
+        openRelease(rescue, onRelease);
+        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(onRelease).not.toHaveBeenCalled();
+        expect(screen.queryByLabelText("Release Details")).not.toBeInTheDocument();
+    });
+
+    test("a failed save says so", async () => {
+        const onRelease = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
+        openRelease(rescue, onRelease);
+        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Released" }));
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
+    });
+
+    test("no Released button unless it's given (new rescues, editors)", () => {
+        openRelease(rescue, undefined);
+        expect(screen.queryByRole("button", { name: "More Actions" })).not.toBeInTheDocument();
+    });
+});

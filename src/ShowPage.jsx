@@ -10,7 +10,7 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA, saveSickbay, troopHome } from "./monkeyData";
+import { BUILT_IN_DATA, saveRelease, saveSickbay, troopHome } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -463,6 +463,14 @@ function ShowPage({
         setSelectedMonkey(saved);
         setModalList((list) => list && list.map((m) => (m.id === saved.id ? saved : m)));
     }
+    // Released: kept on file but gone from the app, so the pop-up closes
+    async function handleRelease(monkey, details) {
+        await saveRelease(monkey.id, details);
+        onMonkeyDeleted(monkey.id);
+        setIsModalOpen(false);
+        leaveAddress();
+        setSelectedMonkey(null);
+    }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
         setEditing(null);
@@ -700,6 +708,12 @@ function ShowPage({
                     // Integration Summaries: staff (any role) see them; editors add
                     staff={
                         role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin } : null
+                    }
+                    // Released: new rescues only (living in a care unit), once the database has a status
+                    onRelease={
+                        canEdit && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
+                            ? handleRelease
+                            : undefined
                     }
                     // (only once the database has Sickbay)
                     onSickbay={canEdit && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}

@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fullName } from "./places";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
-import { deleteMonkey, saveMonkey, troopHome } from "./monkeyData";
+import { deleteMonkey, saveArrivalInfo, saveMonkey, troopHome } from "./monkeyData";
+import useArrivalInfo from "./useArrivalInfo";
 import { placeChoices } from "./enclosures";
 import { BABY_FEEDING, isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
@@ -34,12 +35,20 @@ function MonkeyForm({
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
+    // Adding: a New Rescue (into a care unit) or a Bandit (the wild troop,
+    // whose new records keep being added: Enclosure and Location fixed)
+    const [kind, setKind] = useState("rescue");
+    const hasBandits = careUnitsOnly && troops.includes("Bandits");
+    const bandit = hasBandits && kind === "bandit";
+    const rescue = careUnitsOnly && !bandit;
     // Enclosure → its troop and introcages, for the Enclosure + Location boxes
-    const [choices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive, careUnitsOnly));
+    const [careChoices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive, careUnitsOnly));
+    const banditChoice = { key: "Bandits", troop: "Bandits", enclosure: "Bandits", noTroop: false, introcages: [] };
+    const choices = bandit ? [banditChoice] : careChoices;
     const [initial] = useState(() =>
         isNew
             ? emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : "")
-            : formFromMonkey(monkey, choices)
+            : formFromMonkey(monkey, careChoices)
     );
     const [form, setForm] = useState(initial);
     const [errors, setErrors] = useState({});
@@ -50,7 +59,21 @@ function MonkeyForm({
     const photosRef = useRef(null);
 
     const nameRef = useRef(null);
-    const changed = JSON.stringify(form) !== JSON.stringify(initial);
+    // Arrival Info (staff only; once the database has it): a new rescue's
+    // details, in place of the Bio while it lives in a care unit
+    const arrivalInfo = useArrivalInfo(monkey?.id ?? null, isNew ? rescue : true);
+    const [arrival, setArrival] = useState("");
+    const [arrivalSaved, setArrivalSaved] = useState("");
+    useEffect(() => {
+        if (!isNew && arrivalInfo.available) {
+            setArrival(arrivalInfo.info);
+            setArrivalSaved(arrivalInfo.info);
+        }
+    }, [isNew, arrivalInfo.available, arrivalInfo.info]);
+    const showArrival = arrivalInfo.available && (isNew ? rescue : true);
+    const inCareUnit = isNew ? rescue : chosenIntrocage(form, choices)?.type === "area";
+    const hideBio = showArrival && inCareUnit;
+    const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved;
     // Photos uploaded while this form is open (tidied up if not kept)
     const uploadedHere = useRef([]);
 
@@ -75,6 +98,19 @@ function MonkeyForm({
         setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
+    // New Rescue / Bandit: starting the form again for the other kind
+    function chooseKind(next) {
+        if (next === kind) return;
+        setKind(next);
+        setErrors({});
+        setForm({
+            ...form,
+            troop: next === "bandit" ? "Bandits" : "",
+            location: next === "bandit" ? "troop" : "",
+            chip: "",
+            chipUnknown: false,
+        });
+    }
     // Feeding: for a monkey in an introcage (not a troop, or a care unit's
     // area), once the database has it
     const showFeeding = Boolean(form.feeding) && chosenIntrocage(form, choices)?.type === "introcage";
@@ -104,6 +140,14 @@ function MonkeyForm({
         setBusy(true);
         try {
             const saved = await saveMonkey(values, troopIds, monkey?.id);
+            // Arrival Info is kept apart (staff only); the monkey is already saved
+            if (showArrival && arrival.trim() !== arrivalSaved.trim()) {
+                try {
+                    await saveArrivalInfo(saved.id, arrival);
+                } catch (error) {
+                    window.alert(`${saved.name} was saved, but the Arrival Info wasn't: ${error.message} Please open Edit to add it again.`);
+                }
+            }
             // Tidy up: photos this monkey had, or that were uploaded here,
             // but that aren't kept (only ones uploaded to our storage)
             const before = [...(monkey?.img ?? []), ...uploadedHere.current];
@@ -130,7 +174,7 @@ function MonkeyForm({
         }
     }
 
-    const title = isNew ? "Add a monkey" : `Edit ${monkey.name}`;
+    const title = isNew ? "Add New Monkey" : `Edit ${monkey.name}`;
     const errorFor = (field) =>
         errors[field] && (
             <span className="MonkeyForm-fieldError" id={`MonkeyForm-${field}-error`}>
@@ -158,6 +202,21 @@ function MonkeyForm({
                 </div>
 
                 <div className="MonkeyForm-body">
+                    {/* Adding: a New Rescue or a Bandit */}
+                    {hasBandits && (
+                        <div className="MonkeyForm-kind" role="group" aria-label="Type">
+                            {[["rescue", "New Rescue"], ["bandit", "Bandit"]].map(([id, label]) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    aria-pressed={kind === id}
+                                    onClick={() => chooseKind(id)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <label className="MonkeyForm-field">
                         <span>Name <em>(required)</em></span>
                         <input
@@ -174,14 +233,15 @@ function MonkeyForm({
                         or in one of that enclosure's introcages */}
                     <div className="MonkeyForm-row">
                         <label className="MonkeyForm-field">
-                            <span>{careUnitsOnly ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
+                            <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
                             <select
                                 value={form.troop}
+                                disabled={bandit}
                                 onChange={chooseEnclosure}
                                 aria-invalid={Boolean(errors.troop)}
                                 aria-describedby={describedBy("troop")}
                             >
-                                <option value="">Choose…</option>
+                                {!bandit && <option value="">Choose…</option>}
                                 {choices.map((c) => (
                                     <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
                                 ))}
@@ -193,7 +253,7 @@ function MonkeyForm({
                             <select
                                 value={form.location}
                                 onChange={set("location")}
-                                disabled={!choice}
+                                disabled={!choice || bandit}
                                 aria-invalid={Boolean(errors.location)}
                                 aria-describedby={describedBy("location")}
                             >
@@ -211,7 +271,7 @@ function MonkeyForm({
                             {errorFor("location")}
                         </label>
                     </div>
-                    {careUnitsOnly && (
+                    {rescue && (
                         <p className="MonkeyForm-hint">
                             New arrivals start in a care unit. Once they have a long-term home, move them there with Edit.
                         </p>
@@ -247,6 +307,8 @@ function MonkeyForm({
                         </label>
                     </div>
 
+                    {/* (a new rescue has no chip yet: saved as No Chip, added later with Edit) */}
+                    {!rescue && (
                     <div className="MonkeyForm-row">
                         {/* While the box (or the button) has focus, the name
                             has "Unknown?" beside it, or "Clear" once chosen
@@ -299,6 +361,7 @@ function MonkeyForm({
                             ))}
                         </div>
                     </div>
+                    )}
 
                     <PhotosField
                         ref={photosRef}
@@ -320,10 +383,20 @@ function MonkeyForm({
                         full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
                     />
 
-                    <label className="MonkeyForm-field">
-                        <span>Bio</span>
-                        <textarea rows={4} value={form.bio} onChange={set("bio")} />
-                    </label>
+                    {!hideBio && (
+                        <label className="MonkeyForm-field">
+                            <span>Bio</span>
+                            <textarea rows={4} value={form.bio} onChange={set("bio")} />
+                        </label>
+                    )}
+
+                    {/* A new rescue's arrival details: staff only, up to 2000 characters */}
+                    {showArrival && (
+                        <label className="MonkeyForm-field">
+                            <span>Arrival Info <em>(staff only)</em></span>
+                            <textarea rows={5} value={arrival} maxLength={2000} onChange={(e) => setArrival(e.target.value)} />
+                        </label>
+                    )}
 
                     <label className="MonkeyForm-field">
                         <span>Distinctive features / behaviours</span>

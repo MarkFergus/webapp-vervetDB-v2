@@ -267,7 +267,7 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     expect(addButton.closest(".Nav-buttons")).not.toBeNull();
     expect(document.querySelector(".ShowPage-toolbar button[title='Add New Monkey']")).toBeNull();
     await user.click(addButton);
-    expect(form()).toHaveAccessibleName("Add a monkey");
+    expect(form()).toHaveAccessibleName("Add New Monkey");
 
     await user.type(field("Name"), "Brand New");
     expect(field("Location")).toBeDisabled();
@@ -515,7 +515,7 @@ test("phones: admins also find Add New Monkey in the ☰ drawer", async () => {
     await screen.findByRole("button", { name: "Add New Monkey" });
     await user.click(screen.getByRole("button", { name: "Menu" }));
     await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "Add New Monkey" }));
-    expect(form()).toHaveAccessibleName("Add a monkey");
+    expect(form()).toHaveAccessibleName("Add New Monkey");
 });
 
 describe("feeding (introcage monkeys)", () => {

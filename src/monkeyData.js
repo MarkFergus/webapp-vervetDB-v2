@@ -24,6 +24,9 @@ const FEEDING_MONKEY_COLUMNS =
     `${NEW_MONKEY_COLUMNS}, fed_by, am_plates, am_cut_small, am_fruit, am_metal_plate, pm_bowls, pm_cut_small`;
 // ...and whether it's in Sickbay (once sickbay.sql has run)
 const SICKBAY_MONKEY_COLUMNS = `${FEEDING_MONKEY_COLUMNS}, in_sickbay, sickbay_since, sickbay_note`;
+// ...and its status (once released-status.sql has run): "sanctuary", or
+// "released" (kept on file, but not loaded)
+const STATUS_MONKEY_COLUMNS = `${SICKBAY_MONKEY_COLUMNS}, status`;
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
 
@@ -86,6 +89,8 @@ export function toAppMonkey(row) {
         monkey.sickbaySince = row.sickbay_since;
         monkey.sickbayNote = row.sickbay_note;
     }
+    // Once the database has a status (see released-status.sql)
+    if ("status" in row) monkey.status = row.status;
     return monkey;
 }
 
@@ -164,8 +169,10 @@ function throwIfError(...results) {
 // sickbay.sql / feeding.sql has run (a missing column). { result, columns }
 async function loadMonkeys() {
     let result;
-    for (const columns of [SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
-        result = await supabase.from("monkeys").select(columns).order("id");
+    for (const columns of [STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
+        const query = supabase.from("monkeys").select(columns).order("id");
+        // Released monkeys stay on file but don't appear in the app
+        result = await (columns === STATUS_MONKEY_COLUMNS ? query.neq("status", "released") : query);
         if (result.error?.code !== "42703") return { result, columns };
     }
     return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
@@ -300,6 +307,42 @@ export async function saveSickbay(id, { inSickbay, since = null, note = "" }) {
         throw saveProblem(error);
     }
     return toAppMonkey(data);
+}
+
+// Marks a new rescue as released (with the date and a few details): its
+// record stays on file but it no longer appears in the app. Editors.
+export async function saveRelease(id, { date, details = "" }) {
+    const row = { status: "released", released_on: date, release_details: details.trim() || null };
+    const { error } = await supabase.from("monkeys").update(row).eq("id", id);
+    if (error) {
+        console.error("Saving the release failed:", error);
+        throw saveProblem(error);
+    }
+}
+
+// ---- Arrival Info: a new rescue's arrival details (staff only) ----
+
+// A monkey's Arrival Info ("" if none). Throws if the database hasn't got it
+// yet (arrival-info.sql), or this isn't staff.
+export async function loadArrivalInfo(monkeyId) {
+    const { data, error } = await supabase.from("arrival_info").select("info").eq("monkey_id", monkeyId).maybeSingle();
+    if (error) throw error;
+    return data?.info ?? "";
+}
+
+// Saves it (editors); empty clears it
+export async function saveArrivalInfo(monkeyId, info) {
+    const text = info.trim();
+    if (!text) {
+        const { error } = await supabase.from("arrival_info").delete().eq("monkey_id", monkeyId);
+        if (error) throw saveProblem(error);
+        return;
+    }
+    const updated = await supabase.from("arrival_info").update({ info: text }).eq("monkey_id", monkeyId).select("monkey_id");
+    if (updated.error) throw saveProblem(updated.error);
+    if (updated.data?.length) return;
+    const { error } = await supabase.from("arrival_info").insert({ monkey_id: monkeyId, info: text });
+    if (error) throw saveProblem(error);
 }
 
 // Deletes a monkey for good
