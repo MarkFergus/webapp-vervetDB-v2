@@ -583,3 +583,20 @@ describe("feeding (introcage monkeys)", () => {
         expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeEnabled();
     });
 });
+
+test("More Actions (Sickbay, Released, + Report) is for admins only, for now", async () => {
+    const withSickbay = () => startingMonkeys().map((m) => ({ ...m, inSickbay: false, status: "sanctuary" }));
+    // An editor: the pop-up has Edit, but no More Actions
+    const editor = setup({ enclosuresLive: true, admin: false, start: withSickbay });
+    await editor.user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "More Actions" })).not.toBeInTheDocument();
+});
+
+test("...and an admin has it", async () => {
+    const withSickbay = () => startingMonkeys().map((m) => ({ ...m, inSickbay: false, status: "sanctuary" }));
+    const { user } = setup({ enclosuresLive: true, admin: true, start: withSickbay });
+    await user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
+    await user.click(await screen.findByRole("button", { name: "More Actions" }));
+    expect(screen.getByRole("button", { name: "Move to Sickbay" })).toBeInTheDocument();
+});

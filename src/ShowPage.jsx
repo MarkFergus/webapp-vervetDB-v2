@@ -708,18 +708,19 @@ function ShowPage({
                     }
                     onEdit={canEdit ? startEdit : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
-                    // Integration Summaries: staff (any role) see them; editors add
+                    // More Actions (Sickbay, Released, + Report): admins only, for now.
+                    // Integration Reports: staff (any role) see them
                     staff={
-                        role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin } : null
+                        role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null
                     }
                     // Released: new rescues only (living in a care unit), once the database has a status
                     onRelease={
-                        canEdit && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
+                        canEdit && isAdmin && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
                             ? handleRelease
                             : undefined
                     }
                     // (only once the database has Sickbay)
-                    onSickbay={canEdit && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}
+                    onSickbay={canEdit && isAdmin && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}
                     placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}
                 />
             </div>
