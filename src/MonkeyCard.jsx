@@ -1,4 +1,4 @@
-import { IconCameraPlus, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -54,7 +54,8 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                                 New Arrival
                             </span>
                         )}
-                        {inSickbay && (
+                        {/* One badge is enough: New Arrival comes first */}
+                        {inSickbay && !newArrival && (
                             <span className="MonkeyCard-sickbay">
                                 <IconFirstAidKit size={14} aria-hidden="true" />
                                 In Sickbay
@@ -62,17 +63,10 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                         )}
                     </span>
                 )}
-                {/* Still the grey placeholder: a small badge on the photo,
-                    like YouTube's video length */}
-                {photoNeeded && (
-                    <span className="MonkeyCard-photoNeeded">
-                        <IconCameraPlus size={14} aria-hidden="true" />
-                        Photo Needed
-                    </span>
-                )}
+                {/* The name sits on the photo's dark fade, so the face fills the card */}
+                <span className="MonkeyCard-info-name">{name}</span>
             </span>
             <span className="MonkeyCard-info">
-                <span className="MonkeyCard-info-name">{name}</span>
                 <span className="MonkeyCard-meta">
                     <span className="MonkeyCard-info-troop">{troop}</span>
                     {sex && (

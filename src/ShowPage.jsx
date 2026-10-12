@@ -515,7 +515,7 @@ function ShowPage({
             setPdfReady({ blob, filename: `monitoring_sheet_${pdfBook.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf` });
         } catch (err) {
             console.error(err);
-            setPdfError("Something went wrong creating the PDF. Please try again.");
+            setPdfError("Couldn't create the PDF. Check your internet connection, then try again.");
         } finally {
             setIsGeneratingPDF(false);
             setPdfProgress(null);
@@ -535,7 +535,7 @@ function ShowPage({
             setPdfReady({ blob, filename: `am_plates_${new Date().toISOString().slice(0, 10)}.pdf` });
         } catch (err) {
             console.error(err);
-            setPdfError("Something went wrong creating the PDF. Please try again.");
+            setPdfError("Couldn't create the PDF. Check your internet connection, then try again.");
         } finally {
             setIsGeneratingPDF(false);
             setPdfProgress(null);
@@ -576,7 +576,7 @@ function ShowPage({
             setPdfReady({ blob, filename: pdfFilename(pdfBook) });
         } catch (err) {
             console.error(err);
-            setPdfError("Something went wrong creating the PDF. Please try again.");
+            setPdfError("Couldn't create the PDF. Check your internet connection, then try again.");
         } finally {
             setIsGeneratingPDF(false);
             setPdfProgress(null);

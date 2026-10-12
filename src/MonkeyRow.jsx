@@ -1,4 +1,4 @@
-import { IconCameraPlus, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -54,7 +54,8 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 />
-                {inSickbay && (
+                {/* One badge is enough: New Arrival comes first */}
+                {inSickbay && !newArrival && (
                     <span className="MonkeyRow-sickbay" title="In Sickbay">
                         <IconFirstAidKit size={12} aria-hidden="true" />
                     </span>
@@ -62,12 +63,6 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
                 {newArrival && (
                     <span className="MonkeyRow-newArrival" title="New Arrival">
                         <IconSparkles size={12} aria-hidden="true" />
-                    </span>
-                )}
-                {/* Still the grey placeholder: a small camera badge */}
-                {isPlaceholderPhoto(img) && (
-                    <span className="MonkeyRow-photoNeeded" title="Photo needed">
-                        <IconCameraPlus size={12} aria-hidden="true" />
                     </span>
                 )}
             </span>

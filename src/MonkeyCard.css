@@ -28,6 +28,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     color: inherit;
     font: inherit;
     text-align: inherit;
+    /* So the details can shorten by the card's own width (see @container below) */
+    container-type: inline-size;
 }
 
 /* Every photo shows in the same 5:4 frame (the site's photo shape), so an
@@ -37,13 +39,22 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    odd-shaped photo can't upset the grid: it fills the frame, trimming any
    overflow. Rounded like YouTube's thumbnails. */
 .MonkeyCard-image {
-    position: relative; /* for the Photo Needed badge */
+    position: relative; /* for the badges and the name */
     display: block;
     width: 100%;
     aspect-ratio: 5 / 4;
     overflow: hidden;
     border-radius: 12px;
     background-color: #2a282a;
+}
+
+/* A dark fade up from the bottom, so the name reads on any photo */
+.MonkeyCard-image::after {
+    content: "";
+    position: absolute;
+    inset: 40% 0 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    pointer-events: none;
 }
 
 .MonkeyCard img {
@@ -81,21 +92,28 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .MonkeyCard-info-name {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    z-index: 1;
     overflow: hidden;
-    font-size: 16px;
-    font-weight: 700;
+    font-family: "Russo One", sans-serif;
+    font-size: 17px;
+    line-height: 1.15;
     color: white;
     white-space: nowrap;
     text-overflow: ellipsis;
+    text-align: left;
 }
 
-/* "H&B · ♂ Male · 9 yrs old" */
+/* "H&B · ♂ Male · 9 yrs old": troop first, then sex, then age */
 .MonkeyCard-meta {
     display: flex;
     align-items: center;
     overflow: hidden;
     font-size: 14px;
-    color: #aaa79f;
+    color: #a09d93;
     white-space: nowrap;
 }
 
@@ -110,6 +128,19 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     gap: 2px;
 }
 
+/* Short of room, the troop gives way ("Holt & Barr…"), never the sex or age */
+.MonkeyCard-info-troop {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.MonkeyCard-sex,
+.MonkeyCard-info-age {
+    flex-shrink: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .MonkeyCard img {
         transition: none;
@@ -121,6 +152,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    A long troop name is shortened with "…" rather than pushing the rest off. */
 @media (max-width: 624px) {
     .MonkeyCard-info-name {
+        left: 8px;
+        right: 8px;
         font-size: 15px;
     }
 
@@ -132,34 +165,26 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
         margin: 0 4px;
     }
 
-    .MonkeyCard-info-troop {
-        flex-shrink: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+}
 
-    .MonkeyCard-sex,
-    .MonkeyCard-info-age {
-        flex-shrink: 0;
-    }
+/* Short of room, the details shorten before the troop (the main stat) is
+   ever cut: first "Female" becomes just ♀ (and the dots close up), then
+   "Age unknown" becomes "Age ?" */
+.MonkeyCard-ageShort {
+    display: none;
+}
 
+@container (max-width: 330px) {
     .MonkeyCard-sexWord {
         display: none;
     }
 
-    /* Only the icon now: no gap after the "·", so the dots space evenly */
     .MonkeyCard-sex {
         gap: 0;
     }
 }
 
-/* "Age unknown" in full, or "Age ?" on phones */
-.MonkeyCard-ageShort {
-    display: none;
-}
-
-@media (max-width: 624px) {
+@container (max-width: 290px) {
     .MonkeyCard-ageLong {
         display: none;
     }
@@ -169,24 +194,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     }
 }
 
-/* "Photo Needed": bottom right of the photo, like YouTube's video length */
-.MonkeyCard-photoNeeded {
-    position: absolute;
-    right: 6px;
-    bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 7px;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18px;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.75);
-    border-radius: 6px;
-}
-
-/* "In Sickbay": top left of the photo (the corner Photo Needed doesn't use) */
+/* "New Arrival" or "In Sickbay": top left of the photo */
 .MonkeyCard-badges {
     position: absolute;
     left: 6px;

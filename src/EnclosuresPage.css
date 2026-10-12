@@ -210,19 +210,55 @@
 }
 
 .EnclosureCard-link:hover .EnclosureCard-name {
-    color: #25c4f8;
+    color: #86e1ff;
+}
+
+/* The picture, with the name on a dark fade up from the bottom (as on the
+   monkey cards, MonkeyCard.css) */
+.EnclosureCard-image {
+    position: relative;
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.EnclosureCard-image::after {
+    content: "";
+    position: absolute;
+    inset: 40% 0 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    pointer-events: none;
 }
 
 .EnclosureCard-name {
-    margin-top: 8px;
-    font-size: 16px;
-    font-weight: 700;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    z-index: 1;
+    font-family: "Russo One", sans-serif;
+    font-size: 17px;
+    line-height: 1.15;
     color: white;
+    transition: color 0.15s;
 }
 
 .EnclosureCard-meta {
-    font-size: 13px;
-    color: #8a877e;
+    margin-top: 6px;
+    font-size: 14px;
+    color: #a09d93;
+}
+
+@media (max-width: 624px) {
+    .EnclosureCard-name {
+        left: 8px;
+        right: 8px;
+        font-size: 15px;
+    }
+
+    .EnclosureCard-meta {
+        font-size: 13px;
+    }
 }
 
 /* ---- Pictures: the enclosure's photo, or a mosaic of its monkeys ---- */

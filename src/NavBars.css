@@ -98,7 +98,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: #a09d93;
 }
 
 /* Small: an icon with a tiny label under it, like YouTube's */
@@ -109,7 +109,7 @@
     gap: 5px;
     padding: 14px 0 12px;
     font-family: inherit;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.2;
     text-align: center;
     color: #d1cfc7;
@@ -168,7 +168,7 @@
     margin: auto 12px 0;
     padding-top: 16px;
     font-size: 12px;
-    color: #6b6862;
+    color: #a09d93;
 }
 
 /* ---- Phones: the bottom bar ---- */
@@ -207,7 +207,7 @@
     min-width: 0;
     padding: 0;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     color: #b6b2a5;
     text-decoration: none;
     background: none;
@@ -270,7 +270,7 @@
     width: 48px;
     height: 48px;
     color: white;
-    background-color: #47b028;
+    background-color: #2f8f1d;
     border: 2px solid white;
     border-radius: 50%;
     box-shadow: 0 4px 14px rgba(71, 176, 40, 0.35), 0 2px 6px rgba(0, 0, 0, 0.5);
@@ -278,7 +278,7 @@
 }
 
 .BottomBar-map.is-photos:hover .BottomBar-photosCircle {
-    background-color: #5bc63a;
+    background-color: #3aa124;
 }
 
 .BottomBar-map.is-photos:active .BottomBar-photosCircle {
@@ -427,7 +427,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: #a09d93;
 }
 
 .Drawer-item {
@@ -483,18 +483,18 @@ a.Drawer-item {
 
 /* Interactive Map: dimmer, as it isn't ready yet (as in the side rail) */
 .Drawer-item.is-soon {
-    color: #8a877e;
+    color: #a09d93;
 }
 
 .Drawer-footer {
     margin: auto 12px 0;
     font-size: 12px;
-    color: #6b6862;
+    color: #a09d93;
 }
 
 /* The side rail's Map: dimmer, as it isn't ready yet */
 .SideRail-item.is-soon {
-    color: #8a877e;
+    color: #a09d93;
 }
 
 /* ---- "Interactive Map coming soon" ---- */

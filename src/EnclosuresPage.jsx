@@ -405,8 +405,11 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
                             return (
                                 <article key={enclosure.id} className="EnclosureCard">
                                     <a href={enclosureHash(enclosure)} className="EnclosureCard-link">
-                                        <Picture enclosure={enclosure} monkeys={living} />
-                                        <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
+                                        {/* The name on the picture's dark fade, as on the monkey cards */}
+                                        <span className="EnclosureCard-image">
+                                            <Picture enclosure={enclosure} monkeys={living} />
+                                            <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
+                                        </span>
                                         <span className="EnclosureCard-meta">
                                             {plural(living.length, hasTroop(enclosure) ? "troop monkey" : "monkey")}
                                             {inside.length > 0 && ` · ${plural(inside.length, introcageWord(enclosure))}`}

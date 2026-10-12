@@ -68,9 +68,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     flex-shrink: 0;
     white-space: nowrap;
+    position: relative;
     align-items: center;
     gap: 6px;
-    height: 28px;
+    height: 36px;
     padding: 0 16px;
     font: inherit;
     color: #d1cfc7;
@@ -79,6 +80,13 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     border-radius: 999px;
     cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
+}
+
+/* The pill is 36px; the tappable area reaches 44px */
+.ShowPage-filtersButton::after {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
 }
 
 .ShowPage-filtersButton:hover,
@@ -92,9 +100,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 28px;
+    height: 36px;
     padding: 0 12px;
-    color: #8a877e;
+    color: #b6b2a5;
     font-variant-numeric: tabular-nums;
     border: 1px solid #3a3839;
     border-radius: 999px;
@@ -111,7 +119,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 /* The ⌄ at the end of Filters and Sort: they open a panel / menu */
 .ShowPage-chevron {
     margin-left: -2px;
-    color: #8a877e;
+    color: #b6b2a5;
 }
 
 /* Filters in use: blue, with how many */
@@ -155,15 +163,22 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 34px;
-    height: 22px;
+    position: relative;
+    width: 40px;
+    height: 32px;
     padding: 0;
-    color: #8a877e;
+    color: #b6b2a5;
     background: none;
     border: none;
     border-radius: 999px;
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s;
+}
+
+.ShowPage-view button::after {
+    content: "";
+    position: absolute;
+    inset: -4px -1px;
 }
 
 .ShowPage-view button:hover {
@@ -189,9 +204,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 8px 3px 12px;
+    min-height: 32px;
+    padding: 3px 10px 3px 14px;
     font: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     color: #25c4f8;
     background-color: rgba(37, 196, 248, 0.1);
@@ -213,10 +229,10 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     flex-shrink: 0;
     justify-content: center;
     align-items: center;
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    color: #fe39a4;
+    color: #ff6dbb;
     background-color: rgba(254, 57, 164, 0.1);
     border: 1px solid #fe39a4;
     border-radius: 50%;
@@ -286,7 +302,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 /* The narrowest phones: the view switch slimmer */
 @media (max-width: 380px) {
     .ShowPage-view button {
-        width: 28px;
+        width: 34px;
     }
 }
 

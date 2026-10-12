@@ -251,7 +251,7 @@ describe("no monkeys found", () => {
 });
 
 
-test("monkeys still on the grey placeholder show a Photo Needed badge", async () => {
+test("monkeys still on the grey placeholder: no badge (the grey photo says it), but screen readers hear it", async () => {
     const { user, container } = setup();
     // Show everyone, so the placeholder monkeys are on the page
     while (screen.queryByRole("button", { name: "Show More" })) {
@@ -259,12 +259,11 @@ test("monkeys still on the grey placeholder show a Photo Needed badge", async ()
     }
     const needed = monkeysArr.filter((m) => m.img[0].includes("blank-image"));
     expect(needed.length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".MonkeyCard-photoNeeded")).toHaveLength(needed.length);
     const card = screen.getAllByRole("button", { name: new RegExp(`^${needed[0].name}, `) })[0];
     expect(card).toHaveAccessibleName(/, photo needed$/);
-    expect(card).toHaveTextContent("Photo Needed");
+    expect(card).not.toHaveTextContent("Photo Needed");
 
-    // And in its pop-up
+    // Its pop-up still says so
     await user.click(card);
     expect(within(screen.getByRole("dialog")).getByText("Photo Needed")).toBeInTheDocument();
 });
