@@ -4,7 +4,7 @@ import { isInstalledApp } from "./installApp";
 // the site's fonts and a few drawing helpers for a canvas.
 
 export const TITLE_FONT = '"Russo One", Impact, sans-serif';
-export const TEXT_FONT = '"Nunito Sans", Arial, sans-serif';
+export const TEXT_FONT = 'Roboto, Arial, sans-serif';
 
 // The page's fonts, so pictures match the site (quietly skipped if they
 // can't load: the canvas then uses similar standard fonts)

@@ -13,7 +13,7 @@
     gap: 4px;
     font-size: 13px;
     font-weight: 700;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .Integration-dates {
@@ -31,11 +31,11 @@
     box-sizing: border-box;
     width: 100%;
     padding: 8px 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* (16px: phones don't zoom in on it) */
-    color: #f2f0e8;
-    background-color: #2a282a;
-    border: 1px solid #4a4849;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
     border-radius: 8px;
 }
 
@@ -47,7 +47,7 @@
 .Integration-count {
     margin: -6px 0 -4px; /* (Confirm and Cancel sit close under the report) */
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
     text-align: right;
 }
 
@@ -60,7 +60,7 @@
 
 .Integration-problem {
     margin: 0;
-    color: #ff8a80;
+    color: var(--danger-2);
 }
 
 /* The list: one entry per row, newest period first */
@@ -93,19 +93,19 @@
     margin: 0;
     font-size: 15px;
     line-height: 1.5;
-    color: #d1cfc7;
+    color: var(--text);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
 .Integration-by {
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .Integration-none {
     font-size: 14px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 /* The dates on the left, Edit / Delete icons on the right of the same line */
@@ -132,11 +132,11 @@
 }
 
 .Integration-icon.is-edit {
-    color: #25c4f8;
+    color: var(--accent);
 }
 
 .Integration-icon.is-delete {
-    color: #ff6b6b;
+    color: var(--danger);
 }
 
 .Integration-icon:hover {

@@ -17,7 +17,7 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MyChanges-list {
@@ -33,7 +33,7 @@
     display: flex;
     gap: 10px;
     padding: 8px 0;
-    border-bottom: 1px solid #2e2c2d;
+    border-bottom: 1px solid var(--surface-2);
 }
 
 .MyChanges-item:last-child {
@@ -52,17 +52,17 @@
 }
 
 .MyChanges-item.is-added .MyChanges-icon {
-    color: #47b028;
-    background-color: rgba(71, 176, 40, 0.15);
+    color: var(--green);
+    background-color: rgba(62, 207, 142, 0.15);
 }
 
 .MyChanges-item.is-changed .MyChanges-icon {
-    color: #25c4f8;
-    background-color: rgba(37, 196, 248, 0.15);
+    color: var(--accent);
+    background-color: rgba(62, 166, 255, 0.15);
 }
 
 .MyChanges-item.is-deleted .MyChanges-icon {
-    color: #ff4d4f;
+    color: var(--danger);
     background-color: rgba(255, 77, 79, 0.15);
 }
 
@@ -91,7 +91,7 @@
 }
 
 .MyChanges-troop {
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 /* The time: over on the right */
@@ -99,14 +99,14 @@
     margin-left: auto;
     padding-left: 8px;
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MyChanges-lines {
     margin: 4px 0 0;
     padding-left: 16px;
     font-size: 13px;
-    color: #b6b2a5;
+    color: var(--text-2);
     overflow-wrap: anywhere;
 }
 
@@ -117,18 +117,18 @@
 .MyChanges-note {
     margin: 0;
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
     text-align: center;
 }
 
 /* "Loading your changes…": the site's blue */
 .MyChanges-note.is-loading {
-    color: #25c4f8;
+    color: var(--accent);
 }
 
 .MyChanges-problem {
     margin: 0;
     font-size: 14px;
-    color: #ff4d4f;
+    color: var(--danger);
     text-align: center;
 }

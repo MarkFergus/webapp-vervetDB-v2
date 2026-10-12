@@ -10,7 +10,7 @@ export const CREDITS = [
     { name: "React-PDF", use: "The Profile Book", licence: "MIT", url: "https://react-pdf.org" },
     { name: "React Easy Crop", use: "Cropping photos", licence: "MIT", url: "https://github.com/ValentinH/react-easy-crop" },
     { name: "Workbox", use: "Offline use", licence: "MIT", url: "https://developer.chrome.com/docs/workbox" },
-    { name: "Nunito Sans", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Nunito+Sans" },
+    { name: "Roboto", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Roboto" },
     { name: "Syne", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Syne" },
     { name: "Russo One", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Russo+One" },
     { name: "Open Sans", use: "Profile Book font", licence: "OFL", url: "https://fonts.google.com/specimen/Open+Sans" },

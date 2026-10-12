@@ -18,7 +18,7 @@
 .LoadingSkeleton-search,
 .LoadingSkeleton-menu {
     display: block;
-    background: linear-gradient(90deg, #2a282a 0%, #343234 40%, #2a282a 80%) 0 0 / 300% 100%;
+    background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 40%, var(--surface-2) 80%) 0 0 / 300% 100%;
     animation: LoadingSkeleton-shimmer 1.4s ease-in-out infinite;
 }
 
@@ -41,7 +41,7 @@
 .LoadingSkeleton-logo {
     display: flex;
     align-items: center;
-    color: #25c4f8;
+    color: var(--accent);
 }
 
 /* "vervetDB" beside the logo: computers only, like the real top bar */
@@ -51,7 +51,7 @@
     font-family: "Russo One", sans-serif;
     font-size: 24px;
     line-height: 1;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .LoadingSkeleton-logo svg {
@@ -100,7 +100,7 @@
     align-items: center;
     height: var(--bottom-bar);
     padding-bottom: env(safe-area-inset-bottom);
-    background-color: #1f1f1f;
+    background-color: var(--bg);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 

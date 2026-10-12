@@ -1,15 +1,4 @@
-/* Colors (1 is darkest)
-Dark1 = #1F1F1F
-Dark2 = #2a282a
-Dark3 = #343234
-
-Text dark = #B6B2A5
-Text normal = #D1CFC7
-Text bright = white
-
-neonpink = #fe39a4 - beonlightpink #ff92ce
-neonblue = #25c4f8 - neonlightblue #86e1ff
-*/
+/* Colours: the tokens in index.css */
 
 .ModalPDF-overlay {
     position: fixed;
@@ -46,7 +35,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     height: auto;
     flex: none;
     margin: 0;
-    background-color: #202020;
+    background-color: var(--surface-1);
     border-radius: 10px;
     display: block;
 }
@@ -114,24 +103,24 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .ModalPDF-troop select {
     padding: 10px 12px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px;
     text-transform: none;
     letter-spacing: 0;
     color: white;
-    background-color: #2a282a;
-    border: 2px solid #434343;
+    background-color: var(--surface-2);
+    border: 2px solid var(--line-strong);
     border-radius: 8px;
     cursor: pointer;
 }
 
 .ModalPDF-troop select:focus {
-    border-color: #25c4f8;
+    border-color: var(--accent);
     outline: none;
 }
 
@@ -139,7 +128,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 .ModalPDF-subdetails {
     font-size: 17px;
     line-height: 1.4;
-    color: #d1cfc7;
+    color: var(--text);
     text-align: center;
     margin: 0 0 28px;
 }
@@ -166,9 +155,9 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     align-items: center;
     gap: 6px;
     background-color: transparent;
-    color: #fe39a4;
-    border: 1px solid #fe39a4;
-    font-family: "Nunito Sans", sans-serif;
+    color: var(--pink);
+    border: 1px solid var(--pink);
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
     padding: 6px 14px;
@@ -177,8 +166,8 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .ModalPDF-createBtn:hover:not(:disabled) {
-    color: #ff92ce;
-    border: 1px solid #ff92ce;
+    color: var(--pink-2);
+    border: 1px solid var(--pink-2);
 }
 
 .ModalPDF-createBtn:disabled {
@@ -195,18 +184,18 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .ModalPDF-warning {
-    color: #B6B2A5;
+    color: var(--text-2);
 }
 
 /* Save PDF: filled pink, so the last step stands out */
 .ModalPDF-createBtn.is-save {
-    color: #1f1f1f;
-    background-color: #fe39a4;
+    color: var(--bg);
+    background-color: var(--pink);
 }
 
 .ModalPDF-createBtn.is-save:hover {
-    color: #1f1f1f;
-    background-color: #ff92ce;
+    color: var(--bg);
+    background-color: var(--pink-2);
 }
 
 /* "Your Profile Book is ready (1.2 MB)" */
@@ -215,14 +204,14 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     justify-content: center;
     align-items: center;
     gap: 6px;
-    color: #47b028;
+    color: var(--green);
     font-weight: 700;
 }
 
 .ModalPDF-status {
-    color: #86e1ff;
+    color: var(--accent-2);
 }
 
 .ModalPDF-error {
-    color: #ff92ce;
+    color: var(--pink-2);
 }

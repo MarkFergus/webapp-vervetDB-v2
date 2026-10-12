@@ -1,4 +1,4 @@
-import { IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -61,6 +61,13 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                                 In Sickbay
                             </span>
                         )}
+                    </span>
+                )}
+                {/* No photo yet: a quiet photo icon on the grey (screen
+                    readers hear "photo needed" in the card's label) */}
+                {photoNeeded && (
+                    <span className="MonkeyCard-noPhoto" aria-hidden="true">
+                        <IconPhoto size={36} stroke={1.5} />
                     </span>
                 )}
                 {/* The name sits on the photo's dark fade, so the face fills the card */}

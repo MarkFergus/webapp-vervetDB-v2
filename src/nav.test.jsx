@@ -180,7 +180,7 @@ describe("computers: the side rail", () => {
         const { user } = setup();
         await user.click(railButton());
         expect(railButton()).toHaveAttribute("aria-expanded", "true");
-        expect([...rail().querySelectorAll("h2")].map((h) => h.textContent)).toEqual(["Browse", "Tools", "App"]);
+        expect([...rail().querySelectorAll("h2")].map((h) => h.textContent)).toEqual(["Tools", "App"]);
         expect(railItems()).toEqual([
             "Monkeys", "Enclosures", "Interactive Map", "Monkey Guesser", "Install & Use Offline", "About",
         ]);

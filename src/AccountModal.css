@@ -26,7 +26,7 @@
     width: 96%;
     max-width: 380px;
     flex: none;
-    background-color: #202020;
+    background-color: var(--surface-1);
     border-radius: 10px;
     pointer-events: auto;
 }
@@ -51,9 +51,9 @@
     gap: 4px;
     margin: -24px 0 0 -8px;
     padding: 4px 8px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
     border: none;
     border-radius: 6px;
@@ -61,11 +61,11 @@
 }
 
 .AccountModal-back:hover {
-    color: #86e1ff;
+    color: var(--accent-2);
 }
 
 .AccountModal-back:focus-visible {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
 }
 
 .AccountModal-back svg {
@@ -129,7 +129,7 @@
     margin: 0;
     text-align: center;
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 /* Their full name (set by admins), above the email */
@@ -143,7 +143,7 @@
 
 .AccountModal-email {
     font-size: 15px;
-    color: #d1cfc7;
+    color: var(--text);
     word-break: break-all;
 }
 
@@ -163,7 +163,7 @@
     align-items: center;
     gap: 6px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #3a3839;
+    border-bottom: 1px solid var(--line);
 }
 
 /* The nav's account circle, bigger (80px): green with a soft green fill,
@@ -178,8 +178,8 @@
     height: 80px;
     margin-bottom: 4px;
     padding: 0;
-    color: #47b028;
-    background-color: rgba(71, 176, 40, 0.15);
+    color: var(--green);
+    background-color: rgba(62, 207, 142, 0.15);
     border: 2px solid currentColor;
     border-radius: 50%;
 }
@@ -192,11 +192,11 @@
 
 .AccountModal-avatar.is-button:hover .AccountModal-camera,
 .AccountModal-avatar.is-button:focus-visible .AccountModal-camera {
-    background-color: #5cc93a;
+    background-color: var(--green-2);
 }
 
 .AccountModal-avatar.is-button:focus-visible {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
 }
 
@@ -216,9 +216,9 @@
     align-items: center;
     width: 26px;
     height: 26px;
-    color: #202020;
-    background-color: #47b028;
-    border: 2px solid #202020;
+    color: var(--surface-1);
+    background-color: var(--green);
+    border: 2px solid var(--surface-1);
     border-radius: 50%;
 }
 
@@ -243,14 +243,14 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #b6b2a5;
+    color: var(--text-2);
     background-color: rgba(182, 178, 165, 0.12);
     border-radius: 999px;
 }
 
 .AccountModal-badge.is-editor {
-    color: #47b028;
-    background-color: rgba(71, 176, 40, 0.15);
+    color: var(--green);
+    background-color: rgba(62, 207, 142, 0.15);
 }
 
 /* Maintenance accounts: amber */
@@ -261,7 +261,7 @@
 
 /* Admins: the site's neon pink */
 .AccountModal-badge.is-admin {
-    color: #fe39a4;
+    color: var(--pink);
     background-color: rgba(254, 57, 164, 0.15);
 }
 
@@ -292,15 +292,15 @@
 
 /* Change password: grey outline, like Clear all in the Filters panel */
 .AccountModal-button.is-quiet {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border-color: #5a5856;
+    border-color: var(--line-strong);
 }
 
 .AccountModal-button.is-quiet:hover:not(:disabled) {
     color: white;
     background: none;
-    border-color: #d1cfc7;
+    border-color: var(--text);
 }
 
 .AccountModal-field {
@@ -315,60 +315,60 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .AccountModal-field input {
     padding: 10px 12px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
     color: white;
-    background-color: #2a282a;
-    border: 2px solid #434343;
+    background-color: var(--surface-2);
+    border: 2px solid var(--line-strong);
     border-radius: 8px;
     outline: none;
 }
 
 .AccountModal-field input:focus {
-    border-color: #25c4f8;
+    border-color: var(--accent);
 }
 
 .AccountModal-error {
     min-height: 20px;
     margin: 0;
     font-size: 14px;
-    color: #ff4d4f;
+    color: var(--danger);
     text-align: center;
 }
 
 .AccountModal-button {
     padding: 8px 14px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
-    border: 1px solid #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: 6px;
     cursor: pointer;
 }
 
 .AccountModal-button:hover:not(:disabled) {
-    background-color: #6dd8fb;
-    border-color: #6dd8fb;
+    background-color: var(--accent-2);
+    border-color: var(--accent-2);
 }
 
 /* Sign out: the site's neon pink, outlined */
 .AccountModal-button.is-signOut {
-    color: #fe39a4;
+    color: var(--pink);
     background: none;
-    border-color: #fe39a4;
+    border-color: var(--pink);
 }
 
 .AccountModal-button.is-signOut:hover:not(:disabled) {
-    color: #ff92ce;
+    color: var(--pink-2);
     background: none;
-    border-color: #ff92ce;
+    border-color: var(--pink-2);
     filter: none;
 }
 
@@ -382,23 +382,23 @@
 .AccountModal-link {
     align-self: center;
     padding: 4px 8px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
     border: none;
     cursor: pointer;
 }
 
 .AccountModal-link:hover {
-    color: #86e1ff;
+    color: var(--accent-2);
     text-decoration: underline;
 }
 
 .AccountModal-hint {
     margin: -8px 0 0;
     font-size: 13px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 /* Good news, e.g. "Password saved." or "a link is on its way" */
@@ -406,7 +406,7 @@
     margin: 0;
     font-size: 14px;
     line-height: 1.4;
-    color: #47b028;
+    color: var(--green);
     text-align: center;
 }
 
@@ -414,11 +414,11 @@
 .AccountModal-access {
     margin: -6px 0 0;
     font-size: 14px;
-    color: #d1cfc7;
+    color: var(--text);
     text-align: center;
 }
 
 .AccountModal-access a {
-    color: #25c4f8;
+    color: var(--accent);
     font-weight: 700;
 }

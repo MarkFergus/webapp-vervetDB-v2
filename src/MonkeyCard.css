@@ -1,16 +1,4 @@
-/* Colors (1 is darkest)
-Dark1 = #1F1F1F
-Dark2 = #2a282a
-Dark3 = #343234
-
-Text dark = #B6B2A5
-Text normal = #D1CFC7
-Text bright = white
-
-neonpink = #fe39a4 - neonlightpink #ff92ce
-neonblue = #25c4f8 - neonlightblue #86e1ff
-
-*/
+/* Colours: the tokens in index.css */
 
 .MonkeyCard {
     display: flex;
@@ -40,12 +28,13 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
    overflow. Rounded like YouTube's thumbnails. */
 .MonkeyCard-image {
     position: relative; /* for the badges and the name */
+    isolation: isolate; /* the name and badges stay under the pinned header */
     display: block;
     width: 100%;
     aspect-ratio: 5 / 4;
     overflow: hidden;
     border-radius: 12px;
-    background-color: #2a282a;
+    background-color: var(--surface-2);
 }
 
 /* A dark fade up from the bottom, so the name reads on any photo */
@@ -76,7 +65,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
 }
 
 .MonkeyCard:focus-visible .MonkeyCard-image {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -113,7 +102,7 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     align-items: center;
     overflow: hidden;
     font-size: 14px;
-    color: #a09d93;
+    color: var(--text-2);
     white-space: nowrap;
 }
 
@@ -214,14 +203,25 @@ neonblue = #25c4f8 - neonlightblue #86e1ff
     font-size: 12px;
     font-weight: 700;
     line-height: 18px;
-    color: #1f1f1f;
+    color: var(--bg);
     background-color: #f5b83d;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 /* "New Arrival": neon orange, so it can't be missed */
 .MonkeyCard-newArrival {
-    color: #1f1f1f;
+    color: var(--bg);
     background-color: #ff7a1a;
-    box-shadow: 0 0 8px rgba(255, 122, 26, 0.85);
+}
+
+/* No photo yet: a quiet photo icon in the middle of the grey placeholder */
+.MonkeyCard-noPhoto {
+    position: absolute;
+    inset: 0;
+    padding-bottom: 18%; /* the icon sits above the name */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-3);
+    background-color: var(--surface-2);
 }

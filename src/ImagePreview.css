@@ -37,9 +37,9 @@
 
 .ImagePreview-hint {
     margin: 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 15px;
-    color: #d1cfc7;
+    color: var(--text);
     text-align: center;
 }
 
@@ -59,16 +59,16 @@
 
 .ImagePreview-done {
     padding: 8px 22px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 15px;
     font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
     border: none;
     border-radius: 8px;
     cursor: pointer;
 }
 
 .ImagePreview-done:hover {
-    background-color: #6dd8fb;
+    background-color: var(--accent-2);
 }

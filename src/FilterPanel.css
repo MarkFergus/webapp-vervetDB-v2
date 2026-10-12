@@ -11,9 +11,9 @@
     gap: 16px;
     width: 340px;
     padding: 16px;
-    font-family: "Nunito Sans", sans-serif;
-    background-color: #242224;
-    border: 1px solid #434343;
+    font-family: var(--font-ui);
+    background-color: var(--surface-1);
+    border: 1px solid var(--line-strong);
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
     /* Never taller than the window: scrolls inside instead */
@@ -41,13 +41,13 @@
     font-family: "Russo One", sans-serif;
     font-size: 18px;
     font-weight: normal;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .FilterPanel-close {
     display: flex;
     padding: 4px;
-    color: #b6b2a5;
+    color: var(--text-2);
     background: none;
     border: none;
     border-radius: 6px;
@@ -64,14 +64,14 @@
     flex-direction: column;
     gap: 10px;
     padding: 12px;
-    border: 1px solid #3a3839;
+    border: 1px solid var(--line);
     border-radius: 10px;
 }
 
 .FilterPanel-groupTitle {
     font-family: "Russo One", sans-serif;
     font-size: 14px;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 /* A box's title, with a short instruction at the right */
@@ -84,7 +84,7 @@
 
 .FilterPanel-note {
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
     text-align: right;
 }
 
@@ -98,50 +98,50 @@
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .FilterPanel select {
     padding: 8px 10px;
     font-family: inherit;
     font-size: 15px;
-    color: #d1cfc7;
-    background-color: #1f1f1f;
-    border: 1px solid #434343;
+    color: var(--text);
+    background-color: var(--bg);
+    border: 1px solid var(--line-strong);
     border-radius: 8px;
     cursor: pointer;
 }
 
 /* "Choose a year…": dimmed, like a search box's hint */
 .FilterPanel select.is-empty {
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .FilterPanel select option {
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .FilterPanel select:focus {
-    border-color: #25c4f8;
+    border-color: var(--accent);
     outline: none;
 }
 
 /* Troop: the filter most people want, in the site's neon pink */
 .FilterPanel select.FilterPanel-troop {
-    border-color: #fe39a4;
+    border-color: var(--pink);
 }
 
 .FilterPanel select.FilterPanel-troop:hover {
-    border-color: #ff92ce;
+    border-color: var(--pink-2);
 }
 
 .FilterPanel select.FilterPanel-troop:focus {
-    border-color: #fe39a4;
-    box-shadow: 0 0 0 1px #fe39a4;
+    border-color: var(--pink);
+    box-shadow: 0 0 0 1px var(--pink);
 }
 
-/* Section: pills like the game's troop picker; "All Sections" dashed,
-   the chosen ones blue. Three to a row, all the same width */
+/* Section: chips like YouTube's; "All Sections" dashed, the chosen ones
+   white. Three to a row, all the same width */
 .FilterPanel-pills {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -149,15 +149,18 @@
 }
 
 .FilterPanel-pills button {
-    padding: 5px 6px;
+    min-height: 36px;
+    padding: 4px 6px;
     white-space: nowrap;
     font-family: inherit;
-    font-size: 13px;
-    color: #d1cfc7;
-    background: none;
-    border: 1px solid #434343;
-    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid transparent;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.15s;
 }
 
 .FilterPanel-pills.is-two {
@@ -167,13 +170,14 @@
 /* The age range, after the name: "Babies <1" */
 .FilterPanel-pills button small {
     margin-left: 4px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 400;
-    opacity: 0.75;
+    opacity: 0.8;
 }
 
 .FilterPanel-pills button.is-all {
-    border-style: dashed;
+    background: none;
+    border: 1px dashed var(--line-strong);
 }
 
 /* The only Location / Sex pill still on: tapping it does nothing */
@@ -182,16 +186,13 @@
 }
 
 .FilterPanel-pills button:hover {
-    color: white;
-    border-color: #d1cfc7;
+    background-color: var(--surface-3);
 }
 
 .FilterPanel-pills button[aria-pressed="true"] {
-    font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
-    border-color: #25c4f8;
-    border-style: solid;
+    color: var(--bg);
+    background-color: var(--text);
+    border: 1px solid var(--text);
 }
 
 /* Clear all / Show N monkeys: always in view, even when the panel scrolls */
@@ -204,8 +205,8 @@
     gap: 12px;
     margin: 0 -16px -18px;
     padding: 10px 16px 18px;
-    background-color: #242224;
-    border-top: 1px solid #3a3839;
+    background-color: var(--surface-1);
+    border-top: 1px solid var(--line);
 }
 
 /* Clear all: a quieter, grey-outlined partner to the blue Show button */
@@ -217,16 +218,16 @@
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border: 1px solid #5a5856;
+    border: 1px solid var(--line-strong);
     border-radius: 8px;
     cursor: pointer;
 }
 
 .FilterPanel-clear:hover:not(:disabled) {
     color: white;
-    border-color: #d1cfc7;
+    border-color: var(--text);
 }
 
 .FilterPanel-clear:disabled {
@@ -239,15 +240,15 @@
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
-    color: #1f1f1f;
-    background-color: #47b028;
+    color: var(--bg);
+    background-color: var(--green);
     border: none;
     border-radius: 8px;
     cursor: pointer;
 }
 
 .FilterPanel-show:hover {
-    background-color: #5fcc3d;
+    background-color: var(--green-2);
 }
 
 /* Phones: a sheet from the bottom of the screen, page dimmed behind */

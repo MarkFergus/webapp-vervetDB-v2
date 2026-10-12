@@ -18,23 +18,23 @@
     gap: 12px;
     width: 100%;
     padding: 6px 8px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     text-align: left;
-    color: #b6b2a5;
+    color: var(--text-2);
     background: none;
     border: none;
-    border-bottom: 1px solid #2c2a2c;
+    border-bottom: 1px solid var(--surface-2);
     border-radius: 0;
     cursor: pointer;
 }
 
 .MonkeyRow:hover {
-    background-color: #262426;
+    background-color: var(--surface-2);
 }
 
 .MonkeyRow:focus-visible {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: -2px;
     border-radius: 6px;
 }
@@ -47,7 +47,7 @@
     aspect-ratio: 5 / 4;
     overflow: hidden;
     border-radius: 6px;
-    background-color: #2a282a;
+    background-color: var(--surface-2);
 }
 
 .MonkeyRow-photo img {
@@ -82,7 +82,7 @@
     align-items: center;
     overflow: hidden;
     font-size: 13px;
-    color: #8a877e;
+    color: var(--text-3);
     white-space: nowrap;
 }
 
@@ -111,7 +111,7 @@
 
 .MonkeyRow-chip {
     font-size: 13px;
-    color: #8a877e;
+    color: var(--text-3);
     text-align: right; /* phones: a two-chip "1011 & 1604" wraps onto 2 lines */
 }
 
@@ -123,8 +123,8 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
-    border-bottom-color: #3a3839;
+    color: var(--text-3);
+    border-bottom-color: var(--line);
 }
 
 .MonkeyRow-header:hover {
@@ -147,14 +147,14 @@
         grid-template-columns: 56px minmax(130px, 150px) repeat(4, minmax(80px, 1fr)) 96px;
         gap: 16px;
         padding: 6px 12px;
-        color: #d1cfc7;
+        color: var(--text);
     }
 
     .MonkeyRow-header {
         display: grid;
         padding-top: 4px;
         padding-bottom: 8px;
-        color: #8a877e;
+        color: var(--text-3);
     }
 
     .MonkeyRow-meta {
@@ -170,14 +170,14 @@
 
     .MonkeyRow-chip {
         font-size: 14px;
-        color: #d1cfc7;
+        color: var(--text);
         text-align: left;
         white-space: nowrap;
     }
 
     .MonkeyRow-header .MonkeyRow-wide,
     .MonkeyRow-header span {
-        color: #8a877e;
+        color: var(--text-3);
         font-size: 12px;
     }
 }
@@ -201,7 +201,7 @@
     top: 2px;
     display: flex;
     padding: 2px;
-    color: #1f1f1f;
+    color: var(--bg);
     background-color: #f5b83d;
     border-radius: 4px;
 }
@@ -213,7 +213,7 @@
     bottom: 2px;
     display: flex;
     padding: 2px;
-    color: #1f1f1f;
+    color: var(--bg);
     background-color: #ff7a1a;
     border-radius: 4px;
     box-shadow: 0 0 6px rgba(255, 122, 26, 0.85);

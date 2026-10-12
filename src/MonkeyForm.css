@@ -1,5 +1,5 @@
 /* Edit / add monkey form. Same dark look as the other pop-ups:
-   neon blue #25c4f8 for Save, neon pink #fe39a4 for Delete. */
+   --accent for Save, --pink for Delete (index.css). */
 
 /* The whole screen: the window near the top (--popup-top-tall), growing
    downwards; as tall as it needs, up to nearly the full screen (it scrolls
@@ -39,7 +39,7 @@
     max-height: 92svh;
     display: flex;
     flex-direction: column;
-    background-color: #202020;
+    background-color: var(--surface-1);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -96,7 +96,7 @@
     flex-direction: column;
     gap: 5px;
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 /* Field names: small grey capitals, like the rest of the site */
@@ -105,7 +105,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MonkeyForm-field > span:first-child em {
@@ -127,12 +127,12 @@
 .MonkeyForm-unknown {
     margin: -4px 0;
     padding: 2px 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 12px;
     font-weight: 700;
     text-transform: none;
     letter-spacing: 0;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
     border: none;
     border-radius: 4px;
@@ -147,7 +147,7 @@
 .MonkeyForm-field em {
     font-style: normal;
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MonkeyForm input,
@@ -156,11 +156,11 @@
     width: 100%;
     box-sizing: border-box;
     padding: 9px 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
     color: white;
-    background-color: #2a282a;
-    border: 2px solid #434343;
+    background-color: var(--surface-2);
+    border: 2px solid var(--line-strong);
     border-radius: 8px;
     outline: none;
 }
@@ -169,7 +169,7 @@
    first") are the same dim grey */
 .MonkeyForm ::placeholder,
 .MonkeyForm select:disabled {
-    color: #8a877e;
+    color: var(--text-3);
     opacity: 1;
 }
 
@@ -181,11 +181,11 @@
 .MonkeyForm input:focus,
 .MonkeyForm select:focus,
 .MonkeyForm textarea:focus {
-    border-color: #25c4f8;
+    border-color: var(--accent);
 }
 
 .MonkeyForm [aria-invalid="true"] {
-    border-color: #ff4d4f;
+    border-color: var(--danger);
 }
 
 /* A detail shown but not changed here (an introcage monkey's introcage) */
@@ -193,16 +193,16 @@
     margin: 0;
     padding: 11px 12px;
     font-size: 16px;
-    color: #d1cfc7;
-    background-color: #242224;
-    border: 2px solid #343234;
+    color: var(--text);
+    background-color: var(--surface-1);
+    border: 2px solid var(--line);
     border-radius: 8px;
 }
 
 .MonkeyForm-hint {
     margin: 0;
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 /* Hints as small bullet points, one per line */
@@ -213,7 +213,7 @@
 
 .MonkeyForm-fieldError {
     font-size: 13px;
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 /* Feeding (introcage monkeys): its own little group */
@@ -224,7 +224,7 @@
     min-width: 0;
     margin: 0;
     padding: 12px;
-    border: 2px solid #343234;
+    border: 2px solid var(--line);
     border-radius: 8px;
 }
 
@@ -234,7 +234,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 /* Feeding's rows: the box a set width, the tick boxes beside it */
@@ -253,7 +253,7 @@
     gap: 4px 8px;
     min-height: 43px;
     font-size: 14px;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .MonkeyForm-checks label {
@@ -274,7 +274,7 @@
     border: none;
     border-radius: 3px;
     background: none;
-    accent-color: #3dfc8a;
+    accent-color: var(--green);
     cursor: pointer;
 }
 
@@ -301,7 +301,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MonkeyForm-photo {
@@ -323,10 +323,10 @@
     left: -5px;
     display: flex;
     padding: 2px;
-    color: #1f1f1f;
+    color: var(--bg);
     background-color: #ffc53d;
     border-radius: 50%;
-    box-shadow: 0 0 0 2px #202020;
+    box-shadow: 0 0 0 2px var(--surface-1);
 }
 
 /* ⋮ beside each photo, and its menu (see PhotoOptions.jsx) */
@@ -344,8 +344,8 @@
     flex-direction: column;
     min-width: 200px;
     padding: 6px 0;
-    background-color: #2a282a;
-    border: 1px solid #434343;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
@@ -355,10 +355,10 @@
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 15px;
     text-align: left;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
     border: none;
     cursor: pointer;
@@ -367,7 +367,7 @@
 .PhotoOptions-menu button:hover:not(:disabled),
 .PhotoOptions-menu button:focus-visible {
     color: white;
-    background-color: #3a383a;
+    background-color: var(--line);
     outline: none;
 }
 
@@ -378,7 +378,7 @@
 
 .PhotoOptions-menu button.is-delete:hover,
 .PhotoOptions-menu button.is-delete:focus-visible {
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 .MonkeyForm-photo img {
@@ -387,14 +387,14 @@
     height: 64px;
     object-fit: cover;
     border-radius: 6px;
-    background-color: #2a282a;
+    background-color: var(--surface-2);
 }
 
 /* "Primary photo" / "Photo 2" beside the preview, pushing ⋮ to the right */
 .MonkeyForm-photoLabel {
     flex: 1;
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .MonkeyForm-iconButton {
@@ -403,14 +403,14 @@
     border: none;
     border-radius: 6px;
     background: none;
-    color: #b6b2a5;
+    color: var(--text-2);
     cursor: pointer;
 }
 
 .MonkeyForm-iconButton:hover,
 .MonkeyForm-iconButton[aria-expanded="true"] {
     color: white;
-    background-color: #2a282a;
+    background-color: var(--surface-2);
 }
 
 .MonkeyForm-photoButtons {
@@ -422,7 +422,7 @@
 .MonkeyForm-uploading {
     margin: 0;
     font-size: 13px;
-    color: #86e1ff;
+    color: var(--accent-2);
 }
 
 .MonkeyForm-uploading:empty {
@@ -432,7 +432,7 @@
 /* The upload "button" is a label around a hidden file box: show the
    keyboard focus ring on the label */
 .MonkeyForm-addPhoto:focus-within {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -453,11 +453,11 @@
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
-    border: 1px dashed #25c4f8;
+    border: 1px dashed var(--accent);
     border-radius: 6px;
     cursor: pointer;
 }
@@ -467,7 +467,7 @@
     margin: 0;
     padding: 0 20px;
     font-size: 14px;
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 .MonkeyForm-problem:not(:empty) {
@@ -481,7 +481,7 @@
     flex-wrap: wrap;
     gap: 10px;
     padding: 12px 20px 16px;
-    border-top: 1px solid #343234;
+    border-top: 1px solid var(--line);
 }
 
 .MonkeyForm-spacer {
@@ -496,12 +496,12 @@
 
 .MonkeyForm-button {
     padding: 6px 14px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
-    border: 1px solid #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s, border-color 0.15s;
@@ -509,8 +509,8 @@
 
 /* Hover: a clearly lighter blue (the same as the site's other main buttons) */
 .MonkeyForm-button:hover:not(:disabled) {
-    background-color: #6dd8fb;
-    border-color: #6dd8fb;
+    background-color: var(--accent-2);
+    border-color: var(--accent-2);
 }
 
 .MonkeyForm-button:disabled {
@@ -520,50 +520,50 @@
 
 /* Save / Add monkey: the site's green */
 .MonkeyForm-button.is-save {
-    color: white;
-    background-color: #47b028;
-    border-color: #47b028;
+    color: var(--on-green);
+    background-color: var(--green);
+    border-color: var(--green);
 }
 
 .MonkeyForm-button.is-save:hover:not(:disabled) {
-    background-color: #5bc63a;
-    border-color: #5bc63a;
+    background-color: var(--green-2);
+    border-color: var(--green-2);
 }
 
 /* Cancel, Keep: quiet outlines that light up on hover */
 .MonkeyForm-button.is-quiet {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border-color: #4a4849;
+    border-color: var(--line-strong);
 }
 
 .MonkeyForm-button.is-quiet:hover:not(:disabled) {
     color: white;
     background: none;
-    border-color: #d1cfc7;
+    border-color: var(--text);
 }
 
 .MonkeyForm-button.is-danger {
-    color: #1f1f1f;
-    background-color: #fe39a4;
-    border-color: #fe39a4;
+    color: var(--bg);
+    background-color: var(--pink);
+    border-color: var(--pink);
 }
 
 .MonkeyForm-button.is-danger:hover:not(:disabled) {
-    background-color: #ff6dbb;
-    border-color: #ff6dbb;
+    background-color: var(--pink-2);
+    border-color: var(--pink-2);
 }
 
 /* Delete (before confirming): pink outline that fills pink on hover */
 .MonkeyForm-button.is-danger.is-outline {
-    color: #fe39a4;
+    color: var(--pink);
     background: none;
 }
 
 .MonkeyForm-button.is-danger.is-outline:hover:not(:disabled) {
-    color: #1f1f1f;
-    background-color: #fe39a4;
-    border-color: #fe39a4;
+    color: var(--bg);
+    background-color: var(--pink);
+    border-color: var(--pink);
 }
 
 @media (max-width: 420px) {
@@ -578,24 +578,24 @@
 .MonkeyForm-kind {
     display: flex;
     overflow: hidden;
-    border: 1px solid #4a4849;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
 }
 
 .MonkeyForm-kind button {
     flex: 1;
     padding: 8px 12px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #b6b2a5;
+    color: var(--text-2);
     background: none;
     border: 0;
     cursor: pointer;
 }
 
 .MonkeyForm-kind button + button {
-    border-left: 1px solid #4a4849;
+    border-left: 1px solid var(--line-strong);
 }
 
 .MonkeyForm-kind button:hover {
@@ -603,6 +603,6 @@
 }
 
 .MonkeyForm-kind button[aria-pressed="true"] {
-    color: #4cd480;
+    color: var(--green);
     background-color: rgba(76, 212, 128, 0.16);
 }

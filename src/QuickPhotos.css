@@ -7,7 +7,7 @@
 
 /* A computer: photos dragged over the window */
 .QuickPhotos-window.is-dragging {
-    outline: 2px dashed #25c4f8;
+    outline: 2px dashed var(--accent);
     outline-offset: -6px;
 }
 
@@ -41,7 +41,7 @@
     grid-template-columns: 132px 1fr;
     gap: 10px 12px;
     padding: 10px;
-    background-color: #282728;
+    background-color: var(--surface-2);
     border-radius: 10px;
 }
 
@@ -51,7 +51,7 @@
     aspect-ratio: 5 / 4;
     object-fit: cover;
     border-radius: 6px;
-    background-color: #1a1a1a;
+    background-color: var(--surface-1);
 }
 
 .QuickPhotos-details {
@@ -69,27 +69,27 @@
     gap: 10px;
     min-height: 52px;
     padding: 6px 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     text-align: left;
     color: white;
     background: none;
-    border: 1px dashed #25c4f8;
+    border: 1px dashed var(--accent);
     border-radius: 8px;
     cursor: pointer;
 }
 
 .QuickPhotos-choose.is-chosen {
-    border: 1px solid #4a4849;
+    border: 1px solid var(--line-strong);
 }
 
 .QuickPhotos-choose:hover:not(:disabled) {
-    border-color: #25c4f8;
+    border-color: var(--accent);
 }
 
 .QuickPhotos-ask {
     font-size: 15px;
     font-weight: 700;
-    color: #25c4f8;
+    color: var(--accent);
 }
 
 .QuickPhotos-face {
@@ -98,7 +98,7 @@
     height: 32px;
     object-fit: cover;
     border-radius: 4px;
-    background-color: #1a1a1a;
+    background-color: var(--surface-1);
 }
 
 .QuickPhotos-who {
@@ -117,7 +117,7 @@
 
 .QuickPhotos-place {
     font-size: 12px;
-    color: #b6b2a5;
+    color: var(--text-2);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -134,10 +134,10 @@
     align-items: center;
     gap: 4px;
     padding: 2px 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 700;
-    color: #b6b2a5;
+    color: var(--text-2);
     background: none;
     border: none;
     cursor: pointer;
@@ -188,12 +188,12 @@
 }
 
 .QuickPhotos-replaceChoice input:checked + img {
-    border-color: #fe39a4;
+    border-color: var(--pink);
     opacity: 0.6;
 }
 
 .QuickPhotos-replaceChoice input:focus-visible + img {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -215,15 +215,15 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background-color: #282728;
+    background-color: var(--surface-2);
     border-radius: 10px;
-    color: #e8e6df;
+    color: var(--text);
     font-size: 14px;
 }
 
 .QuickPhotos-tick {
     flex: none;
-    color: #47b028;
+    color: var(--green);
 }
 
 .QuickPhotos-savedText {
@@ -233,19 +233,19 @@
 
 .QuickPhotos-open {
     padding: 4px 12px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 700;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
-    border: 1px solid #25c4f8;
+    border: 1px solid var(--accent);
     border-radius: 999px;
     cursor: pointer;
 }
 
 .QuickPhotos-open:hover {
-    color: #1f1f1f;
-    background-color: #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
 }
 
 /* ---- Who is this? ---- */
@@ -276,21 +276,21 @@
     gap: 8px;
     min-width: 0;
     padding: 0 12px;
-    color: #8a877e;
-    background-color: #121212;
-    border: 1px solid #4a4849;
+    color: var(--text-3);
+    background-color: var(--field);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
 }
 
 .QuickPhotos-search:focus-within {
-    border-color: #25c4f8;
+    border-color: var(--accent);
 }
 
 .QuickPhotos-search input {
     flex: 1;
     min-width: 0;
     padding: 10px 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* (16px: phones don't zoom in) */
     color: white;
     background: none;
@@ -304,7 +304,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .QuickPhotos-option {
@@ -313,7 +313,7 @@
     gap: 10px;
     width: 100%;
     padding: 8px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     text-align: left;
     color: white;
     background: none;
@@ -324,13 +324,13 @@
 
 .QuickPhotos-option:hover,
 .QuickPhotos-option:focus-visible {
-    background-color: #2e2d2e;
+    background-color: var(--surface-2);
 }
 
 .QuickPhotos-none {
     margin: 0;
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .QuickPhotos-back {
@@ -339,10 +339,10 @@
     align-items: center;
     gap: 6px;
     padding: 6px 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
     border: none;
     cursor: pointer;

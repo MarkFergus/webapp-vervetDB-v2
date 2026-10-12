@@ -23,7 +23,7 @@
 }
 
 .Nav-home:focus-visible {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 4px;
 }
 
@@ -31,7 +31,7 @@
    neon blue like the app icon */
 .Nav-icon {
     display: flex;
-    color: #25c4f8;
+    color: var(--accent);
 }
 
 .Nav-icon svg {
@@ -60,35 +60,35 @@
     align-items: center;
     margin: 0;
     padding: 0 6px;
-    background-color: #161616;
-    border: 1px solid #3f3d3f;
+    background-color: var(--field);
+    border: 1px solid var(--line);
     border-radius: 999px;
     transition: border-color 0.15s;
 }
 
 .Nav-searchbar:hover {
-    border-color: #5a5856;
+    border-color: var(--line-strong);
 }
 
 .Nav-searchbar:focus-within {
-    border-color: #25c4f8;
-    box-shadow: 0 0 0 1px #25c4f8;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 
 .Nav-searchbar input {
     width: 100%;
     height: 100%;
     padding: 0 8px 0 0;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in */
-    color: #b6b2a5;
+    color: var(--text);
     background: none;
     border: none;
     outline: none;
 }
 
-.Nav-searchbar input:focus {
-    color: white;
+.Nav-searchbar input::placeholder {
+    color: var(--text-3);
 }
 
 /* The magnifying glass, and ✕ to clear the search */
@@ -96,7 +96,7 @@
 .Nav-iconX {
     display: flex; /* centres the icon in the box's height */
     align-items: center;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
     border: none;
 }
@@ -135,10 +135,10 @@
     gap: 4px;
     height: 36px;
     padding: 0 14px 0 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #d1cfc7;
+    color: var(--text);
     background-color: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 999px;
@@ -158,7 +158,7 @@
     width: 40px;
     height: 40px;
     padding: 0;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
     border: none;
     border-radius: 50%;
@@ -175,7 +175,7 @@
 .Nav-account:focus-visible,
 .Nav-railButton:focus-visible,
 .Nav-menuButton:focus-visible {
-    outline: 2px solid #25c4f8;
+    outline: 2px solid var(--accent);
     outline-offset: 0;
 }
 
@@ -194,7 +194,7 @@
     top: calc(100% + 8px);
     right: 0;
     padding: 5px 9px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.2;
@@ -226,11 +226,11 @@
 }
 
 .Nav-buttons .Nav-account.is-signed-in {
-    color: #47b028;
+    color: var(--green);
 }
 
 .Nav-buttons .Nav-account.is-signed-in .Nav-avatar {
-    background-color: rgba(71, 176, 40, 0.15);
+    background-color: rgba(62, 207, 142, 0.15);
 }
 
 /* ---- The menu buttons: ☰ on the left (computers: the side rail) or on
@@ -251,7 +251,7 @@
     width: 40px;
     height: 40px;
     padding: 0;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
     border: none;
     border-radius: 50%;

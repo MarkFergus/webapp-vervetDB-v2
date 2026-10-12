@@ -18,8 +18,8 @@
     justify-content: space-between;
     gap: 12px;
     padding: 12px 14px;
-    background-color: #2a282a;
-    border: 2px solid #fe39a4;
+    background-color: var(--surface-2);
+    border: 2px solid var(--pink);
     border-radius: 10px;
     box-shadow:
         0 0 18px rgba(254, 57, 164, 0.45),
@@ -65,25 +65,25 @@
 
 /* Later: grey outline, like Clear all in the Filters panel */
 .UpdatePrompt-later {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border: 1px solid #5a5856;
+    border: 1px solid var(--line-strong);
 }
 
 .UpdatePrompt-later:hover {
     color: white;
-    border-color: #d1cfc7;
+    border-color: var(--text);
 }
 
 .UpdatePrompt-refresh {
-    color: #1f1f1f;
-    background-color: #fe39a4;
-    border: 1px solid #fe39a4;
+    color: var(--bg);
+    background-color: var(--pink);
+    border: 1px solid var(--pink);
 }
 
 .UpdatePrompt-refresh:hover {
-    background-color: #ff92ce;
-    border-color: #ff92ce;
+    background-color: var(--pink-2);
+    border-color: var(--pink-2);
 }
 
 /* Wider screens: room for the message and both buttons on one line */

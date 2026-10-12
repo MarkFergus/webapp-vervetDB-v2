@@ -28,7 +28,7 @@
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    background-color: #202020;
+    background-color: var(--surface-1);
     border-radius: 10px;
     overflow-y: auto;
 }
@@ -46,7 +46,7 @@
 
 .PhotoCropper-position {
     font-size: 14px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 /* The cropping area: a fixed height, with the 5:4 frame drawn by the library */
@@ -60,14 +60,14 @@
 
 /* The library's frame: neon blue edge, darkened outside */
 .PhotoCropper-area .reactEasyCrop_CropArea {
-    border: 2px solid #25c4f8;
+    border: 2px solid var(--accent);
     color: rgba(0, 0, 0, 0.6);
 }
 
 .PhotoCropper-hint {
     margin: 0;
     font-size: 13px;
-    color: #8a877e;
+    color: var(--text-3);
     text-align: center;
 }
 
@@ -75,18 +75,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #b6b2a5;
+    color: var(--text-2);
 }
 
 .PhotoCropper-zoom input {
     flex: 1;
-    accent-color: #25c4f8;
+    accent-color: var(--accent);
 }
 
 .PhotoCropper-problem {
     margin: 0;
     font-size: 14px;
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 .PhotoCropper-buttons {
@@ -97,12 +97,12 @@
 
 .PhotoCropper-button {
     padding: 6px 14px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 700;
-    color: #1f1f1f;
-    background-color: #25c4f8;
-    border: 1px solid #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: 6px;
     cursor: pointer;
 }
@@ -117,7 +117,7 @@
 }
 
 .PhotoCropper-button.is-quiet {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border-color: #434343;
+    border-color: var(--line-strong);
 }

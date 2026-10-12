@@ -16,16 +16,16 @@
     padding: 6px 14px;
     font-family: inherit;
     font-size: 14px;
-    color: #25c4f8;
+    color: var(--accent);
     background: none;
-    border: 1px solid #25c4f8;
+    border: 1px solid var(--accent);
     border-radius: 999px;
     cursor: pointer;
 }
 
 .MaintenanceLog-add:hover {
-    color: #86e1ff;
-    border-color: #86e1ff;
+    color: var(--accent-2);
+    border-color: var(--accent-2);
 }
 
 /* Adding an entry: date, details, buttons */
@@ -33,8 +33,8 @@
     display: grid;
     gap: 10px;
     padding: 14px;
-    background-color: #262426;
-    border: 1px solid #343234;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
     border-radius: 12px;
 }
 
@@ -49,7 +49,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MaintenanceLog-field input,
@@ -57,11 +57,11 @@
     box-sizing: border-box;
     width: 100%;
     padding: 9px 10px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
     color: white;
-    background-color: #1f1f1f;
-    border: 2px solid #434343;
+    background-color: var(--bg);
+    border: 2px solid var(--line-strong);
     border-radius: 8px;
     outline: none;
     color-scheme: dark;
@@ -74,7 +74,7 @@
 
 .MaintenanceLog-field input:focus,
 .MaintenanceLog-field textarea:focus {
-    border-color: #25c4f8;
+    border-color: var(--accent);
 }
 
 .MaintenanceLog-field.is-date {
@@ -97,15 +97,15 @@
 }
 
 .MaintenanceLog-button.is-quiet {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border: 1px solid #3a3839;
+    border: 1px solid var(--line);
 }
 
 .MaintenanceLog-button.is-save {
-    color: #1f1f1f;
-    background-color: #25c4f8;
-    border: 1px solid #25c4f8;
+    color: var(--bg);
+    background-color: var(--accent);
+    border: 1px solid var(--accent);
 }
 
 .MaintenanceLog-button:disabled {
@@ -116,7 +116,7 @@
 .MaintenanceLog-problem {
     margin: 0;
     font-size: 14px;
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 /* The entries: date on the left, details, who logged it underneath */
@@ -124,7 +124,7 @@
     margin: 0;
     padding: 0;
     list-style: none;
-    border-top: 1px solid #2c2a2c;
+    border-top: 1px solid var(--surface-2);
 }
 
 .MaintenanceLog-entry {
@@ -133,14 +133,14 @@
     grid-template-columns: 110px minmax(0, 1fr);
     gap: 2px 16px;
     padding: 12px 40px 12px 2px;
-    border-bottom: 1px solid #2c2a2c;
+    border-bottom: 1px solid var(--surface-2);
 }
 
 .MaintenanceLog-entry time {
     grid-row: span 2;
     font-size: 14px;
     font-weight: 700;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .MaintenanceLog-entry p {
@@ -148,12 +148,12 @@
     font-size: 15px;
     line-height: 1.45;
     white-space: pre-line;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .MaintenanceLog-who {
     font-size: 12px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .MaintenanceLog-delete {
@@ -161,7 +161,7 @@
     top: 10px;
     right: 0;
     padding: 4px;
-    color: #6b6862;
+    color: var(--text-3);
     background: none;
     border: none;
     border-radius: 6px;
@@ -169,7 +169,7 @@
 }
 
 .MaintenanceLog-delete:hover {
-    color: #ff4d4f;
+    color: var(--danger);
 }
 
 .MaintenanceLog-confirm {
@@ -178,24 +178,24 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #d1cfc7;
+    color: var(--text);
 }
 
 .MaintenanceLog-confirm button {
     padding: 3px 10px;
     font-family: inherit;
     font-size: 13px;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
-    border: 1px solid #3a3839;
+    border: 1px solid var(--line);
     border-radius: 999px;
     cursor: pointer;
 }
 
 .MaintenanceLog-confirm button.is-danger {
-    color: #1f1f1f;
-    background-color: #ff4d4f;
-    border-color: #ff4d4f;
+    color: var(--bg);
+    background-color: var(--danger);
+    border-color: var(--danger);
 }
 
 /* Phones: the date above the details */

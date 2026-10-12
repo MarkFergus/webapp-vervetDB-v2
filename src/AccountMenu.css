@@ -13,8 +13,8 @@
     display: flex;
     flex-direction: column;
     padding: 4px;
-    background-color: #2a282a;
-    border: 1px solid #434343;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
@@ -35,8 +35,8 @@
     width: 36px;
     height: 36px;
     box-sizing: border-box;
-    color: #47b028;
-    background-color: rgba(71, 176, 40, 0.15);
+    color: var(--green);
+    background-color: rgba(62, 207, 142, 0.15);
     border: 1.75px solid currentColor;
     border-radius: 50%;
 }
@@ -62,13 +62,13 @@
 
 .AccountMenu-email {
     font-size: 13px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 .AccountMenu-divider {
     height: 1px;
     margin: 4px 0;
-    background-color: #434343;
+    background-color: var(--line-strong);
 }
 
 .AccountMenu-menu [role="menuitem"] {
@@ -76,10 +76,10 @@
     align-items: center;
     gap: 10px;
     padding: 9px 12px;
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-ui);
     font-size: 15px;
     text-align: left;
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
     border: none;
     border-radius: 6px;
@@ -89,7 +89,7 @@
 .AccountMenu-menu [role="menuitem"]:hover,
 .AccountMenu-menu [role="menuitem"]:focus-visible {
     color: white;
-    background-color: #343234;
+    background-color: var(--line);
     outline: none;
 }
 
@@ -99,12 +99,12 @@
 }
 
 .AccountMenu-menu .AccountMenu-theme:hover {
-    color: #d1cfc7;
+    color: var(--text);
     background: none;
 }
 
 .AccountMenu-value {
     margin-left: auto;
     font-size: 13px;
-    color: #8a877e;
+    color: var(--text-3);
 }

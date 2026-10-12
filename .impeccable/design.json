@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T20:00:00Z",
+  "title": "Design System: vervetDB",
+  "extensions": {
+    "colorMeta": {
+      "accent": { "role": "primary", "displayName": "Sky Signal Blue", "canonical": "#3ea6ff", "tonalRamp": ["#04213a", "#073a66", "#0b5592", "#1373c4", "#3ea6ff", "#8cc9ff", "#c2e2ff", "#eaf5ff"] },
+      "accent-2": { "role": "primary", "displayName": "Sky Signal Blue Hover", "canonical": "#8cc9ff", "tonalRamp": ["#04213a", "#073a66", "#0b5592", "#1373c4", "#3ea6ff", "#8cc9ff", "#c2e2ff", "#eaf5ff"] },
+      "green": { "role": "secondary", "displayName": "Go Green", "canonical": "#3ecf8e", "tonalRamp": ["#06291a", "#0c4a2f", "#136b44", "#1f9160", "#3ecf8e", "#6bdba8", "#a9ebcc", "#e3f9ef"] },
+      "green-2": { "role": "secondary", "displayName": "Go Green Hover", "canonical": "#6bdba8", "tonalRamp": ["#06291a", "#0c4a2f", "#136b44", "#1f9160", "#3ecf8e", "#6bdba8", "#a9ebcc", "#e3f9ef"] },
+      "on-green": { "role": "secondary", "displayName": "Ink on Green", "canonical": "#121212", "tonalRamp": ["#121212", "#1e1e1e", "#292929", "#414141", "#4d4d4d", "#8c8c8c", "#aaaaaa", "#f1f1f1"] },
+      "pink": { "role": "secondary", "displayName": "Pop-up Pink", "canonical": "#fe39a4", "tonalRamp": ["#3a0624", "#660b3f", "#93115b", "#c71c7c", "#fe39a4", "#ff6dbb", "#ffb0db", "#ffe8f4"] },
+      "pink-2": { "role": "secondary", "displayName": "Pop-up Pink Hover", "canonical": "#ff6dbb", "tonalRamp": ["#3a0624", "#660b3f", "#93115b", "#c71c7c", "#fe39a4", "#ff6dbb", "#ffb0db", "#ffe8f4"] },
+      "danger": { "role": "tertiary", "displayName": "Alert Red", "canonical": "#ff4e45", "tonalRamp": ["#3a0806", "#66100c", "#931913", "#c9271f", "#ff4e45", "#ff8a80", "#ffbdb7", "#ffecea"] },
+      "danger-2": { "role": "tertiary", "displayName": "Alert Red Light", "canonical": "#ff8a80", "tonalRamp": ["#3a0806", "#66100c", "#931913", "#c9271f", "#ff4e45", "#ff8a80", "#ffbdb7", "#ffecea"] },
+      "new-arrival-orange": { "role": "tertiary", "displayName": "New Arrival Orange", "canonical": "#ff7a1a", "tonalRamp": ["#3a1803", "#662b05", "#933f08", "#c95810", "#ff7a1a", "#ffa35e", "#ffcb9f", "#fff0e3"] },
+      "sickbay-amber": { "role": "tertiary", "displayName": "Sickbay Amber", "canonical": "#f5b83d", "tonalRamp": ["#352405", "#5c3f09", "#865c0e", "#b67e17", "#f5b83d", "#f8cd74", "#fbe2ab", "#fef6e5"] },
+      "bg": { "role": "neutral", "displayName": "Page Black", "canonical": "#121212", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "surface-1": { "role": "neutral", "displayName": "Panel Charcoal", "canonical": "#1e1e1e", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "surface-2": { "role": "neutral", "displayName": "Chip Graphite", "canonical": "#292929", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "surface-3": { "role": "neutral", "displayName": "Hover Graphite", "canonical": "#414141", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "field": { "role": "neutral", "displayName": "Field Black", "canonical": "#151515", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "line": { "role": "neutral", "displayName": "Hairline", "canonical": "#323232", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "line-strong": { "role": "neutral", "displayName": "Hairline Strong", "canonical": "#4d4d4d", "tonalRamp": ["#121212", "#151515", "#1e1e1e", "#292929", "#323232", "#414141", "#4d4d4d", "#8c8c8c"] },
+      "text": { "role": "neutral", "displayName": "Paper White", "canonical": "#f1f1f1", "tonalRamp": ["#414141", "#4d4d4d", "#6b6b6b", "#8c8c8c", "#aaaaaa", "#cccccc", "#f1f1f1", "#ffffff"] },
+      "text-2": { "role": "neutral", "displayName": "Caption Grey", "canonical": "#aaaaaa", "tonalRamp": ["#414141", "#4d4d4d", "#6b6b6b", "#8c8c8c", "#aaaaaa", "#cccccc", "#f1f1f1", "#ffffff"] },
+      "text-3": { "role": "neutral", "displayName": "Quiet Grey", "canonical": "#8c8c8c", "tonalRamp": ["#414141", "#4d4d4d", "#6b6b6b", "#8c8c8c", "#aaaaaa", "#cccccc", "#f1f1f1", "#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The vervetDB wordmark (24px top bar, 20px drawer)." },
+      "headline": { "displayName": "Headline", "purpose": "Panel titles such as Filters." },
+      "title": { "displayName": "Title", "purpose": "A monkey's name on its photo (17px, 15px on phones) and in list rows." },
+      "body": { "displayName": "Body", "purpose": "Card details line, list rows, menus, drawer items." },
+      "body-input": { "displayName": "Body Input", "purpose": "Search and text entry; 16px so phones don't zoom." },
+      "button": { "displayName": "Button", "purpose": "Chips and toolbar buttons (500); action buttons use 700." },
+      "label": { "displayName": "Label", "purpose": "Uppercase tracked group headings in the rail and drawer, Filters section labels, list column headings." }
+    },
+    "shadows": [
+      { "name": "menu", "value": "0 8px 24px rgba(0, 0, 0, 0.5)", "purpose": "Sort menu and the Coming Soon toast." },
+      { "name": "panel", "value": "0 12px 32px rgba(0, 0, 0, 0.6)", "purpose": "The Filters drop-down panel." },
+      { "name": "side-sheet", "value": "8px 0 24px rgba(0, 0, 0, 0.5)", "purpose": "Side rail over the page; mirrored (-8px) for the drawer." },
+      { "name": "floating-button", "value": "0 4px 14px rgba(0, 0, 0, 0.5)", "purpose": "Back to Top." },
+      { "name": "go-glow", "value": "0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px rgba(0, 0, 0, 0.5)", "purpose": "The staff Add Photos circle in the bottom bar." },
+      { "name": "focus-ring", "value": "outline: 2px solid var(--accent); outline-offset: 2px", "purpose": "Keyboard focus everywhere (offset varies 0 to 4px with room)." }
+    ],
+    "motion": [
+      { "name": "hover-fade", "value": "0.15s", "purpose": "Background, border and colour changes on chips, buttons, search." },
+      { "name": "photo-zoom", "value": "transform 0.5s ease-out; scale(1.06)", "purpose": "Card photo on hover or focus." },
+      { "name": "sheet-in", "value": "0.2s to 0.22s ease-out", "purpose": "Filters bottom sheet, drawer slide, Coming Soon toast, Back to Top." },
+      { "name": "tooltip-delay", "value": "0.4s", "purpose": "Hover labels appear after a short pause." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Every animation and transform transition has a none fallback." }
+    ],
+    "breakpoints": [
+      { "name": "narrowest", "value": "340px" },
+      { "name": "narrow", "value": "420px" },
+      { "name": "phone-max", "value": "624px" },
+      { "name": "wide", "value": "625px" },
+      { "name": "computer", "value": "690px" },
+      { "name": "wordmark", "value": "870px" },
+      { "name": "list-born-column", "value": "900px" },
+      { "name": "rail-pushes-page", "value": "960px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Toolbar Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filters / Sort style 36px chip; white-filled when filters are in use.",
+      "html": "<div style=\"display:flex;gap:10px\"><button class=\"ds-chip\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4h16v2.17a2 2 0 0 1-.59 1.42L15 12v7l-6 2v-8.5L4.52 7.56A2 2 0 0 1 4 6.21z\"/></svg>Filters</button><button class=\"ds-chip is-active\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4h16v2.17a2 2 0 0 1-.59 1.42L15 12v7l-6 2v-8.5L4.52 7.56A2 2 0 0 1 4 6.21z\"/></svg>Filters<span class=\"ds-chip-count\">2</span></button></div>",
+      "css": ".ds-chip { display:flex; align-items:center; gap:6px; height:36px; padding:0 16px; font-family: var(--font-ui, Roboto, system-ui, sans-serif); font-size:14px; font-weight:500; color: var(--text, #f1f1f1); background-color: var(--surface-2, #292929); border:none; border-radius:8px; cursor:pointer; transition: background-color 0.15s, color 0.15s; } .ds-chip:hover { background-color: var(--surface-3, #414141); } .ds-chip:focus-visible { outline:2px solid var(--accent, #3ea6ff); outline-offset:2px; } .ds-chip.is-active { color: var(--bg, #121212); background-color: var(--text, #f1f1f1); } .ds-chip.is-active:hover { background-color:#fff; } .ds-chip-count { display:inline-flex; justify-content:center; align-items:center; min-width:18px; height:18px; padding:0 5px; font-size:12px; font-weight:700; color: var(--text, #f1f1f1); background-color: var(--bg, #121212); border-radius:999px; }"
+    },
+    {
+      "name": "Go Button",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "Green fill for go actions only: Show, Save, Add Photos.",
+      "html": "<button class=\"ds-btn-go\">Save Changes</button>",
+      "css": ".ds-btn-go { padding:6px 14px; font-family: var(--font-ui, Roboto, system-ui, sans-serif); font-size:14px; font-weight:700; color: var(--on-green, #121212); background-color: var(--green, #3ecf8e); border:none; border-radius:8px; cursor:pointer; } .ds-btn-go:hover { background-color: var(--green-2, #6bdba8); } .ds-btn-go:focus-visible { outline:2px solid var(--accent, #3ea6ff); outline-offset:2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet partner to a filled button, e.g. Clear All in the Filters footer.",
+      "html": "<button class=\"ds-btn-outline\">Clear All</button>",
+      "css": ".ds-btn-outline { padding:6px 14px; font-family: var(--font-ui, Roboto, system-ui, sans-serif); font-size:14px; font-weight:700; color: var(--text, #f1f1f1); background:none; border:1px solid var(--line-strong, #4d4d4d); border-radius:8px; cursor:pointer; } .ds-btn-outline:hover { color:#fff; border-color: var(--text, #f1f1f1); } .ds-btn-outline:focus-visible { outline:2px solid var(--accent, #3ea6ff); outline-offset:2px; } .ds-btn-outline:disabled { opacity:0.4; cursor:default; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "The top bar's 40px search pill.",
+      "html": "<label class=\"ds-search\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"10\" cy=\"10\" r=\"7\"/><path d=\"M21 21l-6-6\"/></svg><input placeholder=\"Search monkeys\" /></label>",
+      "css": ".ds-search { display:flex; align-items:center; gap:8px; width:320px; height:40px; padding:0 14px; background-color: var(--field, #151515); border:1px solid var(--line, #323232); border-radius:999px; color: var(--text, #f1f1f1); transition: border-color 0.15s; } .ds-search:hover { border-color: var(--line-strong, #4d4d4d); } .ds-search:focus-within { border-color: var(--accent, #3ea6ff); box-shadow:0 0 0 1px var(--accent, #3ea6ff); } .ds-search input { flex:1; height:100%; font-family: var(--font-ui, Roboto, system-ui, sans-serif); font-size:16px; color: var(--text, #f1f1f1); background:none; border:none; outline:none; } .ds-search input::placeholder { color: var(--text-3, #8c8c8c); }"
+    },
+    {
+      "name": "Monkey Card",
+      "kind": "card",
+      "refersTo": "card-thumbnail",
+      "description": "5:4 photo with the name on a dark fade, one optional badge, then troop · sex · age in grey.",
+      "html": "<button class=\"ds-card\"><span class=\"ds-card-photo\"><span class=\"ds-card-badge\">New Arrival</span><span class=\"ds-card-name\">Abby</span></span><span class=\"ds-card-meta\"><span>H&amp;B</span><span>Female</span><span>7 yrs old</span></span></button>",
+      "css": ".ds-card { display:flex; flex-direction:column; width:240px; padding:0; border:none; background:none; color:inherit; text-align:left; cursor:pointer; font-family: var(--font-ui, Roboto, system-ui, sans-serif); } .ds-card-photo { position:relative; display:block; aspect-ratio:5/4; overflow:hidden; border-radius:12px; background: linear-gradient(135deg, #5a5143, #2f2a22); transition: filter 0.2s; } .ds-card-photo::after { content:''; position:absolute; inset:40% 0 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); } .ds-card:hover .ds-card-photo { filter: brightness(1.08); } .ds-card:focus-visible { outline:none; } .ds-card:focus-visible .ds-card-photo { outline:2px solid var(--accent, #3ea6ff); outline-offset:2px; } .ds-card-name { position:absolute; left:10px; right:10px; bottom:8px; z-index:1; font-family: var(--font-display, 'Russo One', sans-serif); font-size:17px; line-height:1.15; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .ds-card-badge { position:absolute; left:6px; top:6px; z-index:1; padding:2px 7px; font-size:12px; font-weight:700; line-height:18px; color: var(--bg, #121212); background-color:#ff7a1a; border-radius:4px; } .ds-card-meta { display:flex; margin-top:6px; padding:0 2px; font-size:14px; line-height:1.3; color: var(--text-2, #aaaaaa); white-space:nowrap; } .ds-card-meta > span + span::before { content:'\\00B7'; margin:0 6px; }"
+    },
+    {
+      "name": "Side Rail Item",
+      "kind": "nav",
+      "refersTo": "icon-button",
+      "description": "40px rail row: icon then label; current page bold white on Chip Graphite.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12H3l9-9 9 9h-2M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7\"/></svg><span>Monkeys</span></a><a class=\"ds-rail-item\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z\"/></svg><span>Enclosures</span></a></nav>",
+      "css": ".ds-rail { display:flex; flex-direction:column; width:220px; padding:6px 4px; background-color: var(--surface-1, #1e1e1e); font-family: var(--font-ui, Roboto, system-ui, sans-serif); } .ds-rail-item { display:flex; align-items:center; gap:14px; height:40px; margin-bottom:2px; padding:0 14px; font-size:14px; color: var(--text, #f1f1f1); text-decoration:none; border-radius:8px; cursor:pointer; } .ds-rail-item:hover { color:#fff; background-color: rgba(255,255,255,0.08); } .ds-rail-item:focus-visible { outline:2px solid var(--accent, #3ea6ff); outline-offset:-2px; } .ds-rail-item[aria-current='page'] { font-weight:700; color:#fff; background-color: var(--surface-2, #292929); }"
+    },
+    {
+      "name": "Sort Menu",
+      "kind": "custom",
+      "refersTo": "menu",
+      "description": "Drop-down list with the direction faded beside each name.",
+      "html": "<div class=\"ds-menu\"><button>Name <span>A–Z</span></button><button>Age <span>Oldest first</span></button><button>Recently Added</button></div>",
+      "css": ".ds-menu { display:flex; flex-direction:column; min-width:180px; padding:4px; background-color: var(--surface-2, #292929); border:1px solid var(--line-strong, #4d4d4d); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.5); } .ds-menu button { display:flex; align-items:baseline; gap:8px; padding:9px 12px; font-family: var(--font-ui, Roboto, system-ui, sans-serif); font-size:15px; text-align:left; color: var(--text, #f1f1f1); background:none; border:none; border-radius:6px; cursor:pointer; } .ds-menu button span { font-size:13px; color: var(--text-3, #8c8c8c); } .ds-menu button:hover, .ds-menu button:focus-visible { color:#fff; background-color: var(--line, #323232); outline:none; }"
+    },
+    {
+      "name": "Add Photos Circle",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "Staff bottom-bar centre: 48px green circle with a soft glow.",
+      "html": "<button class=\"ds-photos\" aria-label=\"Add Photos\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 7h1a2 2 0 0 0 2-2 1 1 0 0 1 1-1h6a1 1 0 0 1 1 1 2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2\"/><circle cx=\"12\" cy=\"13\" r=\"3\"/></svg></button>",
+      "css": ".ds-photos { display:flex; justify-content:center; align-items:center; width:48px; height:48px; color: var(--on-green, #121212); background-color: var(--green, #3ecf8e); border:none; border-radius:50%; box-shadow:0 4px 14px rgba(62,207,142,0.25), 0 2px 6px rgba(0,0,0,0.5); cursor:pointer; transition: transform 0.15s ease, background-color 0.15s ease; } .ds-photos:hover { background-color: var(--green-2, #6bdba8); } .ds-photos:active { transform: scale(0.94); } .ds-photos:focus-visible { outline:2px solid var(--accent, #3ea6ff); outline-offset:3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Sanctuary Channel",
+    "overview": "vervetDB is the category standard played straight: a first-class dark media app at YouTube and Supabase-dashboard craft, where the \"videos\" are monkeys. Faces lead. A near-black page carries a grid of rounded 5:4 photos with each monkey's name set on its own photo in Russo One, a quiet grey line of details below, and one row of soft chips above for narrowing the list. Chrome is small, precise and recessive so the photos do the talking.\n\nThe system is dark only (`color-scheme: dark`), tonal rather than lined, and strictly tokenised: every colour comes from the `:root` set in `src/index.css`. One sky-blue accent handles links, focus and the active state of a few controls; selection in chips is white-fill, as on YouTube. Green, pink and two warm status colours each own exactly one job, so colour on screen always means something. Density is media-app density: 36px chips, 40px icon buttons, tight caption lines, generous photo area.\n\nIt is minimal and uncluttered by owner direction: no decoration that does not carry information, one badge per card at most, and labels in plain Title Case words. The owner has rejected coloured sex icons and a \"Photo Needed\" badge; both are recorded as Don'ts below.",
+    "keyCharacteristics": [
+      "Near-black ground (#121212) with three surface steps; depth by tone, shadows only on things that float.",
+      "One interactive accent (sky blue); white-fill for chosen chips.",
+      "Russo One for names, panel titles and the wordmark; Roboto for every piece of chrome.",
+      "5:4 photo frame everywhere a monkey appears, with the name on a dark fade at the photo's foot.",
+      "Phone-first: sticky blurred top bar, one toolbar row, two-up grid, 60px bottom bar; computers get a 72px YouTube-style rail that the top bar ☰ opens out."
+    ],
+    "rules": [
+      { "name": "The Token-Only Rule", "body": "Every colour is a `var(--…)` from `:root` in `src/index.css`; a raw hex in a component stylesheet is a defect, not a choice.", "section": "colors" },
+      { "name": "The One Job Rule", "body": "Blue is interaction, green is go, pink is destroy-or-cancel in a pop-up, orange is New Arrival, amber is In Sickbay. A colour borrowed for a second job stops meaning either.", "section": "colors" },
+      { "name": "The White Chip Rule", "body": "A chosen chip, pill or view button turns Paper White with Page Black text. Blue is never the selected fill.", "section": "colors" },
+      { "name": "The Name Voice Rule", "body": "Russo One is reserved for monkey names, panel titles and the wordmark. Buttons, chips, details and labels are always Roboto.", "section": "typography" },
+      { "name": "The Title Case Rule", "body": "Every button label is Title Case (\"Clear All\", \"Add Photos\", \"Show More\"). Places are written in full on screen (\"Dino & Daniel\", \"Holt & Barrington\"); the short forms (\"D&D\", \"H&B\") appear only on cards and rows, and a long place name breaks after the \"&\".", "section": "typography" },
+      { "name": "The One Row Rule", "body": "The toolbar stays on a single line at every width down to 320px; controls shrink to icons before anything wraps or scrolls.", "section": "layout" },
+      { "name": "The Same Size Rule", "body": "Controls keep their height as the screen narrows (36px chips, 40px icon buttons, 32px chosen-filter chips); only padding and gaps tighten.", "section": "layout" },
+      { "name": "The Float-Only Shadow Rule", "body": "A surface at rest in the page flow has no shadow. If it doesn't sit over other content, it doesn't cast.", "section": "elevation" },
+      { "name": "The 5:4 Frame Rule", "body": "A monkey photo is always shown in a 5:4 frame, whatever its source shape, so the grid can never be upset by one odd photo.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do take every colour from the `:root` tokens in `src/index.css`.",
+      "Do keep the card details line in the order troop · sex · age, all in Caption Grey (#aaaaaa).",
+      "Do show at most one badge per card: New Arrival over In Sickbay.",
+      "Do use white-fill (Paper White, Page Black text) for chosen chips, pills and view buttons.",
+      "Do write button labels in Title Case and places in full on screen (\"Dino & Daniel\"); short forms only on cards and rows.",
+      "Do keep controls at 36px (chips) and 40px (icon buttons) at every width, extending tap areas to 44px.",
+      "Do honour `prefers-reduced-motion`: every slide, scale and fade has a no-motion fallback.",
+      "Do show a monkey photo in the 5:4 frame with the name on the photo's dark fade."
+    ],
+    "donts": [
+      "Don't put a raw hex in a component stylesheet.",
+      "Don't colour the sex icons; ♂ and ♀ inherit the grey of the details line.",
+      "Don't add a \"Photo Needed\" badge; a no-photo tile shows only a quiet photo icon.",
+      "Don't stack badges on a card or add decoration that carries no information.",
+      "Don't use blue as a selected fill, or green, pink, orange or amber for anything outside their one job.",
+      "Don't set buttons, chips or details in Russo One.",
+      "Don't add shadows to surfaces at rest in the page flow.",
+      "Don't let the toolbar wrap onto a second line."
+    ]
+  }
+}

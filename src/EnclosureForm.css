@@ -18,7 +18,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #8a877e;
+    color: var(--text-3);
 }
 
 /* Size: the number box with "m²" inside it, on the right */
@@ -37,6 +37,6 @@
     right: 12px;
     transform: translateY(-50%);
     font-size: 15px;
-    color: #8a877e;
+    color: var(--text-3);
     pointer-events: none;
 }

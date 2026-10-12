@@ -112,7 +112,8 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
             inert={inert}
         >
             <div className="SideRail-group">
-                {open && <h2 className="SideRail-heading">Browse</h2>}
+                {/* (No heading: Monkeys stays exactly where it is in the
+                    small rail, so opening it out doesn't move it) */}
                 {item(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
                 {item(
                     { href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined },
