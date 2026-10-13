@@ -259,7 +259,6 @@
     color: var(--text);
 }
 
-
 /* Staff: Add Photos, the quick way in: a bigger green circle with a white
    ring as thick as the icon's lines (about 2px), so it stands out */
 .BottomBar-photosCircle {
@@ -383,24 +382,6 @@
     font-weight: 800;
     font-size: 20px;
     color: white;
-}
-
-.Drawer-close {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 40px;
-    height: 40px;
-    color: var(--text);
-    background: none;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.Drawer-close:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Tools, App: like the opened-out side rail's groups */

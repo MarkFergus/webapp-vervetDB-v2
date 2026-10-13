@@ -5,6 +5,7 @@
     flex-direction: column;
     gap: 10px;
     width: 100%;
+    scroll-margin: 12px; /* (scrolled to on Edit: a little room around it) */
 }
 
 .Integration-form label {
@@ -63,7 +64,8 @@
     color: var(--danger-2);
 }
 
-/* The list's fold-out heading: "Integration Reports (3)", "Injuries (1)" */
+/* The list's fold-out heading: "INTEGRATION REPORTS (3)", "INJURIES (1)",
+   in capitals like the pop-up's other headings (.Modal-label) */
 .Integration-toggle {
     display: flex;
     align-items: center;
@@ -72,6 +74,8 @@
     font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--text-3);
     background: none;
     border: 0;

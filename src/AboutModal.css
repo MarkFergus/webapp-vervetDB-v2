@@ -39,25 +39,11 @@
 }
 
 .AboutModal-close button {
+/* (its look: CloseButton.css) */
     position: absolute;
-    top: 2px;
-    right: 4px;
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    background-color: rgba(36, 36, 36, 0.6);
-    color: rgb(146, 145, 145);
-    cursor: pointer;
-}
-
-.AboutModal-close button:hover {
-    color: white;
-}
-
-.AboutModal-close svg {
-    display: block;
-    width: 24px;
-    height: 24px;
+    top: 4px;
+    right: 6px;
+    z-index: 3;
 }
 
 .AboutModal-content {

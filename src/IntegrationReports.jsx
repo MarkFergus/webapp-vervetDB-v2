@@ -3,6 +3,7 @@ import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
 import { addIntegration, deleteIntegration, loadIntegration, saveIntegration } from "./monkeyData";
 import { summaryDate } from "./feeding";
 import ConfirmBubble from "./ConfirmBubble";
+import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 
 // Integration Reports: staff reports on how a monkey's integration is going
@@ -78,8 +79,10 @@ export function useIntegration(monkeyId, staff) {
 
 // From / To side by side, then the report, then Confirm and Cancel.
 //   initial: { from, to, report }; onSave(values) async (throws a message
-//   to show); onCancel()
-export function IntegrationForm({ initial, onSave, onCancel }) {
+//   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
+export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = false }) {
+    // Editing in a list: brought fully into view as it opens
+    const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(initial);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
@@ -101,7 +104,7 @@ export function IntegrationForm({ initial, onSave, onCancel }) {
     }
 
     return (
-        <div className="Integration-form">
+        <div className="Integration-form" ref={formRef}>
             <div className="Integration-dates">
                 <label>
                     <span>From</span>
@@ -178,6 +181,7 @@ export function IntegrationList({ integration, open, onToggle }) {
                         <li key={entry.id}>
                             {editing === entry.id ? (
                                 <IntegrationForm
+                                    scrollIntoView
                                     initial={{ from: entry.from, to: entry.to, report: entry.report }}
                                     onSave={async (values) => {
                                         await integration.update(entry.id, values);
@@ -215,6 +219,7 @@ export function IntegrationList({ integration, open, onToggle }) {
                                                 {deleting === entry.id && (
                                                     <ConfirmBubble
                                                         question="Delete this report?"
+                                                        danger
                                                         busy={busy}
                                                         onConfirm={() => remove(entry.id)}
                                                         onCancel={cancelDelete}

@@ -3,6 +3,7 @@ import ConfirmBubble from "./ConfirmBubble";
 import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
 import { addInjury, deleteInjury, loadInjuries, saveInjury, setInjuryHealed } from "./monkeyData";
 import { summaryDate } from "./feeding";
+import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 
 // Injuries: a section of a monkey's pop-up (staff only). Editors
@@ -65,8 +66,10 @@ export function useInjuries(monkeyId, staff) {
 
 // Date, then the description, then Confirm and Cancel.
 //   initial: { date, description }; onSave(values) async (throws a message
-//   to show); onCancel()
-export function InjuryForm({ initial, max, onSave, onCancel }) {
+//   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
+export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = false }) {
+    // Editing in a list: brought fully into view as it opens
+    const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(initial);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
@@ -87,7 +90,7 @@ export function InjuryForm({ initial, max, onSave, onCancel }) {
     }
 
     return (
-        <div className="Integration-form">
+        <div className="Integration-form" ref={formRef}>
             <label>
                 <span>Date</span>
                 <input type="date" value={values.date} max={max} onChange={set("date")} />
@@ -148,6 +151,7 @@ function InjuryItem({ entry, injuries, today }) {
         return (
             <li>
                 <InjuryForm
+                    scrollIntoView
                     initial={{ date: entry.date, description: entry.description }}
                     max={today}
                     onSave={async (values) => {
@@ -205,6 +209,7 @@ function InjuryItem({ entry, injuries, today }) {
                     {mode === "delete" && (
                         <ConfirmBubble
                             question="Delete this injury?"
+                            danger
                             busy={busy}
                             onConfirm={() => run(() => injuries.remove(entry.id))}
                             onCancel={cancel}

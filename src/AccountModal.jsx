@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IconArrowLeft, IconCamera, IconEye, IconHistory, IconKey, IconLogout, IconPencil, IconShieldCheck, IconSquareRoundedX, IconTool } from "@tabler/icons-react";
+import { IconArrowLeft, IconCamera, IconEye, IconHistory, IconKey, IconLogout, IconPencil, IconShieldCheck, IconTool } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { useAuth, MIN_PASSWORD_LENGTH } from "./auth";
@@ -8,6 +8,7 @@ import PhotoCropper from "./PhotoCropper";
 import Avatar from "./Avatar";
 import MyChanges from "./MyChanges";
 import "./AccountModal.css";
+import CloseButton from "./CloseButton";
 
 // Who to ask for an account
 const ACCESS_EMAIL = "mark@vervet.za.org";
@@ -504,9 +505,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     >
                         <div className={`AccountModal-window${view === "changes" && user ? " is-wide" : ""}`}>
                             <div className="AccountModal-close">
-                                <button type="button" onClick={handleClose} aria-label="Close">
-                                    <IconSquareRoundedX />
-                                </button>
+                                <CloseButton onClick={handleClose} />
                             </div>
                             {content}
                         </div>

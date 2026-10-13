@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { fullName } from "./places";
-import { IconCircleCheckFilled, IconDownload, IconSquareRoundedX } from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconDownload } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { BABIES_BOOK, bookTitle } from "./profileBook";
 import { currentBabySeason } from "./ages";
 import "./ModalPDF.css";
+import CloseButton from "./CloseButton";
 
 // Largest troop is ~55, so anything over this is probably "All Troops"
 const LARGE_PDF_THRESHOLD = 60;
@@ -108,14 +109,7 @@ function ModalPDF({
                     >
                         <div className="ModalPDF-window">
                             <div className="ModalPDF-close">
-                                <button
-                                    type="button"
-                                    ref={closeButtonRef}
-                                    onClick={closePDFModal}
-                                    aria-label="Close"
-                                >
-                                    <IconSquareRoundedX />
-                                </button>
+                                <CloseButton ref={closeButtonRef} onClick={closePDFModal} />
                             </div>
                             <motion.div className="ModalPDF-content">
                                 <h1

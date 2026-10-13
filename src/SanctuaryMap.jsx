@@ -2,9 +2,10 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import { fullName } from "./places";
 import { createPortal } from "react-dom";
-import { IconArrowsMaximize, IconMap2, IconSquareRoundedX } from "@tabler/icons-react";
+import { IconArrowsMaximize, IconMap2 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import "./SanctuaryMap.css";
+import CloseButton from "./CloseButton";
 
 // The sanctuary map (public/VMF_Sanctuary_Map.svg, drawn in Inkscape) on an
 // enclosure's page: in greyscale, zoomed in around the enclosure, with its
@@ -335,9 +336,7 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
             <div className="MapPopup-window">
                 <div className="MapPopup-header">
                     <h2 id="MapPopup-title"><PlaceName name={enclosure.name} /> on the map</h2>
-                    <button type="button" className="MapPopup-close" ref={closeRef} onClick={onClose} aria-label="Close">
-                        <IconSquareRoundedX />
-                    </button>
+                    <CloseButton className="MapPopup-close" ref={closeRef} onClick={onClose} />
                 </div>
                 <div className="SanctuaryMap is-large" style={{ "--highlight": colour }}>
                     <MapView

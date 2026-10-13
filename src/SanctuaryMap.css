@@ -133,7 +133,6 @@
     flex: 0 1 var(--popup-top);
 }
 
-
 .MapPopup-overlay {
     position: absolute;
     inset: 0;
@@ -166,21 +165,3 @@
     color: white;
 }
 
-.MapPopup-close {
-    display: flex;
-    padding: 6px;
-    color: var(--text-2);
-    background: none;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.MapPopup-close:hover {
-    color: white;
-}
-
-.MapPopup-close svg {
-    width: 24px;
-    height: 24px;
-}

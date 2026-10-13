@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { IconChevronDown, IconSquareRoundedX } from "@tabler/icons-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
 import { CHANGELOG, currentSeries, releaseDate } from "./changelog";
 import { CREDITS, LICENCES_FILE } from "./credits";
 import "./AboutModal.css";
+import CloseButton from "./CloseButton";
 
 // The About pop-up: which version of vervetDB this is, and a running
 // changelog: each version's changes under its own heading (changelog.js).
@@ -64,9 +65,7 @@ function AboutModal({ isOpen, onClose }) {
                     >
                         <div className="AboutModal-window">
                             <div className="AboutModal-close">
-                                <button type="button" ref={closeRef} onClick={onClose} aria-label="Close">
-                                    <IconSquareRoundedX />
-                                </button>
+                                <CloseButton ref={closeRef} onClick={onClose} />
                             </div>
                             <div className="AboutModal-content">
                                 <span className="AboutModal-logo" aria-hidden="true">

@@ -44,20 +44,6 @@
     color: var(--text);
 }
 
-.FilterPanel-close {
-    display: flex;
-    padding: 4px;
-    color: var(--text-2);
-    background: none;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.FilterPanel-close:hover {
-    color: white;
-}
-
 /* Location: section and troop grouped under one heading */
 .FilterPanel-group {
     display: flex;

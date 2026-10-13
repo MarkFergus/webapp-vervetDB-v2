@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { fullName } from "./places";
-import { IconFilterOff, IconX } from "@tabler/icons-react";
+import { IconFilterOff } from "@tabler/icons-react";
 import { SECTIONS, inSection } from "./sections";
 import { lockScroll, unlockScroll } from "./useDialog";
 import "./FilterPanel.css";
+import CloseButton from "./CloseButton";
 
 // The choices in the Filters panel. Age categories (several can be picked)
 // use the 1 November birthday (see ages.js); monkeys with no birth year
@@ -160,9 +161,7 @@ function FilterPanel({ open, onClose, buttonRef, troops, careUnits = [], filters
             >
                 <div className="FilterPanel-header">
                     <h2>Filters</h2>
-                    <button type="button" className="FilterPanel-close" onClick={close} aria-label="Close filters">
-                        <IconX size={20} aria-hidden="true" />
-                    </button>
+                    <CloseButton className="FilterPanel-close" onClick={close} label="Close filters" />
                 </div>
 
                 <div className="FilterPanel-group">

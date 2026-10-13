@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
-    IconX,
     IconChevronLeft,
     IconChevronRight,
     IconMars,
@@ -37,6 +36,7 @@ import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useArrivalInfo from "./useArrivalInfo";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import "./Modal.css";
+import CloseButton from "./CloseButton";
 
 // Today as the date box wants it ("2026-10-11"), in the browser's own time
 const todayText = () => {
@@ -273,14 +273,7 @@ function Modal({
                     >
                         <div className="Modal-window">
                             <div className="Modal-close">
-                                <button
-                                    type="button"
-                                    ref={closeButtonRef}
-                                    onClick={handleClose}
-                                    aria-label="Close"
-                                >
-                                    <IconX size={22} stroke={2} aria-hidden="true" />
-                                </button>
+                                <CloseButton ref={closeButtonRef} onClick={handleClose} />
                             </div>
                             {/* Quick Actions (editors): an icon top left (opposite
                                 close) that drops down the quick actions; each one's
@@ -623,11 +616,20 @@ function Modal({
                                                 In Sickbay
                                             </li>
                                         )}
-                                        <li>
-                                            {monkey.sex === "male" && <IconMars size={15} stroke={2} aria-hidden="true" />}
-                                            {monkey.sex === "female" && <IconVenus size={15} stroke={2} aria-hidden="true" />}
-                                            {monkey.sex === "male" ? "Male" : monkey.sex === "female" ? "Female" : "Sex unknown"}
-                                        </li>
+                                        {/* Sex: just its symbol (the word is read out), so
+                                            the pills fit one line */}
+                                        {monkey.sex === "male" || monkey.sex === "female" ? (
+                                            <li className="is-sex" title={monkey.sex === "male" ? "Male" : "Female"}>
+                                                {monkey.sex === "male" ? (
+                                                    <IconMars size={17} stroke={2} aria-hidden="true" />
+                                                ) : (
+                                                    <IconVenus size={17} stroke={2} aria-hidden="true" />
+                                                )}
+                                                <span className="visually-hidden">{monkey.sex === "male" ? "Male" : "Female"}</span>
+                                            </li>
+                                        ) : (
+                                            <li>Sex unknown</li>
+                                        )}
                                         <li>{monkey.year ? `Born ${monkey.year}` : "Birth year unknown"}</li>
                                         {monkey.year && <li>{ageLabel(monkey.year)}</li>}
                                         <li>{monkey.chip === null ? "Chip Unknown" : monkey.chip ? `Chip ${monkey.chip}` : "No Chip"}</li>

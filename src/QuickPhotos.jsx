@@ -6,7 +6,6 @@ import {
     IconPhotoPlus,
     IconSearch,
     IconTrash,
-    IconX,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import PhotoCropper from "./PhotoCropper";
@@ -27,6 +26,7 @@ import {
 } from "./addPhotos";
 import "./MonkeyForm.css";
 import "./QuickPhotos.css";
+import CloseButton from "./CloseButton";
 
 // The most photos at a time (a batch after a photo round)
 export const MAX_BATCH = 20;
@@ -273,9 +273,7 @@ function QuickPhotos({ files, monkeys, current = null, place = null, recent = []
                     <h1 id="QuickPhotos-title" tabIndex={-1} ref={titleRef}>
                         {choosingItem ? "Who is this?" : allDone ? "Photos Added" : "Add Photos"}
                     </h1>
-                    <button type="button" className="MonkeyForm-close" onClick={requestClose} aria-label="Close" disabled={busy}>
-                        <IconX size={22} aria-hidden="true" />
-                    </button>
+                    <CloseButton className="MonkeyForm-close" onClick={requestClose} disabled={busy} />
                 </div>
 
                 {choosingItem ? (

@@ -60,28 +60,11 @@
 }
 
 .ModalPDF-close button {
+/* (its look: CloseButton.css) */
     position: absolute;
-    top: 0;
-    right: 0;
-    margin-top: 2px;
-    margin-right: 4px;
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    background-color: rgba(36, 36, 36, 0.6);
-    color: inherit;
-    cursor: pointer;
+    top: 4px;
+    right: 6px;
     z-index: 3;
-}
-
-.ModalPDF-close svg {
-    display: block;
-    width: 24px;
-    height: 24px;
-}
-
-.ModalPDF-close button:hover {
-    color: white;
 }
 
 .ModalPDF-content {

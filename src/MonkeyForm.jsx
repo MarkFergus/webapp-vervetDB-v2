@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { fullName } from "./places";
-import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
@@ -12,6 +11,7 @@ import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
 import "./MonkeyForm.css";
+import CloseButton from "./CloseButton";
 
 // Edit a monkey (monkey given) or add one (monkey null). Editors only.
 //   troops:   troop names to choose from (without "All Troops")
@@ -196,9 +196,7 @@ function MonkeyForm({
             >
                 <div className="MonkeyForm-header">
                     <h1 id="MonkeyForm-title">{title}</h1>
-                    <button type="button" className="MonkeyForm-close" onClick={requestClose} aria-label="Close">
-                        <IconSquareRoundedX />
-                    </button>
+                    <CloseButton className="MonkeyForm-close" onClick={requestClose} />
                 </div>
 
                 <div className="MonkeyForm-body">

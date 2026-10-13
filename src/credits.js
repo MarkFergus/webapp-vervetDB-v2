@@ -13,7 +13,6 @@ export const CREDITS = [
     { name: "Hanken Grotesk", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Hanken+Grotesk" },
     { name: "Bitter", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Bitter" },
     { name: "Saira", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Saira" },
-    { name: "Syne", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Syne" },
     { name: "Russo One", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Russo+One" },
     { name: "Open Sans", use: "Profile Book font", licence: "OFL", url: "https://fonts.google.com/specimen/Open+Sans" },
 ];

@@ -9,12 +9,12 @@ import {
     IconPhotoPlus,
     IconPlus,
     IconUsersGroup,
-    IconX,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import EnclosureIcon from "./EnclosureIcon";
 import Avatar from "./Avatar";
 import "./NavBars.css";
+import CloseButton from "./CloseButton";
 
 // The site's ways around, beside the top bar (Nav.jsx):
 //   SideRail   computers: down the left, YouTube-style. Small (icons with
@@ -245,9 +245,7 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOf
                     <span className="Drawer-brand">
                         vervet<span className="Nav-titleDB">DB</span>
                     </span>
-                    <button type="button" className="Drawer-close" onClick={onClose} ref={closeRef} aria-label="Close menu">
-                        <IconX stroke={2} size={22} />
-                    </button>
+                    <CloseButton className="Drawer-close" onClick={onClose} ref={closeRef} label="Close menu" />
                 </div>
                 {(onAddMonkey || onMap || showGame) && (
                     <div className="Drawer-group">

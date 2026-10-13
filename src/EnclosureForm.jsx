@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import PlaceName from "./PlaceName";
-import { IconSquareRoundedX } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { saveEnclosure } from "./monkeyData";
@@ -10,6 +9,7 @@ import { MAX_PHOTOS } from "./monkeyFormChecks";
 import PhotosField from "./PhotosField";
 import "./MonkeyForm.css";
 import "./EnclosureForm.css";
+import CloseButton from "./CloseButton";
 
 // Editing an enclosure's or introcage's details (editors only), in the same
 // window as the monkey form: Photos, About (enclosures), Features, Size and
@@ -146,9 +146,7 @@ function EnclosureForm({ enclosure, onClose, onSaved, noSize = false, noTroopDoo
             >
                 <div className="MonkeyForm-header">
                     <h1 id="EnclosureForm-title">Edit <PlaceName name={enclosure.name} /></h1>
-                    <button type="button" className="MonkeyForm-close" onClick={requestClose} aria-label="Close">
-                        <IconSquareRoundedX />
-                    </button>
+                    <CloseButton className="MonkeyForm-close" onClick={requestClose} />
                 </div>
 
                 <div className="MonkeyForm-body">

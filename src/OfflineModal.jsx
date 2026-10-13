@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IconCircleCheckFilled, IconDownload, IconSquareRoundedX } from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconDownload } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { installPlatform, useInstallApp } from "./installApp";
@@ -7,6 +7,7 @@ import { useAuth } from "./auth";
 import { aboutSize, downloadPhotos, offlineSupported, photoStatus } from "./offlinePhotos";
 import "./AboutModal.css";
 import "./OfflineModal.css";
+import CloseButton from "./CloseButton";
 
 // How to install, for browsers without an Install button
 const INSTALL_STEPS = {
@@ -96,9 +97,7 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                     >
                         <div className="AboutModal-window">
                             <div className="AboutModal-close">
-                                <button type="button" ref={closeRef} onClick={onClose} aria-label="Close">
-                                    <IconSquareRoundedX />
-                                </button>
+                                <CloseButton ref={closeRef} onClick={onClose} />
                             </div>
                             <div className="AboutModal-content OfflineModal">
                                 <h1 className="AboutModal-title" id="OfflineModal-title">
