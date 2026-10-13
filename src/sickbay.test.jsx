@@ -16,15 +16,25 @@ const MONKEY = {
 
 const open = (monkey, onSickbay) =>
     render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} onSickbay={onSickbay} />);
-const moreActions = () => userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
 
 describe("the pop-up's Sickbay button", () => {
+    test.each([
+        ["Sickbay Care Unit A", "Sickbay Care Unit"],
+        ["Quarantine A", "Quarantine"],
+        ["Baby Care A", "Baby Care"],
+    ])("isn't offered to a new arrival in a care unit (%s)", async (introcage, enclosure) => {
+        open({ ...MONKEY, introcage, introcageType: "area", enclosure }, vi.fn());
+        // (nothing else to do there, so no Quick Actions at all)
+        expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+    });
+
     test("Move to Sickbay asks the date (today) and a note, then saves", async () => {
         const onSickbay = vi.fn().mockResolvedValue();
         open(MONKEY, onSickbay);
-        // (folded away until More Actions is opened)
+        // (folded away until Quick Actions is opened)
         expect(screen.queryByRole("button", { name: "Move to Sickbay" })).not.toBeInTheDocument();
-        await moreActions();
+        await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Move to Sickbay" }));
         expect(screen.getByLabelText("Date Moved")).toBeInTheDocument();
         await userEvent.type(screen.getByLabelText("Note (optional)"), "leg wound");
@@ -41,21 +51,21 @@ describe("the pop-up's Sickbay button", () => {
         expect(screen.getByText("In Sickbay", { selector: "li" })).toBeInTheDocument();
         expect(screen.getByText("Since 11th Oct 2026 · leg wound")).toBeInTheDocument();
         expect(screen.getByText("Fed by Sickbay while in Sickbay")).toBeInTheDocument();
-        await moreActions();
+        await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
         await waitFor(() => expect(onSickbay).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), expect.objectContaining({ inSickbay: false })));
     });
 
     test("a troop monkey returns to its Troop", async () => {
         open({ ...MONKEY, introcage: null, introcageType: null, troop: "Goliath", feeding: undefined, inSickbay: true }, vi.fn());
-        await moreActions();
+        await quickActions();
         expect(screen.getByRole("button", { name: "Return to Troop" })).toBeInTheDocument();
     });
 
     test("a failed save says so", async () => {
         const onSickbay = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
         open({ ...MONKEY, inSickbay: true }, onSickbay);
-        await moreActions();
+        await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
     });
@@ -68,7 +78,7 @@ describe("the pop-up's Sickbay button", () => {
 
     test("no button for visitors (but the badge still shows)", () => {
         open({ ...MONKEY, inSickbay: true }, undefined);
-        expect(screen.queryByRole("button", { name: /More Actions|Sickbay|Return/ })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Quick Actions|Sickbay|Return/ })).not.toBeInTheDocument();
         expect(screen.getByText("In Sickbay", { selector: "li" })).toBeInTheDocument();
     });
 });
@@ -118,7 +128,7 @@ describe("Released (new rescues)", () => {
     test("Released asks the date (today) and release details, then Confirm", async () => {
         const onRelease = vi.fn().mockResolvedValue();
         openRelease(rescue, onRelease);
-        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
         await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         expect(screen.getByLabelText("Date Released")).toBeInTheDocument();
         await userEvent.type(screen.getByLabelText("Release Details"), "Back to the wild at Tzaneen");
@@ -133,7 +143,7 @@ describe("Released (new rescues)", () => {
     test("Cancel closes it without saving", async () => {
         const onRelease = vi.fn();
         openRelease(rescue, onRelease);
-        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
         await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(onRelease).not.toHaveBeenCalled();
@@ -143,7 +153,7 @@ describe("Released (new rescues)", () => {
     test("a failed save says so", async () => {
         const onRelease = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
         openRelease(rescue, onRelease);
-        await userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+        await userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
         await userEvent.click(screen.getByRole("button", { name: "Released to Wild" }));
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
@@ -151,6 +161,6 @@ describe("Released (new rescues)", () => {
 
     test("no Released button unless it's given (new rescues, editors)", () => {
         openRelease(rescue, undefined);
-        expect(screen.queryByRole("button", { name: "More Actions" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
     });
 });

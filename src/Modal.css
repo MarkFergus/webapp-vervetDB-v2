@@ -86,19 +86,29 @@
     z-index: 3;
 }
 
+/* A square button (8px corners), like Quick Actions opposite it */
 .Modal-close button {
     position: absolute;
-    top: 0;
-    right: 0;
-    margin-top: 2px;
-    margin-right: 4px;
-    padding: 2px;
+    top: 4px;
+    right: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     border: none;
     border-radius: 8px;
-    background-color: transparent;
-    color: inherit;
+    background-color: var(--surface-2);
+    color: var(--text);
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
     z-index: 3;
+}
+
+.Modal-close button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 /* Editors only: Edit, bottom-left under the details */
@@ -152,7 +162,7 @@
     background-color: white;
 }
 
-/* Photos, Share, Save image and the More Actions buttons: grey chips, so
+/* Photos, Share, Save image and the Quick Actions buttons: grey chips, so
    Edit and the photo keep the attention (is-quiet ones shrink to round
    icons on phones; is-soft keeps its label) */
 .Modal-edit.is-quiet,
@@ -199,14 +209,9 @@
     }
 }
 
-.Modal-close svg {
-    display: block;
-    width: 28px;
-    height: 28px;
-}
-
 .Modal-close button:hover {
     color: white;
+    background-color: var(--surface-3);
 }
 
 .Modal-header {
@@ -537,38 +542,97 @@
 }
 
 /* Sickbay: the button (or the little date + note form) under its text */
-/* More Actions: a quiet fold-away row of quick actions (editors) */
+/* Quick Actions (editors): a square icon button top left, opposite the close
+   button, that drops down a panel of quick actions over the photo */
+/* (across the whole pop-up, so the panel can be sized to it; only the
+   button and panel take taps) */
+.Modal-moreActions {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.Modal-moreActions > * {
+    pointer-events: auto;
+}
+
 .Modal-moreToggle {
     display: flex;
+    margin-left: 6px;
+    justify-content: center;
     align-items: center;
-    gap: 4px;
-    padding: 4px 0;
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-3);
-    background: none;
-    border: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: #f5b83d; /* the Sickbay amber, like the actions inside */
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px; /* like the action buttons in it */
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
 }
 
-.Modal-moreToggle:hover {
-    color: var(--text);
+.Modal-moreToggle:hover,
+.Modal-moreToggle[aria-expanded="true"] {
+    color: var(--bg);
+    background-color: #f5b83d;
 }
 
-.Modal-moreToggle svg {
-    transition: transform 0.2s;
+.Modal-moreToggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
-.Modal-moreToggle[aria-expanded="true"] svg {
-    transform: rotate(180deg);
-}
-
+/* The drop-down: the actions one per line (or one's little form) */
 .Modal-moreRow {
+    position: absolute;
+    top: 44px;
+    left: 6px; /* lined up with the button */
+    box-sizing: border-box;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
-    margin-top: 8px;
+    width: max-content; /* just the buttons */
+    max-height: calc(100dvh - var(--popup-top-tall) - 120px);
+    overflow-y: auto;
+    padding: 10px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    animation: Modal-moreDrop 0.15s ease-out;
+}
+
+.Modal-moreRow > .Modal-edit {
+    justify-content: flex-start;
+}
+
+/* A form open in it: 90% of the pop-up, for room to type */
+.Modal-moreRow.is-form {
+    width: 90%;
+}
+
+/* The forms' boxes: the panel's full width */
+.Modal-moreRow .Modal-sickbayForm input,
+.Modal-moreRow .Modal-sickbayForm textarea {
+    max-width: none;
+}
+
+@keyframes Modal-moreDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Modal-moreRow {
+        animation: none;
+    }
 }
 
 /* The Sickbay button: a grey chip with amber text, like the In Sickbay chip */
@@ -620,13 +684,6 @@
 .Modal-sickbayProblem {
     margin-top: 8px;
     color: var(--danger-2);
-}
-
-/* A faint line above More Actions, to set it apart from the monkey's details */
-.Modal-moreActions {
-    margin-top: 4px;
-    padding-top: 8px;
-    border-top: 1px solid var(--line);
 }
 
 /* Confirm: green, the "go" colour */

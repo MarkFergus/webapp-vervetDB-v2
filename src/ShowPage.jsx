@@ -708,7 +708,7 @@ function ShowPage({
                     }
                     onEdit={canEdit ? startEdit : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
-                    // More Actions (Sickbay, Released, + Report): admins only, for now.
+                    // Quick Actions (Sickbay, Released, Integration Report): admins only, for now.
                     // Integration Reports: staff (any role) see them
                     staff={
                         role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null

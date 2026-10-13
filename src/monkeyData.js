@@ -518,3 +518,85 @@ export async function deleteIntegration(id) {
     }
     if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it, can delete it.");
 }
+
+// ---- Injuries: a monkey's injuries (current and healed) ----
+
+// An injury, as the site uses it: { id, date ("2026-10-13"), description,
+// loggedBy (the writer's account id), loggedByName, loggedAt, healedOn
+// (null while it's current), healedByName }
+const toAppInjury = (row) => ({
+    id: row.id,
+    date: row.injury_date,
+    description: row.description,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+    loggedAt: row.logged_at,
+    healedOn: row.healed_on,
+    healedByName: row.healed_by_name,
+});
+const INJURY_COLUMNS =
+    "id, injury_date, description, logged_by, logged_by_name, logged_at, healed_on, healed_by_name";
+
+// A monkey's injuries (current and healed), newest first. Throws if the
+// database hasn't got them yet (injuries.sql) or can't be reached.
+export async function loadInjuries(monkeyId) {
+    const { data, error } = await supabase
+        .from("injuries")
+        .select(INJURY_COLUMNS)
+        .eq("monkey_id", monkeyId)
+        .order("injury_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw error;
+    return data.map(toAppInjury);
+}
+
+// Adds an injury ({ date, description }); who and when are filled in by the
+// database. Returns the saved injury.
+export async function addInjury(monkeyId, { date, description }) {
+    const { data, error } = await supabase
+        .from("injuries")
+        .insert({ monkey_id: monkeyId, injury_date: date, description })
+        .select(INJURY_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Adding an injury failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppInjury(data);
+}
+
+// Changes an injury's date or description (admins, or whoever added it)
+export async function saveInjury(id, { date, description }) {
+    const { data, error } = await supabase
+        .from("injuries")
+        .update({ injury_date: date, description })
+        .eq("id", id)
+        .select(INJURY_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Saving an injury failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppInjury(data);
+}
+
+// Healed (or back to current): today, in the name of whoever marks it
+export async function setInjuryHealed(id, healed) {
+    const { data, error } = await supabase.rpc("set_injury_healed", { injury_id: id, healed });
+    if (error) {
+        console.error("Marking an injury healed failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this.");
+    return toAppInjury(data[0]);
+}
+
+// Deletes an injury (admins, or whoever added it)
+export async function deleteInjury(id) {
+    const { data, error } = await supabase.from("injuries").delete().eq("id", id).select("id");
+    if (error) {
+        console.error("Deleting an injury failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
+}

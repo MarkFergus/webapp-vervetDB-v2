@@ -1,5 +1,5 @@
 /* Integration Reports: the form (From / To side by side, then the report)
-   and the fold-out list under More Actions */
+   and the fold-out list under Quick Actions */
 .Integration-form {
     display: flex;
     flex-direction: column;
@@ -63,6 +63,33 @@
     color: var(--danger-2);
 }
 
+/* The list's fold-out heading: "Integration Reports (3)", "Injuries (1)" */
+.Integration-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-3);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.Integration-toggle:hover {
+    color: var(--text);
+}
+
+.Integration-toggle svg {
+    transition: transform 0.2s;
+}
+
+.Integration-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
 /* The list: one entry per row, newest period first */
 .Integration-list {
     margin-top: 4px;
@@ -80,8 +107,8 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    padding: 8px 0 12px; /* (no lines between reports: the lines mark the page's sections) */
+    gap: 2px;
+    padding: 6px 0 10px; /* (no lines between reports: the lines mark the page's sections) */
 }
 
 .Integration-period {
@@ -118,8 +145,10 @@
 }
 
 .Integration-icons {
+    position: relative; /* for the confirm bubble (ConfirmBubble) */
     display: flex;
     gap: 2px;
+    margin: -4px 0; /* the icons don't make the line taller than its text */
 }
 
 .Integration-icon {
@@ -141,4 +170,65 @@
 
 .Integration-icon:hover {
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Injuries: two lines each. The date, description and buttons on one line;
+   who added it below. Closer together than the reports. */
+.Integration-list li.Injury {
+    gap: 0;
+    padding: 6px 0 8px;
+}
+
+.Injury-line {
+    display: flex;
+    align-items: baseline;
+    gap: 4px 10px;
+    width: 100%;
+}
+
+.Injury-date {
+    flex: none;
+    font-size: 14px;
+    color: white;
+    white-space: nowrap;
+}
+
+.Injury-text {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.Injury-tools {
+    position: relative; /* for the confirm bubble (ConfirmBubble) */
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    align-self: center;
+    margin: -4px 0; /* the buttons don't make the line taller than its text */
+}
+
+/* Healed? / Reopen: a small chip */
+.Modal-edit.Injury-healed {
+    height: 28px;
+    margin-right: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+/* Phones: the date above, the description and buttons under it */
+@media (max-width: 459px) {
+    .Injury-line {
+        flex-wrap: wrap;
+    }
+
+    .Injury-date {
+        width: 100%;
+    }
 }

@@ -184,9 +184,10 @@ function PlaceIcon({ enclosure, ...props }) {
 }
 
 // The enclosure's own photos (cards: the primary one, small), or until it
-// has some, up to four of its monkeys in a 2 × 2 grid, or if it's empty
+// has some, its introcages' photos (each one's primary, up to four in a
+// 2 × 2 grid), or failing those up to four of its monkeys, or if it's empty
 // its icon (the enclosure icon; an introcage: a cube)
-function Picture({ enclosure, monkeys, large = false }) {
+function Picture({ enclosure, introcages = [], monkeys, large = false }) {
     const className = `Enclosures-picture${large ? " is-large" : ""}`;
     if (enclosure.photos.length) {
         if (large) return <PhotoSlides key={enclosure.id} photos={enclosure.photos} name={enclosure.name} />;
@@ -202,8 +203,13 @@ function Picture({ enclosure, monkeys, large = false }) {
             </span>
         );
     }
-    const faces = monkeys.filter((m) => !isPlaceholderPhoto(m.img[0])).slice(0, 4);
-    if (!faces.length) {
+    const introcagePhotos = introcages.map((i) => i.photos?.[0]).filter(Boolean);
+    const photos = (
+        introcagePhotos.length
+            ? introcagePhotos
+            : monkeys.map((m) => m.img[0]).filter((url) => !isPlaceholderPhoto(url))
+    ).slice(0, 4);
+    if (!photos.length) {
         return (
             <span className={`${className} is-empty`}>
                 <PlaceIcon enclosure={enclosure} size={large ? 48 : 36} stroke={1.5} aria-hidden="true" />
@@ -211,15 +217,15 @@ function Picture({ enclosure, monkeys, large = false }) {
         );
     }
     return (
-        <span className={`${className} is-mosaic is-${faces.length}`}>
-            {faces.map((m) => (
+        <span className={`${className} is-mosaic is-${photos.length}`}>
+            {photos.map((url) => (
                 <img
-                    key={m.id ?? m.name}
-                    src={thumbUrl(m.img[0])}
+                    key={url}
+                    src={thumbUrl(url)}
                     alt=""
                     loading="lazy"
                     crossOrigin="anonymous"
-                    onError={fallbackTo(m.img[0])}
+                    onError={fallbackTo(url)}
                 />
             ))}
         </span>
@@ -407,7 +413,7 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
                                     <a href={enclosureHash(enclosure)} className="EnclosureCard-link">
                                         {/* The name on the picture's dark fade, as on the monkey cards */}
                                         <span className="EnclosureCard-image">
-                                            <Picture enclosure={enclosure} monkeys={living} />
+                                            <Picture enclosure={enclosure} introcages={inside} monkeys={living} />
                                             <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
                                         </span>
                                         <span className="EnclosureCard-meta">
@@ -578,7 +584,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                             </p>
                         )}
                     </div>
-                    <Picture enclosure={enclosure} monkeys={living} large />
+                    <Picture enclosure={enclosure} introcages={introcages} monkeys={living} large />
                     <div className="Enclosures-summary">
                         {/* The numbers, worked out from the monkeys (an
                             introcage's one number is in the details instead) */}

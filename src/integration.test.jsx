@@ -1,5 +1,5 @@
 // Integration Reports: staff reports on how a monkey's integration is
-// going, under More Actions on the pop-up
+// going, under Quick Actions on the pop-up
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
@@ -13,6 +13,7 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     addIntegration: vi.fn(),
     saveIntegration: vi.fn(),
     deleteIntegration: vi.fn(),
+    loadInjuries: vi.fn().mockResolvedValue([]),
 }));
 
 const MONKEY = {
@@ -30,7 +31,7 @@ const entry = (id, extra = {}) => ({
 
 const open = (staff) =>
     render(<Modal isModalOpen monkey={MONKEY} onClose={() => {}} handlePrevNext={() => {}} onSickbay={staff?.canAdd ? vi.fn() : undefined} staff={staff} />);
-const moreActions = () => userEvent.click(screen.getByRole("button", { name: "More Actions" }));
+const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
 const listToggle = () => screen.findByRole("button", { name: /^Integration Reports/ });
 
 beforeEach(() => {
@@ -46,12 +47,30 @@ test("the period reads like a date range", () => {
 });
 
 describe("adding", () => {
+    test("isn't offered for a new arrival (integration starts after its move to a troop enclosure)", async () => {
+        render(
+            <Modal
+                isModalOpen
+                monkey={{ ...MONKEY, troop: null, introcage: "Quarantine A", introcageType: "area", enclosure: "Quarantine" }}
+                onClose={() => {}}
+                handlePrevNext={() => {}}
+                onSickbay={vi.fn()}
+                staff={ADMIN}
+            />
+        );
+        // (nor Move to Sickbay: New Injury is still there)
+        await userEvent.click(await screen.findByRole("button", { name: "Quick Actions" }));
+        expect(screen.getByRole("button", { name: "New Injury" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Move to Sickbay" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Integration Report" })).not.toBeInTheDocument();
+    });
+
     test("+ Integration Report opens From and To side by side, a text box, Confirm and Cancel", async () => {
         const created = entry(1, { from: "2026-10-04", to: "2026-10-11", report: "Settling in well", loggedBy: "u-editor" });
         addIntegration.mockResolvedValue(created);
         open(EDITOR);
-        await moreActions();
-        await userEvent.click(await screen.findByRole("button", { name: "+ Integration Report" }));
+        await quickActions();
+        await userEvent.click(await screen.findByRole("button", { name: "Integration Report" }));
         expect(screen.getByLabelText("From")).toBeInTheDocument();
         expect(screen.getByLabelText("To")).toBeInTheDocument();
         const box = screen.getByLabelText("Integration Report");
@@ -69,8 +88,8 @@ describe("adding", () => {
 
     test("Cancel closes it without saving", async () => {
         open(EDITOR);
-        await moreActions();
-        await userEvent.click(await screen.findByRole("button", { name: "+ Integration Report" }));
+        await quickActions();
+        await userEvent.click(await screen.findByRole("button", { name: "Integration Report" }));
         await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(screen.queryByLabelText("Integration Report")).not.toBeInTheDocument();
         expect(addIntegration).not.toHaveBeenCalled();
@@ -78,8 +97,8 @@ describe("adding", () => {
 
     test("it needs a report, and To can't be before From", async () => {
         open(EDITOR);
-        await moreActions();
-        await userEvent.click(await screen.findByRole("button", { name: "+ Integration Report" }));
+        await quickActions();
+        await userEvent.click(await screen.findByRole("button", { name: "Integration Report" }));
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Please write the report.");
         fireEvent.change(screen.getByLabelText("From"), { target: { value: "2026-10-09" } });
@@ -93,8 +112,8 @@ describe("adding", () => {
     test("a failed save says so and keeps what was typed", async () => {
         addIntegration.mockRejectedValue(new Error("Couldn't save right now."));
         open(EDITOR);
-        await moreActions();
-        await userEvent.click(await screen.findByRole("button", { name: "+ Integration Report" }));
+        await quickActions();
+        await userEvent.click(await screen.findByRole("button", { name: "Integration Report" }));
         await userEvent.type(screen.getByLabelText("Integration Report"), "Keep me");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
@@ -103,7 +122,7 @@ describe("adding", () => {
 });
 
 describe("the list", () => {
-    test("shows the entries to staff, folded out under More Actions", async () => {
+    test("shows the entries to staff, folded out under Quick Actions", async () => {
         loadIntegration.mockResolvedValue([entry(2, { report: "Newer" }), entry(1, { report: "Older" })]);
         open(EDITOR);
         const toggle = await listToggle();
@@ -122,7 +141,7 @@ describe("the list", () => {
 
     test("hidden until there is at least one report", async () => {
         open(EDITOR);
-        await moreActions();
+        await quickActions();
         await waitFor(() => expect(loadIntegration).toHaveBeenCalled());
         expect(screen.queryByRole("button", { name: /^Integration Reports/ })).not.toBeInTheDocument();
     });
@@ -132,7 +151,7 @@ describe("the list", () => {
         open(MAINTENANCE);
         await userEvent.click(await listToggle());
         expect(screen.getByText("Report 1")).toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "More Actions" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
     });
@@ -140,9 +159,9 @@ describe("the list", () => {
     test("nothing shows before integration-reports.sql has run (or offline)", async () => {
         loadIntegration.mockRejectedValue({ code: "42P01" });
         open(EDITOR);
-        await moreActions();
+        await quickActions();
         await waitFor(() => expect(loadIntegration).toHaveBeenCalled());
-        expect(screen.queryByRole("button", { name: "+ Integration Report" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Integration Report" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: /^Integration Reports/ })).not.toBeInTheDocument();
     });
 

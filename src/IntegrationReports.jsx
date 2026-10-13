@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
 import { addIntegration, deleteIntegration, loadIntegration, saveIntegration } from "./monkeyData";
 import { summaryDate } from "./feeding";
+import ConfirmBubble from "./ConfirmBubble";
 import "./IntegrationReports.css";
 
 // Integration Reports: staff reports on how a monkey's integration is going
-// (usually weekly). Shown on the monkey's pop-up, under More Actions, for
+// (usually weekly). Shown on the monkey's pop-up, under Quick Actions, for
 // staff only; editors and admins add them, admins or whoever wrote one can
 // change or delete it. (supabase/integration-reports.sql)
 
@@ -141,28 +142,33 @@ export function IntegrationForm({ initial, onSave, onCancel }) {
     );
 }
 
-// The fold-out list under More Actions: "Integration Reports (3)"
+// The fold-out list under Quick Actions: "Integration Reports (3)"
 export function IntegrationList({ integration, open, onToggle }) {
     const [editing, setEditing] = useState(null); // an entry id
     const [deleting, setDeleting] = useState(null); // an entry id, to confirm
     const [problem, setProblem] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const cancelDelete = useCallback(() => setDeleting(null), []);
     const { entries } = integration;
     // Hidden until there is at least one report
     if (!integration.available || entries.length === 0) return null;
 
     async function remove(id) {
+        setBusy(true);
         setProblem(null);
         try {
             await integration.remove(id);
             setDeleting(null);
         } catch (err) {
             setProblem(err.message);
+        } finally {
+            setBusy(false);
         }
     }
 
     return (
         <section className="Integration-list">
-            <button type="button" className="Modal-moreToggle" aria-expanded={open} onClick={onToggle}>
+            <button type="button" className="Integration-toggle" aria-expanded={open} onClick={onToggle}>
                 Integration Reports ({entries.length})
                 <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
             </button>
@@ -182,10 +188,11 @@ export function IntegrationList({ integration, open, onToggle }) {
                             ) : (
                                 <>
                                     {/* The dates on the left; small Edit / Delete icons on
-                                        the right (admins, or whoever wrote it) */}
+                                        the right (admins, or whoever wrote it). Delete asks
+                                        in a small bubble above them. */}
                                     <div className="Integration-head">
                                         <b className="Integration-period">{periodText(entry.from, entry.to)}</b>
-                                        {integration.canChange(entry) && deleting !== entry.id && (
+                                        {integration.canChange(entry) && (
                                             <span className="Integration-icons">
                                                 <button
                                                     type="button"
@@ -205,6 +212,14 @@ export function IntegrationList({ integration, open, onToggle }) {
                                                 >
                                                     <IconTrash size={17} aria-hidden="true" />
                                                 </button>
+                                                {deleting === entry.id && (
+                                                    <ConfirmBubble
+                                                        question="Delete this report?"
+                                                        busy={busy}
+                                                        onConfirm={() => remove(entry.id)}
+                                                        onCancel={cancelDelete}
+                                                    />
+                                                )}
                                             </span>
                                         )}
                                     </div>
@@ -212,17 +227,6 @@ export function IntegrationList({ integration, open, onToggle }) {
                                     <span className="Integration-by">
                                         Added by {entry.loggedByName ?? "Staff"} on {summaryDate(new Date(entry.loggedAt))}
                                     </span>
-                                    {deleting === entry.id && (
-                                        <span className="Integration-actions">
-                                            <span>Delete this report?</span>
-                                            <button type="button" className="Modal-edit is-confirm" onClick={() => remove(entry.id)}>
-                                                Confirm
-                                            </button>
-                                            <button type="button" className="Modal-edit is-quiet" onClick={() => setDeleting(null)}>
-                                                Cancel
-                                            </button>
-                                        </span>
-                                    )}
                                 </>
                             )}
                         </li>

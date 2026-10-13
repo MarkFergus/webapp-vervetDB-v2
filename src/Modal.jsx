@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
-    IconSquareRoundedX,
+    IconX,
     IconChevronLeft,
     IconChevronRight,
     IconMars,
@@ -12,10 +12,13 @@ import {
     IconCameraPlus,
     IconPhotoPlus,
     IconFirstAidKit,
+    IconAmbulance,
+    IconReportMedical,
     IconDoorExit,
     IconTrees,
     IconSparkles,
-    IconChevronDown,
+    IconBolt,
+    IconClipboardText,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -30,6 +33,7 @@ import useSwipe from "./useSwipe";
 import { placeLabel } from "./places";
 import { isNewArrival } from "./enclosures";
 import { IntegrationForm, IntegrationList, newReportDates, useIntegration } from "./IntegrationReports";
+import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useArrivalInfo from "./useArrivalInfo";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import "./Modal.css";
@@ -77,6 +81,7 @@ function Modal({
     }, [monkey?.id]);
     // Move to Sickbay: the little form (date and note) while it's open
     const [moreOpen, setMoreOpen] = useState(false);
+    const moreRef = useRef(null);
     const [sickbayForm, setSickbayForm] = useState(null);
     const [sickbayBusy, setSickbayBusy] = useState(false);
     const [sickbayProblem, setSickbayProblem] = useState(null);
@@ -93,6 +98,10 @@ function Modal({
     const integration = useIntegration(monkey?.id, staff);
     const [integrationForm, setIntegrationForm] = useState(false);
     const [listOpen, setListOpen] = useState(false);
+    // Injuries: New Injury's form, and the current list's fold
+    const injuries = useInjuries(monkey?.id, staff);
+    const [injuryForm, setInjuryForm] = useState(false);
+    const [injuriesOpen, setInjuriesOpen] = useState(true);
 
     // Saves straight away; the pop-up stays open, now with the new state
     async function changeSickbay(inSickbay) {
@@ -120,12 +129,31 @@ function Modal({
             setReleaseBusy(false);
         }
     }
+    // Move to Sickbay: not for new arrivals (anyone in a care unit: a move
+    // there is a change of location, not a stay in Sickbay). Return still
+    // shows if one is somehow marked In Sickbay.
+    const canSickbay = Boolean(onSickbay && monkey && (monkey.inSickbay || !isNewArrival(monkey)));
+    // + Integration Report: not for new arrivals (they move to a troop
+    // enclosure before integration starts)
+    const canReport = Boolean(integration.canAdd && monkey && !isNewArrival(monkey));
+    // A tap outside Quick Actions closes it, unless one of its forms is open
+    // (so a half-filled form isn't lost)
+    const formOpen = Boolean(sickbayForm || releaseForm || integrationForm || injuryForm);
+    useEffect(() => {
+        if (!moreOpen || formOpen) return;
+        function handlePointerDown(event) {
+            if (!moreRef.current?.contains(event.target)) setMoreOpen(false);
+        }
+        document.addEventListener("pointerdown", handlePointerDown);
+        return () => document.removeEventListener("pointerdown", handlePointerDown);
+    }, [moreOpen, formOpen]);
     function resetSickbay() {
         setReleaseForm(null);
         setReleaseProblem(null);
         setMoreOpen(false);
         setIntegrationForm(false);
         setListOpen(false);
+        setInjuryForm(false);
         setSickbayForm(null);
         setSickbayProblem(null);
     }
@@ -251,9 +279,210 @@ function Modal({
                                     onClick={handleClose}
                                     aria-label="Close"
                                 >
-                                    <IconSquareRoundedX />
+                                    <IconX size={22} stroke={2} aria-hidden="true" />
                                 </button>
                             </div>
+                            {/* Quick Actions (editors): an icon top left (opposite
+                                close) that drops down the quick actions; each one's
+                                little form opens in the same drop-down */}
+                            {(canSickbay || onRelease || canReport || injuries.canAdd) && (
+                                <div className="Modal-moreActions" ref={moreRef}>
+                                    <button
+                                        type="button"
+                                        className="Modal-moreToggle"
+                                        aria-expanded={moreOpen}
+                                        aria-label="Quick Actions"
+                                        title="Quick Actions"
+                                        onClick={() => (moreOpen ? resetSickbay() : setMoreOpen(true))}
+                                    >
+                                        <IconBolt size={22} stroke={2} aria-hidden="true" />
+                                    </button>
+                                    {moreOpen && (
+                                        <div className={`Modal-moreRow${formOpen ? " is-form" : ""}`}>
+                                            {canSickbay && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    disabled={sickbayBusy}
+                                                    onClick={() =>
+                                                        monkey.inSickbay
+                                                            ? changeSickbay(false)
+                                                            : setSickbayForm({ since: todayText(), note: "" })
+                                                    }
+                                                >
+                                                    {/* (the door when returning, the ambulance when moving in) */}
+                                                    {monkey.inSickbay ? (
+                                                        <IconDoorExit size={18} aria-hidden="true" />
+                                                    ) : (
+                                                        <IconAmbulance size={18} aria-hidden="true" />
+                                                    )}
+                                                    {sickbayBusy
+                                                        ? "Saving…"
+                                                        : monkey.inSickbay
+                                                          ? `Return to ${homeWord(monkey)}`
+                                                          : "Move to Sickbay"}
+                                                </button>
+                                            )}
+                                            {onRelease && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    onClick={() => setReleaseForm({ date: todayText(), details: "" })}
+                                                >
+                                                    <IconTrees size={18} aria-hidden="true" />
+                                                    Released to Wild
+                                                </button>
+                                            )}
+                                            {injuries.canAdd && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    onClick={() => setInjuryForm(true)}
+                                                >
+                                                    <IconReportMedical size={18} aria-hidden="true" />
+                                                    New Injury
+                                                </button>
+                                            )}
+                                            {canReport && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    onClick={() => setIntegrationForm(true)}
+                                                >
+                                                    <IconClipboardText size={18} aria-hidden="true" />
+                                                    Integration Report
+                                                </button>
+                                            )}
+                                            {injuryForm && (
+                                                <InjuryForm
+                                                    initial={{ date: todayText(), description: "" }}
+                                                    max={todayText()}
+                                                    onSave={async (values) => {
+                                                        await injuries.add(values);
+                                                        setInjuryForm(false);
+                                                        setMoreOpen(false);
+                                                        setInjuriesOpen(true);
+                                                    }}
+                                                    onCancel={() => {
+                                                        setInjuryForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                />
+                                            )}
+                                            {integrationForm && (
+                                                <IntegrationForm
+                                                    initial={{ ...newReportDates(), report: "" }}
+                                                    onSave={async (values) => {
+                                                        await integration.add(values);
+                                                        setIntegrationForm(false);
+                                                        setMoreOpen(false);
+                                                        setListOpen(true);
+                                                    }}
+                                                    onCancel={() => {
+                                                        setIntegrationForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                />
+                                            )}
+                                            {releaseForm && (
+                                                <div className="Modal-sickbayForm">
+                                                    <label>
+                                                        <span>Date Released</span>
+                                                        <input
+                                                            type="date"
+                                                            value={releaseForm.date}
+                                                            max={todayText()}
+                                                            onChange={(e) => setReleaseForm({ ...releaseForm, date: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <label>
+                                                        <span>Release Details</span>
+                                                        <textarea
+                                                            rows={4}
+                                                            value={releaseForm.details}
+                                                            maxLength={500}
+                                                            placeholder="Where and how they were released"
+                                                            onChange={(e) => setReleaseForm({ ...releaseForm, details: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <p className="Modal-releaseNote">
+                                                        {monkey.name} will no longer appear in the app. Their record stays on file.
+                                                    </p>
+                                                    {releaseProblem && (
+                                                        <p className="Modal-sickbayProblem" role="alert">
+                                                            {releaseProblem}
+                                                        </p>
+                                                    )}
+                                                    <div className="Modal-sickbayActions">
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-confirm"
+                                                            disabled={releaseBusy || !releaseForm.date}
+                                                            onClick={confirmRelease}
+                                                        >
+                                                            {releaseBusy ? "Saving…" : "Confirm"}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-quiet"
+                                                            disabled={releaseBusy}
+                                                            onClick={resetSickbay}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {sickbayForm && (
+                                                <div className="Modal-sickbayForm">
+                                                    <label>
+                                                        <span>Date Moved</span>
+                                                        <input
+                                                            type="date"
+                                                            value={sickbayForm.since}
+                                                            max={todayText()}
+                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <label>
+                                                        <span>Note (optional)</span>
+                                                        <input
+                                                            type="text"
+                                                            value={sickbayForm.note}
+                                                            maxLength={200}
+                                                            placeholder="e.g. leg wound"
+                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <div className="Modal-sickbayActions">
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-confirm"
+                                                            disabled={sickbayBusy}
+                                                            onClick={() => changeSickbay(true)}
+                                                        >
+                                                            {sickbayBusy ? "Saving…" : "Confirm"}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="Modal-edit is-quiet"
+                                                            disabled={sickbayBusy}
+                                                            onClick={resetSickbay}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {sickbayProblem && (
+                                                <p className="Modal-sickbayProblem" role="alert">
+                                                    {sickbayProblem}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <motion.div className="Modal-content">
                                 {/* Name between quiet round previous / next buttons
                                     (kept in place, just hidden, at either end of
@@ -453,179 +682,14 @@ function Modal({
                                             </p>
                                         </section>
                                     )}
-                                    {/* More Actions (editors): quick actions that aren't
-                                        needed often, folded away. Under it (staff): the
-                                        Integration Reports list. */}
-                                    {(onSickbay || onRelease || integration.canAdd) && (
-                                        <section className="Modal-moreActions">
-                                            <button
-                                                type="button"
-                                                className="Modal-moreToggle"
-                                                aria-expanded={moreOpen}
-                                                onClick={() => setMoreOpen((open) => !open)}
-                                            >
-                                                More Actions
-                                                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
-                                            </button>
-                                            {moreOpen && (
-                                                <div className="Modal-moreRow">
-                                                    {onSickbay && !sickbayForm && !integrationForm && !releaseForm && (
-                                                        <button
-                                                            type="button"
-                                                            className="Modal-edit is-sickbay"
-                                                            disabled={sickbayBusy}
-                                                            onClick={() =>
-                                                                monkey.inSickbay
-                                                                    ? changeSickbay(false)
-                                                                    : setSickbayForm({ since: todayText(), note: "" })
-                                                            }
-                                                        >
-                                                            {/* (the door when returning, the first-aid kit when moving in) */}
-                                                            {monkey.inSickbay ? (
-                                                                <IconDoorExit size={18} aria-hidden="true" />
-                                                            ) : (
-                                                                <IconFirstAidKit size={18} aria-hidden="true" />
-                                                            )}
-                                                            {sickbayBusy
-                                                                ? "Saving…"
-                                                                : monkey.inSickbay
-                                                                  ? `Return to ${homeWord(monkey)}`
-                                                                  : "Move to Sickbay"}
-                                                        </button>
-                                                    )}
-                                                    {onRelease && !sickbayForm && !integrationForm && !releaseForm && (
-                                                        <button
-                                                            type="button"
-                                                            className="Modal-edit is-sickbay"
-                                                            onClick={() => setReleaseForm({ date: todayText(), details: "" })}
-                                                        >
-                                                            <IconTrees size={18} aria-hidden="true" />
-                                                            Released to Wild
-                                                        </button>
-                                                    )}
-                                                    {integration.canAdd && !sickbayForm && !integrationForm && !releaseForm && (
-                                                        <button
-                                                            type="button"
-                                                            className="Modal-edit is-sickbay"
-                                                            onClick={() => setIntegrationForm(true)}
-                                                        >
-                                                            + Integration Report
-                                                        </button>
-                                                    )}
-                                                    {integrationForm && (
-                                                        <IntegrationForm
-                                                            initial={{ ...newReportDates(), report: "" }}
-                                                            onSave={async (values) => {
-                                                                await integration.add(values);
-                                                                setIntegrationForm(false);
-                                                                setMoreOpen(false);
-                                                                setListOpen(true);
-                                                            }}
-                                                            onCancel={() => {
-                                                                setIntegrationForm(false);
-                                                                setMoreOpen(false);
-                                                            }}
-                                                        />
-                                                    )}
-                                                    {releaseForm && (
-                                                        <div className="Modal-sickbayForm">
-                                                            <label>
-                                                                <span>Date Released</span>
-                                                                <input
-                                                                    type="date"
-                                                                    value={releaseForm.date}
-                                                                    max={todayText()}
-                                                                    onChange={(e) => setReleaseForm({ ...releaseForm, date: e.target.value })}
-                                                                />
-                                                            </label>
-                                                            <label>
-                                                                <span>Release Details</span>
-                                                                <textarea
-                                                                    rows={4}
-                                                                    value={releaseForm.details}
-                                                                    maxLength={500}
-                                                                    placeholder="Where and how they were released"
-                                                                    onChange={(e) => setReleaseForm({ ...releaseForm, details: e.target.value })}
-                                                                />
-                                                            </label>
-                                                            <p className="Modal-releaseNote">
-                                                                {monkey.name} will no longer appear in the app. Their record stays on file.
-                                                            </p>
-                                                            {releaseProblem && (
-                                                                <p className="Modal-sickbayProblem" role="alert">
-                                                                    {releaseProblem}
-                                                                </p>
-                                                            )}
-                                                            <div className="Modal-sickbayActions">
-                                                                <button
-                                                                    type="button"
-                                                                    className="Modal-edit is-confirm"
-                                                                    disabled={releaseBusy || !releaseForm.date}
-                                                                    onClick={confirmRelease}
-                                                                >
-                                                                    {releaseBusy ? "Saving…" : "Confirm"}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="Modal-edit is-quiet"
-                                                                    disabled={releaseBusy}
-                                                                    onClick={resetSickbay}
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {sickbayForm && (
-                                                        <div className="Modal-sickbayForm">
-                                                            <label>
-                                                                <span>Date Moved</span>
-                                                                <input
-                                                                    type="date"
-                                                                    value={sickbayForm.since}
-                                                                    max={todayText()}
-                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
-                                                                />
-                                                            </label>
-                                                            <label>
-                                                                <span>Note (optional)</span>
-                                                                <input
-                                                                    type="text"
-                                                                    value={sickbayForm.note}
-                                                                    maxLength={200}
-                                                                    placeholder="e.g. leg wound"
-                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
-                                                                />
-                                                            </label>
-                                                            <div className="Modal-sickbayActions">
-                                                                <button
-                                                                    type="button"
-                                                                    className="Modal-edit is-confirm"
-                                                                    disabled={sickbayBusy}
-                                                                    onClick={() => changeSickbay(true)}
-                                                                >
-                                                                    {sickbayBusy ? "Saving…" : "Confirm"}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="Modal-edit is-quiet"
-                                                                    disabled={sickbayBusy}
-                                                                    onClick={resetSickbay}
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {sickbayProblem && (
-                                                <p className="Modal-sickbayProblem" role="alert">
-                                                    {sickbayProblem}
-                                                </p>
-                                            )}
-                                        </section>
-                                    )}
+                                    {/* Injuries (staff): current, then Injury History
+                                        (only once there's been one) */}
+                                    <InjuriesSection
+                                        injuries={injuries}
+                                        open={injuriesOpen}
+                                        onToggle={() => setInjuriesOpen((open) => !open)}
+                                        today={todayText()}
+                                    />
                                     {/* (its own section, with its own line above: only
                                         once there's a report) */}
                                     <IntegrationList
