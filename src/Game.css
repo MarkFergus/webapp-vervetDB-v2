@@ -33,8 +33,8 @@
 }
 
 .Game-title {
-    font-family: "Russo One", sans-serif;
-    font-weight: normal;
+    font-family: var(--font-logo);
+    font-weight: 800;
     text-align: center;
     font-size: 28px;
     margin: 10px 0 12px; /* (just under the site's top bar) */
@@ -244,7 +244,8 @@
 
 .Game-setup-start {
     padding: 14px;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 24px;
     color: var(--bg);
     background-color: var(--level);
@@ -347,7 +348,8 @@
 }
 
 .Game-timer-value {
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 28px;
     color: var(--level);
 }
@@ -409,7 +411,8 @@
 }
 
 .Game-score-value {
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 36px;
 }
 
@@ -421,7 +424,8 @@
 }
 
 .Game-score-total {
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 18px;
     color: var(--text-3);
 }
@@ -566,7 +570,8 @@
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 16px 44px;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 28px;
     color: var(--bg);
     background-color: var(--level);
@@ -817,7 +822,8 @@
 }
 
 .Game-end-message {
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 34px;
     line-height: 1.15;
     color: var(--level);
@@ -831,8 +837,8 @@
     align-items: baseline;
     gap: 8px;
     margin: 0;
-    font-family: "Russo One", sans-serif;
-    font-weight: normal;
+    font-family: var(--font-logo);
+    font-weight: 800;
 }
 
 .Game-end-score-value {

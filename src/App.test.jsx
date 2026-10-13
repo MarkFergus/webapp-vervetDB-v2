@@ -14,11 +14,11 @@ test("shows 'Loading monkeys…' until the data arrives", async () => {
 
 test("renders the vervetDB title and logo", async () => {
     render(<App />);
-    await screen.findByRole("link", { name: "vervetDB home" });
-    expect(screen.getByText("vervetDB")).toBeInTheDocument();
-    // The logo and name together are a link back home
-    const home = screen.getByRole("link", { name: "vervetDB home" });
-    expect(home.querySelector("svg")).not.toBeNull();
+    // The name ("DB" in its own colour) is a link back home
+    const home = await screen.findByRole("link", { name: "vervetDB home" });
+    expect(home).toHaveTextContent("vervetDB");
+    // The monkey logo sits in the search bar, in place of a magnifying glass
+    expect(document.querySelector(".Nav-searchbar .Nav-iconSearch svg")).not.toBeNull();
 });
 
 test("shows the first page of monkey cards", async () => {

@@ -38,9 +38,9 @@
 
 .FilterPanel-header h2 {
     margin: 0;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 18px;
-    font-weight: normal;
     color: var(--text);
 }
 
@@ -69,7 +69,8 @@
 }
 
 .FilterPanel-groupTitle {
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 14px;
     color: var(--text);
 }

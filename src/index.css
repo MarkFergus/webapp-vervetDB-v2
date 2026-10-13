@@ -31,8 +31,9 @@
     --pink-2: #ff6dbb;
     --danger: #ff4e45;
     --danger-2: #ff8a80;
-    --font-ui: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-display: "Russo One", var(--font-ui); /* names and the wordmark */
+    --font-ui: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Bitter", Georgia, serif; /* monkey and place names, headings */
+    --font-logo: "Saira", var(--font-ui); /* the vervetDB wordmark, the game's big type */
 
     font-family: var(--font-ui);
     /* The site is dark only: scrollbars, dropdown menus and form boxes

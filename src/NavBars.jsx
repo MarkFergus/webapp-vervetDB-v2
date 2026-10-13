@@ -12,7 +12,6 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
-import MonkeyIcon from "./MonkeyIcon";
 import EnclosureIcon from "./EnclosureIcon";
 import Avatar from "./Avatar";
 import "./NavBars.css";
@@ -244,8 +243,7 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOf
             <div className="Drawer-panel">
                 <div className="Drawer-header">
                     <span className="Drawer-brand">
-                        <MonkeyIcon color="currentColor" aria-hidden="true" role={undefined} aria-label={undefined} />
-                        vervetDB
+                        vervet<span className="Nav-titleDB">DB</span>
                     </span>
                     <button type="button" className="Drawer-close" onClick={onClose} ref={closeRef} aria-label="Close menu">
                         <IconX stroke={2} size={22} />

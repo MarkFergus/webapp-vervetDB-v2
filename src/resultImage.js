@@ -84,7 +84,7 @@ export async function drawResultImage({
     ctx.stroke();
 
     // Logo and name
-    ctx.font = `64px ${TITLE_FONT}`;
+    ctx.font = `800 64px ${TITLE_FONT}`;
     const brand = "vervetDB";
     const brandWidth = ctx.measureText(brand).width;
     const logoWidth = 76;
@@ -99,7 +99,7 @@ export async function drawResultImage({
     ctx.textAlign = "left";
     ctx.fillText(brand, brandLeft + logoWidth + 18, 186);
     ctx.textAlign = "center";
-    ctx.font = `36px ${TITLE_FONT}`;
+    ctx.font = `800 36px ${TITLE_FONT}`;
     ctx.fillStyle = "#b6b2a5";
     ctx.fillText("Monkey Guesser", SIZE / 2, 250);
 
@@ -114,7 +114,7 @@ export async function drawResultImage({
     ctx.fillText(badge, SIZE / 2, 292 + badgeSize + 7);
 
     // Headline, in the level's colour
-    fitFont(ctx, message, { size: 76, family: TITLE_FONT, maxWidth: 860 });
+    fitFont(ctx, message, { size: 76, weight: "800", family: TITLE_FONT, maxWidth: 860 });
     ctx.save();
     ctx.shadowColor = level;
     ctx.shadowBlur = 24;
@@ -123,18 +123,18 @@ export async function drawResultImage({
     ctx.restore();
 
     // Big score: "9 / 10"
-    ctx.font = `180px ${TITLE_FONT}`;
+    ctx.font = `800 180px ${TITLE_FONT}`;
     const scoreText = String(score);
     const scoreWidth = ctx.measureText(scoreText).width;
-    ctx.font = `72px ${TITLE_FONT}`;
+    ctx.font = `800 72px ${TITLE_FONT}`;
     const outOfText = `/ ${outOf}`;
     const outOfWidth = ctx.measureText(outOfText).width;
     const scoreLeft = (SIZE - (scoreWidth + 20 + outOfWidth)) / 2;
     ctx.textAlign = "left";
-    ctx.font = `180px ${TITLE_FONT}`;
+    ctx.font = `800 180px ${TITLE_FONT}`;
     ctx.fillStyle = "white";
     ctx.fillText(scoreText, scoreLeft, 640);
-    ctx.font = `72px ${TITLE_FONT}`;
+    ctx.font = `800 72px ${TITLE_FONT}`;
     ctx.fillStyle = "#8a877e";
     ctx.fillText(outOfText, scoreLeft + scoreWidth + 20, 640);
     ctx.textAlign = "center";

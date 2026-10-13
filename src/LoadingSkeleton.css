@@ -48,7 +48,8 @@
 .LoadingSkeleton-title {
     display: none;
     margin-left: 6px;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 24px;
     line-height: 1;
     color: var(--text);

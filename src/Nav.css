@@ -27,26 +27,33 @@
     outline-offset: 4px;
 }
 
-/* The monkey, about 70% of the search bar's height (like YouTube's), in
-   neon blue like the app icon */
-.Nav-icon {
-    display: flex;
+/* "vervetDB" (computers only), "DB" in the accent blue */
+.Nav-title {
+    display: none;
+    font-family: var(--font-logo);
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.Nav-titleDB {
     color: var(--accent);
 }
 
-.Nav-icon svg {
-    display: block;
-    width: 30px;
-    height: 28px;
-    margin-right: 6px;
+/* Phones: no logo link here (the monkey is in the search bar, and Monkeys
+   in the bottom bar goes home) */
+.Nav-start {
+    display: none;
 }
 
-/* "vervetDB" (computers only) */
-.Nav-title {
-    display: none;
-    font-family: "Russo One", sans-serif;
-    font-size: 24px;
-    line-height: 1;
+/* ...except on a page with no search bar (the game): the name instead */
+.Nav.is-noSearch .Nav-start {
+    display: flex;
+    align-items: center;
+}
+
+.Nav.is-noSearch .Nav-title {
+    display: block;
 }
 
 /* ---- Search: a softly filled pill, like YouTube's ---- */
@@ -101,8 +108,16 @@
     border: none;
 }
 
+/* The monkey logo where a magnifying glass would be, in its blue */
 .Nav-iconSearch {
-    padding: 0 8px;
+    padding: 0 6px 0 8px;
+    color: var(--accent);
+}
+
+.Nav-iconSearch svg {
+    display: block;
+    width: 24px;
+    height: 22px;
 }
 
 .Nav-iconX {
@@ -236,11 +251,7 @@
 /* ---- The menu buttons: ☰ on the left (computers: the side rail) or on
    the right (phones: the drawer) ---- */
 
-.Nav-start {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+
 
 .Nav-railButton,
 .Nav-menuButton {
@@ -274,8 +285,8 @@
 
 /* Three columns, so the search bar sits in the middle of the page (not just
    the middle of the space between logo and buttons). The search bar grows
-   first (up to 540px), then the sides share what's left. Like Reddit's, the
-   "vervetDB" name goes below 870px; below 690px it's the phone layout. */
+   first (up to 540px), then the sides share what's left. Below 690px it's
+   the phone layout. */
 @media (min-width: 690px) {
     .Nav {
         display: grid;
@@ -284,7 +295,19 @@
     }
 
     .Nav-start {
+        display: flex;
+        align-items: center;
         justify-self: start;
+    }
+
+    /* The wordmark starts exactly where the toolbar and cards do: the side
+       rail's width (plus the page's 16px) from the left, the ☰ before it */
+    .Nav-home {
+        margin-left: calc(var(--rail-width) - 40px);
+    }
+
+    .Nav-title {
+        display: block;
     }
 
     .Nav-railButton {
@@ -303,11 +326,5 @@
 
     .Nav-menuButton {
         display: none;
-    }
-}
-
-@media (min-width: 870px) {
-    .Nav-title {
-        display: block;
     }
 }

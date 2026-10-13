@@ -40,7 +40,9 @@ function LoadingSkeleton() {
                         {/* Computers: the ☰ for the side rail */}
                         <span className="LoadingSkeleton-menu LoadingSkeleton-railButton" />
                         <MonkeyIcon color="currentColor" role={undefined} aria-label={undefined} />
-                        <span className="LoadingSkeleton-title">vervetDB</span>
+                        <span className="LoadingSkeleton-title">
+                            vervet<span className="Nav-titleDB">DB</span>
+                        </span>
                     </span>
                     <span className="LoadingSkeleton-search" />
                     {/* Phones: the ☰ menu; computers: the account circle */}

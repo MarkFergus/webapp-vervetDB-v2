@@ -3,15 +3,17 @@ import { isInstalledApp } from "./installApp";
 // Shared by the pictures made for sharing (game results, monkey profiles):
 // the site's fonts and a few drawing helpers for a canvas.
 
-export const TITLE_FONT = '"Russo One", Impact, sans-serif';
-export const TEXT_FONT = 'Roboto, Arial, sans-serif';
+export const TITLE_FONT = 'Saira, Impact, sans-serif'; // the logo font (used at 800)
+export const NAME_FONT = 'Bitter, Georgia, serif'; // monkey names (used at 700)
+export const TEXT_FONT = '"Hanken Grotesk", Arial, sans-serif';
 
 // The page's fonts, so pictures match the site (quietly skipped if they
 // can't load: the canvas then uses similar standard fonts)
 export async function loadFonts() {
     try {
         await Promise.all([
-            document.fonts.load(`80px ${TITLE_FONT}`),
+            document.fonts.load(`800 80px ${TITLE_FONT}`),
+            document.fonts.load(`700 64px ${NAME_FONT}`),
             document.fonts.load(`700 40px ${TEXT_FONT}`),
             document.fonts.load(`400 40px ${TEXT_FONT}`),
         ]);

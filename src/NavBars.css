@@ -341,7 +341,7 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    width: min(300px, 85vw);
+    width: min(255px, 72vw);
     padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
     background-color: var(--bg);
     box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
@@ -379,16 +379,10 @@
 .Drawer-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-logo);
+    font-weight: 800;
     font-size: 20px;
     color: white;
-}
-
-.Drawer-brand svg {
-    width: 28px;
-    height: 26px;
-    color: var(--accent);
 }
 
 .Drawer-close {

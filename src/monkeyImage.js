@@ -1,4 +1,4 @@
-import { canvasToPng, fitFont, loadFonts, roundedRect, TEXT_FONT, TITLE_FONT } from "./canvasHelpers";
+import { canvasToPng, fitFont, loadFonts, NAME_FONT, roundedRect, TEXT_FONT } from "./canvasHelpers";
 import { ageText } from "./ages";
 import { placeLabel } from "./places";
 
@@ -148,7 +148,7 @@ export async function drawMonkeyImage(monkey, { photo = monkey.img[0] } = {}) {
 
     // Name, top left
     ctx.textAlign = "left";
-    fitFont(ctx, monkey.name, { size: 64, family: TITLE_FONT, maxWidth: textWidth });
+    fitFont(ctx, monkey.name, { size: 64, weight: "700", family: NAME_FONT, maxWidth: textWidth });
     ctx.fillStyle = "white";
     ctx.fillText(monkey.name, MARGIN, nameY);
 

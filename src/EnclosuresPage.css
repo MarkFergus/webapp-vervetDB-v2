@@ -113,8 +113,8 @@
 .Enclosures-title,
 .Enclosures-recordTitle {
     margin: 16px 0 0;
-    font-family: "Russo One", sans-serif;
-    font-weight: normal;
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 32px;
     line-height: 1.15;
     color: white;
@@ -219,15 +219,21 @@
     position: relative;
     isolation: isolate; /* the name stays under the pinned header */
     display: block;
-    border-radius: 12px;
+    /* Square at the bottom, where the fade meets the page colour (see
+       MonkeyCard.css) */
+    border-radius: 12px 12px 0 0;
     overflow: hidden;
+}
+
+.EnclosureCard-image .Enclosures-picture {
+    border-radius: 12px 12px 0 0;
 }
 
 .EnclosureCard-image::after {
     content: "";
     position: absolute;
-    inset: 40% 0 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    inset: 50% 0 0;
+    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--bg)); /* fades into the page colour */
     pointer-events: none;
 }
 
@@ -237,7 +243,8 @@
     right: 10px;
     bottom: 8px;
     z-index: 1;
-    font-family: "Russo One", sans-serif;
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 17px;
     line-height: 1.15;
     color: white;

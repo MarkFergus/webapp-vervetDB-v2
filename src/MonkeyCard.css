@@ -33,7 +33,9 @@
     width: 100%;
     aspect-ratio: 5 / 4;
     overflow: hidden;
-    border-radius: 12px;
+    /* Square at the bottom: the fade ends in the page colour there, so the
+       corners would only show as faint light slivers if rounded */
+    border-radius: 12px 12px 0 0;
     background-color: var(--surface-2);
 }
 
@@ -41,8 +43,8 @@
 .MonkeyCard-image::after {
     content: "";
     position: absolute;
-    inset: 40% 0 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    inset: 50% 0 0;
+    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--bg)); /* fades into the page colour */
     pointer-events: none;
 }
 
@@ -87,8 +89,9 @@
     bottom: 8px;
     z-index: 1;
     overflow: hidden;
-    font-family: "Russo One", sans-serif;
-    font-size: 17px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 19px;
     line-height: 1.15;
     color: white;
     white-space: nowrap;
@@ -101,7 +104,7 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-2);
     white-space: nowrap;
 }
@@ -143,11 +146,11 @@
     .MonkeyCard-info-name {
         left: 8px;
         right: 8px;
-        font-size: 15px;
+        font-size: 17px;
     }
 
     .MonkeyCard-meta {
-        font-size: 13px;
+        font-size: 14px;
     }
 
     .MonkeyCard-meta > span + span::before {
@@ -163,7 +166,7 @@
     display: none;
 }
 
-@container (max-width: 330px) {
+@container (max-width: 360px) {
     .MonkeyCard-sexWord {
         display: none;
     }
@@ -173,7 +176,7 @@
     }
 }
 
-@container (max-width: 290px) {
+@container (max-width: 315px) {
     .MonkeyCard-ageLong {
         display: none;
     }

@@ -25,38 +25,38 @@ colors:
   text-3: "#8c8c8c"
 typography:
   display:
-    fontFamily: "Russo One, Roboto, system-ui, sans-serif"
+    fontFamily: "Saira, Hanken Grotesk, system-ui, sans-serif"
     fontSize: "24px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   headline:
-    fontFamily: "Russo One, Roboto, system-ui, sans-serif"
+    fontFamily: "Bitter, Georgia, serif"
     fontSize: "18px"
     fontWeight: 400
     lineHeight: 1.2
   title:
-    fontFamily: "Russo One, Roboto, system-ui, sans-serif"
+    fontFamily: "Bitter, Georgia, serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.15
   body:
-    fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontFamily: "Hanken Grotesk, system-ui, -apple-system, Segoe UI, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.3
   body-input:
-    fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontFamily: "Hanken Grotesk, system-ui, -apple-system, Segoe UI, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.2
   button:
-    fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontFamily: "Hanken Grotesk, system-ui, -apple-system, Segoe UI, sans-serif"
     fontSize: "14px"
     fontWeight: 500
     lineHeight: 1.2
   label:
-    fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontFamily: "Hanken Grotesk, system-ui, -apple-system, Segoe UI, sans-serif"
     fontSize: "12px"
     fontWeight: 700
     lineHeight: 1.2
@@ -149,7 +149,7 @@ components:
 
 **Creative North Star: "The Sanctuary Channel"**
 
-vervetDB is the category standard played straight: a first-class dark media app at YouTube and Supabase-dashboard craft, where the "videos" are monkeys. Faces lead. A near-black page carries a grid of rounded 5:4 photos with each monkey's name set on its own photo in Russo One, a quiet grey line of details below, and one row of soft chips above for narrowing the list. Chrome is small, precise and recessive so the photos do the talking.
+vervetDB is the category standard played straight: a first-class dark media app at YouTube and Supabase-dashboard craft, where the "videos" are monkeys. Faces lead. A near-black page carries a grid of rounded 5:4 photos with each monkey's name set on its own photo in Bitter, a slab serif that gives each monkey some personality, a quiet grey line of details below, and one row of soft chips above for narrowing the list. Chrome is small, precise and recessive so the photos do the talking.
 
 The system is dark only (`color-scheme: dark`), tonal rather than lined, and strictly tokenised: every colour comes from the `:root` set in `src/index.css`. One sky-blue accent handles links, focus and the active state of a few controls; selection in chips is white-fill, as on YouTube. Green, pink and two warm status colours each own exactly one job, so colour on screen always means something. Density is media-app density: 36px chips, 40px icon buttons, tight caption lines, generous photo area.
 
@@ -158,7 +158,7 @@ It is minimal and uncluttered by owner direction: no decoration that does not ca
 **Key Characteristics:**
 - Near-black ground (#121212) with three surface steps; depth by tone, shadows only on things that float.
 - One interactive accent (sky blue); white-fill for chosen chips.
-- Russo One for names, panel titles and the wordmark; Roboto for every piece of chrome.
+- Saira for the wordmark and the game's big type; Bitter for names, place names and panel titles; Hanken Grotesk for every piece of chrome.
 - 5:4 photo frame everywhere a monkey appears, with the name on a dark fade at the photo's foot.
 - Phone-first: sticky blurred top bar, one toolbar row, two-up grid, 60px bottom bar; computers get a 72px YouTube-style rail (icons with small labels) that the top bar ☰ opens out to full labels.
 
@@ -198,22 +198,23 @@ A YouTube-dark neutral ladder with one cool accent and a few single-purpose sign
 
 ## Typography
 
-**Display Font:** Russo One (with Roboto, system-ui)
-**Body Font:** Roboto (with system-ui, -apple-system, Segoe UI, sans-serif)
+**Logo Font:** Saira 800 (the wordmark, the game's titles, timer and scores)
+**Display Font:** Bitter 700 (with Georgia, serif)
+**Body Font:** Hanken Grotesk (with system-ui, -apple-system, Segoe UI, sans-serif)
 
-**Character:** Russo One's squared, sporty caps give each monkey's name the weight of a channel title; Roboto keeps all chrome neutral and legible in sunlight. The two never swap roles.
+**Character:** Saira's squared, sporty wordmark keeps the old Russo One feel; Bitter's sturdy slab serif gives each monkey's name personality; Hanken Grotesk keeps all chrome clean and legible in sunlight. The roles never swap. (Chosen by the owner from a side-by-side font comparison, 2026-10-13.)
 
 ### Hierarchy
-- **Display** (Russo One 400, 24px, 1): the "vervetDB" wordmark in the top bar (computers 870px and up); 20px in the phone drawer.
-- **Headline** (Russo One 400, 18px): panel titles such as "Filters"; the empty-state heading uses Roboto bold 18px.
-- **Title** (Russo One 400, 17px, 1.15; 15px on phones): the monkey's name on its photo, white, one line with ellipsis. Rows use 15px. Group titles inside the Filters panel use 14px.
-- **Body** (Roboto 400, 14px, 1.3): card details line (13px on phones), list rows, menu items (15px), drawer items (15px).
-- **Body Input** (Roboto 400, 16px): the search field and any text entry on phones, so iOS does not zoom.
-- **Button** (Roboto 500, 14px): chips and toolbar buttons; action buttons (Show, Clear All, + Add) use 700.
-- **Label** (Roboto 700, 12px, 1px tracking, uppercase): side rail and drawer group headings, Filters section labels, list table column headings. Functional headings only.
+- **Display** (Saira 800, 24px, 1): the "vervetDB" wordmark in the top bar (computers 870px and up); 20px in the phone drawer.
+- **Headline** (Bitter 700, 18px): panel titles such as "Filters"; the empty-state heading uses Hanken Grotesk bold 18px.
+- **Title** (Bitter 700, 17px, 1.15; 15px on phones): the monkey's name on its photo, white, one line with ellipsis. Rows use 15px. Group titles inside the Filters panel use 14px.
+- **Body** (Hanken Grotesk 400, 14px, 1.3): card details line (13px on phones), list rows, menu items (15px), drawer items (15px).
+- **Body Input** (Hanken Grotesk 400, 16px): the search field and any text entry on phones, so iOS does not zoom.
+- **Button** (Hanken Grotesk 500, 14px): chips and toolbar buttons; action buttons (Show, Clear All, + Add) use 700.
+- **Label** (Hanken Grotesk 700, 12px, 1px tracking, uppercase): side rail and drawer group headings, Filters section labels, list table column headings. Functional headings only.
 
 ### Named Rules
-**The Name Voice Rule.** Russo One is reserved for monkey names, panel titles and the wordmark. Buttons, chips, details and labels are always Roboto.
+**The Name Voice Rule.** Bitter is reserved for monkey and place names and panel titles; Saira for the wordmark and the game. Buttons, chips, details and labels are always Hanken Grotesk.
 
 **The Title Case Rule.** Every button label is Title Case ("Clear All", "Add Photos", "Show More"). Places are written in full on screen ("Dino & Daniel", "Holt & Barrington"); the short forms ("D&D", "H&B") appear only on cards and rows, and a long place name breaks after the "&".
 
@@ -260,7 +261,7 @@ Soft, consistent rounding with no sharp corners and no oversized pills except wh
 ### Buttons
 Calm and compact; only "go" and empty-state recovery get a filled colour.
 - **Shape:** gently rounded (8px).
-- **Go (the Filters panel's Show button, Save):** Go Green fill, near-black text, Roboto 700 14px, 6px 14px padding; hover lifts to green-2.
+- **Go (the Filters panel's Show button, Save):** Go Green fill, near-black text, Hanken Grotesk 700 14px, 6px 14px padding; hover lifts to green-2.
 - **Outline (Clear All):** transparent with a Hairline Strong border; hover brightens text and border to white.
 - **Accent (empty-state Clear All):** Sky Signal Blue fill, Page Black text; hover accent-2.
 - **Soft pill (+ Add):** 10% white wash, 999px radius, 36px tall; hover 16%.
@@ -269,13 +270,13 @@ Calm and compact; only "go" and empty-state recovery get a filled colour.
 - **Tap targets:** 36px chips extend their hit area to 44px with an invisible pseudo-element.
 
 ### Chips
-- **Style:** Chip Graphite fill, no border, 8px radius, 36px tall, Roboto 500 14px, an icon first and a quiet chevron last when it opens something.
+- **Style:** Chip Graphite fill, no border, 8px radius, 36px tall, Hanken Grotesk 500 14px, an icon first and a quiet chevron last when it opens something.
 - **States:** hover and open go to Hover Graphite. Active (filters in use) turns Paper White with Page Black text and a small inverse count bubble. The count chip is display-only, its number in Caption Grey.
 - **Chosen-filter chips:** 32px tall under the toolbar; tapping one removes it; an outlined 32px "filters off" icon clears them all.
 - **Filter pills (in the panel):** a three-up grid of equal pills; "All" is dashed and unfilled; chosen is white-fill.
 
 ### Cards / Containers
-- **Monkey card:** a full-card button. 5:4 photo, 12px radius, Chip Graphite placeholder. A bottom 60% gradient to 85% black carries the name in white Russo One. Under the photo, one line of details in Caption Grey, always **troop · sex · age** in the same grey, separated by middle dots; when short of room the troop ellipsises first, then "Male/Female" drops to its icon, then "Age unknown" becomes "Age ?". Hover/focus scales the photo 1.06 over 0.5s and brightens it slightly; focus draws the accent ring around the photo, not the card.
+- **Monkey card:** a full-card button. 5:4 photo, 12px radius, Chip Graphite placeholder. A bottom 60% gradient to 85% black carries the name in white Bitter 700. Under the photo, one line of details in Caption Grey, always **troop · sex · age** in the same grey, separated by middle dots; when short of room the troop ellipsises first, then "Male/Female" drops to its icon, then "Age unknown" becomes "Age ?". Hover/focus scales the photo 1.06 over 0.5s and brightens it slightly; focus draws the accent ring around the photo, not the card.
 - **One badge:** top-left of the photo, 4px radius, 12px bold, near-black on its status colour: New Arrival (orange) beats In Sickbay (amber); never both on a card.
 - **No photo:** the grey frame with a quiet 36px photo outline icon in Quiet Grey; no badge.
 - **Panels:** Filters is Panel Charcoal, 14px radius, Hairline Strong border, 16px padding, Panel shadow, sticky footer; on phones it becomes a bottom sheet.
@@ -311,6 +312,6 @@ Drops 6px under its chip: Chip Graphite, Hairline Strong border, 10px radius, Me
 - **Don't** add a "Photo Needed" badge; a no-photo tile shows only a quiet photo icon.
 - **Don't** stack badges on a card or add decoration that carries no information.
 - **Don't** use blue as a selected fill, or green, pink, orange or amber for anything outside their one job.
-- **Don't** set buttons, chips or details in Russo One.
+- **Don't** set buttons, chips or details in Bitter or Saira.
 - **Don't** add shadows to surfaces at rest in the page flow.
 - **Don't** let the toolbar wrap onto a second line.

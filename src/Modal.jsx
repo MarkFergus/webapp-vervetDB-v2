@@ -663,7 +663,7 @@ function Modal({
                                     {onAddPhotos && (
                                         <button
                                             type="button"
-                                            className="Modal-edit"
+                                            className="Modal-edit is-soft"
                                             onClick={() => onAddPhotos(monkey)}
                                             aria-label={`Add photos of ${monkey.name}`}
                                         >

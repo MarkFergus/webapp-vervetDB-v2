@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconSearch, IconX, IconMenu2, IconPlus } from "@tabler/icons-react";
+import { IconX, IconMenu2, IconPlus } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
 import AboutModal from "./AboutModal";
@@ -137,7 +137,7 @@ function Nav({
     return (
         <>
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
-            <nav className="Nav" inert={anyPopUp}>
+            <nav className={showSearch ? "Nav" : "Nav is-noSearch"} inert={anyPopUp}>
                 <div className="Nav-start">
                     {/* Computers: opens the side rail out, or back to icons */}
                     <button
@@ -161,19 +161,19 @@ function Nav({
                             onHome?.();
                         }}
                     >
-                        <span className="Nav-icon">
-                            <MonkeyIcon color="currentColor" aria-hidden="true" role={undefined} aria-label={undefined} />
-                        </span>
+                        {/* Computers: "vervetDB" (DB in blue), lined up with the
+                            toolbar and cards below; the monkey is in the search bar */}
                         <span className="Nav-title" aria-hidden="true">
-                            vervetDB
+                            vervet<span className="Nav-titleDB">DB</span>
                         </span>
                     </a>
                 </div>
 
                 {showSearch ? (
                 <div className="Nav-searchbar">
+                    {/* The monkey logo in place of a magnifying glass (like Reddit's) */}
                     <div className="Nav-iconSearch" aria-hidden="true">
-                        <IconSearch stroke={2} />
+                        <MonkeyIcon color="currentColor" role={undefined} aria-label={undefined} />
                     </div>
                     <input
                         type="text"
