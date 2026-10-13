@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.10.0",
+        date: "2026-10-13",
+        // a significant release: "Major Update" beside it in About
+        major: true,
+        changes: [
+            "Improved the whole site with a fresh new look: new fonts, colours, buttons and layout",
+        ],
+    },
+    {
         version: "1.9.0",
         date: "2026-10-11",
         changes: [
