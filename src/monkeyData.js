@@ -309,7 +309,7 @@ export async function saveSickbay(id, { inSickbay, since = null, note = "" }) {
     return toAppMonkey(data);
 }
 
-// Marks a new rescue as released (with the date and a few details): its
+// Marks a new arrival as released (with the date and a few details): its
 // record stays on file but it no longer appears in the app. Editors.
 export async function saveRelease(id, { date, details = "" }) {
     const row = { status: "released", released_on: date, release_details: details.trim() || null };
@@ -320,7 +320,7 @@ export async function saveRelease(id, { date, details = "" }) {
     }
 }
 
-// ---- Arrival Info: a new rescue's arrival details (staff only) ----
+// ---- Arrival Info: a new arrival's arrival details (staff only) ----
 
 // A monkey's Arrival Info ("" if none). Throws if the database hasn't got it
 // yet (arrival-info.sql), or this isn't staff.

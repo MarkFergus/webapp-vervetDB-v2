@@ -55,7 +55,7 @@ export const QUICK_FILTERS = [
     { id: "sickbayCare", label: () => "Sickbay Care", test: (m) => homeName(m) === SICKBAY_UNIT || Boolean(m.inSickbay) },
     { id: "quarantine", label: () => "Quarantine", test: (m) => homeName(m) === "Quarantine" },
     // This season's sanctuary babies (born this baby season or since: the
-    // year changes on 1 November), not the Bandits' wild-born babies
+    // year changes on 1 October), not the Bandits' wild-born babies
     {
         id: "babies",
         label: (today = new Date()) => `Babies ${currentBabySeason(today)}`,

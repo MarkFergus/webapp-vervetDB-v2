@@ -25,7 +25,6 @@ import MaintenanceLog from "./MaintenanceLog";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
-import EnclosureIcon from "./EnclosureIcon";
 import SortMenu from "./SortMenu";
 import { fullName, inIntrocage, placeName } from "./places";
 import {
@@ -56,6 +55,7 @@ import {
 } from "./enclosures";
 import "./Modal.css"; // the photo arrows and dots
 import "./EnclosuresPage.css";
+import BenchTreeIcon from "./BenchTreeIcon";
 
 // The Enclosures pages, shown under the site's top bar (ShowPage): every
 // troop enclosure with its introcages, in section order (#enclosures), and
@@ -177,16 +177,16 @@ function PhotoSlides({ photos, name }) {
     );
 }
 
-// A place's icon: the enclosure icon (EnclosureIcon) for an enclosure, a cube for an introcage or area
+// A place's icon: a bench and tree for an enclosure, a cube for an introcage or area
 function PlaceIcon({ enclosure, ...props }) {
-    const Icon = isInside(enclosure) ? IconCube : EnclosureIcon;
+    const Icon = isInside(enclosure) ? IconCube : BenchTreeIcon;
     return <Icon {...props} />;
 }
 
 // The enclosure's own photos (cards: the primary one, small), or until it
 // has some, its introcages' photos (each one's primary, up to four in a
 // 2 × 2 grid), or failing those up to four of its monkeys, or if it's empty
-// its icon (the enclosure icon; an introcage: a cube)
+// its icon (a bench and tree; an introcage: a cube)
 function Picture({ enclosure, introcages = [], monkeys, large = false }) {
     const className = `Enclosures-picture${large ? " is-large" : ""}`;
     if (enclosure.photos.length) {
@@ -377,7 +377,9 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
     const inOrder = bySection(enclosures, sections).flatMap((group) => group.enclosures);
     const all = sortEnclosures(inOrder, sort, monkeys);
     const introcageTotal = enclosures.filter((e) => e.type === "introcage").length;
-    const totals = `${plural(all.length, "enclosure")} · ${plural(introcageTotal, "introcage")}`;
+    // (just the troop enclosures: not Bachelor Block or the care units)
+    const troopTotal = all.filter(hasTroop).length;
+    const totals = `${plural(troopTotal, "troop enclosure")} · ${plural(introcageTotal, "introcage")}`;
     return (
         <>
             {/* No title on screen, like the monkey list (the side rail and
@@ -387,10 +389,10 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
             {/* Sort, and how many: the same row as the monkey list's */}
             <div className="ShowPage-toolbar Enclosures-toolbar">
                 <SortMenu sort={sort} onSort={onSort} options={ENCLOSURE_SORTS} />
-                {/* How many: enclosures (the enclosure icon) and introcages (a cube) */}
+                {/* How many: troop enclosures (a bench and tree) and introcages (a cube) */}
                 <span className="ShowPage-count Enclosures-totals" title={totals}>
-                    <EnclosureIcon size={16} aria-hidden="true" />
-                    <span aria-hidden="true">{plural(all.length, "enclosure")}</span>
+                    <BenchTreeIcon size={16} aria-hidden="true" />
+                    <span aria-hidden="true">{plural(troopTotal, "troop enclosure")}</span>
                     {/* (the narrowest phones: left out, so the row fits) */}
                     <span className="Enclosures-introcageTotal" aria-hidden="true">
                         <IconCube size={16} aria-hidden="true" />
@@ -579,7 +581,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         </div>
                         {isIntrocage && parent && (
                             <p className="Enclosures-parent">
-                                <EnclosureIcon size={15} aria-hidden="true" />
+                                <BenchTreeIcon size={15} aria-hidden="true" />
                                 {TYPE_NAMES[enclosure.type]} at <a href={enclosureHash(parent)}><PlaceName name={parent.name} /></a>
                             </p>
                         )}

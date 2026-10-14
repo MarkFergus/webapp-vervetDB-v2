@@ -59,7 +59,7 @@ function Modal({
     onAddPhotos, // editors too: Add Photos, for this monkey
     onSickbay, // editors too: Move to Sickbay / Return, async (monkey, { inSickbay, since, note })
     staff, // { canSee, canAdd, userId, isAdmin } for Integration Reports (staff only), or null
-    onRelease, // editors, new rescues only: Released, async (monkey, { date, details })
+    onRelease, // editors, new arrivals only: Released, async (monkey, { date, details })
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
 }) {
@@ -85,12 +85,12 @@ function Modal({
     const [sickbayForm, setSickbayForm] = useState(null);
     const [sickbayBusy, setSickbayBusy] = useState(false);
     const [sickbayProblem, setSickbayProblem] = useState(null);
-    // A new rescue's Arrival Info replaces its Bio, for staff
+    // A new arrival's Arrival Info replaces its Bio, for staff
     const arrival = useArrivalInfo(
         monkey?.id,
         Boolean(isModalOpen && staff?.canSee && monkey && isNewArrival(monkey))
     );
-    // Released (new rescues): its little form (date and details)
+    // Released (new arrivals): its little form (date and details)
     const [releaseForm, setReleaseForm] = useState(null);
     const [releaseBusy, setReleaseBusy] = useState(false);
     const [releaseProblem, setReleaseProblem] = useState(null);

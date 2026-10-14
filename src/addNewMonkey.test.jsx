@@ -1,4 +1,4 @@
-// Add New Monkey: a New Rescue or Other, and a new rescue's Arrival Info
+// Add New Monkey: a New Arrival or Other, and a new arrival's Arrival Info
 // (staff only, in place of the Bio while it lives in a care unit)
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -37,10 +37,10 @@ beforeEach(() => {
     saveArrivalInfo.mockResolvedValue();
 });
 
-describe("New Rescue (the first choice)", () => {
+describe("New Arrival (the first choice)", () => {
     test("Care Unit and Location, Sex and Birth year; no Chip; Arrival Info instead of Bio", async () => {
         add();
-        expect(kind("New Rescue")).toHaveAttribute("aria-pressed", "true");
+        expect(kind("New Arrival")).toHaveAttribute("aria-pressed", "true");
         expect(field("Care Unit")).toBeInTheDocument();
         expect(field("Location")).toBeInTheDocument();
         expect(field("Sex")).toBeInTheDocument();
@@ -119,12 +119,12 @@ describe("Other", () => {
         expect(saveMonkey.mock.calls[0][0]).toMatchObject({ name: "Late Record", troop: "Goliath" });
     });
 
-    test("going back to New Rescue starts the care unit choice again", async () => {
+    test("going back to New Arrival starts the care unit choice again", async () => {
         const user = userEvent.setup();
         add();
         await user.click(kind("Other"));
         await user.selectOptions(field("Enclosure"), "Goliath");
-        await user.click(kind("New Rescue"));
+        await user.click(kind("New Arrival"));
         expect(field("Care Unit")).toBeEnabled();
         expect(field("Care Unit")).toHaveValue("");
         expect(screen.queryByLabelText("Chip")).not.toBeInTheDocument();
@@ -187,7 +187,7 @@ describe("the pop-up", () => {
         render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} staff={staff} />);
     const STAFF = { canSee: true, canAdd: false, userId: "u1", isAdmin: false };
 
-    test("staff see a new rescue's Arrival Info in place of its Bio", async () => {
+    test("staff see a new arrival's Arrival Info in place of its Bio", async () => {
         loadArrivalInfo.mockResolvedValue("Found by Sam Smith\nBrought in on the 3rd");
         open(RESCUE, STAFF);
         expect(await screen.findByText("Arrival Info")).toBeInTheDocument();

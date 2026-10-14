@@ -2,7 +2,7 @@
 import enclosuresArr from "./enclosuresArr";
 import { AM_GROUPS, DEFAULT_FEEDING, amSummary, amText, fedBy, groupOf, hasFeeding, namesText, pmText, summaryDate } from "./feeding";
 
-const TODAY = new Date(2026, 9, 10); // 10 Oct 2026: babies are the 2025 season
+const TODAY = new Date(2026, 8, 10); // 10 Sep 2026: babies are the 2025 season
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
 const parentOf = (e) => enclosuresArr.find((p) => p.id === e.parentId);
 
@@ -70,7 +70,7 @@ describe("the groups", () => {
 
     test("the date as the sheet has it", () => {
         expect(summaryDate(new Date(2026, 8, 25))).toBe("25th Sep 2026");
-        expect(summaryDate(TODAY)).toBe("10th Oct 2026");
+        expect(summaryDate(TODAY)).toBe("10th Sep 2026");
     });
 });
 

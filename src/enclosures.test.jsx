@@ -83,7 +83,7 @@ describe("where a monkey lives", () => {
     });
 
     test("average age: of the monkeys with a known birth year, to one decimal place", () => {
-        const today = new Date(2026, 9, 7); // 7 Oct 2026: the 2025 season are babies
+        const today = new Date(2026, 8, 7); // 7 Sep 2026: the 2025 season are babies
         expect(averageAge([{ year: 2016 }, { year: 2020 }, { year: "" }, { year: 2023 }], today)).toBe(5.3); // (9 + 5 + 2) / 3
         expect(averageAge([{ year: "" }], today)).toBeNull();
     });
@@ -112,8 +112,8 @@ describe("the Enclosures list", () => {
         expect(screen.getByPlaceholderText("Name or chip number")).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 1, name: "Enclosures" })).toBeInTheDocument();
         // The totals: a pill (shorter) beside Sort, the full words for screen readers
-        expect(screen.getByText("19 enclosures · 75 introcages")).toHaveClass("visually-hidden");
-        expect(screen.getByText("19 enclosures")).toBeInTheDocument();
+        expect(screen.getByText("15 troop enclosures · 75 introcages")).toHaveClass("visually-hidden");
+        expect(screen.getByText("15 troop enclosures")).toBeInTheDocument();
         expect(screen.getByText("75 introcages")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Sort: Section, Top first" })).toBeInTheDocument();
         // No section headings; Top first, then Sickbay, then the care units

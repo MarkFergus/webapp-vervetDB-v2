@@ -59,7 +59,7 @@ const compareBy = {
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
-// Age categories: ages use the 1 November birthday, and no birth year
+// Age categories: ages use the 1 October birthday, and no birth year
 // counts as an adult (as in the Profile Book)
 const AGE_TESTS = {
     babies: (age) => age === 0,
@@ -709,7 +709,7 @@ function ShowPage({
                     staff={
                         role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null
                     }
-                    // Released: new rescues only (living in a care unit), once the database has a status
+                    // Released: new arrivals only (living in a care unit), once the database has a status
                     onRelease={
                         canEdit && isAdmin && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
                             ? handleRelease

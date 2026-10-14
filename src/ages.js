@@ -1,11 +1,11 @@
 // Monkey ages. A monkey's "year" is its birth season, July to June: 2016
 // means born between July 2016 and June 2017. Everyone counts as a year
-// older on 1 November (the Foundation's default birthday).
+// older on 1 October (the Foundation's default birthday).
 
-const BIRTHDAY_MONTH = 10; // November (months count from 0)
+const BIRTHDAY_MONTH = 9; // October (months count from 0)
 
-// The season of this year's babies: the most recent one whose 1 November
-// birthday hasn't come yet. On 1 Oct 2026 that's 2025; from 1 Nov 2026, 2026.
+// The season of this year's babies: the most recent one whose 1 October
+// birthday hasn't come yet. On 30 Sep 2026 that's 2025; from 1 Oct 2026, 2026.
 export function currentBabySeason(today = new Date()) {
     const year = today.getFullYear();
     return today.getMonth() >= BIRTHDAY_MONTH ? year : year - 1;

@@ -129,8 +129,7 @@
 /* The list's Sort and totals: the monkey list's toolbar (ShowPage.css), in
    the same place under the top bar; .Enclosures already sets the edges */
 .Enclosures .Enclosures-toolbar {
-    flex-wrap: wrap; /* (the narrowest phones: the totals go underneath) */
-    row-gap: 8px;
+    flex-wrap: nowrap; /* (one row: narrower phones drop the introcages) */
     margin-left: 0;
     margin-right: 0;
 }
@@ -151,9 +150,9 @@
     margin-left: 6px;
 }
 
-/* Under 335px wide: just the enclosures, so Sort and the totals stay on one
-   row (screen readers still hear both) */
-@media (max-width: 334px) {
+/* Phones under 380px wide: just the troop enclosures, so Sort and the
+   totals stay on one row (screen readers still hear both) */
+@media (max-width: 379px) {
     .Enclosures-introcageTotal {
         display: none;
     }

@@ -8,10 +8,10 @@ import {
     IconMap,
     IconPhotoPlus,
     IconPlus,
-    IconUsersGroup,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
-import EnclosureIcon from "./EnclosureIcon";
+import EnclosuresNavIcon from "./EnclosuresNavIcon";
+import MonkeysNavIcon from "./MonkeysNavIcon";
 import Avatar from "./Avatar";
 import "./NavBars.css";
 import CloseButton from "./CloseButton";
@@ -113,10 +113,10 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
             <div className="SideRail-group">
                 {/* (No heading: Monkeys stays exactly where it is in the
                     small rail, so opening it out doesn't move it) */}
-                {item(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
+                {item(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
                 {item(
                     { href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined },
-                    EnclosureIcon,
+                    EnclosuresNavIcon,
                     "Enclosures"
                 )}
                 {/* The small rail: the tools straight after (no headings) */}
@@ -173,8 +173,8 @@ export function BottomBar({
     );
     return (
         <nav className="BottomBar" aria-label="Main" inert={inert}>
-            {tab(monkeysLinkProps(page, onHome), IconUsersGroup, "Monkeys")}
-            {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosureIcon, "Enclosures")}
+            {tab(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
+            {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosuresNavIcon, "Enclosures")}
             {onAddPhotos ? (
                 // Staff: Add Photos, a bigger green circle that stands out
                 // (no label: its name is read out)

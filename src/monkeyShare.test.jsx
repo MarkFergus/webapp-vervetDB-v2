@@ -37,16 +37,16 @@ test("links: name and troop, unique for every monkey", () => {
 });
 
 test("age from the birth year", () => {
-    // Everyone is a year older from 1 November
+    // Everyone is a year older from 1 October
+    const sep2026 = new Date(2026, 8, 1);
     const oct2026 = new Date(2026, 9, 1);
-    const nov2026 = new Date(2026, 10, 1);
-    expect(ageText(2016, oct2026)).toBe("(9 years old)");
-    expect(ageText(2016, nov2026)).toBe("(10 years old)");
-    expect(ageText(2024, oct2026)).toBe("(1 year old)");
-    expect(ageText(2025, oct2026)).toBe("(Baby)");
-    expect(ageText(2025, nov2026)).toBe("(1 year old)");
-    expect(ageText(2026, oct2026)).toBe("(Baby)"); // a July 2026 baby
-    expect(ageText("", oct2026)).toBe("");
+    expect(ageText(2016, sep2026)).toBe("(9 years old)");
+    expect(ageText(2016, oct2026)).toBe("(10 years old)");
+    expect(ageText(2024, sep2026)).toBe("(1 year old)");
+    expect(ageText(2025, sep2026)).toBe("(Baby)");
+    expect(ageText(2025, oct2026)).toBe("(1 year old)");
+    expect(ageText(2026, sep2026)).toBe("(Baby)"); // a July 2026 baby
+    expect(ageText("", sep2026)).toBe("");
 });
 
 test("the pop-up shows the age after the birth year", async () => {

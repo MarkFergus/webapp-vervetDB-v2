@@ -3,7 +3,7 @@ import {
     monitoredTroops, monitoringGroups, monitoringPages, MONITORED_SECTIONS, MONITORING_CHECKS, MONITORING_COLUMNS,
 } from "./monitoring";
 
-const TODAY = new Date(2026, 9, 10); // 10 Oct 2026: the youngest are the 2025 season
+const TODAY = new Date(2026, 8, 10); // 10 Sep 2026: the youngest are the 2025 season
 let id = 1;
 const monkey = (name, year, extra = {}) => ({ id: id++, name, year, sex: "female", troop: "Gismo", introcage: null, ...extra });
 
@@ -24,8 +24,8 @@ test("the troop A–Z (unknown birth years with them), then the youngest four ye
     ]);
 });
 
-test("the years move on each November", () => {
-    const groups = monitoringGroups([monkey("Felix", 2022), monkey("Neo", 2026)], "Gismo", new Date(2026, 10, 1));
+test("the years move on each October", () => {
+    const groups = monitoringGroups([monkey("Felix", 2022), monkey("Neo", 2026)], "Gismo", new Date(2026, 9, 1));
     expect(groups.map((g) => g.title)).toEqual([null, "Orphans 2026"]); // 2022s are grown-ups now
 });
 

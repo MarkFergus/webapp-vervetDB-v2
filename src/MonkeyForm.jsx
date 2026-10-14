@@ -35,7 +35,7 @@ function MonkeyForm({
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
-    // Adding: a New Rescue (into a care unit) or Other (any enclosure and
+    // Adding: a New Arrival (into a care unit) or Other (any enclosure and
     // location: e.g. a Bandit, or a monkey whose record is added late)
     const [kind, setKind] = useState("rescue");
     const other = careUnitsOnly && kind === "other";
@@ -58,7 +58,7 @@ function MonkeyForm({
     const photosRef = useRef(null);
 
     const nameRef = useRef(null);
-    // Arrival Info (staff only; once the database has it): a new rescue's
+    // Arrival Info (staff only; once the database has it): a new arrival's
     // details, in place of the Bio while it lives in a care unit
     const arrivalInfo = useArrivalInfo(monkey?.id ?? null, isNew ? rescue : true);
     const [arrival, setArrival] = useState("");
@@ -97,7 +97,7 @@ function MonkeyForm({
         setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
-    // New Rescue / Other: starting the Enclosure and Location boxes again
+    // New Arrival / Other: starting the Enclosure and Location boxes again
     // for the other kind
     function chooseKind(next) {
         if (next === kind) return;
@@ -194,10 +194,10 @@ function MonkeyForm({
                 </div>
 
                 <div className="MonkeyForm-body">
-                    {/* Adding: a New Rescue or Other */}
+                    {/* Adding: a New Arrival or Other */}
                     {careUnitsOnly && (
                         <div className="MonkeyForm-kind" role="group" aria-label="Type">
-                            {[["rescue", "New Rescue"], ["other", "Other"]].map(([id, label]) => (
+                            {[["rescue", "New Arrival"], ["other", "Other"]].map(([id, label]) => (
                                 <button
                                     key={id}
                                     type="button"
@@ -298,7 +298,7 @@ function MonkeyForm({
                         </label>
                     </div>
 
-                    {/* (a new rescue has no chip yet: saved as No Chip, added later with Edit) */}
+                    {/* (a new arrival has no chip yet: saved as No Chip, added later with Edit) */}
                     {!rescue && (
                     <div className="MonkeyForm-row">
                         {/* While the box (or the button) has focus, the name
@@ -381,7 +381,7 @@ function MonkeyForm({
                         </label>
                     )}
 
-                    {/* A new rescue's arrival details: staff only, up to 2000 characters */}
+                    {/* A new arrival's arrival details: staff only, up to 2000 characters */}
                     {showArrival && (
                         <label className="MonkeyForm-field">
                             <span>Arrival Info <em>(staff only)</em></span>

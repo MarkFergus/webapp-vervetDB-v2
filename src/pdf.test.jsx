@@ -156,10 +156,14 @@ describe("choosing the troop", () => {
         await user.selectOptions(picker(), "Orphans/Babies");
         const season = currentBabySeason();
         const babies = monkeysArr.filter((m) => m.year && Number(m.year) >= season);
+        if (babies.length === 0) {
+            // nothing to make yet this season
+            expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent("No monkeys in this troop yet.");
+            return;
+        }
         expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
             `${babies.length} ${babies.length === 1 ? "monkey" : "monkeys"} from ${season} Orphans/Babies.`
         );
-        if (babies.length === 0) return; // nothing to make yet this season
 
         await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
         await user.click(await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 }));
