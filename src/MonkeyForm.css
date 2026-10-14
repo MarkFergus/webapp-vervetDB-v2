@@ -559,6 +559,9 @@
    as either / or). The chosen half is tinted green (colours to be
    standardised later). */
 .MonkeyForm-kind {
+    /* (never squashed when the fields scroll: overflow: hidden would let it
+       shrink to nothing) */
+    flex: none;
     display: flex;
     overflow: hidden;
     border: 1px solid var(--line-strong);
