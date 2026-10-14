@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { fullName } from "./places";
-import { IconFilterOff } from "@tabler/icons-react";
-import { SECTIONS, inSection } from "./sections";
+import { IconBolt, IconFilterOff } from "@tabler/icons-react";
+import { QUICK_FILTERS, inSection, quickSections } from "./sections";
 import { lockScroll, unlockScroll } from "./useDialog";
 import "./FilterPanel.css";
 import CloseButton from "./CloseButton";
@@ -37,24 +37,29 @@ export const FILTER_YEARS = Array.from({ length: thisYear - 1996 }, (_, i) => th
 //   value: the ids that are on ([] = all)
 //   allOff: something else is doing the filtering (e.g. a birth year), so
 //           "All …" shows as off too
-function Pills({ label, allLabel, options, value, onChange, allOff = false }) {
+//   allLabel: null for no "All …" pill (none on = all)
+//   hideLabel: the group's title already says what it is
+//   wrap: longer names can go onto two lines
+function Pills({ label, allLabel, options, value, onChange, allOff = false, hideLabel = false, wrap = false }) {
     const labelId = `FilterPanel-${label.toLowerCase().replace(/\s+/g, "-")}`;
     const toggle = (id) =>
         onChange(value.includes(id) ? value.filter((v) => v !== id) : options.map((o) => o.id).filter((o) => o === id || value.includes(o)));
     return (
         <div className="FilterPanel-section">
-            <span className="FilterPanel-label" id={labelId}>
+            <span className={hideLabel ? "visually-hidden" : "FilterPanel-label"} id={labelId}>
                 {label}
             </span>
-            <div className="FilterPanel-pills" role="group" aria-labelledby={labelId}>
-                <button
-                    type="button"
-                    className="is-all"
-                    aria-pressed={value.length === 0 && !allOff}
-                    onClick={() => onChange([])}
-                >
-                    {allLabel}
-                </button>
+            <div className={`FilterPanel-pills${wrap ? " is-wrapping" : ""}`} role="group" aria-labelledby={labelId}>
+                {allLabel && (
+                    <button
+                        type="button"
+                        className="is-all"
+                        aria-pressed={value.length === 0 && !allOff}
+                        onClick={() => onChange([])}
+                    >
+                        {allLabel}
+                    </button>
+                )}
                 {options.map((o) => (
                     <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
                         {o.label}
@@ -102,13 +107,14 @@ function PairPills({ label, options, value, onChange, hideLabel = false }) {
     );
 }
 
-// The Filters panel: location (troop or introcage, section, troop), birth
-// year, age group and sex. The list behind it updates straight away;
+// The Filters panel: Quick Filters (sections, care units, this season's
+// babies), location (troop or introcage, enclosure), birth year, age group
+// and sex. The list behind it updates straight away;
 // "Show N monkeys" just closes it.
-//   filters: { location, section, troop, year, age, sex }; onChange(field, value)
+//   filters: { quick, location, troop, year, age, sex }; onChange(field, value)
 //   open / onClose; buttonRef: the Filters button (focus goes back to it)
 //   anyOn: some filter is in use (otherwise Clear All is greyed out)
-function FilterPanel({ open, onClose, buttonRef, troops, careUnits = [], filters, onChange, onClear, count, anyOn }) {
+function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onClear, count, anyOn }) {
     const panelRef = useRef(null);
 
     // Open: focus the first choice. Escape or a click outside closes it.
@@ -164,81 +170,95 @@ function FilterPanel({ open, onClose, buttonRef, troops, careUnits = [], filters
                     <CloseButton className="FilterPanel-close" onClick={close} label="Close filters" />
                 </div>
 
+                {/* The views staff use most: several can be on (none = everyone) */}
                 <div className="FilterPanel-group">
-                    <span className="FilterPanel-groupTitle">Location</span>
-                    {/* Introcage only, with a troop chosen: that troop's
-                        enclosure's introcages */}
-                    <PairPills
-                        label="Living in"
-                        options={LOCATIONS}
-                        value={filters.location}
-                        onChange={(v) => onChange("location", v)}
-                    />
+                    <span className="FilterPanel-groupTitle">
+                        {/* (the Quick Actions bolt, in the same amber) */}
+                        <IconBolt className="FilterPanel-bolt" size={16} stroke={2} aria-hidden="true" />
+                        Quick Filters
+                    </span>
                     <Pills
-                        label="Section"
-                        allLabel="All Sections"
-                        options={SECTIONS}
-                        value={filters.section}
-                        onChange={(v) => onChange("section", v)}
-                        // A troop chosen: that's what's filtering, so "All
-                        // Sections" shows as off
-                        allOff={filters.troop !== "All Troops"}
+                        label="Quick Filters"
+                        allLabel={null}
+                        options={QUICK_FILTERS.map((q) => ({ id: q.id, label: q.label() }))}
+                        value={filters.quick}
+                        onChange={(v) => onChange("quick", v)}
+                        hideLabel
+                        wrap
                     />
-                    <label className="FilterPanel-section">
-                        <span className="FilterPanel-label">Enclosures</span>
-                        {/* Pink, so it stands out: most people go straight here */}
-                        <select
-                            id="troops"
-                            className="FilterPanel-troop"
-                            aria-label="Filter by enclosure"
-                            value={filters.troop}
-                            onChange={(e) => onChange("troop", e.target.value)}
-                        >
-                            {/* The troops' enclosures, then the care units; only
-                                those in the chosen sections. (The Bandits are
-                                a section of their own, above.) */}
-                            {[...troops.filter((t) => t !== "Bandits"), ...careUnits]
-                                .filter((t) => t === "All Troops" || inSection(t, filters.section))
-                                .map((t) => (
-                                    <option key={t} value={t}>
-                                        {t === "All Troops" ? "All Enclosures" : fullName(t)}
-                                    </option>
-                                ))}
-                        </select>
-                    </label>
                 </div>
 
-                {/* A birth year or an age category, not both: choosing one
-                    puts the other back to "all" (see ShowPage setFilter) */}
                 <div className="FilterPanel-group">
-                    <div className="FilterPanel-groupHeader">
-                        <span className="FilterPanel-groupTitle">Age</span>
-                        <span className="FilterPanel-note">Pick a birth year or a category</span>
+                    <span className="FilterPanel-groupTitle">Location</span>
+                    {/* Enclosures, then Living in (side by side on computers).
+                        Introcage only, with a troop chosen: that troop's
+                        enclosure's introcages */}
+                    <div className="FilterPanel-row">
+                        <label className="FilterPanel-section">
+                            <span className="FilterPanel-label">Enclosures</span>
+                            {/* Pink, so it stands out: most people go straight here */}
+                            <select
+                                id="troops"
+                                className="FilterPanel-troop"
+                                aria-label="Filter by enclosure"
+                                value={filters.troop}
+                                onChange={(e) => onChange("troop", e.target.value)}
+                            >
+                                {/* The troops' enclosures; only those in the sections
+                                    chosen in Quick Filters. (Not the Bandits or the
+                                    care units: they have Quick Filters of their own) */}
+                                {troops
+                                    .filter((t) => t !== "Bandits")
+                                    .filter((t) => t === "All Troops" || inSection(t, quickSections(filters.quick)))
+                                    .map((t) => (
+                                        <option key={t} value={t}>
+                                            {t === "All Troops" ? "All Enclosures" : fullName(t)}
+                                        </option>
+                                    ))}
+                            </select>
+                        </label>
+                        <PairPills
+                            label="Living in"
+                            options={LOCATIONS}
+                            value={filters.location}
+                            onChange={(v) => onChange("location", v)}
+                        />
                     </div>
-                    <label className="FilterPanel-section">
-                        <span className="FilterPanel-label">Birth year</span>
-                        {/* No year chosen: a dimmed "Choose a year…" (not in the
-                            list itself); "Any year" in the list clears it */}
-                        <select
-                            id="year"
-                            aria-label="Filter by year"
-                            className={filters.year === "All Years" ? "is-empty" : undefined}
-                            value={filters.year}
-                            onChange={(e) =>
-                                onChange("year", e.target.value === "any" ? "All Years" : e.target.value)
-                            }
-                        >
-                            <option value="All Years" hidden>
-                                Choose a year…
-                            </option>
-                            <option value="any">Any year</option>
-                            {FILTER_YEARS.map((y) => (
-                                <option key={y} value={y}>
-                                    {y}
+                </div>
+
+                {/* Profile: birth year and sex (side by side on computers),
+                    then the age category. A birth year or an age category,
+                    not both: choosing one puts the other back to "all" (see
+                    ShowPage setFilter) */}
+                <div className="FilterPanel-group">
+                    <span className="FilterPanel-groupTitle">Profile</span>
+                    <div className="FilterPanel-row">
+                        <label className="FilterPanel-section">
+                            <span className="FilterPanel-label">Birth year</span>
+                            {/* No year chosen: a dimmed "Choose a year…" (not in the
+                                list itself); "Any year" in the list clears it */}
+                            <select
+                                id="year"
+                                aria-label="Filter by year"
+                                className={filters.year === "All Years" ? "is-empty" : undefined}
+                                value={filters.year}
+                                onChange={(e) =>
+                                    onChange("year", e.target.value === "any" ? "All Years" : e.target.value)
+                                }
+                            >
+                                <option value="All Years" hidden>
+                                    Choose a year…
                                 </option>
-                            ))}
-                        </select>
-                    </label>
+                                <option value="any">Any year</option>
+                                {FILTER_YEARS.map((y) => (
+                                    <option key={y} value={y}>
+                                        {y}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <PairPills label="Sex" options={SEXES} value={filters.sex} onChange={(v) => onChange("sex", v)} />
+                    </div>
                     <Pills
                         label="Category"
                         allLabel="All Ages"
@@ -249,11 +269,6 @@ function FilterPanel({ open, onClose, buttonRef, troops, careUnits = [], filters
                         value={filters.age}
                         onChange={(v) => onChange("age", v)}
                     />
-                </div>
-
-                <div className="FilterPanel-group">
-                    <span className="FilterPanel-groupTitle">Sex</span>
-                    <PairPills label="Sex" options={SEXES} value={filters.sex} onChange={(v) => onChange("sex", v)} hideLabel />
                 </div>
 
                 <div className="FilterPanel-footer">

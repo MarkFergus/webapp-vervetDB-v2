@@ -9,7 +9,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    width: 340px;
+    width: 425px;
     padding: 16px;
     font-family: var(--font-ui);
     background-color: var(--surface-1);
@@ -55,24 +55,27 @@
 }
 
 .FilterPanel-groupTitle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 14px;
     color: var(--text);
 }
 
-/* A box's title, with a short instruction at the right */
-.FilterPanel-groupHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 8px;
+/* Two choices side by side (computers): Enclosures | Living in, Birth
+   year | Sex; one above the other on phones */
+.FilterPanel-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
-.FilterPanel-note {
-    font-size: 12px;
-    color: var(--text-3);
-    text-align: right;
+/* Quick Filters' bolt: the Quick Actions amber */
+.FilterPanel-bolt {
+    flex: none;
+    color: #f5b83d;
 }
 
 .FilterPanel-section {
@@ -127,8 +130,8 @@
     box-shadow: 0 0 0 1px var(--pink);
 }
 
-/* Section: chips like YouTube's; "All Sections" dashed, the chosen ones
-   white. Three to a row, all the same width */
+/* Pills: chips like YouTube's; "All …" dashed, the chosen ones white.
+   Three to a row, all the same width */
 .FilterPanel-pills {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -148,6 +151,14 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.15s;
+}
+
+/* Quick Filters: a longer name ("Sickbay Section") goes onto two lines on
+   a phone rather than running out of its pill */
+.FilterPanel-pills.is-wrapping button {
+    white-space: normal;
+    text-wrap: balance;
+    line-height: 1.2;
 }
 
 .FilterPanel-pills.is-two {
@@ -253,6 +264,10 @@
         border-bottom: none;
         max-height: calc(100dvh - 24px);
         animation: FilterPanel-up 0.2s ease-out;
+    }
+
+    .FilterPanel-row {
+        grid-template-columns: 1fr;
     }
 
     .FilterPanel-backdrop {

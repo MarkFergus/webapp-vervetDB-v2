@@ -1,3 +1,7 @@
+import { currentBabySeason } from "./ages";
+import { SICKBAY_UNIT } from "./enclosures";
+import { homeName } from "./places";
+
 // The sanctuary's sections and the troops in each, and the enclosures
 // without a troop (Bachelor Block, and the care units: their monkeys are in
 // their introcages / areas).
@@ -32,3 +36,41 @@ export function inSection(troop, sectionIds) {
     if (!sectionIds.length) return true;
     return SECTIONS.some((s) => sectionIds.includes(s.id) && s.troops.includes(troop));
 }
+
+// The Filters panel's Quick Filters: the views staff use most. Several can
+// be on at once (showing the monkeys in any of them; none on = everyone).
+//   section: a section's id (its troops' enclosures; also narrows the
+//            Enclosures box); otherwise test(monkey, today) decides
+// (The care units are only here, not in the Enclosures box.)
+//   label(today): the button and its chip under the toolbar
+export const QUICK_FILTERS = [
+    { id: "top", section: "top", label: () => "Top Section" },
+    { id: "middle", section: "middle", label: () => "Middle Section" },
+    { id: "bottom", section: "bottom", label: () => "Bottom Section" },
+    { id: "sickbay", section: "sickbay", label: () => "Sickbay Section" },
+    // (the wild troop: not in the Enclosures box, this is the way to them)
+    { id: "bandits", section: "bandits", label: () => "Bandits" },
+    { id: "babyCare", label: () => "Baby Care", test: (m) => homeName(m) === "Baby Care" },
+    // (with the monkeys in Sickbay for now, as on its page)
+    { id: "sickbayCare", label: () => "Sickbay Care", test: (m) => homeName(m) === SICKBAY_UNIT || Boolean(m.inSickbay) },
+    { id: "quarantine", label: () => "Quarantine", test: (m) => homeName(m) === "Quarantine" },
+    // This season's sanctuary babies (born this baby season or since: the
+    // year changes on 1 November), not the Bandits' wild-born babies
+    {
+        id: "babies",
+        label: (today = new Date()) => `Babies ${currentBabySeason(today)}`,
+        test: (m, today = new Date()) =>
+            Boolean(m.year) && Number(m.year) >= currentBabySeason(today) && m.troop !== "Bandits",
+    },
+];
+
+// Is this monkey in any of the chosen Quick Filters? ([] = every monkey)
+export function inQuickFilters(monkey, ids, today = new Date()) {
+    if (!ids.length) return true;
+    return QUICK_FILTERS.some(
+        (q) => ids.includes(q.id) && (q.section ? inSection(homeName(monkey), [q.section]) : q.test(monkey, today))
+    );
+}
+
+// The sections among the chosen Quick Filters (for the Enclosures box)
+export const quickSections = (ids) => QUICK_FILTERS.filter((q) => q.section && ids.includes(q.id)).map((q) => q.section);

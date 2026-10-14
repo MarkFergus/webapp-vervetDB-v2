@@ -1,4 +1,4 @@
-// The Filters panel (troop, birth year, age group, sex), the filter chips,
+// The Filters panel (Quick Filters, troop, birth year, age group, sex), the filter chips,
 // and sorting by sex.
 import { render, screen, within } from "@testing-library/react";
 import { fullName } from "./places";
@@ -7,10 +7,13 @@ import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
 import { ageInYears } from "./ages";
 import { SECTIONS } from "./sections";
+import { currentBabySeason } from "./ages";
 
 const filtersButton = () => screen.getByRole("button", { name: /^Filters/ });
 const panel = () => screen.getByRole("dialog", { name: "Filters" });
 // Location: Troop and Introcage pills, both on to start with
+// Quick Filters: toggle buttons (several can be on)
+const quickPill = (name) => within(screen.getByRole("group", { name: "Quick Filters" })).getByRole("button", { name });
 const locationPill = (name) => within(screen.getByRole("group", { name: "Living in" })).getByRole("button", { name });
 // The monkeys' cards, in order (their names are "Aroha, …")
 const shownNames = () =>
@@ -37,7 +40,7 @@ test("Filters opens the panel, ready to use; Escape closes it and returns to the
     await user.click(filtersButton());
     expect(panel()).toBeInTheDocument();
     expect(filtersButton()).toHaveAttribute("aria-expanded", "true");
-    expect(locationPill("Troop")).toHaveFocus(); // the first choice
+    expect(quickPill("Top Section")).toHaveFocus(); // the first choice
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
@@ -264,9 +267,6 @@ describe("Location", () => {
         expect(locationPill("Troop")).toHaveAttribute("aria-pressed", "true");
     });
 
-    // Section pills: "All Sections" to start with; tapping others adds them
-    const sectionPill = (name) =>
-        within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
     const troopList = () =>
         within(screen.getByRole("combobox", { name: "Filter by enclosure" }))
             .getAllByRole("option")
@@ -274,43 +274,44 @@ describe("Location", () => {
     const TOP = ["Goliath", "Gismo", "D&D", "Royal"];
     const SICKBAY = ["James", "Global"];
 
-    test("choosing a troop turns \"All Sections\" off (dashed), and All Troops turns it back on", async () => {
+    test("Quick Filters: the sections, the Bandits, the care units and this season's babies, no \"All\" pill", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        const troop = screen.getByRole("combobox", { name: "Filter by enclosure" });
-        await user.selectOptions(troop, "Goliath");
-        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
-        await user.selectOptions(troop, "All Troops");
-        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "true");
+        const names = within(screen.getByRole("group", { name: "Quick Filters" }))
+            .getAllByRole("button")
+            .map((b) => b.textContent);
+        expect(names).toEqual([
+            "Top Section", "Middle Section", "Bottom Section", "Sickbay Section", "Bandits",
+            "Baby Care", "Sickbay Care", "Quarantine", `Babies ${currentBabySeason()}`,
+        ]);
     });
 
     test("a section shows its troops' monkeys, and the troop list narrows to them", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "true");
-        await user.click(sectionPill("Top"));
-        expect(sectionPill("All Sections")).toHaveAttribute("aria-pressed", "false");
+        await user.click(quickPill("Top Section"));
+        expect(quickPill("Top Section")).toHaveAttribute("aria-pressed", "true");
         expectShowing(monkeysArr.filter((m) => TOP.includes(m.troop)).length);
         expect(troopList()).toEqual(["All Enclosures", ...TOP.map((t) => fullName(t))]); // (full names)
     });
 
-    test("several sections at once; each a chip that removes just it", async () => {
+    test("several at once; each a chip that removes just it", async () => {
         const { user } = setup();
         await user.click(filtersButton());
-        await user.click(sectionPill("Top"));
-        await user.click(sectionPill("Sickbay"));
+        await user.click(quickPill("Top Section"));
+        await user.click(quickPill("Sickbay Section"));
         expectShowing(monkeysArr.filter((m) => [...TOP, ...SICKBAY].includes(m.troop)).length);
         expect(troopList().slice(1).sort()).toEqual([...TOP, ...SICKBAY].map((t) => fullName(t)).sort()); // in the usual troop order
         const chips = () => [...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent);
-        expect(chips()).toEqual(["Top section", "Sickbay section"]);
+        expect(chips()).toEqual(["Top Section", "Sickbay Section"]);
 
-        await user.click(screen.getByRole("button", { name: "Remove filter: Top section" }));
-        expect(chips()).toEqual(["Sickbay section"]);
+        await user.click(screen.getByRole("button", { name: "Remove filter: Top Section" }));
+        expect(chips()).toEqual(["Sickbay Section"]);
         await user.click(filtersButton()); // tapping the chip closed the panel
-        expect(sectionPill("Top")).toHaveAttribute("aria-pressed", "false");
+        expect(quickPill("Top Section")).toHaveAttribute("aria-pressed", "false");
 
-        // "All Sections" turns them all off again
-        await user.click(sectionPill("All Sections"));
+        // Tapping the last one off: everyone again
+        await user.click(quickPill("Sickbay Section"));
         expect(chips()).toEqual([]);
         expectShowing(monkeysArr.length);
     });
@@ -319,20 +320,43 @@ describe("Location", () => {
         const { user } = setup();
         await user.click(filtersButton());
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Skrow");
-        await user.click(sectionPill("Bottom"));
+        await user.click(quickPill("Bottom Section"));
         expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toHaveValue("Skrow"); // Skrow is Bottom
-        await user.click(sectionPill("Bottom")); // off: back to all sections
-        await user.click(sectionPill("Sickbay"));
+        await user.click(quickPill("Bottom Section")); // off: back to everyone
+        await user.click(quickPill("Sickbay Section"));
         expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toHaveValue("All Troops");
         expectShowing(monkeysArr.filter((m) => SICKBAY.includes(m.troop)).length);
     });
 
-    test("the Bandits (the wild troop) are a section of their own", async () => {
-        const { user } = setup();
+    test("Bandits: the wild troop (not in the Enclosures box)", async () => {
+        const user = userEvent.setup();
+        const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
+        const monkeys = [
+            { ...base, id: 1, name: "Wildy", troop: "Bandits", introcage: null, enclosure: null },
+            { ...base, id: 2, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath" },
+        ];
+        render(<ShowPage monkeys={monkeys} troops={["All Troops", "Goliath", "Bandits"]} />);
         await user.click(filtersButton());
-        await user.click(sectionPill("Bandits"));
-        expect(troopList()).toEqual(["All Enclosures"]); // none in the built-in copy of the data
-        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual(["Bandits"]);
+        await user.click(quickPill("Bandits"));
+        expect(shownNames()).toEqual(["Wildy"]);
+        expect(troopList()).toEqual(["All Enclosures"]);
+    });
+
+    test("Babies: this season's sanctuary babies from every troop, not the Bandits'", async () => {
+        const user = userEvent.setup();
+        const season = currentBabySeason();
+        const base = { sex: "female", chip: "", img: ["x.jpg"], bio: "", desc: "" };
+        const monkeys = [
+            { ...base, id: 1, name: "Tiny", year: season, troop: "Goliath", introcage: null, enclosure: "Goliath" },
+            { ...base, id: 2, name: "Pip", year: season, troop: null, introcage: "Baby Care", introcageType: "area", enclosure: "Baby Care" },
+            { ...base, id: 3, name: "Wildling", year: season, troop: "Bandits", introcage: null, enclosure: null },
+            { ...base, id: 4, name: "Older", year: season - 1, troop: "Goliath", introcage: null, enclosure: "Goliath" },
+        ];
+        render(<ShowPage monkeys={monkeys} />);
+        await user.click(filtersButton());
+        await user.click(quickPill(`Babies ${season}`));
+        expect(shownNames().sort()).toEqual(["Pip", "Tiny"]);
+        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual([`Babies ${season}`]);
     });
 
     test("every troop is in a section", () => {
@@ -373,7 +397,6 @@ test("a birth year or an age category, not both: choosing one clears the other",
     await user.selectOptions(year(), "Any year");
     expect(year()).toHaveDisplayValue("Choose a year…");
     expectShowing(monkeysArr.length);
-    expect(screen.getByText("Pick a birth year or a category")).toBeInTheDocument();
 });
 
 test("Clear All in the panel is greyed out until a filter is on", async () => {
@@ -411,60 +434,48 @@ test("computers: the filter dropdown leaves the page scrollable", async () => {
     expect(document.documentElement.style.overflow).toBe("");
 });
 
-describe("the Enclosures box and the Care Units section", () => {
+describe("the Enclosures box and the care units", () => {
     const optionTexts = () =>
         within(screen.getByRole("combobox", { name: "Filter by enclosure" }))
             .getAllByRole("option")
             .map((o) => o.textContent);
 
-    test("troop enclosures, then the care units; the Bandits aren't in the list", async () => {
+    test("just the troop enclosures (the Bandits and care units are Quick Filters)", async () => {
         const user = userEvent.setup();
         render(<ShowPage troops={["All Troops", "Goliath", "Bandits"]} />);
         await user.click(filtersButton());
-        expect(optionTexts()).toEqual(["All Enclosures", "Goliath", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+        expect(optionTexts()).toEqual(["All Enclosures", "Goliath"]);
     });
 
-    test("the Care Units section narrows the box to the three care units", async () => {
-        const user = userEvent.setup();
-        render(<ShowPage />);
-        await user.click(filtersButton());
-        await user.click(within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name: "Care Units" }));
-        expect(optionTexts()).toEqual(["All Enclosures", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
-    });
-
-    test("Sickbay Care Unit shows its monkeys and those in Sickbay for now", async () => {
+    test("Baby Care, Sickbay Care (with the monkeys in Sickbay for now) and Quarantine, none twice", async () => {
         const user = userEvent.setup();
         const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
         const monkeys = [
             { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" },
             { ...base, id: 2, name: "Nita", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
             { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: false },
+            { ...base, id: 4, name: "Pip", troop: null, introcage: "Baby Care", introcageType: "area", enclosure: "Baby Care" },
+            { ...base, id: 5, name: "Quin", troop: null, introcage: "Quarantine", introcageType: "area", enclosure: "Quarantine" },
         ];
         render(<ShowPage monkeys={monkeys} />);
         await user.click(filtersButton());
-        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Sickbay Care Unit");
+        await user.click(quickPill("Sickbay Care"));
         expect(shownNames().sort()).toEqual(["Nita", "Ziggy"]);
-        // Its home still has her too
+        // The enclosures box isn't narrowed (not a section)
+        expect(optionTexts()).toContain("Goliath");
+        await user.click(quickPill("Baby Care"));
+        expect(shownNames().sort()).toEqual(["Nita", "Pip", "Ziggy"]);
+        // Both places chosen (Top has Goliath): Nita is one monkey, counted once
+        await user.click(quickPill("Top Section"));
+        expect(shownNames().sort()).toEqual(["Nita", "Pip", "Rocio", "Ziggy"]);
+        expectShowing(4);
+        // Quarantine: just its own
+        await user.click(within(panel()).getByRole("button", { name: "Clear All" }));
+        await user.click(quickPill("Quarantine"));
+        expect(shownNames()).toEqual(["Quin"]);
+        // Nita in Sickbay for now is still in her troop's enclosure too
+        await user.click(quickPill("Quarantine"));
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
         expect(shownNames().sort()).toEqual(["Nita", "Rocio"]);
-    });
-
-    test("the Care Units section also has the monkeys in Sickbay for now, and none twice", async () => {
-        const user = userEvent.setup();
-        const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
-        const monkeys = [
-            { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" },
-            { ...base, id: 2, name: "Nita", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
-            { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: false },
-        ];
-        render(<ShowPage monkeys={monkeys} />);
-        await user.click(filtersButton());
-        const pill = (name) => within(screen.getByRole("group", { name: "Section" })).getByRole("button", { name });
-        await user.click(pill("Care Units"));
-        expect(shownNames().sort()).toEqual(["Nita", "Ziggy"]);
-        // Both places chosen (Top has Goliath): Nita is one monkey, counted once
-        await user.click(pill("Top"));
-        expect(shownNames().sort()).toEqual(["Nita", "Rocio", "Ziggy"]);
-        expectShowing(3);
     });
 });

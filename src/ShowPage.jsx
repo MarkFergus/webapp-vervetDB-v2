@@ -24,9 +24,7 @@ import { fullName, homeName, inIntrocage, placeName } from "./places";
 import {
     enclosureFromRoute,
     introcageMonkeys,
-    isCareUnit,
     isInside,
-    SICKBAY_UNIT,
     isNewArrival,
     isEnclosuresRoute,
     placeHash,
@@ -40,7 +38,7 @@ import { amSummary, summaryDate } from "./feeding";
 import { monitoredTroops, monitoringGroups } from "./monitoring";
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
-import { SECTIONS, inSection } from "./sections";
+import { QUICK_FILTERS, inQuickFilters, inSection, quickSections } from "./sections";
 import { downloadBlob } from "./canvasHelpers";
 import OfflineModal from "./OfflineModal";
 import SortMenu from "./SortMenu";
@@ -78,7 +76,7 @@ function inAgeGroups(monkey, groups) {
 
 const NO_FILTERS = {
     location: "all", // "troop" or "introcage": only those
-    section: [], // section ids picked ([] = all sections)
+    quick: [], // Quick Filter ids picked ([] = everyone)
     troop: "All Troops",
     year: "All Years",
     age: [], // age categories picked ([] = all)
@@ -88,7 +86,7 @@ const NO_FILTERS = {
 // The list on screen is worked out from the search, filters and sort
 // every time, so they always agree with each other.
 function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
-    const { location, section, troop: troopFilter, year: yearFilter, age, sex } = filters;
+    const { location, quick, troop: troopFilter, year: yearFilter, age, sex } = filters;
     const query = searchValue.trim().toLowerCase();
     const isChipSearch = /^\d+$/.test(query);
 
@@ -101,9 +99,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
             // see matchesLocation)
             (inIntrocage(monkey)
                 ? homeName(monkey).toLowerCase() === troopFilter.toLowerCase()
-                : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase())) ||
-            // The Sickbay Care Unit also has the monkeys in Sickbay for now
-            (troopFilter === SICKBAY_UNIT && Boolean(monkey.inSickbay));
+                : (monkey.troop ?? "").toLowerCase().includes(troopFilter.toLowerCase()));
         const matchesYear =
             yearFilter === "All Years" ||
             // Number() on both sides in case a year is entered as text
@@ -117,10 +113,9 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         return (
             matchesLocation &&
             matchesTroop &&
-            // A monkey in Sickbay for now is also at the Sickbay Care Unit (so in the
-            // Care Units section). It is one monkey in the list whichever of its
-            // places are chosen, so it is shown and counted once.
-            (inSection(homeName(monkey), section) || (Boolean(monkey.inSickbay) && inSection(SICKBAY_UNIT, section))) &&
+            // (a monkey in Sickbay for now is also under Sickbay Care: it is
+            // one monkey in the list whichever are chosen, shown and counted once)
+            inQuickFilters(monkey, quick) &&
             matchesYear &&
             matchesSearch &&
             matchesSex &&
@@ -187,7 +182,7 @@ function ShowPage({
         onSaved: onEnclosureSaved,
     };
     const [searchValue, setSearchValue] = useState("");
-    // Filters: { location, section, troop, year, age, sex } (see FilterPanel)
+    // Filters: { location, quick, troop, year, age, sex } (see FilterPanel)
     const [filters, setFilters] = useState(NO_FILTERS);
     const troopFilter = filters.troop;
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -310,7 +305,7 @@ function ShowPage({
         setFilters((f) => {
             const next = { ...f, [field]: value };
             // A troop outside the newly chosen sections: back to all troops
-            if (field === "section" && !inSection(next.troop, value)) next.troop = NO_FILTERS.troop;
+            if (field === "quick" && !inSection(next.troop, quickSections(value))) next.troop = NO_FILTERS.troop;
             // A birth year or an age category, not both (a year already
             // decides the category): choosing one clears the other
             if (field === "year" && value !== NO_FILTERS.year) next.age = NO_FILTERS.age;
@@ -656,11 +651,11 @@ function ShowPage({
     }
 
     const activeFilters = [
-        // One chip per section picked
-        ...SECTIONS.filter((s) => filters.section.includes(s.id)).map((s) => ({
-            field: "section",
-            id: s.id,
-            label: s.chip,
+        // One chip per Quick Filter picked
+        ...QUICK_FILTERS.filter((q) => filters.quick.includes(q.id)).map((q) => ({
+            field: "quick",
+            id: q.id,
+            label: q.label(),
         })),
         filters.location !== NO_FILTERS.location && {
             field: "location",
@@ -818,7 +813,6 @@ function ShowPage({
                         onClose={() => setFiltersOpen(false)}
                         buttonRef={filtersButtonRef}
                         troops={troops}
-                        careUnits={enclosures.filter(isCareUnit).map((e) => e.name)}
                         filters={filters}
                         onChange={setFilter}
                         onClear={clearFilters}
@@ -868,8 +862,8 @@ function ShowPage({
                             type="button"
                             className="ShowPage-chip"
                             onClick={() =>
-                                // Age categories and sections come off one at a time
-                                f.field === "age" || f.field === "section"
+                                // Age categories and Quick Filters come off one at a time
+                                f.field === "age" || f.field === "quick"
                                     ? setFilter(f.field, filters[f.field].filter((x) => x !== f.id))
                                     : setFilter(f.field, NO_FILTERS[f.field])
                             }
