@@ -1,4 +1,4 @@
-// Add New Monkey: a New Rescue or a Bandit, and a new rescue's Arrival Info
+// Add New Monkey: a New Rescue or Other, and a new rescue's Arrival Info
 // (staff only, in place of the Bio while it lives in a care unit)
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -50,7 +50,7 @@ describe("New Rescue (the first choice)", () => {
         expect(screen.queryByLabelText("Bio")).not.toBeInTheDocument();
         // Features stay: any identification marks matter if it escapes
         expect(field("Distinctive features")).toBeInTheDocument();
-        // The Care Unit list has just the care units (the Bandits are the other choice)
+        // The Care Unit list has just the care units (the rest are under Other)
         expect(within(field("Care Unit")).getAllByRole("option").map((o) => o.textContent))
             .toEqual(["Choose…", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
     });
@@ -79,16 +79,17 @@ describe("New Rescue (the first choice)", () => {
     });
 });
 
-describe("Bandit", () => {
-    test("Enclosure and Location fixed; everything else as is (chip and bio too)", async () => {
+describe("Other", () => {
+    test("any enclosure and location; everything else as is (chip and bio too)", async () => {
         const user = userEvent.setup();
         add();
-        await user.click(kind("Bandit"));
-        expect(kind("Bandit")).toHaveAttribute("aria-pressed", "true");
-        expect(field("Enclosure")).toBeDisabled();
-        expect(field("Enclosure")).toHaveDisplayValue("Bandits");
-        expect(field("Location")).toBeDisabled();
-        expect(field("Location")).toHaveDisplayValue("Bandits Troop");
+        await user.click(kind("Other"));
+        expect(kind("Other")).toHaveAttribute("aria-pressed", "true");
+        expect(field("Enclosure")).toBeEnabled();
+        expect(field("Enclosure")).toHaveValue("");
+        const offered = within(field("Enclosure")).getAllByRole("option").map((o) => o.textContent);
+        // troops (the Bandits too), blocks and care units
+        expect(offered).toEqual(expect.arrayContaining(["Goliath", "Bandits", "Quarantine"]));
         expect(screen.getByLabelText("Chip")).toBeInTheDocument();
         expect(screen.getByLabelText("Bio")).toBeInTheDocument();
         expect(screen.queryByLabelText(/Arrival Info/)).not.toBeInTheDocument();
@@ -97,18 +98,32 @@ describe("Bandit", () => {
     test("saved in the Bandits troop", async () => {
         const user = userEvent.setup();
         add();
-        await user.click(kind("Bandit"));
+        await user.click(kind("Other"));
         await user.type(field("Name"), "Wild One");
+        await user.selectOptions(field("Enclosure"), "Bandits");
+        expect(field("Location")).toHaveDisplayValue("Bandits Troop");
         await user.click(screen.getByRole("button", { name: "Add monkey" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         expect(saveMonkey.mock.calls[0][0]).toMatchObject({ name: "Wild One", troop: "Bandits", introcage: null });
         expect(saveArrivalInfo).not.toHaveBeenCalled();
     });
 
+    test("saved in a troop", async () => {
+        const user = userEvent.setup();
+        add();
+        await user.click(kind("Other"));
+        await user.type(field("Name"), "Late Record");
+        await user.selectOptions(field("Enclosure"), "Goliath");
+        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ name: "Late Record", troop: "Goliath" });
+    });
+
     test("going back to New Rescue starts the care unit choice again", async () => {
         const user = userEvent.setup();
         add();
-        await user.click(kind("Bandit"));
+        await user.click(kind("Other"));
+        await user.selectOptions(field("Enclosure"), "Goliath");
         await user.click(kind("New Rescue"));
         expect(field("Care Unit")).toBeEnabled();
         expect(field("Care Unit")).toHaveValue("");
@@ -116,9 +131,9 @@ describe("Bandit", () => {
     });
 });
 
-test("no choice to make when there is no Bandits troop", () => {
+test("the choice is there without a Bandits troop too", () => {
     add(["Goliath"]);
-    expect(screen.queryByRole("group", { name: "Type" })).not.toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Type" })).toBeInTheDocument();
 });
 
 describe("editing", () => {

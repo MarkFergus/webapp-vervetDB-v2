@@ -35,16 +35,15 @@ function MonkeyForm({
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
-    // Adding: a New Rescue (into a care unit) or a Bandit (the wild troop,
-    // whose new records keep being added: Enclosure and Location fixed)
+    // Adding: a New Rescue (into a care unit) or Other (any enclosure and
+    // location: e.g. a Bandit, or a monkey whose record is added late)
     const [kind, setKind] = useState("rescue");
-    const hasBandits = careUnitsOnly && troops.includes("Bandits");
-    const bandit = hasBandits && kind === "bandit";
-    const rescue = careUnitsOnly && !bandit;
+    const other = careUnitsOnly && kind === "other";
+    const rescue = careUnitsOnly && !other;
     // Enclosure → its troop and introcages, for the Enclosure + Location boxes
     const [careChoices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive, careUnitsOnly));
-    const banditChoice = { key: "Bandits", troop: "Bandits", enclosure: "Bandits", noTroop: false, introcages: [] };
-    const choices = bandit ? [banditChoice] : careChoices;
+    const [allChoices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive));
+    const choices = other ? allChoices : careChoices;
     const [initial] = useState(() =>
         isNew
             ? emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : "")
@@ -98,18 +97,13 @@ function MonkeyForm({
         setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
     };
     const choice = choices.find((c) => c.key === form.troop);
-    // New Rescue / Bandit: starting the form again for the other kind
+    // New Rescue / Other: starting the Enclosure and Location boxes again
+    // for the other kind
     function chooseKind(next) {
         if (next === kind) return;
         setKind(next);
         setErrors({});
-        setForm({
-            ...form,
-            troop: next === "bandit" ? "Bandits" : "",
-            location: next === "bandit" ? "troop" : "",
-            chip: "",
-            chipUnknown: false,
-        });
+        setForm({ ...form, troop: "", location: "", chip: "", chipUnknown: false });
     }
     // Feeding: for a monkey in an introcage (not a troop, or a care unit's
     // area), once the database has it
@@ -200,10 +194,10 @@ function MonkeyForm({
                 </div>
 
                 <div className="MonkeyForm-body">
-                    {/* Adding: a New Rescue or a Bandit */}
-                    {hasBandits && (
+                    {/* Adding: a New Rescue or Other */}
+                    {careUnitsOnly && (
                         <div className="MonkeyForm-kind" role="group" aria-label="Type">
-                            {[["rescue", "New Rescue"], ["bandit", "Bandit"]].map(([id, label]) => (
+                            {[["rescue", "New Rescue"], ["other", "Other"]].map(([id, label]) => (
                                 <button
                                     key={id}
                                     type="button"
@@ -234,12 +228,11 @@ function MonkeyForm({
                             <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
                             <select
                                 value={form.troop}
-                                disabled={bandit}
                                 onChange={chooseEnclosure}
                                 aria-invalid={Boolean(errors.troop)}
                                 aria-describedby={describedBy("troop")}
                             >
-                                {!bandit && <option value="">Choose…</option>}
+                                <option value="">Choose…</option>
                                 {choices.map((c) => (
                                     <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
                                 ))}
@@ -251,7 +244,7 @@ function MonkeyForm({
                             <select
                                 value={form.location}
                                 onChange={set("location")}
-                                disabled={!choice || bandit}
+                                disabled={!choice}
                                 aria-invalid={Boolean(errors.location)}
                                 aria-describedby={describedBy("location")}
                             >

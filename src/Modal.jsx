@@ -323,7 +323,7 @@ function Modal({
                                                     onClick={() => setReleaseForm({ date: todayText(), details: "" })}
                                                 >
                                                     <IconTrees size={18} aria-hidden="true" />
-                                                    Released to Wild
+                                                    Release to Wild
                                                 </button>
                                             )}
                                             {injuries.canAdd && !formOpen && (
