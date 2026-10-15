@@ -47,6 +47,36 @@ test("Filters opens the panel, ready to use; Escape closes it and returns to the
     expect(filtersButton()).toHaveFocus();
 });
 
+test("the Bandits Quick Filter has the bandit icon (just the name for screen readers)", async () => {
+    const { user } = setup();
+    await user.click(filtersButton());
+    const icon = quickPill("Bandits").querySelector("svg.bandit-icon");
+    expect(icon).not.toBeNull();
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(quickPill("Top Section").querySelector("svg")).toBeNull();
+});
+
+test("the count beside Sort leaves out the Bandits, unless their Quick Filter is on", async () => {
+    const user = userEvent.setup();
+    const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
+    const monkeys = [
+        { ...base, id: 1, name: "Wildy", troop: "Bandits", introcage: null, enclosure: null },
+        { ...base, id: 2, name: "Scruff", troop: "Bandits", introcage: null, enclosure: null },
+        { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath" },
+    ];
+    render(<ShowPage monkeys={monkeys} troops={["All Troops", "Goliath", "Bandits"]} />);
+    const count = () => document.querySelector(".ShowPage-count");
+    // No filters: says who is counted
+    expect(count()).toHaveTextContent(/^1sanctuary monkey$/);
+    expect(count()).toHaveAttribute("title", "1 sanctuary monkey (not counting the Bandits)");
+    expectShowing(3); // (the list itself still has everyone)
+
+    await user.click(filtersButton());
+    await user.click(quickPill("Bandits"));
+    expect(count()).toHaveTextContent(/^2$/); // (a filter on: just the number)
+    expect(count()).toHaveAttribute("title", "2 monkeys");
+});
+
 test("birth years: this year back to 1997", async () => {
     const { user } = setup();
     await user.click(filtersButton());

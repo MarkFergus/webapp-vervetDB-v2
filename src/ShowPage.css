@@ -104,6 +104,12 @@
     color: var(--text);
 }
 
+/* "sanctuary monkeys" after the number, with no filters on (the first
+   words to go when the row is too tight) */
+.ShowPage-toolbar.is-snug .ShowPage-countLabel {
+    display: none;
+}
+
 /* The ⌄ at the end of Filters and Sort: they open a panel / menu */
 .ShowPage-chevron {
     margin-left: -2px;

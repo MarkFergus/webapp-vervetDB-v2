@@ -623,15 +623,16 @@ function ShowPage({
     }, []);
     // Too tight for Filters, Sort, the count and the view switch on one
     // line (narrow phones, long sorts like "Age · Youngest first"): first
-    // Filters loses its word (.is-tight), then Sort becomes just an icon
-    // (.is-compact). Tried with all the words each time first, before the
+    // the count loses "sanctuary monkeys" (.is-snug), then Filters loses its
+    // word (.is-tight), then Sort becomes just an icon (.is-compact). Tried with all the words each time first, before the
     // screen is drawn, so it never flickers.
     useLayoutEffect(() => {
         const toolbar = toolbarRef.current;
         if (!toolbar) return;
         const tooWide = () => toolbar.scrollWidth > toolbar.clientWidth + 1;
         function fit() {
-            toolbar.classList.remove("is-tight", "is-compact");
+            toolbar.classList.remove("is-snug", "is-tight", "is-compact");
+            if (tooWide()) toolbar.classList.add("is-snug");
             if (tooWide()) toolbar.classList.add("is-tight");
             if (tooWide()) toolbar.classList.add("is-compact");
         }
@@ -640,7 +641,7 @@ function ShowPage({
         const observer = new ResizeObserver(fit);
         observer.observe(toolbar);
         return () => observer.disconnect();
-    }, [sort, filters, visibleMonkeys.length, offList]);
+    }, [sort, filters, visibleMonkeys.length, searchValue, offList]);
     function scrollToTop() {
         const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
         window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
@@ -674,6 +675,15 @@ function ShowPage({
             label: SEXES.find((x) => x.id === filters.sex).label,
         },
     ].filter(Boolean);
+
+    // The count beside Sort: sanctuary monkeys only, unless the Bandits
+    // Quick Filter is on
+    const countBandits = filters.quick.includes("bandits");
+    // No filters and no search: the whole sanctuary
+    const showingEveryone = activeFilters.length === 0 && !searchValue.trim();
+    const countedMonkeys = countBandits
+        ? visibleMonkeys.length
+        : visibleMonkeys.filter((m) => m.troop !== "Bandits").length;
 
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
@@ -821,15 +831,28 @@ function ShowPage({
                     />
                 </div>
                 <SortMenu sort={sort} onSort={sortBy} />
-                {/* How many monkeys match (screen readers hear it from the
-                    status line below, so this is for the eyes only) */}
+                {/* How many sanctuary monkeys match: not the Bandits (the
+                    wild troop), unless their Quick Filter is on. (Screen
+                    readers hear the whole list's count from the status line
+                    below, so this is for the eyes only) */}
                 <span
                     className="ShowPage-count"
-                    title={`${visibleMonkeys.length} ${visibleMonkeys.length === 1 ? "monkey" : "monkeys"}`}
+                    title={
+                        countBandits
+                            ? `${countedMonkeys} ${countedMonkeys === 1 ? "monkey" : "monkeys"}`
+                            : `${countedMonkeys} sanctuary ${countedMonkeys === 1 ? "monkey" : "monkeys"} (not counting the Bandits)`
+                    }
                     aria-hidden="true"
                 >
                     <IconUsersGroup size={16} aria-hidden="true" />
-                    {visibleMonkeys.length}
+                    {countedMonkeys}
+                    {/* Everyone (no filters, no search): say who is counted.
+                        (Hidden when the row is too tight) */}
+                    {showingEveryone && (
+                        <span className="ShowPage-countLabel">
+                            sanctuary {countedMonkeys === 1 ? "monkey" : "monkeys"}
+                        </span>
+                    )}
                 </span>
                 {/* Cards or list, at the far right */}
                 <div className="ShowPage-view" role="group" aria-label="View">

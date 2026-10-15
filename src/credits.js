@@ -8,6 +8,7 @@ export const CREDITS = [
     { name: "Motion", use: "Animations", licence: "MIT", url: "https://motion.dev" },
     { name: "Tabler Icons", use: "Icons", licence: "MIT", url: "https://tabler.io/icons" },
     { name: "Uicons by Flaticon", use: "Enclosure icon", licence: "Flaticon", url: "https://www.flaticon.com/uicons" },
+    { name: "Bandit by Delapouite (game-icons.net)", use: "Bandits icon", licence: "CC BY 3.0", url: "https://game-icons.net/1x1/delapouite/bandit.html" },
     { name: "React-PDF", use: "The Profile Book", licence: "MIT", url: "https://react-pdf.org" },
     { name: "React Easy Crop", use: "Cropping photos", licence: "MIT", url: "https://github.com/ValentinH/react-easy-crop" },
     { name: "Workbox", use: "Offline use", licence: "MIT", url: "https://developer.chrome.com/docs/workbox" },

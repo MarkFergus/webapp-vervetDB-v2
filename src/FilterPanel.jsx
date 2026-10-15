@@ -5,6 +5,7 @@ import { QUICK_FILTERS, inSection, quickSections } from "./sections";
 import { lockScroll, unlockScroll } from "./useDialog";
 import "./FilterPanel.css";
 import CloseButton from "./CloseButton";
+import BanditIcon from "./BanditIcon";
 
 // The choices in the Filters panel. Age categories (several can be picked)
 // use the 1 October birthday (see ages.js); monkeys with no birth year
@@ -62,6 +63,7 @@ function Pills({ label, allLabel, options, value, onChange, allOff = false, hide
                 )}
                 {options.map((o) => (
                     <button key={o.id} type="button" aria-pressed={value.includes(o.id)} onClick={() => toggle(o.id)}>
+                        {o.icon}
                         {o.label}
                         {o.hint && <small aria-hidden="true">{o.hint}</small>}
                     </button>
@@ -180,7 +182,12 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                     <Pills
                         label="Quick Filters"
                         allLabel={null}
-                        options={QUICK_FILTERS.map((q) => ({ id: q.id, label: q.label() }))}
+                        // (the Bandits get their bandit, just for fun)
+                        options={QUICK_FILTERS.map((q) => ({
+                            id: q.id,
+                            label: q.label(),
+                            icon: q.id === "bandits" && <BanditIcon className="FilterPanel-pillIcon" size={18} aria-hidden="true" />,
+                        }))}
                         value={filters.quick}
                         onChange={(v) => onChange("quick", v)}
                         hideLabel
