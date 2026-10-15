@@ -7,7 +7,8 @@ import AboutModal from "./AboutModal";
 import { useAuth } from "./auth";
 import MonkeyIcon from "./MonkeyIcon";
 import AccountMenu from "./AccountMenu";
-import { BottomBar, ComingSoon, Drawer, SideRail } from "./NavBars";
+import { BottomBar, Drawer, SideRail } from "./NavBars";
+import WholeMap from "./WholeMap";
 import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
@@ -106,9 +107,9 @@ function Nav({
     const [accountStart, setAccountStart] = useState(null);
     // Phones: the drawer
     const [drawerOpen, setDrawerOpen] = useState(false);
-    // Map (the side rail or bottom bar): "coming soon" for now
-    const [mapNotice, setMapNotice] = useState(false);
-    const showMapNotice = () => setMapNotice(true);
+    // Map (the side rail, bottom bar or drawer): the Interactive Map pop-up
+    const [mapOpen, setMapOpen] = useState(false);
+    const showMap = () => setMapOpen(true);
 
     // The clear button disappears once clicked, so put focus back in the box
     function clearSearch() {
@@ -116,7 +117,7 @@ function Nav({
         searchInputRef.current?.focus();
     }
 
-    const anyPopUp = isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen;
+    const anyPopUp = isPDFModalOpen || isAccountOpen || isAboutOpen || isOfflineOpen || mapOpen;
 
     // "/" anywhere on the page jumps into the search box (like YouTube and X),
     // unless you're already typing somewhere
@@ -235,7 +236,7 @@ function Nav({
                 <>
                     <SideRail
                         open={railOpen}
-                        onMap={showMapNotice}
+                        onMap={showMap}
                         onAddPhotos={onAddPhotos}
                         over={!wide && railOver}
                         onClose={closeRailOver}
@@ -250,7 +251,7 @@ function Nav({
                     <BottomBar
                         page={page}
                         onHome={onHome}
-                        onMap={showMapNotice}
+                        onMap={showMap}
                         onAddPhotos={onAddPhotos}
                         onProfileBook={onCreatePdf}
                         isGeneratingPDF={isGeneratingPDF}
@@ -259,13 +260,13 @@ function Nav({
                         avatarUrl={avatarUrl}
                         inert={barsInert || anyPopUp}
                     />
-                    <ComingSoon open={mapNotice} onClose={() => setMapNotice(false)} />
+                    {mapOpen && <WholeMap onClose={() => setMapOpen(false)} />}
                     <Drawer
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
                         // (staff: Map's place in the bottom bar is Add Photos)
-                        onMap={onAddPhotos ? showMapNotice : undefined}
+                        onMap={onAddPhotos ? showMap : undefined}
                         showGame={Boolean(onCreatePdf)}
                         page={page}
                         onOffline={toggleOffline}

@@ -19,13 +19,8 @@
     height: 100%;
 }
 
-/* The map's labels in the site's font on every device (the map file asks
-   for Windows fonts, Cambria and Calibri Light, which most phones haven't
-   got, so the labels came out in different fonts and shifted about) */
-.SanctuaryMap text,
-.SanctuaryMap tspan {
-    font-family: var(--font-ui) !important;
-}
+/* The map's labels use the map file's own fonts: Bitter and Hanken Grotesk,
+   the site's fonts (loaded in index.html, with the weights the map uses) */
 
 /* The enclosure: filled with its section's neon colour, keeping the map's
    black outline */

@@ -253,8 +253,8 @@
     background-color: rgba(62, 207, 142, 0.15);
 }
 
-/* Map in the middle: a circle outlined in blue (coming soon: tapping it
-   says so) */
+/* Map in the middle: a circle outlined in blue (opens the Interactive
+   Map) */
 .BottomBar-map {
     color: var(--text);
 }
@@ -456,70 +456,8 @@ a.Drawer-item {
     color: white;
 }
 
-/* Interactive Map: dimmer, as it isn't ready yet (as in the side rail) */
-.Drawer-item.is-soon {
-    color: var(--text-2);
-}
-
 .Drawer-footer {
     margin: auto 12px 0;
     font-size: 12px;
     color: var(--text-2);
 }
-
-/* The side rail's Map: dimmer, as it isn't ready yet */
-.SideRail-item.is-soon {
-    color: var(--text-2);
-}
-
-/* ---- "Interactive Map coming soon" ---- */
-
-/* Slides up just above the bottom bar (phones) or the bottom of the window,
-   in the middle of the page */
-.ComingSoon {
-    position: fixed;
-    z-index: 3;
-    left: var(--rail-width);
-    right: 0;
-    bottom: calc(var(--bottom-bar-space, 0px) + 14px);
-    display: flex;
-    justify-content: center;
-    padding: 0 16px;
-    pointer-events: none;
-}
-
-.ComingSoon-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    padding: 10px 16px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    background-color: var(--surface-2);
-    border: 1px solid var(--accent);
-    border-radius: 999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    animation: ComingSoon-in 0.22s ease-out;
-}
-
-.ComingSoon-card svg {
-    flex-shrink: 0;
-    color: var(--accent);
-}
-
-@keyframes ComingSoon-in {
-    from {
-        transform: translateY(16px);
-        opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ComingSoon-card {
-        animation: none;
-    }
-}
-

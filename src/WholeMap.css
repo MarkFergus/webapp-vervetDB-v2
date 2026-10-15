@@ -1,0 +1,145 @@
+/* The Interactive Map pop-up (WholeMap.jsx): the map pop-up's look
+   (SanctuaryMap.css), bigger, and as tall as the window allows */
+
+/* Close to the top: the map wants all the height it can get.
+     --map-aspect: the drawing's width / height (set by WholeMap.jsx)
+     --gap: the space above; --outer: the space around the window (both
+     sides); --pad: the window's padding; --header: the title row */
+.WholeMap {
+    --gap: var(--popup-top-tall);
+    --outer: 32px;
+    --pad: 14px;
+    --header: 46px;
+}
+
+.WholeMap::before {
+    flex-basis: var(--gap);
+}
+
+/* The window takes the drawing's shape: as tall as the screen allows, and
+   just wide enough for the map at that height (a tall map: a narrow window).
+   If the screen is too narrow for that (phones), as wide as it allows, and
+   just tall enough. */
+.WholeMap-window {
+    --tallest: calc(100svh - var(--outer) - var(--gap));
+    display: flex;
+    flex-direction: column;
+    width: min(100%, calc((var(--tallest) - 2 * var(--pad) - var(--header)) * var(--map-aspect) + 2 * var(--pad)));
+    height: min(var(--tallest), calc((100vw - var(--outer) - 2 * var(--pad)) / var(--map-aspect) + 2 * var(--pad) + var(--header)));
+    padding: var(--pad);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* The map and its zoom buttons */
+.WholeMap-area {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    aspect-ratio: auto;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: white;
+}
+
+.WholeMap-view {
+    width: 100%;
+    height: 100%;
+    /* (the map takes drags and pinches, not the page) */
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+}
+
+.WholeMap-view:active {
+    cursor: grabbing;
+}
+
+.WholeMap-view svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* The title bar: the title, then the zoom controls and close on the right */
+.WholeMap-header {
+    gap: 12px;
+}
+
+.WholeMap-header h2 {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Zoom Out, the slider, Zoom In, Whole Map: grey chips like the close button */
+.WholeMap-zoom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.WholeMap-zoom button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.WholeMap-zoom button:hover:not(:disabled) {
+    color: white;
+    background-color: var(--surface-3);
+}
+
+.WholeMap-zoom button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.WholeMap-zoom button:focus-visible,
+.WholeMap-slider:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.WholeMap-slider {
+    width: 140px;
+    margin: 0 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* Phones: nearly the whole width, in the middle of the screen */
+@media (max-width: 624px) {
+    .WholeMap {
+        --gap: 0px;
+        --outer: 16px;
+        --pad: 10px;
+        /* (the title row, then the zoom row) */
+        --header: 86px;
+        justify-content: center;
+        padding: 8px;
+    }
+
+    /* The zoom controls on a row of their own, under the title */
+    .WholeMap-header {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    .WholeMap-zoom {
+        order: 3;
+        width: 100%;
+    }
+
+    .WholeMap-slider {
+        flex: 1;
+        width: auto;
+    }
+}

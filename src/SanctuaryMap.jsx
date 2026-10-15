@@ -17,8 +17,8 @@ import CloseButton from "./CloseButton";
 
 export const MAP_URL = "/VMF_Sanctuary_Map.svg";
 // The map's own size (its viewBox): A4 portrait
-const MAP_WIDTH = 595.3;
-const MAP_HEIGHT = 841.9;
+export const MAP_WIDTH = 595.3;
+export const MAP_HEIGHT = 841.9;
 const LABEL = "http://www.inkscape.org/namespaces/inkscape";
 
 // Enclosure name → its shape's label in the map, where they differ (the
@@ -42,7 +42,7 @@ const outlines = new Map();
 
 // The whole map's drawing, as SVG markup to put straight into the page (not
 // as a picture: drawn in the page, its labels can use the site's font)
-function wholeMap(doc) {
+export function wholeMap(doc) {
     if (mapMarkup === null) {
         const serializer = new XMLSerializer();
         mapMarkup = [...doc.documentElement.children]
@@ -54,13 +54,18 @@ function wholeMap(doc) {
     return mapMarkup;
 }
 
-function loadMap() {
+export function loadMap() {
     mapDocument ??= fetch(MAP_URL)
         .then((response) => {
             if (!response.ok) throw new Error(`Map not found (${response.status})`);
             return response.text();
         })
-        .then((text) => new DOMParser().parseFromString(text, "image/svg+xml"));
+        .then((text) => new DOMParser().parseFromString(text, "image/svg+xml"))
+        .catch((error) => {
+            // (not kept: the next try loads it again, e.g. back online)
+            mapDocument = null;
+            throw error;
+        });
     return mapDocument;
 }
 

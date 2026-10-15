@@ -111,7 +111,7 @@ describe("phones: the bottom bar", () => {
     const bar = () => within(screen.getByRole("navigation", { name: "Main" }));
     const barItems = () => [...document.querySelector(".BottomBar").children].map((i) => i.textContent);
 
-    test("visitors: Monkeys, Enclosures, Map (coming soon), Game and You (no Create PDF)", () => {
+    test("visitors: Monkeys, Enclosures, Map, Game and You (no Create PDF)", () => {
         setup();
         expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game", "You"]);
         expect(bar().getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
@@ -128,18 +128,14 @@ describe("phones: the bottom bar", () => {
         expect(await screen.findByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
     });
 
-    test("Map: a notice says it's coming soon, gone again at the next tap", async () => {
+    test("Map opens the Interactive Map; Escape closes it, back to the button", async () => {
         const { user } = setup();
-        const notice = () => screen.queryByText("Interactive Map coming soon");
-        expect(notice()).toBeNull();
-        await user.click(bar().getByRole("button", { name: "Interactive Map (coming soon)" }));
-        expect(notice()).toBeInTheDocument();
-        await user.click(document.querySelector(".ShowPage-monkeys"));
-        expect(notice()).toBeNull();
-        // (a key press puts it away too)
-        await user.click(bar().getByRole("button", { name: "Interactive Map (coming soon)" }));
-        await user.keyboard("{Shift}");
-        expect(notice()).toBeNull();
+        const mapButton = bar().getByRole("button", { name: "Interactive Map" });
+        await user.click(mapButton);
+        expect(screen.getByRole("dialog", { name: "Sanctuary Map" })).toBeInTheDocument();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog", { name: "Sanctuary Map" })).toBeNull();
+        expect(mapButton).toHaveFocus();
     });
 
     test("You opens the sign-in pop-up", async () => {
@@ -167,11 +163,12 @@ describe("computers: the side rail", () => {
     const railItems = () => [...rail().querySelectorAll(".SideRail-item")].map((i) => i.textContent);
     const railButton = () => screen.getByRole("button", { name: /side menu/ });
 
-    test("small to start with: Monkeys, Enclosures, Map (coming soon), Game (visitors: no Create PDF)", async () => {
+    test("small to start with: Monkeys, Enclosures, Map, Game (visitors: no Create PDF)", async () => {
         setup();
         expect(railItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game"]);
-        await userEvent.click(within(rail()).getByRole("button", { name: "Interactive Map (coming soon)" }));
-        expect(screen.getByText("Interactive Map coming soon")).toBeInTheDocument();
+        await userEvent.click(within(rail()).getByRole("button", { name: "Interactive Map" }));
+        expect(screen.getByRole("dialog", { name: "Sanctuary Map" })).toBeInTheDocument();
+        await userEvent.keyboard("{Escape}");
         expect(within(rail()).getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
         expect(railButton()).toHaveAttribute("aria-expanded", "false");
     });
