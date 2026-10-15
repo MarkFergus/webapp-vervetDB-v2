@@ -79,6 +79,9 @@ const LOCATION_MESSAGES = {
 // When it's found you, the map moves to you, at least this close in
 const FOUND_ZOOM = 3;
 
+// Phones: the pop-up fills the screen (as in WholeMap.css)
+const PHONE = "(max-width: 624px)";
+
 // How long a card takes to slide back out (as in WholeMap.css)
 const CARD_OUT_MS = 220;
 
@@ -245,8 +248,23 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
         const pad = Math.max(box.width, box.height) * MARGIN;
         const drawn = { x: box.x - pad, y: box.y - pad, width: box.width + 2 * pad, height: box.height + 2 * pad };
         setBounds(drawn);
-        setCamera(wholeOf(drawn));
     }, [markup]);
+
+    // Where it starts, once the drawing and the view have been measured: the
+    // whole map. Phones (a full-screen pop-up, taller than the map's shape):
+    // the map filling the screen top to bottom, a little of each side off
+    // screen (zoom out or Whole Map for all of it).
+    const started = useRef(false);
+    useEffect(() => {
+        if (started.current || bounds === PAGE || size.width <= 1) return;
+        started.current = true;
+        const shape = size.width / size.height;
+        const fill = window.matchMedia?.(PHONE).matches;
+        const zoom = fill
+            ? Math.max(bounds.width, bounds.height * shape) / Math.min(bounds.width, bounds.height * shape)
+            : 1;
+        setCamera({ ...wholeOf(bounds), zoom: Math.min(zoom, MAX_ZOOM) });
+    }, [bounds, size]);
 
     // The places on the map: their shapes marked (data-place: the place's
     // id) so they can be tapped; everything else lets taps through to them.

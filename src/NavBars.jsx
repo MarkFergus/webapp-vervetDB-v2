@@ -5,7 +5,7 @@ import {
     IconFileTypePdf,
     IconHourglassLow,
     IconInfoCircle,
-    IconMap,
+    IconMap2,
     IconPhotoPlus,
     IconPlus,
 } from "@tabler/icons-react";
@@ -85,7 +85,7 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
         </button>
     );
     // The Interactive Map (the whole sanctuary map)
-    const map = button(onMap, <IconMap stroke={1.75} size={24} aria-hidden="true" />, open ? "Interactive Map" : "Map", {
+    const map = button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, open ? "Interactive Map" : "Map", {
         "aria-label": "Interactive Map",
     });
     // Staff: photos already taken, matched to their monkeys
@@ -176,7 +176,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
                 read out) */}
             <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
                 <span className="BottomBar-mapCircle" aria-hidden="true">
-                    <IconMap stroke={1.75} size={26} />
+                    <IconMap2 stroke={1.75} size={26} />
                 </span>
             </button>
             {onAddPhotos ? (

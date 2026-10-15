@@ -382,16 +382,24 @@
     cursor: pointer;
 }
 
-/* Phones: nearly the whole width, in the middle of the screen */
+/* Phones: the whole screen (over the bottom bar too), clear of the notch
+   and the home bar on phones that have them */
 @media (max-width: 624px) {
     .WholeMap {
-        --gap: 0px;
-        --outer: 16px;
-        --pad: 10px;
-        /* (the title row, then the zoom row) */
-        --header: 86px;
-        justify-content: center;
-        padding: 8px;
+        padding: 0;
+    }
+
+    .WholeMap::before {
+        content: none;
+    }
+
+    .WholeMap-window {
+        width: 100%;
+        height: 100svh;
+        height: 100dvh;
+        max-height: none;
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+        border-radius: 0;
     }
 
     /* The zoom controls on a row of their own, under the title */
