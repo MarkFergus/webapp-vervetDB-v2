@@ -109,11 +109,13 @@ describe("phones: the drawer (☰, from the right)", () => {
 
 describe("phones: the bottom bar", () => {
     const bar = () => within(screen.getByRole("navigation", { name: "Main" }));
-    const barItems = () => [...document.querySelector(".BottomBar").children].map((i) => i.textContent);
+    // (Map, the green circle in the middle, has no label: its read-out name)
+    const barItems = () =>
+        [...document.querySelector(".BottomBar").children].map((i) => i.textContent || i.getAttribute("aria-label"));
 
     test("visitors: Monkeys, Enclosures, Map, Game and You (no Create PDF)", () => {
         setup();
-        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game", "You"]);
+        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Interactive Map", "Game", "You"]);
         expect(bar().getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
         expect(bar().getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
         expect(bar().getByRole("link", { name: "Game" })).toHaveAttribute("href", "#game");
@@ -123,7 +125,7 @@ describe("phones: the bottom bar", () => {
     test("staff: Monkeys, Enclosures, Map, Photos and You; Create PDF in the ☰ menu, opening the PDF pop-up", async () => {
         const { user, menuButton } = setup({ signedIn: true });
         await waitFor(() => expect(bar().getByRole("button", { name: "Add Photos" })).toBeInTheDocument());
-        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Photos", "You"]);
+        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Interactive Map", "Photos", "You"]);
         expect(bar().queryByRole("link", { name: "Game" })).toBeNull(); // (in the ☰ menu)
         expect(bar().queryByRole("button", { name: "Create PDF" })).toBeNull();
         await user.click(menuButton());

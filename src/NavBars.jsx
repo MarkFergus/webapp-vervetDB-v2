@@ -171,14 +171,13 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosuresNavIcon, "Enclosures")}
-            {/* The Interactive Map (the whole sanctuary map) */}
+            {/* The Interactive Map (the whole sanctuary map), the highlight:
+                a bigger green circle that stands out (no label: its name is
+                read out) */}
             <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
-                <span className="BottomBar-icon" aria-hidden="true">
-                    <span className="BottomBar-mapCircle">
-                        <IconMap stroke={1.75} size={20} />
-                    </span>
+                <span className="BottomBar-mapCircle" aria-hidden="true">
+                    <IconMap stroke={1.75} size={26} />
                 </span>
-                <span aria-hidden="true">Map</span>
             </button>
             {onAddPhotos ? (
                 // Staff: Add Photos, the quick way in

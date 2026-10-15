@@ -253,22 +253,38 @@
     background-color: rgba(62, 207, 142, 0.15);
 }
 
-/* Map in the middle: a circle outlined in blue (opens the Interactive
-   Map) */
-.BottomBar-map {
-    color: var(--text);
-}
-
+/* Map in the middle, the highlight: a bigger green circle with a white
+   ring as thick as the icon's lines (about 2px), so it stands out */
 .BottomBar-mapCircle {
     box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 32px;
-    height: 32px;
-    color: inherit;
-    border: 1.5px solid var(--line-strong);
+    width: 48px;
+    height: 48px;
+    color: var(--on-green);
+    background-color: var(--green);
+    border: none;
     border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.BottomBar-map:hover .BottomBar-mapCircle {
+    background-color: var(--green-2);
+}
+
+.BottomBar-map:active .BottomBar-mapCircle {
+    transform: scale(0.94);
+}
+
+.BottomBar-map:focus-visible {
+    outline: none;
+}
+
+.BottomBar-map:focus-visible .BottomBar-mapCircle {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
 }
 
 /* Phones: the page leaves room at the bottom for the bar, and things pinned
