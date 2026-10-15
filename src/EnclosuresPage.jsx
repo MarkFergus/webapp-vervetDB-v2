@@ -183,32 +183,26 @@ function PlaceIcon({ enclosure, ...props }) {
     return <Icon {...props} />;
 }
 
-// The enclosure's own photos (cards: the primary one, small), or until it
-// has some, its introcages' photos (each one's primary, up to four in a
-// 2 × 2 grid), or failing those up to four of its monkeys, or if it's empty
-// its icon (a bench and tree; an introcage: a cube)
+// A collage of up to four photos (a 2 × 2 grid), in this order: the
+// enclosure's own (primary) photo, then its monkeys, then its introcages'
+// photos (each one's primary). If it has none, its icon (a bench and tree;
+// an introcage: a cube). The record page shows the enclosure's own photos
+// as slides instead, once it has some.
+export function picturePhotos(enclosure, introcages, monkeys) {
+    const photos = [
+        enclosure.photos[0],
+        ...monkeys.map((m) => m.img[0]).filter((url) => !isPlaceholderPhoto(url)),
+        ...introcages.map((i) => i.photos?.[0]),
+    ].filter(Boolean);
+    return [...new Set(photos)].slice(0, 4);
+}
+
 function Picture({ enclosure, introcages = [], monkeys, large = false }) {
     const className = `Enclosures-picture${large ? " is-large" : ""}`;
-    if (enclosure.photos.length) {
-        if (large) return <PhotoSlides key={enclosure.id} photos={enclosure.photos} name={enclosure.name} />;
-        return (
-            <span className={className}>
-                <img
-                    src={thumbUrl(enclosure.photos[0])}
-                    alt=""
-                    loading="lazy"
-                    crossOrigin="anonymous"
-                    onError={fallbackTo(enclosure.photos[0])}
-                />
-            </span>
-        );
+    if (large && enclosure.photos.length) {
+        return <PhotoSlides key={enclosure.id} photos={enclosure.photos} name={enclosure.name} />;
     }
-    const introcagePhotos = introcages.map((i) => i.photos?.[0]).filter(Boolean);
-    const photos = (
-        introcagePhotos.length
-            ? introcagePhotos
-            : monkeys.map((m) => m.img[0]).filter((url) => !isPlaceholderPhoto(url))
-    ).slice(0, 4);
+    const photos = picturePhotos(enclosure, introcages, monkeys);
     if (!photos.length) {
         return (
             <span className={`${className} is-empty`}>

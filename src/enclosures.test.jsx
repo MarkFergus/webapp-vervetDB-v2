@@ -12,7 +12,7 @@ import {
 } from "./enclosures";
 import { fullName, homeName, placeLabel, placeName } from "./places";
 import { monkeyHash } from "./monkeyLink";
-import { sortEnclosures } from "./EnclosuresPage";
+import { picturePhotos, sortEnclosures } from "./EnclosuresPage";
 import { SECTIONS, inSection } from "./sections";
 
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
@@ -380,9 +380,9 @@ describe("the sanctuary map", () => {
     test("each introcage has its gate box(es) (or its own shape) in the map, named after it", async () => {
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        // (not the block's introcages or the care units' areas yet: still to
-        // be labelled on the map)
-        const troopIds = new Set(enclosuresArr.filter(hasTroop).map((x) => x.id));
+        // (and the block's: its two halves. Not the care units' areas yet:
+        // still to be labelled on the map)
+        const troopIds = new Set(enclosuresArr.filter((x) => hasTroop(x) || x.type === "block").map((x) => x.id));
         for (const e of enclosuresArr.filter((x) => troopIds.has(x.parentId))) {
             expect(svg, e.name).toContain(`inkscape:label="${e.name}"`);
         }
@@ -400,7 +400,7 @@ describe("the map's small icons", () => {
         expect(MAP_ICONS.map((i) => i.label)).toEqual(["Water Taps", "Misters", "Fence Switches", "Toilets & Showers", "Fire Pits"]);
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        for (const name of ["Water taps", "Mister icon", "Electric fence switches", "Toilets & showers", "Rocks & fire pits"]) {
+        for (const name of ["Water taps", "Misters", "Electric fence switches", "Toilets & showers", "Rocks & fire pits"]) {
             expect(svg, name).toContain(`inkscape:label="${name}"`);
         }
     });
@@ -591,5 +591,35 @@ describe("enclosures without a troop: Bachelor Block (a block) and the care unit
         // Otherwise: the troops, then the block, then the care units
         const all = placeChoices(["Goliath", "H&B"], enclosuresArr, homeOf, true);
         expect(all.map((c) => c.enclosure)).toEqual(["Goliath", "H&B", "Bachelor Block", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+    });
+});
+
+describe("an enclosure picture: a collage of up to four photos", () => {
+    const monkey = (url) => ({ img: [url] });
+    const cage = (url) => ({ photos: url ? [url] : [] });
+
+    test("the enclosure photo first, then its monkeys, then its introcages", () => {
+        const enclosure = { photos: ["e1.jpg", "e2.jpg"] };
+        expect(picturePhotos(enclosure, [cage("c1.jpg")], [monkey("m1.jpg"), monkey("m2.jpg")])).toEqual([
+            "e1.jpg",
+            "m1.jpg",
+            "m2.jpg",
+            "c1.jpg",
+        ]);
+    });
+
+    test("no more than four; no enclosure photo: monkeys first", () => {
+        const monkeys = ["m1", "m2", "m3", "m4", "m5"].map(monkey);
+        expect(picturePhotos({ photos: [] }, [cage("c1")], monkeys)).toEqual(["m1", "m2", "m3", "m4"]);
+    });
+
+    test("introcage photos fill in when there are few monkey photos; blank photos left out", () => {
+        const blank = "https://i.ibb.co/2YvYtBJ/blank-image-min.jpg";
+        expect(picturePhotos({ photos: [] }, [cage("c1"), cage(null), cage("c2")], [monkey(blank), monkey("m1")])).toEqual([
+            "m1",
+            "c1",
+            "c2",
+        ]);
+        expect(picturePhotos({ photos: [] }, [], [])).toEqual([]);
     });
 });

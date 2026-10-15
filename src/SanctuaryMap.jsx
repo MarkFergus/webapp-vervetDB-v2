@@ -66,7 +66,8 @@ function loadMap() {
 
 // A part of the map (a shape, a whole layer, or an introcage's gate
 // boxes), in the map's own coordinates: { markup (as SVG), transform,
-// box: { x, y, width, height } }, or null if the map hasn't got it.
+// box: { x, y, width, height }, inGates (gate boxes, not a shape found
+// elsewhere) }, or null if the map hasn't got it.
 //   key: "label:Robert troop" (the first shape with that Inkscape label),
 //   or "gate:H&B C1" (every box with that label in the "Enclosure gates"
 //   layer: some introcages have two; or, if none, the shape with that label
@@ -86,12 +87,14 @@ function findPart(doc, key) {
         }
         const layer = all.find((el) => labelled(el, "Enclosure gates"));
         const boxes = layer ? [...layer.children].filter((el) => labelled(el, value)) : [];
+        inGates = boxes.length > 0;
         if (boxes.length) return boxes;
         // Not a gate box: a shape of its own elsewhere (e.g. Koko D, an annex)
         const shape = all.find((el) => labelled(el, value));
         return shape ? [shape] : [];
     }
     let found = null;
+    let inGates = false;
     const shapes = pick(doc);
     if (shapes.length) {
         // Measure them on a hidden copy of the map, drawn at its own size so
@@ -132,6 +135,7 @@ function findPart(doc, key) {
             found = {
                 markup: shapes.map((el) => serializer.serializeToString(el)).join(""),
                 transform: `matrix(${p.a} ${p.b} ${p.c} ${p.d} ${p.e} ${p.f})`,
+                inGates,
                 box: {
                     x: Math.min(...xs),
                     y: Math.min(...ys),
@@ -184,14 +188,14 @@ function zoomBox(box, spread, smallest = 100, ASPECT = CARD_ASPECT) {
 
 // The small icons, hidden on the map and shown in the map pop-up when
 // chosen. Found by their Inkscape labels: hide (the icons in the whole map)
-// and show (the layer to show in the copy drawn on top). The misters are
-// drawn inside the Key layer; the fire pits share a layer with the rocks
-// (which stay, as landmarks), as do the cabins with the other icons.
+// and show (the layer to show in the copy drawn on top). The fire pits
+// share a layer with the rocks (which stay, as landmarks), as do the cabins
+// with the other icons.
 const byLabel = (name) => `[inkscape\\:label="${name}"]`;
 const FIRE_PITS = '[inkscape\\:label^="Fire pit"]';
 export const MAP_ICONS = [
     { id: "taps", label: "Water Taps", hide: byLabel("Water taps"), show: byLabel("Water taps") },
-    { id: "misters", label: "Misters", hide: byLabel("Mister icon"), show: byLabel("Mister icon") },
+    { id: "misters", label: "Misters", hide: byLabel("Misters"), show: byLabel("Misters") },
     {
         id: "fences",
         label: "Fence Switches",
@@ -228,13 +232,14 @@ function useMapParts(enclosure, introcage, introcages) {
                         labels: findPart(doc, "label:Labels"),
                         // the icons, on top too (in the pop-up, when shown)
                         icons: findPart(doc, "label:Icons"),
-                        key: findPart(doc, "label:Key"),
                         gate: introcage ? findPart(doc, `gate:${introcage}`) : null,
+                        // (a block's or care unit's areas are inside its
+                        // outline, so only gate boxes: not drawn over its colour)
                         ownGates: introcageKey
                             .split("|")
                             .filter(Boolean)
                             .map((name) => findPart(doc, `gate:${name}`))
-                            .filter(Boolean),
+                            .filter((part) => part && (part.inGates || enclosure.type === "troop")),
                     }
                 );
             })
@@ -244,7 +249,7 @@ function useMapParts(enclosure, introcage, introcages) {
         return () => {
             cancelled = true;
         };
-    }, [label, introcage, introcageKey]);
+    }, [label, enclosure.type, introcage, introcageKey]);
     return parts;
 }
 
@@ -257,18 +262,16 @@ function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
     const grey = `${id}-grey`;
     const faded = `${id}-faded`;
     const inside = `${id}-inside`;
-    const { map, outline, gates, labels, icons, key, gate, ownGates } = parts;
+    const { map, outline, gates, labels, icons, gate, ownGates } = parts;
     // The whole map: no small icons, no legend. Drawn on top: only the
-    // chosen icons (from the legend, only the misters; from the rocks and
-    // fire pits layer, only the fire pits)
+    // chosen icons (from the rocks and fire pits layer, only the fire pits)
     const iconRules = [
         `.${id} .SanctuaryMap-base :is(${MAP_ICONS.map((icon) => icon.hide).join(", ")}, ${byLabel("Key")}) { display: none; }`,
         `.${id} .SanctuaryMap-icons > g > g { display: none; }`,
-        `.${id} .SanctuaryMap-key ${byLabel("Key")} ${byLabel("Key")} > :not(${byLabel("Mister icon")}) { display: none; }`,
         `.${id} .SanctuaryMap-icons ${byLabel("Rocks & fire pits")} > :not(${FIRE_PITS}) { display: none; }`,
         ...MAP_ICONS.map(
             (icon) =>
-                `.${id} :is(.SanctuaryMap-icons, .SanctuaryMap-key) ${icon.show} { display: ${
+                `.${id} .SanctuaryMap-icons ${icon.show} { display: ${
                     shownIcons.includes(icon.id) ? "inline" : "none"
                 } !important; }`
         ),
@@ -310,12 +313,7 @@ function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
             <Part part={gate} className="SanctuaryMap-introcage" />
             <Part part={labels} filter={grey} mask={inside} />
             {/* The chosen icons, on top of everything */}
-            {shownIcons.length > 0 && (
-                <>
-                    <Part part={icons} className="SanctuaryMap-icons" />
-                    <Part part={key} className="SanctuaryMap-key" />
-                </>
-            )}
+            {shownIcons.length > 0 && <Part part={icons} className="SanctuaryMap-icons" />}
         </svg>
     );
 }
