@@ -368,10 +368,10 @@ describe("the sanctuary map", () => {
         expect(mapLabel("D&D")).toBe("Dino & Daniel troop");
         expect(Object.keys(SECTION_COLOURS)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Care Units"]);
         // Every enclosure has a shape by that name in the map (not
-        // Baby Care and Sickbay Care Unit yet: still to be labelled)
+        // Baby Care yet: still to be labelled)
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        const notYet = ["Baby Care", "Sickbay Care Unit"];
+        const notYet = ["Baby Care"];
         for (const e of enclosuresArr.filter((x) => isEnclosure(x) && !notYet.includes(x.name))) {
             expect(svg, e.name).toContain(`inkscape:label="${mapLabel(e.name)}"`);
         }

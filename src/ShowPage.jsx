@@ -735,6 +735,8 @@ function ShowPage({
                 inert={isModalOpen || Boolean(editing) || Boolean(quickPhotos)}
             >
                 <Nav
+                    enclosures={enclosures}
+                    monkeys={monkeys}
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
                     pdfProgress={pdfProgress}

@@ -22,8 +22,14 @@ export const MAP_HEIGHT = 841.9;
 const LABEL = "http://www.inkscape.org/namespaces/inkscape";
 
 // Enclosure name → its shape's label in the map, where they differ (the
-// block and Quarantine aren't "… troop")
-const MAP_LABELS = { "D&D": "Dino & Daniel troop", "Bachelor Block": "Bachelor block", Quarantine: "Quarantine" };
+// block and the care units aren't "… troop"; the Sickbay Care Unit is the
+// Sickbay building)
+const MAP_LABELS = {
+    "D&D": "Dino & Daniel troop",
+    "Bachelor Block": "Bachelor block",
+    Quarantine: "Quarantine",
+    "Sickbay Care Unit": "Sickbay building",
+};
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
 
 // The site's neon colours, by section

@@ -68,6 +68,8 @@ function Nav({
     page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
     showSearch = true, // false: no search box (the game)
     barsInert = false, // a pop-up is open: the side rail and bottom bar wait
+    enclosures = [], // the Interactive Map: the places to tap
+    monkeys = [], // … and who lives there
 }) {
     const { user, avatarUrl, role } = useAuth();
     // Create PDF (Profile Books, the AM Plates List): staff only (any role)
@@ -258,7 +260,7 @@ function Nav({
                         avatarUrl={avatarUrl}
                         inert={barsInert || anyPopUp}
                     />
-                    {mapOpen && <WholeMap onClose={() => setMapOpen(false)} />}
+                    {mapOpen && <WholeMap onClose={() => setMapOpen(false)} enclosures={enclosures} monkeys={monkeys} />}
                     <Drawer
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
