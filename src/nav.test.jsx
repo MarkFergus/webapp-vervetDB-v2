@@ -83,8 +83,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true, admin: true });
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
-        // (staff: Interactive Map here, as Add Photos has its place in the bottom bar)
-        expect(drawerItems()).toEqual(["Add New Monkey", "Interactive Map", "Monkey Guesser", "Install & Use Offline", "About"]);
+        // (staff: Create PDF here, and the game, as Photos has its place in the bottom bar)
+        expect(drawerItems()).toEqual(["Add New Monkey", "Create PDF", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(drawerHeadings()).toEqual(["Tools", "App"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
@@ -95,7 +95,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Interactive Map", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Create PDF", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 
@@ -120,11 +120,15 @@ describe("phones: the bottom bar", () => {
         expect(screen.queryByRole("button", { name: "Create PDF" })).toBeNull();
     });
 
-    test("staff: Create PDF in the game's place, opening the PDF pop-up", async () => {
-        const { user } = setup({ signedIn: true });
-        await waitFor(() => expect(bar().getByRole("button", { name: "Create PDF" })).toBeInTheDocument());
+    test("staff: Monkeys, Enclosures, Map, Photos and You; Create PDF in the ☰ menu, opening the PDF pop-up", async () => {
+        const { user, menuButton } = setup({ signedIn: true });
+        await waitFor(() => expect(bar().getByRole("button", { name: "Add Photos" })).toBeInTheDocument());
+        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Map", "Photos", "You"]);
         expect(bar().queryByRole("link", { name: "Game" })).toBeNull(); // (in the ☰ menu)
-        await user.click(bar().getByRole("button", { name: "Create PDF" }));
+        expect(bar().queryByRole("button", { name: "Create PDF" })).toBeNull();
+        await user.click(menuButton());
+        const menu = screen.getByRole("dialog", { name: "Menu" });
+        await user.click(within(menu).getByRole("button", { name: "Create PDF" }));
         expect(await screen.findByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
     });
 

@@ -253,8 +253,6 @@ function Nav({
                         onHome={onHome}
                         onMap={showMap}
                         onAddPhotos={onAddPhotos}
-                        onProfileBook={onCreatePdf}
-                        isGeneratingPDF={isGeneratingPDF}
                         onAccount={toggleAccount}
                         signedIn={Boolean(user)}
                         avatarUrl={avatarUrl}
@@ -265,9 +263,10 @@ function Nav({
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
-                        // (staff: Map's place in the bottom bar is Add Photos)
-                        onMap={onAddPhotos ? showMap : undefined}
-                        showGame={Boolean(onCreatePdf)}
+                        onProfileBook={onCreatePdf}
+                        isGeneratingPDF={isGeneratingPDF}
+                        // (staff with Photos in the bottom bar, in the game's place)
+                        showGame={Boolean(onAddPhotos)}
                         page={page}
                         onOffline={toggleOffline}
                         onAbout={toggleAbout}

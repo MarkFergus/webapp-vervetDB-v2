@@ -154,14 +154,11 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
 // ---- Phones: the bottom bar ----
 //   onAccount: opens the account pop-up; signedIn: the person shows green;
 //   avatarUrl: their photo in its place (still ringed in green)
-//   onMap: the Interactive Map
-//   onAddPhotos: staff (editors / admins): Add Photos takes Map's place,
-//   opening the photo picker straight away (the quick way in for staff)
-//   onProfileBook: staff (any role): Create PDF takes the Game's place (the
-//   game's then in the ☰ menu)
-export function BottomBar({
-    page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onAccount, signedIn, avatarUrl, inert,
-}) {
+//   onMap: the Interactive Map, in the middle for everyone
+//   onAddPhotos: staff (editors / admins): Photos takes the Game's place,
+//   opening the photo picker straight away (the game's then in the ☰
+//   menu, with Create PDF)
+export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedIn, avatarUrl, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -174,33 +171,22 @@ export function BottomBar({
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosuresNavIcon, "Enclosures")}
+            {/* The Interactive Map (the whole sanctuary map) */}
+            <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
+                <span className="BottomBar-icon" aria-hidden="true">
+                    <span className="BottomBar-mapCircle">
+                        <IconMap stroke={1.75} size={20} />
+                    </span>
+                </span>
+                <span aria-hidden="true">Map</span>
+            </button>
             {onAddPhotos ? (
-                // Staff: Add Photos, a bigger green circle that stands out
-                // (no label: its name is read out)
-                <button type="button" className="BottomBar-map is-photos" onClick={onAddPhotos} aria-label="Add Photos">
-                    <span className="BottomBar-photosCircle" aria-hidden="true">
-                        <IconPhotoPlus stroke={1.75} size={26} />
-                    </span>
-                </button>
-            ) : (
-                // The Interactive Map (the whole sanctuary map)
-                <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
+                // Staff: Add Photos, the quick way in
+                <button type="button" className="BottomBar-tab" onClick={onAddPhotos} aria-label="Add Photos">
                     <span className="BottomBar-icon" aria-hidden="true">
-                        <span className="BottomBar-mapCircle">
-                            <IconMap stroke={1.75} size={20} />
-                        </span>
+                        <IconPhotoPlus stroke={1.75} size={24} />
                     </span>
-                    <span aria-hidden="true">Map</span>
-                </button>
-            )}
-            {onProfileBook ? (
-                // Staff: Create PDF (Profile Books, the AM Plates List), used
-                // often, so here; the game is in the ☰ menu
-                <button type="button" className="BottomBar-tab" onClick={onProfileBook} disabled={isGeneratingPDF}>
-                    <span className="BottomBar-icon">
-                        <ProfileBookIcon busy={isGeneratingPDF} size={24} />
-                    </span>
-                    <span>{isGeneratingPDF ? "Creating…" : "Create PDF"}</span>
+                    <span aria-hidden="true">Photos</span>
                 </button>
             ) : (
                 tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")
@@ -225,9 +211,9 @@ export function BottomBar({
 // ---- Phones: the drawer from the right ----
 // In groups, like the opened-out side rail (Tools only if there's any)
 //   onAddMonkey: admins only (Add New Monkey first)
-//   onMap: staff only (their bottom bar has Add Photos in Map's place)
-//   showGame: staff (their bottom bar has Create PDF in the game's place)
-export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOffline, onAbout }) {
+//   onProfileBook: staff (any role): Create PDF; isGeneratingPDF: while one's made
+//   showGame: staff with Photos in their bottom bar, in the game's place
+export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, showGame, page, onOffline, onAbout }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
     if (!open) return null;
@@ -246,7 +232,7 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOf
                     </span>
                     <CloseButton className="Drawer-close" onClick={onClose} ref={closeRef} label="Close menu" />
                 </div>
-                {(onAddMonkey || onMap || showGame) && (
+                {(onAddMonkey || onProfileBook || showGame) && (
                     <div className="Drawer-group">
                         <h2 className="Drawer-heading">Tools</h2>
                         {onAddMonkey && (
@@ -255,10 +241,16 @@ export function Drawer({ open, onClose, onAddMonkey, onMap, showGame, page, onOf
                                 Add New Monkey
                             </button>
                         )}
-                        {onMap && (
-                            <button type="button" className="Drawer-item" onClick={then(onMap)}>
-                                <IconMap stroke={1.75} size={24} aria-hidden="true" />
-                                Interactive Map
+                        {onProfileBook && (
+                            // (Profile Books, the AM Plates List)
+                            <button
+                                type="button"
+                                className="Drawer-item"
+                                onClick={then(onProfileBook)}
+                                disabled={isGeneratingPDF}
+                            >
+                                <ProfileBookIcon busy={isGeneratingPDF} size={24} />
+                                {isGeneratingPDF ? "Creating PDF…" : "Create PDF"}
                             </button>
                         )}
                         {showGame && (

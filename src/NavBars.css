@@ -259,40 +259,6 @@
     color: var(--text);
 }
 
-/* Staff: Add Photos, the quick way in: a bigger green circle with a white
-   ring as thick as the icon's lines (about 2px), so it stands out */
-.BottomBar-photosCircle {
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 48px;
-    height: 48px;
-    color: var(--on-green);
-    background-color: var(--green);
-    border: none;
-    border-radius: 50%;
-    box-shadow: 0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px rgba(0, 0, 0, 0.5);
-    transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.BottomBar-map.is-photos:hover .BottomBar-photosCircle {
-    background-color: var(--green-2);
-}
-
-.BottomBar-map.is-photos:active .BottomBar-photosCircle {
-    transform: scale(0.94);
-}
-
-.BottomBar-map.is-photos:focus-visible {
-    outline: none;
-}
-
-.BottomBar-map.is-photos:focus-visible .BottomBar-photosCircle {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-}
-
 .BottomBar-mapCircle {
     box-sizing: border-box;
     display: flex;

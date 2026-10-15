@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.11.0",
+        date: "2026-10-15",
+        changes: ["New Interactive Map"],
+    },
+    {
         version: "1.10.0",
         date: "2026-10-13",
         // a significant release: "Major Update" beside it in About

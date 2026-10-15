@@ -137,23 +137,25 @@ describe("editing an enclosure", () => {
         expect(screen.getByText("Established").closest("div")).toHaveTextContent("March 2014");
     });
 
-    test("phones: staff have Add Photos in Map's place; the page's own Edit opens the form", async () => {
+    test("phones: staff have Add Photos in the game's place; the page's own Edit opens the form", async () => {
         const { user } = setup();
         const bar = screen.getByRole("navigation", { name: "Main" });
         expect(await within(bar).findByRole("button", { name: "Add Photos" })).toBeInTheDocument();
-        expect(within(bar).queryByRole("button", { name: /Interactive Map/ })).toBeNull();
+        expect(within(bar).getByRole("button", { name: "Interactive Map" })).toBeInTheDocument();
+        expect(within(bar).queryByRole("link", { name: "Game" })).toBeNull();
         expect(within(bar).queryByRole("button", { name: "Edit this page" })).toBeNull();
         await user.click(await screen.findByRole("button", { name: "Edit" }));
         expect(screen.getByRole("dialog", { name: "Edit Robert" })).toBeInTheDocument();
     });
 
-    test("no Add Photos for those who can't edit monkeys (maintenance): Map instead", async () => {
+    test("no Add Photos for those who can't edit monkeys (maintenance): the Game instead", async () => {
         setup({ role: "maintenance", admin: false });
         await screen.findByRole("heading", { level: 1, name: "Robert" });
         await screen.findByText("Section");
         const bar = screen.getByRole("navigation", { name: "Main" });
         expect(within(bar).queryByRole("button", { name: "Add Photos" })).toBeNull();
-        expect(within(bar).getByRole("button", { name: /Interactive Map/ })).toBeInTheDocument();
+        expect(within(bar).getByRole("link", { name: "Game" })).toBeInTheDocument();
+        expect(within(bar).getByRole("button", { name: "Interactive Map" })).toBeInTheDocument();
     });
 
     test("the Enclosures list: Map, not Edit", async () => {
