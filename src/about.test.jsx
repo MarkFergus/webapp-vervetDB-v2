@@ -110,6 +110,7 @@ test("Open-Source Licences folds open: each project with a link, and the full te
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(within(dialog()).getByRole("link", { name: "React" })).toHaveAttribute("href", "https://react.dev");
     expect(within(dialog()).getByRole("link", { name: "Open Sans" })).toBeInTheDocument();
+    expect(within(dialog()).getByRole("link", { name: "Caladea" })).toBeInTheDocument();
     expect(within(dialog()).getByRole("link", { name: "Full Licence Texts" })).toHaveAttribute("href", "/licences.txt");
 });
 

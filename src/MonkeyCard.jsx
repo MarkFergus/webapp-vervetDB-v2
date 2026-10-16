@@ -1,4 +1,4 @@
-import { IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -19,7 +19,8 @@ function SexIcon({ sex }) {
 //   inIntrocage: true for introcage monkeys
 //   inSickbay: true while it's in Sickbay (a badge, top left of the photo)
 //   newArrival: true while it lives in a care unit (a badge, top left)
-function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = false, newArrival = false, img, onClick }) {
+//   stayingIn: the introcage it's staying in for now ("Gismo A"; a badge)
+function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, img, onClick }) {
     const photoNeeded = isPlaceholderPhoto(img);
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
     const label = [
@@ -29,6 +30,7 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(newArrival ? ["new arrival"] : []),
         ...(inSickbay ? ["in Sickbay"] : []),
+        ...(stayingIn ? [`staying in ${fullName(stayingIn)}`] : []),
         ...(photoNeeded ? ["photo needed"] : []),
     ].join(", ");
 
@@ -46,7 +48,7 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 ></img>
-                {(newArrival || inSickbay) && (
+                {(newArrival || inSickbay || stayingIn) && (
                     <span className="MonkeyCard-badges">
                         {newArrival && (
                             <span className="MonkeyCard-newArrival">
@@ -59,6 +61,12 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                             <span className="MonkeyCard-sickbay">
                                 <IconFirstAidKit size={14} aria-hidden="true" />
                                 In Sickbay
+                            </span>
+                        )}
+                        {stayingIn && !newArrival && (
+                            <span className="MonkeyCard-stay">
+                                <IconCube size={14} aria-hidden="true" />
+                                In {stayingIn}
                             </span>
                         )}
                     </span>

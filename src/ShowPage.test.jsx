@@ -158,12 +158,12 @@ test("closing the modal by clicking outside resets the photo", async () => {
 
 test("clicking outside the PDF modal closes it", async () => {
     const { user, container } = setup();
-    await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
-    expect(screen.getByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
+    await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" }));
+    expect(screen.getByRole("dialog", { name: "Documents" })).toBeInTheDocument();
 
     await user.click(container.querySelector(".ModalPDF-overlay"));
     await waitFor(() =>
-        expect(screen.queryByRole("dialog", { name: "Create PDF" })).toBeNull()
+        expect(screen.queryByRole("dialog", { name: "Documents" })).toBeNull()
     );
 });
 

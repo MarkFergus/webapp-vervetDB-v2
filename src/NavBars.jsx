@@ -20,12 +20,12 @@ import CloseButton from "./CloseButton";
 //   SideRail   computers: down the left, YouTube-style. Small (icons with
 //              tiny labels) to start with; ☰ opens it out with full labels.
 //   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) ·
-//              Game (staff: Create PDF) · You
+//              Game (staff: Documents) · You
 //   Drawer     phones: ☰ (top right) slides it in from the right, in groups
 //              like the opened-out side rail: Tools (Add New Monkey (admins),
 //              Interactive Map (staff), Monkey Guesser (staff)), then App
 //              (Install & Use Offline, About)
-// Create PDF is for staff only (any role), wherever it is
+// Documents is for staff only (any role), wherever it is
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
 
 const YEAR = new Date().getFullYear();
@@ -44,7 +44,7 @@ function monkeysLinkProps(page, onHome) {
     };
 }
 
-// Create PDF: the PDF icon, or an hourglass while one is being made
+// Documents: the PDF icon, or an hourglass while one is being made
 function ProfileBookIcon({ busy, size }) {
     return busy ? (
         <IconHourglassLow className="hourglass" stroke={1.75} size={size} aria-hidden="true" />
@@ -95,9 +95,9 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
     const profileBook = onProfileBook && button(
         onProfileBook,
         <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
-        // (Profile Books and the AM Plates List; the small rail: just
-        // "Create PDF", which fits on one line)
-        isGeneratingPDF ? (open ? "Creating PDF…" : "Creating…") : "Create PDF",
+        // (Profile Books, the AM Plates List, Introcage Signs…; the small
+        // rail: just "Creating…", which fits on one line)
+        isGeneratingPDF ? (open ? "Creating PDF…" : "Creating…") : "Documents",
         { disabled: isGeneratingPDF }
     );
     return (
@@ -157,7 +157,7 @@ export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos
 //   onMap: the Interactive Map, in the middle for everyone
 //   onAddPhotos: staff (editors / admins): Photos takes the Game's place,
 //   opening the photo picker straight away (the game's then in the ☰
-//   menu, with Create PDF)
+//   menu, with Documents)
 export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedIn, avatarUrl, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
@@ -210,7 +210,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
 // ---- Phones: the drawer from the right ----
 // In groups, like the opened-out side rail (Tools only if there's any)
 //   onAddMonkey: admins only (Add New Monkey first)
-//   onProfileBook: staff (any role): Create PDF; isGeneratingPDF: while one's made
+//   onProfileBook: staff (any role): Documents; isGeneratingPDF: while one's made
 //   showGame: staff with Photos in their bottom bar, in the game's place
 export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, showGame, page, onOffline, onAbout }) {
     const closeRef = useRef(null);
@@ -241,7 +241,7 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                             </button>
                         )}
                         {onProfileBook && (
-                            // (Profile Books, the AM Plates List)
+                            // (Profile Books, the AM Plates List, Introcage Signs…)
                             <button
                                 type="button"
                                 className="Drawer-item"
@@ -249,7 +249,7 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                                 disabled={isGeneratingPDF}
                             >
                                 <ProfileBookIcon busy={isGeneratingPDF} size={24} />
-                                {isGeneratingPDF ? "Creating PDF…" : "Create PDF"}
+                                {isGeneratingPDF ? "Creating PDF…" : "Documents"}
                             </button>
                         )}
                         {showGame && (

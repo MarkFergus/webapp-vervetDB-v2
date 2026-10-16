@@ -7,10 +7,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// The fonts: bundled in the Profile Book PDF (Open Sans, Russo One) or
-// loaded from Google Fonts (Nunito Sans, Syne, Russo One). All use the
+// The fonts: bundled in the PDFs (Open Sans, Caladea), drawn into the logo
+// (Russo One) or loaded from Google Fonts (Nunito Sans, Syne). All use the
 // SIL Open Font License (scripts/OFL.txt).
 const FONTS = [
+    ["Caladea", "Copyright 2012 The Caladea Project Authors (https://github.com/huertatipografica/Caladea)"],
     ["Nunito Sans", "Copyright 2016 The Nunito Sans Project Authors (https://github.com/Fonthausen/NunitoSans)"],
     ["Open Sans", "Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)"],
     ["Russo One", 'Copyright (c) 2011-2012, Jovanny Lemonad (jovanny.ru), with Reserved Font Name "Russo"'],

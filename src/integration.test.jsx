@@ -30,7 +30,7 @@ const entry = (id, extra = {}) => ({
 });
 
 const open = (staff) =>
-    render(<Modal isModalOpen monkey={MONKEY} onClose={() => {}} handlePrevNext={() => {}} onSickbay={staff?.canAdd ? vi.fn() : undefined} staff={staff} />);
+    render(<Modal isModalOpen monkey={MONKEY} onClose={() => {}} handlePrevNext={() => {}} onWhereabouts={staff?.canAdd ? vi.fn() : undefined} staff={staff} />);
 const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
 const listToggle = () => screen.findByRole("button", { name: /^Integration Reports/ });
 
@@ -54,7 +54,7 @@ describe("adding", () => {
                 monkey={{ ...MONKEY, troop: null, introcage: "Quarantine A", introcageType: "area", enclosure: "Quarantine" }}
                 onClose={() => {}}
                 handlePrevNext={() => {}}
-                onSickbay={vi.fn()}
+                onWhereabouts={vi.fn()}
                 staff={ADMIN}
             />
         );

@@ -1,4 +1,4 @@
-import { IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconCube, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -28,7 +28,8 @@ export function MonkeyListHeader() {
 //   introcage monkeys (see MonkeyCard)
 //   inSickbay: true while it's in Sickbay (a small badge on the photo)
 //   newArrival: true while it lives in a care unit (a small badge, bottom left)
-function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, newArrival = false, chip, img, onClick }) {
+//   stayingIn: the introcage it's staying in for now (a small badge)
+function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, chip, img, onClick }) {
     // The same as the cards, e.g. "Abby, female, born 2018, Global troop"
     const label = [
         name,
@@ -37,6 +38,7 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(newArrival ? ["new arrival"] : []),
         ...(inSickbay ? ["in Sickbay"] : []),
+        ...(stayingIn ? [`staying in ${fullName(stayingIn)}`] : []),
         ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
     ].join(", ");
     const sexWord = sex === "male" ? "Male" : sex === "female" ? "Female" : "–";
@@ -58,6 +60,11 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
                 {inSickbay && !newArrival && (
                     <span className="MonkeyRow-sickbay" title="In Sickbay">
                         <IconFirstAidKit size={12} aria-hidden="true" />
+                    </span>
+                )}
+                {stayingIn && !newArrival && (
+                    <span className="MonkeyRow-stay" title={`In ${fullName(stayingIn)}`}>
+                        <IconCube size={12} aria-hidden="true" />
                     </span>
                 )}
                 {newArrival && (

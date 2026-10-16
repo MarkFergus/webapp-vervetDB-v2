@@ -48,9 +48,9 @@ afterEach(() => vi.restoreAllMocks());
 function setup() {
     const user = userEvent.setup();
     const utils = render(<ShowPage />);
-    // (the side rail's Create PDF)
-    const openMenuItem = () => user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
-    // Create PDF, then Troop Profile Book
+    // (the side rail's Documents)
+    const openMenuItem = () => user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" }));
+    // Documents, then Troop Profile Book
     const openPdfModal = async () => {
         await openMenuItem();
         await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
@@ -97,7 +97,7 @@ test("creates the PDF from the shown monkeys and downloads it with a troop filen
 
     // Modal closes once the download starts
     await waitFor(() =>
-        expect(screen.queryByRole("dialog", { name: "Create PDF" })).toBeNull()
+        expect(screen.queryByRole("dialog", { name: "Documents" })).toBeNull()
     );
 });
 
@@ -238,7 +238,7 @@ describe("Firefox's home-screen app on Android", () => {
     });
 });
 
-test("Create PDF: choose which PDF first; the troop picker only for a Profile Book", async () => {
+test("Documents: choose which PDF first; the troop picker only for a Profile Book", async () => {
     const { user, openMenuItem } = setup();
     await openMenuItem();
     expect(screen.getByRole("combobox", { name: "Document" })).toHaveValue("");
@@ -278,7 +278,7 @@ describe("the Troop Monitoring Sheet", () => {
     test("the Bandits (a wild troop, not monitored) aren't offered; the Profile Book still has them", async () => {
         const user = userEvent.setup();
         render(<ShowPage troops={["All Troops", "Goliath", "Bandits"]} />);
-        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" }));
         const options = () => within(screen.getByRole("combobox", { name: "Troop" })).getAllByRole("option").map((o) => o.value);
         await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
         expect(options()).toContain("Bandits");
@@ -303,7 +303,7 @@ describe("the AM Plates List", () => {
         feeding: { ...DEFAULT_FEEDING, ...feeding },
     });
 
-    test("Create PDF → AM Plates List: no plates recorded yet (the built-in copy has no feeding)", async () => {
+    test("Documents → AM Plates List: no plates recorded yet (the built-in copy has no feeding)", async () => {
         const { user, openMenuItem } = setup();
         await openMenuItem();
         await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "AM Plates List");
@@ -320,7 +320,7 @@ describe("the AM Plates List", () => {
             fed("Hocus", "H&B C1", "H&B", { fedBy: "sickbay" }),
         ];
         render(<ShowPage monkeys={monkeys} />);
-        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" }));
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" }));
         await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "AM Plates List");
         expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
             "Creates an AM Plates List for 1 monkey from 1 introcage."
@@ -335,5 +335,87 @@ describe("the AM Plates List", () => {
         });
         await user.click(save);
         expect(downloads[0]).toMatch(/^am_plates_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
+});
+
+describe("Introcage Signs", () => {
+    const inCage = (name, introcage, enclosure) => ({
+        ...monkeysArr.find((m) => m.name === name), troop: null, introcage, introcageType: "introcage", enclosure,
+    });
+    const open = async (user) => {
+        await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" }));
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Introcage Sign");
+    };
+
+    test("the heading and line under it", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage />);
+        await open(user);
+        expect(screen.getByRole("heading", { name: "Documents" })).toBeInTheDocument();
+        expect(screen.getByText("Create a downloadable PDF for the chosen document.")).toBeInTheDocument();
+        expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeDisabled();
+    });
+
+    test("find an introcage as you type, Add to List, take one off; then made two to a page", async () => {
+        const user = userEvent.setup();
+        const monkeys = [
+            ...monkeysArr.filter((m) => !["Aroha", "Hocus"].includes(m.name)),
+            inCage("Aroha", "H&B C1", "H&B"),
+            inCage("Hocus", "H&B C1", "H&B"),
+        ];
+        render(<ShowPage monkeys={monkeys} />);
+        await open(user);
+        const search = screen.getByRole("combobox", { name: "Introcage" });
+        const add = screen.getByRole("button", { name: "Add to List" });
+        expect(add).toBeDisabled();
+
+        // Suggestions by full name, with how many live there
+        await user.type(search, "holt");
+        const options = within(screen.getByRole("listbox", { name: "Introcages" })).getAllByRole("option");
+        expect(options.map((o) => o.textContent)).toEqual([
+            "Holt & Barrington AEmpty", "Holt & Barrington BEmpty", "Holt & Barrington C12 monkeys", "Holt & Barrington C2Empty",
+        ]);
+        // Arrow down to C1, Enter: on the list
+        await user.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+        // Picking one fills the box; Add to List adds it
+        await user.type(search, "goliath b1");
+        await user.click(add);
+        await user.type(search, "Bachelor Block A");
+        await user.click(add);
+        expect(search).toHaveValue("");
+
+        const list = () => screen.getByRole("list", { name: /Signs to Print/ });
+        expect(within(list()).getAllByRole("listitem").map((li) => li.firstChild.textContent)).toEqual([
+            "Holt & Barrington C1", "Goliath B1", "Bachelor Block A",
+        ]);
+        expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent("Creates 3 signs on 2 pages.");
+        // (not suggested again once it's on the list)
+        await user.type(search, "holt");
+        expect(within(screen.getByRole("listbox")).queryByText("Holt & Barrington C1")).toBeNull();
+        await user.clear(search);
+
+        await user.click(screen.getByRole("button", { name: "Remove Goliath B1" }));
+        expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent("Creates 2 signs on 1 page.");
+
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
+        const save = await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
+        expect(screen.getByText(/Your Introcage Signs is ready/)).toBeInTheDocument();
+        const { pages } = pdf.mock.lastCall[0].props;
+        expect(pages).toHaveLength(1);
+        expect(pages[0].signs.map((s) => s.title)).toEqual(["Holt & Barrington C1", "Bachelor Block A"]);
+        expect(pages[0].signs[0].monkeys.map((m) => m.name).sort()).toEqual(["Aroha", "Hocus"]);
+        await user.click(save);
+        expect(downloads[0]).toMatch(/^introcage_signs_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
+
+    test("Clear All empties the list", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage />);
+        await open(user);
+        await user.type(screen.getByRole("combobox", { name: "Introcage" }), "Goliath B1");
+        await user.click(screen.getByRole("button", { name: "Add to List" }));
+        await user.click(screen.getByRole("button", { name: "Clear All" }));
+        expect(screen.queryByRole("list", { name: /Signs to Print/ })).toBeNull();
+        expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeDisabled();
     });
 });

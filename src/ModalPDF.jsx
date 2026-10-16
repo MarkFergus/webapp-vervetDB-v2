@@ -7,6 +7,7 @@ import { BABIES_BOOK, bookTitle } from "./profileBook";
 import { currentBabySeason } from "./ages";
 import "./ModalPDF.css";
 import CloseButton from "./CloseButton";
+import IntrocageSignPicker from "./IntrocageSignPicker";
 
 // Largest troop is ~55, so anything over this is probably "All Troops"
 const LARGE_PDF_THRESHOLD = 60;
@@ -41,11 +42,26 @@ function ModalPDF({
     // monitorTroops: the troops that are monitored (not the Bandits)
     monitoringCount = 0,
     monitorTroops = troops,
+    // Introcage Signs ("introcageSign"): the introcages to choose from
+    // (signChoices), the ids chosen, how many pages they make, and what to
+    // call to change the list
+    signChoices = [],
+    signList = [],
+    signPageCount = 0,
+    onAddSign,
+    onRemoveSign,
+    onClearSigns,
 }) {
     const isAmPlates = report === "amPlates";
     const isProfileBook = report === "profileBook";
     const isMonitoring = report === "monitoring";
-    const REPORT_NAMES = { profileBook: "Profile Book", monitoring: "Troop Monitoring Sheet", amPlates: "AM Plates List" };
+    const isSigns = report === "introcageSign";
+    const REPORT_NAMES = {
+        profileBook: "Profile Book",
+        monitoring: "Troop Monitoring Sheet",
+        amPlates: "AM Plates List",
+        introcageSign: "Introcage Signs",
+    };
     const plural = monkeyCount === 1 ? "monkey" : "monkeys";
     const troopNote = bookTitle(book);
 
@@ -116,10 +132,11 @@ function ModalPDF({
                                     className="ModalPDF-title"
                                     id="ModalPDF-title"
                                 >
-                                    Create PDF
+                                    Documents
                                 </h1>
+                                <p className="ModalPDF-intro">Create a downloadable PDF for the chosen document.</p>
                                 <div>
-                                    {/* Which document (until there's a Reports section) */}
+                                    {/* Which document */}
                                     <label className="ModalPDF-troop">
                                         Document
                                         <select
@@ -130,11 +147,40 @@ function ModalPDF({
                                             {!report && <option value="">Choose…</option>}
                                             {/* (A–Z) */}
                                             <option value="amPlates">AM Plates List</option>
+                                            <option value="introcageSign">Introcage Sign</option>
                                             <option value="monitoring">Troop Monitoring Sheet</option>
                                             <option value="profileBook">Troop Profile Book</option>
                                         </select>
                                     </label>
-                                    {isAmPlates ? (
+                                    {isSigns ? (
+                                        <>
+                                            <IntrocageSignPicker
+                                                choices={signChoices}
+                                                list={signList}
+                                                onAdd={onAddSign}
+                                                onRemove={onRemoveSign}
+                                                onClear={onClearSigns}
+                                                disabled={isGeneratingPDF}
+                                            />
+                                            <p className="ModalPDF-subdetails">
+                                                {signList.length === 0 ? (
+                                                    "Find an introcage, then Add to List. Signs print two to a page, to cut out."
+                                                ) : (
+                                                    <>
+                                                        Creates{" "}
+                                                        <b>
+                                                            {signList.length} {signList.length === 1 ? "sign" : "signs"}
+                                                        </b>{" "}
+                                                        on{" "}
+                                                        <b>
+                                                            {signPageCount} {signPageCount === 1 ? "page" : "pages"}
+                                                        </b>
+                                                        .
+                                                    </>
+                                                )}
+                                            </p>
+                                        </>
+                                    ) : isAmPlates ? (
                                         <>
                                             <p className="ModalPDF-subdetails">
                                                 {plateCount === 0 ? (
@@ -248,7 +294,13 @@ function ModalPDF({
                                             disabled={
                                                 isGeneratingPDF ||
                                                 !report ||
-                                                (isAmPlates ? plateCount === 0 : isMonitoring ? monitoringCount === 0 : monkeyCount === 0)
+                                                (isSigns
+                                                    ? signList.length === 0
+                                                    : isAmPlates
+                                                      ? plateCount === 0
+                                                      : isMonitoring
+                                                        ? monitoringCount === 0
+                                                        : monkeyCount === 0)
                                             }
                                             className="ModalPDF-createBtn"
                                             onClick={createPDF}

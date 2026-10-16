@@ -3,8 +3,10 @@
 // A monkey's feeding (once the database has it):
 //   { fedBy: "localTeam" | "sickbay", amPlates (1–2), amCutSmall, amFruit,
 //     amMetalPlate, pmBowls (1–2), pmCutSmall }
-// Only for monkeys in an introcage (not a troop, or a care unit's area).
+// Only for monkeys in an introcage (not a troop, or a care unit's area),
+// living there or staying there for now (places.js).
 import { ageInYears } from "./ages";
+import { currentIntrocage } from "./places";
 import { ordinal } from "./enclosures";
 
 export const DEFAULT_FEEDING = {
@@ -17,9 +19,10 @@ export const DEFAULT_FEEDING = {
     pmCutSmall: false,
 };
 
-// Does this monkey's feeding show (an introcage monkey, once the database
-// has feeding)?
-export const hasFeeding = (monkey) => Boolean(monkey.feeding) && monkey.introcageType === "introcage";
+// Does this monkey's feeding show (an introcage monkey, or a troop monkey
+// staying in an introcage for now, once the database has feeding)?
+export const hasFeeding = (monkey) =>
+    Boolean(monkey.feeding) && (monkey.introcageType === "introcage" || Boolean(monkey.stay));
 
 // Who feeds it right now: Sickbay while it's in Sickbay (whatever its Fed By
 // says; that comes back into force when it returns), else its Fed By
@@ -163,8 +166,9 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
         let monkeyCount = 0;
         for (const introcage of inOrder) {
             if (groupOf(introcage, byId[introcage.parentId]) !== group) continue;
+            // (who's in it now: a monkey staying elsewhere is fed there)
             const here = fed
-                .filter((m) => m.introcage === introcage.name)
+                .filter((m) => currentIntrocage(m) === introcage.name)
                 .sort((a, b) => a.name.localeCompare(b.name));
             const local = here.filter((m) => fedBy(m) !== "sickbay");
             sickbay.push(...here.filter((m) => fedBy(m) === "sickbay").map((m) => m.name));

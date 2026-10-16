@@ -1,7 +1,7 @@
 // Working things out about enclosures from the monkeys (nothing is stored
 // twice: counts and residents always match the monkeys' records).
 // An enclosure is { id, name, type, parentId, section, … } (enclosuresArr.js).
-import { homeName, inIntrocage } from "./places";
+import { currentIntrocage, homeName, inIntrocage } from "./places";
 import { ageInYears } from "./ages";
 
 const byName = (a, b) => a.name.localeCompare(b.name);
@@ -83,16 +83,19 @@ export const isNewArrival = (monkey) => monkey.introcageType === "area";
 export const SICKBAY_UNIT = "Sickbay Care Unit";
 export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && enclosure.name === SICKBAY_UNIT;
 
-// Monkeys in any of an enclosure's introcages / areas (the Sickbay Care
-// Unit: and everyone in Sickbay for now). NOTE: a visitor is counted both
-// here and at home, so Sickbay's number is who is really there. A total for
-// the whole sanctuary mustn't add the enclosures up: count each monkey once,
-// at its home (homeName).
+// Monkeys in any of an enclosure's introcages / areas: its own, and anyone
+// staying in one of them from another enclosure (the Sickbay Care Unit:
+// and everyone in Sickbay for now). NOTE: a visitor is counted both here
+// and at home, so the number is who is really there. A total for the whole
+// sanctuary mustn't add the enclosures up: count each monkey once, at its
+// home (homeName).
 export function introcageMonkeys(enclosure, monkeys) {
     const own = monkeys.filter((m) => inIntrocage(m) && homeName(m) === enclosure.name);
-    const visitors = isSickbayUnit(enclosure)
-        ? monkeys.filter((m) => m.inSickbay && homeName(m) !== enclosure.name)
-        : [];
+    const visitors = monkeys.filter(
+        (m) =>
+            homeName(m) !== enclosure.name &&
+            ((isSickbayUnit(enclosure) && m.inSickbay) || m.stay?.enclosure === enclosure.name)
+    );
     return [...own, ...visitors].sort(byName);
 }
 
@@ -106,8 +109,33 @@ export const monkeyCount = (enclosure, monkeys) =>
 // "areas" (Dreamland), everyone else's "introcages"
 export const introcageWord = (enclosure) => (isCareUnit(enclosure) ? "area" : "introcage");
 
-// Who's in one introcage
-export const residents = (introcage, monkeys) => monkeys.filter((m) => m.introcage === introcage.name).sort(byName);
+// Who's in one introcage right now: those living there (unless staying in
+// another for now) and those staying there
+export const residents = (introcage, monkeys) =>
+    monkeys.filter((m) => currentIntrocage(m) === introcage.name).sort(byName);
+// Those who live in it but are staying in another introcage for now
+export const awayFrom = (introcage, monkeys) =>
+    monkeys.filter((m) => m.introcage === introcage.name && m.stay).sort(byName);
+
+// Where a monkey can stay for now (Move to Introcage, and Return from
+// Sickbay or a stay): its own enclosure's introcages (own: true), then every
+// other enclosure's, in the enclosures' order; not its home introcage, nor
+// where it's staying already. [{ id, name, enclosure, own }]. None for a
+// new arrival (it lives in a care unit) or a monkey with no enclosure (the
+// Bandits).
+export function stayChoices(monkey, enclosures) {
+    const home = enclosures.find((e) => isEnclosure(e) && e.name === homeName(monkey));
+    if (!home || isCareUnit(home)) return [];
+    const order = (e) => (e.id === home.id ? -1 : e.sortOrder);
+    return enclosures
+        .filter((e) => isEnclosure(e) && !isCareUnit(e))
+        .sort((a, b) => order(a) - order(b))
+        .flatMap((e) =>
+            introcagesOf(e, enclosures)
+                .filter((i) => i.type === "introcage" && i.name !== monkey.introcage && i.id !== monkey.stay?.id)
+                .map((i) => ({ id: i.id, name: i.name, enclosure: e.name, own: e.id === home.id }))
+        );
+}
 
 // 600 → "600 m²", 1250 → "1,250 m²" (null: none)
 export function sizeText(size) {

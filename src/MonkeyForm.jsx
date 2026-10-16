@@ -106,8 +106,9 @@ function MonkeyForm({
         setForm({ ...form, troop: "", location: "", chip: "", chipUnknown: false });
     }
     // Feeding: for a monkey in an introcage (not a troop, or a care unit's
-    // area), once the database has it
-    const showFeeding = Boolean(form.feeding) && chosenIntrocage(form, choices)?.type === "introcage";
+    // area), or staying in one for now, once the database has it
+    const showFeeding =
+        Boolean(form.feeding) && (chosenIntrocage(form, choices)?.type === "introcage" || Boolean(monkey?.stay));
     const setFeeding = (field, value) => setForm({ ...form, feeding: { ...form.feeding, [field]: value } });
     // Babies' plates are always cut small with fruit
     const baby = isBaby({ year: form.year });
@@ -133,7 +134,8 @@ function MonkeyForm({
         if (Object.keys(found).length) return;
         setBusy(true);
         try {
-            const saved = await saveMonkey(values, troopIds, monkey?.id);
+            // (its stay goes along: it ends if its introcage is now home)
+            const saved = await saveMonkey({ ...values, stay: monkey?.stay }, troopIds, monkey?.id);
             // Arrival Info is kept apart (staff only); the monkey is already saved
             if (showArrival && arrival.trim() !== arrivalSaved.trim()) {
                 try {

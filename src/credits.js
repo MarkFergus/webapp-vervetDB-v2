@@ -9,14 +9,15 @@ export const CREDITS = [
     { name: "Tabler Icons", use: "Icons", licence: "MIT", url: "https://tabler.io/icons" },
     { name: "Uicons by Flaticon", use: "Enclosure icon", licence: "Flaticon", url: "https://www.flaticon.com/uicons" },
     { name: "Bandit by Delapouite (game-icons.net)", use: "Bandits icon", licence: "CC BY 3.0", url: "https://game-icons.net/1x1/delapouite/bandit.html" },
-    { name: "React-PDF", use: "The Profile Book", licence: "MIT", url: "https://react-pdf.org" },
+    { name: "React-PDF", use: "The PDFs", licence: "MIT", url: "https://react-pdf.org" },
     { name: "React Easy Crop", use: "Cropping photos", licence: "MIT", url: "https://github.com/ValentinH/react-easy-crop" },
     { name: "Workbox", use: "Offline use", licence: "MIT", url: "https://developer.chrome.com/docs/workbox" },
     { name: "Hanken Grotesk", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Hanken+Grotesk" },
     { name: "Bitter", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Bitter" },
     { name: "Saira", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Saira" },
     { name: "Russo One", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Russo+One" },
-    { name: "Open Sans", use: "Profile Book font", licence: "OFL", url: "https://fonts.google.com/specimen/Open+Sans" },
+    { name: "Open Sans", use: "AM Plates List and Monitoring Sheet font", licence: "OFL", url: "https://fonts.google.com/specimen/Open+Sans" },
+    { name: "Caladea", use: "Profile Book and Introcage Sign font", licence: "OFL", url: "https://fonts.google.com/specimen/Caladea" },
 ];
 
 // Where the full licence texts are

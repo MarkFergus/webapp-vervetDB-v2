@@ -39,3 +39,15 @@ export function homeName(monkey) {
 }
 
 export const inIntrocage = (monkey) => Boolean(monkey.introcage);
+
+// A monkey's home is where it lives (its troop, or its introcage); for a
+// while it can stay in another introcage (monkey.stay, introcage-stays.sql:
+// integration, separating, maintenance…). Its home lists (its troop, the
+// Monitoring Sheet, the Profile Book) don't change; the places that are
+// about who's in a cage right now (the introcage's page, its sign, the AM
+// Plates List) go by where it is now.
+//   staying: the introcage it's staying in ("Gismo A"), or null (at home)
+export const staying = (monkey) => monkey.stay?.introcage ?? null;
+// The introcage it's in right now: where it's staying, or its home
+// introcage (null: with its troop)
+export const currentIntrocage = (monkey) => staying(monkey) ?? monkey.introcage ?? null;

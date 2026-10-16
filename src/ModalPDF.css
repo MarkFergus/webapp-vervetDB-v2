@@ -198,3 +198,212 @@
 .ModalPDF-error {
     color: var(--pink-2);
 }
+
+/* Under the title: what the pop-up is for */
+.ModalPDF-intro {
+    margin: -6px 8px 22px;
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--text-2);
+}
+
+/* ---- Introcage Signs: find an introcage, Add to List, the list ---- */
+
+.SignPicker {
+    margin: 0 8px 22px;
+}
+
+/* (as the Document and Troop labels) */
+.SignPicker-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-2);
+}
+
+.SignPicker-row {
+    display: flex;
+    gap: 8px;
+}
+
+.SignPicker-search {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.SignPicker-search input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    font-family: var(--font-ui);
+    font-size: 16px;
+    color: white;
+    background-color: var(--surface-2);
+    border: 2px solid var(--line-strong);
+    border-radius: 8px;
+}
+
+.SignPicker-search input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* The suggestions, under the box */
+.SignPicker-suggestions {
+    position: absolute;
+    z-index: 4;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.SignPicker-suggestions li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 10px;
+    font-size: 15px;
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.SignPicker-suggestions li.is-active {
+    color: white;
+    background-color: var(--surface-3);
+}
+
+/* How many monkeys live there ("Empty" when none) */
+.SignPicker-count {
+    flex: none;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+/* Add to List: the site's blue button */
+.SignPicker-add {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 12px;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bg);
+    background-color: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.SignPicker-add:hover:not(:disabled) {
+    background-color: var(--accent-2);
+}
+
+.SignPicker-add:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.SignPicker-add:focus-visible,
+.SignPicker-clear:focus-visible,
+.SignPicker-remove:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* The signs to print */
+.SignPicker-list {
+    margin-top: 16px;
+}
+
+.SignPicker-listHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.SignPicker-listHeader h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-2);
+}
+
+/* Clear All: plain blue text */
+.SignPicker-clear {
+    padding: 0;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.SignPicker-clear:hover:not(:disabled) {
+    color: var(--accent-2);
+}
+
+.SignPicker-list ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.SignPicker-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 6px 12px;
+    font-size: 15px;
+}
+
+.SignPicker-list li + li {
+    border-top: 1px solid var(--line);
+}
+
+.SignPicker-name {
+    flex: 1;
+    min-width: 0;
+    color: white;
+}
+
+.SignPicker-remove {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.SignPicker-remove:hover:not(:disabled) {
+    color: white;
+    background-color: var(--surface-2);
+}

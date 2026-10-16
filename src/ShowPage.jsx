@@ -10,7 +10,7 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA, saveRelease, saveSickbay, troopHome } from "./monkeyData";
+import { BUILT_IN_DATA, saveRelease, saveWhereabouts, troopHome } from "./monkeyData";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -20,7 +20,7 @@ import QuickPhotos from "./QuickPhotos";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
 import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
-import { fullName, homeName, inIntrocage, placeName } from "./places";
+import { fullName, homeName, inIntrocage, placeName, staying } from "./places";
 import {
     enclosureFromRoute,
     introcageMonkeys,
@@ -29,6 +29,7 @@ import {
     isEnclosuresRoute,
     placeHash,
     residents,
+    stayChoices,
     troopMonkeys,
 } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
@@ -36,6 +37,7 @@ import Game from "./Game";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
 import { monitoredTroops, monitoringGroups } from "./monitoring";
+import { signChoices, signFor, signPages } from "./introcageSigns";
 import { ageInYears } from "./ages";
 import FilterPanel, { AGE_GROUPS, SEXES } from "./FilterPanel";
 import { QUICK_FILTERS, inQuickFilters, inSection, quickSections } from "./sections";
@@ -263,6 +265,23 @@ function ShowPage({
     );
     const monitoring = useMemo(() => monitoringGroups(monkeys, pdfBook, new Date(), troopHome(pdfBook) ?? pdfBook), [monkeys, pdfBook]);
     const pdfMonitoringCount = monitoring.reduce((n, g) => n + g.monkeys.length, 0);
+    // Introcage Signs: the introcages to choose from, the ones chosen (kept
+    // while the app's open, so closing the pop-up doesn't lose the list),
+    // and the pages they make
+    const pdfSignChoices = useMemo(() => signChoices(enclosures, sections, monkeys), [enclosures, sections, monkeys]);
+    const [pdfSignList, setPdfSignList] = useState([]);
+    const pdfSignPages = useMemo(() => {
+        const signs = pdfSignList
+            .map((id) => enclosures.find((e) => e.id === id))
+            .filter(Boolean)
+            .map((introcage) => signFor(introcage, monkeys, enclosures));
+        return signPages(signs);
+    }, [pdfSignList, enclosures, monkeys]);
+    // Changing the list: the finished PDF (if any) no longer applies
+    function changeSignList(change) {
+        setPdfSignList(change);
+        setPdfReady(null);
+    }
 
     // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
@@ -453,9 +472,10 @@ function ShowPage({
         setEditing(null);
         openModal(saved, modalList && modalList.map((m) => (m.id === saved.id ? saved : m)));
     }
-    // Move to Sickbay / Return: saved straight away, and the pop-up stays open
-    async function handleSickbay(monkey, details) {
-        const saved = await saveSickbay(monkey.id, details);
+    // Move to Sickbay / Move to Introcage / Return: saved straight away, and
+    // the pop-up stays open
+    async function handleWhereabouts(monkey, details) {
+        const saved = await saveWhereabouts(monkey.id, details);
         onMonkeySaved(saved);
         showInAddress(saved);
         setSelectedMonkey(saved);
@@ -516,6 +536,27 @@ function ShowPage({
             setPdfProgress(null);
         }
     }
+    // Introcage Signs: no photos, so quick
+    async function createSigns() {
+        setIsGeneratingPDF(true);
+        setPdfError(null);
+        setPdfProgress({ done: 0, total: 0 });
+        try {
+            const [{ pdf }, { default: IntrocageSignPDF }] = await Promise.all([
+                import("@react-pdf/renderer"),
+                import("./IntrocageSignPDF"),
+            ]);
+            const date = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+            const blob = await pdf(<IntrocageSignPDF pages={pdfSignPages} date={date} />).toBlob();
+            setPdfReady({ blob, filename: `introcage_signs_${new Date().toISOString().slice(0, 10)}.pdf` });
+        } catch (err) {
+            console.error(err);
+            setPdfError("Couldn't create the PDF. Check your internet connection, then try again.");
+        } finally {
+            setIsGeneratingPDF(false);
+            setPdfProgress(null);
+        }
+    }
     // The AM Plates List: no photos, so quick
     async function createAmPlates() {
         setIsGeneratingPDF(true);
@@ -542,6 +583,7 @@ function ShowPage({
     async function createPDF() {
         if (pdfReport === "amPlates") return createAmPlates();
         if (pdfReport === "monitoring") return createMonitoring();
+        if (pdfReport === "introcageSign") return createSigns();
         const monkeys = pdfSections.flatMap((s) => s.monkeys);
         setIsGeneratingPDF(true);
         setPdfError(null);
@@ -726,7 +768,11 @@ function ShowPage({
                             : undefined
                     }
                     // (only once the database has Sickbay)
-                    onSickbay={canEdit && isAdmin && selectedMonkey?.inSickbay !== undefined ? handleSickbay : undefined}
+                    onWhereabouts={canEdit && isAdmin && selectedMonkey?.inSickbay !== undefined ? handleWhereabouts : undefined}
+                    // (only once the database has stays: introcage-stays.sql)
+                    stayChoices={
+                        selectedMonkey?.stay !== undefined ? stayChoices(selectedMonkey, enclosures) : undefined
+                    }
                     placeHref={selectedMonkey ? placeHash(selectedMonkey, enclosures) : null}
                 />
             </div>
@@ -752,6 +798,12 @@ function ShowPage({
                     pdfPlateMonkeys={pdfPlateMonkeys}
                     pdfMonitoringCount={pdfMonitoringCount}
                     pdfMonitorTroops={monitorTroops}
+                    pdfSignChoices={pdfSignChoices}
+                    pdfSignList={pdfSignList}
+                    pdfSignPageCount={pdfSignPages.length}
+                    onAddSign={(id) => changeSignList((list) => (list.includes(id) ? list : [...list, id]))}
+                    onRemoveSign={(id) => changeSignList((list) => list.filter((x) => x !== id))}
+                    onClearSigns={() => changeSignList([])}
                     pdfReady={pdfReady}
                     onSavePDF={() => {
                         downloadBlob(pdfReady.blob, pdfReady.filename);
@@ -947,6 +999,7 @@ function ShowPage({
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
                             inSickbay={m.inSickbay}
+                            stayingIn={staying(m)}
                             newArrival={isNewArrival(m)}
                             chip={m.chip}
                             img={m.img[0]}
@@ -965,6 +1018,7 @@ function ShowPage({
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
                             inSickbay={m.inSickbay}
+                            stayingIn={staying(m)}
                             newArrival={isNewArrival(m)}
                             img={m.img[0]}
                         />

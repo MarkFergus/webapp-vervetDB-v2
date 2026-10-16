@@ -18,6 +18,7 @@ import {
     IconSparkles,
     IconBolt,
     IconClipboardText,
+    IconCube,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -29,7 +30,7 @@ import ImagePreview from "./ImagePreview";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
-import { placeLabel } from "./places";
+import { fullName, placeLabel, staying } from "./places";
 import { isNewArrival } from "./enclosures";
 import { IntegrationForm, IntegrationList, newReportDates, useIntegration } from "./IntegrationReports";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
@@ -47,6 +48,8 @@ const todayText = () => {
 // What "Return to ..." goes back to
 const homeWord = (monkey) =>
     monkey.introcageType === "area" ? "Area" : monkey.introcage ? "Introcage" : "Troop";
+// Its home, in full: "Gismo Troop" or "Holt & Barrington C1"
+const homeText = (monkey) => (monkey.introcage ? fullName(monkey.introcage) : `${fullName(monkey.troop)} Troop`);
 
 function Modal({
     isModalOpen,
@@ -57,7 +60,13 @@ function Modal({
     nextMonkey,
     onEdit, // given only to editors: shows the Edit button
     onAddPhotos, // editors too: Add Photos, for this monkey
-    onSickbay, // editors too: Move to Sickbay / Return, async (monkey, { inSickbay, since, note })
+    // editors too: where it is for now, async (monkey, { at: "home" |
+    // "sickbay" | "introcage", introcageId, since, note }): Move to Sickbay,
+    // Move to Introcage (a stay, introcage-stays.sql), and Return
+    onWhereabouts,
+    // The introcages it can stay in (stayChoices in enclosures.js; none
+    // until the database has stays: then Return just goes home)
+    stayChoices = [],
     staff, // { canSee, canAdd, userId, isAdmin } for Integration Reports (staff only), or null
     onRelease, // editors, new arrivals only: Released, async (monkey, { date, details })
     position, // { number, total }: where this monkey is in the list (optional)
@@ -79,7 +88,9 @@ function Modal({
     useEffect(() => {
         scrollRef.current?.scrollTo?.(0, 0);
     }, [monkey?.id]);
-    // Move to Sickbay: the little form (date and note) while it's open
+    // Move to Sickbay / Move to Introcage / Return: the little form while
+    // it's open: { to: "sickbay" | "introcage" | "return", introcageId
+    // ("" until chosen; Return: "" = home), since, note }
     const [moreOpen, setMoreOpen] = useState(false);
     const moreRef = useRef(null);
     const [sickbayForm, setSickbayForm] = useState(null);
@@ -103,12 +114,27 @@ function Modal({
     const [injuryForm, setInjuryForm] = useState(false);
     const [injuriesOpen, setInjuriesOpen] = useState(true);
 
-    // Saves straight away; the pop-up stays open, now with the new state
-    async function changeSickbay(inSickbay) {
+    // Saves straight away; the pop-up stays open, now with the new state.
+    // (Return to an introcage: a new stay there, from today)
+    async function changePlace(form) {
         setSickbayBusy(true);
         setSickbayProblem(null);
+        const { to, introcageId, since, note, fedBy } = form;
+        const details =
+            to === "sickbay"
+                ? { at: "sickbay", since, note }
+                : introcageId
+                  ? {
+                        at: "introcage",
+                        introcageId: Number(introcageId),
+                        since: since ?? todayText(),
+                        note: note ?? "",
+                        // (a troop monkey: who feeds it while it's there)
+                        ...(asksFedBy(form) && { fedBy }),
+                    }
+                  : { at: "home" };
         try {
-            await onSickbay(monkey, { inSickbay, since: sickbayForm?.since, note: sickbayForm?.note });
+            await onWhereabouts(monkey, details);
             setSickbayForm(null);
             setMoreOpen(false);
         } catch (err) {
@@ -132,7 +158,25 @@ function Modal({
     // Move to Sickbay: not for new arrivals (anyone in a care unit: a move
     // there is a change of location, not a stay in Sickbay). Return still
     // shows if one is somehow marked In Sickbay.
-    const canSickbay = Boolean(onSickbay && monkey && (monkey.inSickbay || !isNewArrival(monkey)));
+    const canSickbay = Boolean(onWhereabouts && monkey && (monkey.inSickbay || !isNewArrival(monkey)));
+    // Where it is for now: staying in an introcage (its name), and whether
+    // it's away from home at all
+    const stayingIn = monkey ? staying(monkey) : null;
+    const away = Boolean(monkey?.inSickbay || stayingIn);
+    // Move to Introcage: when the database has stays and it's at home
+    const canStay = Boolean(onWhereabouts && monkey && !away && stayChoices.length);
+    // Return: asks where to (home, or its own enclosure's introcages), or
+    // just goes home if there's nowhere else
+    const ownChoices = stayChoices.filter((c) => c.own);
+    const otherChoices = stayChoices.filter((c) => !c.own);
+    const returnHome = { to: "return", introcageId: "", fedBy: "sickbay" };
+    // A troop monkey going into an introcage (not already fed in one): who
+    // feeds it there, Sickbay to start with
+    const asksFedBy = (form) =>
+        Boolean(monkey?.feeding) &&
+        !monkey.introcage &&
+        !stayingIn &&
+        (form.to === "introcage" || (form.to === "return" && Boolean(form.introcageId)));
     // + Integration Report: not for new arrivals (they move to a troop
     // enclosure before integration starts)
     const canReport = Boolean(integration.canAdd && monkey && !isNewArrival(monkey));
@@ -278,7 +322,7 @@ function Modal({
                             {/* Quick Actions (editors): an icon top left (opposite
                                 close) that drops down the quick actions; each one's
                                 little form opens in the same drop-down */}
-                            {(canSickbay || onRelease || canReport || injuries.canAdd) && (
+                            {(canSickbay || canStay || onRelease || canReport || injuries.canAdd) && (
                                 <div className="Modal-moreActions" ref={moreRef}>
                                     <button
                                         type="button"
@@ -292,28 +336,53 @@ function Modal({
                                     </button>
                                     {moreOpen && (
                                         <div className={`Modal-moreRow${formOpen ? " is-form" : ""}`}>
-                                            {canSickbay && !formOpen && (
+                                            {/* Move to Sickbay (from home, or ending a stay) */}
+                                            {canSickbay && !monkey.inSickbay && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    disabled={sickbayBusy}
+                                                    onClick={() => setSickbayForm({ to: "sickbay", since: todayText(), note: "" })}
+                                                >
+                                                    <IconAmbulance size={18} aria-hidden="true" />
+                                                    Move to Sickbay
+                                                </button>
+                                            )}
+                                            {canStay && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    onClick={() =>
+                                                        setSickbayForm({
+                                                            to: "introcage",
+                                                            introcageId: "",
+                                                            since: todayText(),
+                                                            note: "",
+                                                            fedBy: "sickbay",
+                                                        })
+                                                    }
+                                                >
+                                                    <IconCube size={18} aria-hidden="true" />
+                                                    Move to Introcage
+                                                </button>
+                                            )}
+                                            {/* Return: straight home, or (with somewhere else
+                                                to go) a choice first */}
+                                            {onWhereabouts && away && !formOpen && (
                                                 <button
                                                     type="button"
                                                     className="Modal-edit is-sickbay"
                                                     disabled={sickbayBusy}
                                                     onClick={() =>
-                                                        monkey.inSickbay
-                                                            ? changeSickbay(false)
-                                                            : setSickbayForm({ since: todayText(), note: "" })
+                                                        ownChoices.length ? setSickbayForm(returnHome) : changePlace(returnHome)
                                                     }
                                                 >
-                                                    {/* (the door when returning, the ambulance when moving in) */}
-                                                    {monkey.inSickbay ? (
-                                                        <IconDoorExit size={18} aria-hidden="true" />
-                                                    ) : (
-                                                        <IconAmbulance size={18} aria-hidden="true" />
-                                                    )}
+                                                    <IconDoorExit size={18} aria-hidden="true" />
                                                     {sickbayBusy
                                                         ? "Saving…"
-                                                        : monkey.inSickbay
-                                                          ? `Return to ${homeWord(monkey)}`
-                                                          : "Move to Sickbay"}
+                                                        : ownChoices.length
+                                                          ? `Return From ${monkey.inSickbay ? "Sickbay" : "Introcage"}`
+                                                          : `Return to ${homeWord(monkey)}`}
                                                 </button>
                                             )}
                                             {onRelease && !formOpen && (
@@ -428,31 +497,106 @@ function Modal({
                                             )}
                                             {sickbayForm && (
                                                 <div className="Modal-sickbayForm">
-                                                    <label>
-                                                        <span>Date Moved</span>
-                                                        <input
-                                                            type="date"
-                                                            value={sickbayForm.since}
-                                                            max={todayText()}
-                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
-                                                        />
-                                                    </label>
-                                                    <label>
-                                                        <span>Note (optional)</span>
-                                                        <input
-                                                            type="text"
-                                                            value={sickbayForm.note}
-                                                            maxLength={200}
-                                                            placeholder="e.g. leg wound"
-                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
-                                                        />
-                                                    </label>
+                                                    {/* Move to Introcage: which one (its own
+                                                        enclosure's first) */}
+                                                    {sickbayForm.to === "introcage" && (
+                                                        <label>
+                                                            <span>Introcage</span>
+                                                            <select
+                                                                value={sickbayForm.introcageId}
+                                                                onChange={(e) => setSickbayForm({ ...sickbayForm, introcageId: e.target.value })}
+                                                            >
+                                                                <option value="">Choose…</option>
+                                                                {ownChoices.length > 0 && (
+                                                                    <optgroup label={fullName(ownChoices[0].enclosure)}>
+                                                                        {ownChoices.map((c) => (
+                                                                            <option key={c.id} value={c.id}>
+                                                                                {fullName(c.name)}
+                                                                            </option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                                {otherChoices.length > 0 && (
+                                                                    <optgroup label="Other Enclosures">
+                                                                        {otherChoices.map((c) => (
+                                                                            <option key={c.id} value={c.id}>
+                                                                                {fullName(c.name)}
+                                                                            </option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                            </select>
+                                                        </label>
+                                                    )}
+                                                    {/* Return: home, or one of its own
+                                                        enclosure's introcages (a new stay) */}
+                                                    {sickbayForm.to === "return" ? (
+                                                        <label>
+                                                            <span>Return To</span>
+                                                            <select
+                                                                value={sickbayForm.introcageId}
+                                                                onChange={(e) => setSickbayForm({ ...sickbayForm, introcageId: e.target.value })}
+                                                            >
+                                                                <option value="">{homeText(monkey)} (Home)</option>
+                                                                {ownChoices.map((c) => (
+                                                                    <option key={c.id} value={c.id}>
+                                                                        {fullName(c.name)}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </label>
+                                                    ) : (
+                                                        <>
+                                                            <label>
+                                                                <span>Date Moved</span>
+                                                                <input
+                                                                    type="date"
+                                                                    value={sickbayForm.since}
+                                                                    max={todayText()}
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
+                                                                />
+                                                            </label>
+                                                            <label>
+                                                                <span>Note (optional)</span>
+                                                                <input
+                                                                    type="text"
+                                                                    value={sickbayForm.note}
+                                                                    maxLength={200}
+                                                                    placeholder={sickbayForm.to === "sickbay" ? "e.g. leg wound" : "e.g. integration with Poppy"}
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
+                                                                />
+                                                            </label>
+                                                        </>
+                                                    )}
+                                                    {/* A troop monkey going into an introcage
+                                                        (not already fed in one): who feeds it
+                                                        there (Sickbay to start with); fed by the
+                                                        Local Team, it's on the AM Plates List */}
+                                                    {asksFedBy(sickbayForm) && (
+                                                        <>
+                                                            <label>
+                                                                <span>Fed By</span>
+                                                                <select
+                                                                    value={sickbayForm.fedBy}
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, fedBy: e.target.value })}
+                                                                >
+                                                                    <option value="sickbay">Sickbay</option>
+                                                                    <option value="localTeam">Local Team</option>
+                                                                </select>
+                                                            </label>
+                                                            {sickbayForm.fedBy === "localTeam" && (
+                                                                <p className="Modal-releaseNote">
+                                                                    {monkey.name} will be on the AM Plates List while in an introcage. Check their AM and PM food in Edit.
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    )}
                                                     <div className="Modal-sickbayActions">
                                                         <button
                                                             type="button"
                                                             className="Modal-edit is-confirm"
-                                                            disabled={sickbayBusy}
-                                                            onClick={() => changeSickbay(true)}
+                                                            disabled={sickbayBusy || (sickbayForm.to === "introcage" && !sickbayForm.introcageId)}
+                                                            onClick={() => changePlace(sickbayForm)}
                                                         >
                                                             {sickbayBusy ? "Saving…" : "Confirm"}
                                                         </button>
@@ -616,6 +760,12 @@ function Modal({
                                                 In Sickbay
                                             </li>
                                         )}
+                                        {stayingIn && (
+                                            <li className="is-stay">
+                                                <IconCube size={15} stroke={2} aria-hidden="true" />
+                                                In <PlaceName name={stayingIn} />
+                                            </li>
+                                        )}
                                         {/* Sex: just its symbol (the word is read out), so
                                             the pills fit one line */}
                                         {monkey.sex === "male" || monkey.sex === "female" ? (
@@ -678,6 +828,23 @@ function Modal({
                                                     monkey.sickbaySince &&
                                                         `Since ${summaryDate(new Date(`${monkey.sickbaySince}T00:00:00`))}`,
                                                     monkey.sickbayNote,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(" · ")}
+                                            </p>
+                                        </section>
+                                    )}
+                                    {/* Staying in an introcage: where, since when and
+                                        why (the pill says where in short) */}
+                                    {stayingIn && (
+                                        <section className="Modal-section">
+                                            <h2 className="Modal-label">Current Location</h2>
+                                            <p>
+                                                {[
+                                                    `${fullName(stayingIn)} (home: ${homeText(monkey)})`,
+                                                    monkey.stay.since &&
+                                                        `Since ${summaryDate(new Date(`${monkey.stay.since}T00:00:00`))}`,
+                                                    monkey.stay.note,
                                                 ]
                                                     .filter(Boolean)
                                                     .join(" · ")}

@@ -1,5 +1,5 @@
 import { Document, Page, View, Text, StyleSheet, Svg, Circle, Line, Polyline } from "@react-pdf/renderer";
-import "./pdfFonts";
+import { FORM_FONT } from "./pdfFonts";
 import { MONITORING_CHECKS, MONITORING_COLUMNS, monitoringPages } from "./monitoring";
 import { textWidth } from "./pdfTextWidth";
 
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     page: {
         paddingVertical: MARGIN,
         paddingHorizontal: 32,
-        fontFamily: "OpenSans",
+        fontFamily: FORM_FONT,
         color: "#000",
     },
     title: {

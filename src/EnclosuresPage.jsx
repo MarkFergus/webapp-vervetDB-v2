@@ -11,7 +11,7 @@ import {
     IconChevronLeft,
     IconChevronRight,
     IconCube,
-    IconMap,
+    IconMap2,
     IconMapPin,
     IconPencil,
     IconRuler2,
@@ -26,7 +26,7 @@ import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import SortMenu from "./SortMenu";
-import { fullName, inIntrocage, placeName } from "./places";
+import { fullName, inIntrocage, placeName, staying } from "./places";
 import {
     bySection,
     ENCLOSURES_HASH,
@@ -44,6 +44,7 @@ import {
     introcageWord,
     introcagesOf,
     monkeyCount,
+    awayFrom,
     residents,
     averageAge,
     ordinal,
@@ -444,6 +445,7 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
                             troop={placeName(m)}
                             inIntrocage={inIntrocage(m)}
                             inSickbay={m.inSickbay}
+                            stayingIn={staying(m)}
                             newArrival={isNewArrival(m)}
                             chip={m.chip}
                             img={m.img[0]}
@@ -491,7 +493,13 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     const inNoTroop = Boolean(parent) && !hasTroop(parent);
     // Size: on its introcages / areas instead (a one-area care unit: its own)
     const noSize = noTroop && introcages.length > 0;
-    const living = isIntrocage ? residents(enclosure, monkeys) : noTroop ? inIntrocages : troop;
+    // (an introcage: who's in it now, then those who live here but are
+    // staying in another introcage for now, with their badge)
+    const living = isIntrocage
+        ? [...residents(enclosure, monkeys), ...awayFrom(enclosure, monkeys)]
+        : noTroop
+          ? inIntrocages
+          : troop;
     const established = establishedText(enclosure.established);
     // The troop's average age (a block or care unit: its monkeys')
     const age = isIntrocage ? null : averageAge(noTroop ? inIntrocages : troop);
@@ -520,12 +528,12 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     const maintenanceJump = { key: "maintenance", label: "Maintenance", icon: IconTool };
     const jumps = isIntrocage
         ? [
-              { key: "map", label: "Map", icon: IconMap },
+              { key: "map", label: "Map", icon: IconMap2 },
               { key: "residents", label: "Monkeys", icon: IconUsersGroup },
               maintenanceJump,
           ]
         : [
-              { key: "map", label: "Map", icon: IconMap },
+              { key: "map", label: "Map", icon: IconMap2 },
               ...(introcages.length
                   ? [{ key: "introcages", label: introcagesTitle, icon: IconCube }]
                   : []),
@@ -633,7 +641,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
 
                         {/* The details, as label / value rows */}
                         <dl className="Enclosures-details">
-                            {isIntrocage && <DetailRow icon={IconUsersGroup} label="No. of Monkeys" value={living.length} />}
+                            {isIntrocage && <DetailRow icon={IconUsersGroup} label="No. of Monkeys" value={residents(enclosure, monkeys).length} />}
                             <div>
                                 <dt>
                                     <IconMapPin size={16} aria-hidden="true" />

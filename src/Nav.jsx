@@ -54,6 +54,12 @@ function Nav({
     pdfPlateMonkeys,
     pdfMonitoringCount,
     pdfMonitorTroops,
+    pdfSignChoices,
+    pdfSignList,
+    pdfSignPageCount,
+    onAddSign,
+    onRemoveSign,
+    onClearSigns,
     pdfReady,
     onSavePDF,
     isAccountOpen,
@@ -72,7 +78,7 @@ function Nav({
     monkeys = [], // … and who lives there
 }) {
     const { user, avatarUrl, role } = useAuth();
-    // Create PDF (Profile Books, the AM Plates List): staff only (any role)
+    // Documents (Profile Books, the AM Plates List, Introcage Signs…): staff only (any role)
     const onCreatePdf = role ? togglePDFModal : undefined;
     const searchInputRef = useRef(null);
 
@@ -299,6 +305,12 @@ function Nav({
                         plateMonkeys={pdfPlateMonkeys}
                         monitoringCount={pdfMonitoringCount}
                         monitorTroops={pdfMonitorTroops}
+                        signChoices={pdfSignChoices}
+                        signList={pdfSignList}
+                        signPageCount={pdfSignPageCount}
+                        onAddSign={onAddSign}
+                        onRemoveSign={onRemoveSign}
+                        onClearSigns={onClearSigns}
                         ready={pdfReady}
                         onSave={onSavePDF}
                     />

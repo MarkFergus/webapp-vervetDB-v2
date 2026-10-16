@@ -198,6 +198,7 @@
 }
 
 .MonkeyCard-sickbay,
+.MonkeyCard-stay,
 .MonkeyCard-newArrival {
     display: flex;
     align-items: center;
@@ -209,6 +210,11 @@
     color: var(--bg);
     background-color: #f5b83d;
     border-radius: 4px;
+}
+
+/* Staying in an introcage for now ("In Gismo A"): teal */
+.MonkeyCard-stay {
+    background-color: var(--stay);
 }
 
 /* "New Arrival": neon orange, so it can't be missed */

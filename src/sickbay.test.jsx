@@ -14,8 +14,8 @@ const MONKEY = {
     enclosure: "Goliath", year: 2015, img: [PLACEHOLDER_PHOTO], bio: "", desc: "", feeding: DEFAULT_FEEDING, inSickbay: false,
 };
 
-const open = (monkey, onSickbay) =>
-    render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} onSickbay={onSickbay} />);
+const open = (monkey, onWhereabouts) =>
+    render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} onWhereabouts={onWhereabouts} />);
 const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
 
 describe("the pop-up's Sickbay button", () => {
@@ -30,8 +30,8 @@ describe("the pop-up's Sickbay button", () => {
     });
 
     test("Move to Sickbay asks the date (today) and a note, then saves", async () => {
-        const onSickbay = vi.fn().mockResolvedValue();
-        open(MONKEY, onSickbay);
+        const onWhereabouts = vi.fn().mockResolvedValue();
+        open(MONKEY, onWhereabouts);
         // (folded away until Quick Actions is opened)
         expect(screen.queryByRole("button", { name: "Move to Sickbay" })).not.toBeInTheDocument();
         await quickActions();
@@ -39,21 +39,21 @@ describe("the pop-up's Sickbay button", () => {
         expect(screen.getByLabelText("Date Moved")).toBeInTheDocument();
         await userEvent.type(screen.getByLabelText("Note (optional)"), "leg wound");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(onSickbay).toHaveBeenCalledTimes(1));
-        const [monkey, details] = onSickbay.mock.calls[0];
+        await waitFor(() => expect(onWhereabouts).toHaveBeenCalledTimes(1));
+        const [monkey, details] = onWhereabouts.mock.calls[0];
         expect(monkey.id).toBe(1);
-        expect(details).toEqual({ inSickbay: true, since: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), note: "leg wound" });
+        expect(details).toEqual({ at: "sickbay", since: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), note: "leg wound" });
     });
 
     test("in Sickbay: a badge, the since date and note, and Return to Introcage", async () => {
-        const onSickbay = vi.fn().mockResolvedValue();
-        open({ ...MONKEY, inSickbay: true, sickbaySince: "2026-10-11", sickbayNote: "leg wound" }, onSickbay);
+        const onWhereabouts = vi.fn().mockResolvedValue();
+        open({ ...MONKEY, inSickbay: true, sickbaySince: "2026-10-11", sickbayNote: "leg wound" }, onWhereabouts);
         expect(screen.getByText("In Sickbay", { selector: "li" })).toBeInTheDocument();
         expect(screen.getByText("Since 11th Oct 2026 · leg wound")).toBeInTheDocument();
         expect(screen.getByText("Fed by Sickbay while in Sickbay")).toBeInTheDocument();
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
-        await waitFor(() => expect(onSickbay).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), expect.objectContaining({ inSickbay: false })));
+        await waitFor(() => expect(onWhereabouts).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home" }));
     });
 
     test("a troop monkey returns to its Troop", async () => {
@@ -63,8 +63,8 @@ describe("the pop-up's Sickbay button", () => {
     });
 
     test("a failed save says so", async () => {
-        const onSickbay = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
-        open({ ...MONKEY, inSickbay: true }, onSickbay);
+        const onWhereabouts = vi.fn().mockRejectedValue(new Error("Couldn't save right now."));
+        open({ ...MONKEY, inSickbay: true }, onWhereabouts);
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");

@@ -1,5 +1,5 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
-import "./pdfFonts";
+import { FORM_FONT } from "./pdfFonts";
 
 // The AM Plates List: one A4 page like the plates board's sheet. Each
 // group: its name and enclosures | how many plates and which are special |
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
         paddingTop: 40,
         paddingBottom: 36,
         paddingHorizontal: 44,
-        fontFamily: "OpenSans",
+        fontFamily: FORM_FONT,
         fontSize: 10,
         color: "#000",
     },

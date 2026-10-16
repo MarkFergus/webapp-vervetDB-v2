@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.12.0",
+        date: "2026-10-16",
+        changes: [
+            "New Introcage Signs to print, in Documents (was Create PDF)",
+            "Improved enclosure maps: zoom and move around in the map pop-up",
+            "Improved the Profile Book with a new font",
+        ],
+    },
+    {
         version: "1.11.0",
         date: "2026-10-15",
         changes: ["New Interactive Map"],

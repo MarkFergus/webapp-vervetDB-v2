@@ -8,7 +8,7 @@ import {
     Svg,
     Path,
 } from "@react-pdf/renderer";
-import "./pdfFonts";
+import { REPORT_FONT } from "./pdfFonts";
 import { LOGO_HEIGHT, LOGO_LINE, LOGO_LINE_FONT_SIZE, LOGO_MONKEY, LOGO_NAME, LOGO_WIDTH } from "./logoShapes";
 import { placeLabel, placeName } from "./places";
 
@@ -27,11 +27,11 @@ const COVER_MONKEY_GREY = "#666";
 
 const styles = StyleSheet.create({
     document: {
-        fontFamily: "OpenSans",
+        fontFamily: REPORT_FONT,
     },
     // Padding rather than margin: react-pdf applies padding evenly on all sides
     page: {
-        fontFamily: "OpenSans",
+        fontFamily: REPORT_FONT,
         paddingTop: 24,
         paddingBottom: 40,
         paddingHorizontal: 30,
@@ -63,7 +63,8 @@ const styles = StyleSheet.create({
     },
     // "Adult Females", "2024 Orphans/Babies"…
     sectionTitle: {
-        fontFamily: "RussoOne",
+        fontFamily: REPORT_FONT,
+        fontWeight: "bold",
         fontSize: 14,
         paddingTop: 10,
         paddingBottom: 5,
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
     },
     cover: {
-        fontFamily: "OpenSans",
+        fontFamily: REPORT_FONT,
         padding: 60,
         justifyContent: "center",
         alignItems: "center",

@@ -83,8 +83,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true, admin: true });
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
-        // (staff: Create PDF here, and the game, as Photos has its place in the bottom bar)
-        expect(drawerItems()).toEqual(["Add New Monkey", "Create PDF", "Monkey Guesser", "Install & Use Offline", "About"]);
+        // (staff: Documents here, and the game, as Photos has its place in the bottom bar)
+        expect(drawerItems()).toEqual(["Add New Monkey", "Documents", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(drawerHeadings()).toEqual(["Tools", "App"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
@@ -95,7 +95,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Create PDF", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Documents", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 
@@ -113,25 +113,25 @@ describe("phones: the bottom bar", () => {
     const barItems = () =>
         [...document.querySelector(".BottomBar").children].map((i) => i.textContent || i.getAttribute("aria-label"));
 
-    test("visitors: Monkeys, Enclosures, Map, Game and You (no Create PDF)", () => {
+    test("visitors: Monkeys, Enclosures, Map, Game and You (no Documents)", () => {
         setup();
         expect(barItems()).toEqual(["Monkeys", "Enclosures", "Interactive Map", "Game", "You"]);
         expect(bar().getByRole("link", { name: "Monkeys" })).toHaveAttribute("aria-current", "page");
         expect(bar().getByRole("link", { name: "Enclosures" })).toHaveAttribute("href", "#enclosures");
         expect(bar().getByRole("link", { name: "Game" })).toHaveAttribute("href", "#game");
-        expect(screen.queryByRole("button", { name: "Create PDF" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "Documents" })).toBeNull();
     });
 
-    test("staff: Monkeys, Enclosures, Map, Photos and You; Create PDF in the ☰ menu, opening the PDF pop-up", async () => {
+    test("staff: Monkeys, Enclosures, Map, Photos and You; Documents in the ☰ menu, opening the PDF pop-up", async () => {
         const { user, menuButton } = setup({ signedIn: true });
         await waitFor(() => expect(bar().getByRole("button", { name: "Add Photos" })).toBeInTheDocument());
         expect(barItems()).toEqual(["Monkeys", "Enclosures", "Interactive Map", "Photos", "You"]);
         expect(bar().queryByRole("link", { name: "Game" })).toBeNull(); // (in the ☰ menu)
-        expect(bar().queryByRole("button", { name: "Create PDF" })).toBeNull();
+        expect(bar().queryByRole("button", { name: "Documents" })).toBeNull();
         await user.click(menuButton());
         const menu = screen.getByRole("dialog", { name: "Menu" });
-        await user.click(within(menu).getByRole("button", { name: "Create PDF" }));
-        expect(await screen.findByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
+        await user.click(within(menu).getByRole("button", { name: "Documents" }));
+        expect(await screen.findByRole("dialog", { name: "Documents" })).toBeInTheDocument();
     });
 
     test("Map opens the Interactive Map; Escape closes it, back to the button", async () => {
@@ -169,7 +169,7 @@ describe("computers: the side rail", () => {
     const railItems = () => [...rail().querySelectorAll(".SideRail-item")].map((i) => i.textContent);
     const railButton = () => screen.getByRole("button", { name: /side menu/ });
 
-    test("small to start with: Monkeys, Enclosures, Map, Game (visitors: no Create PDF)", async () => {
+    test("small to start with: Monkeys, Enclosures, Map, Game (visitors: no Documents)", async () => {
         setup();
         expect(railItems()).toEqual(["Monkeys", "Enclosures", "Map", "Game"]);
         await userEvent.click(within(rail()).getByRole("button", { name: "Interactive Map" }));
@@ -216,11 +216,11 @@ describe("computers: the side rail", () => {
         }
     });
 
-    test("staff: Create PDF, opening the PDF pop-up", async () => {
+    test("staff: Documents, opening the PDF pop-up", async () => {
         const { user } = setup({ signedIn: true });
-        await waitFor(() => expect(within(rail()).getByRole("button", { name: "Create PDF" })).toBeInTheDocument());
-        await user.click(within(rail()).getByRole("button", { name: "Create PDF" }));
-        expect(await screen.findByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
+        await waitFor(() => expect(within(rail()).getByRole("button", { name: "Documents" })).toBeInTheDocument());
+        await user.click(within(rail()).getByRole("button", { name: "Documents" }));
+        expect(await screen.findByRole("dialog", { name: "Documents" })).toBeInTheDocument();
     });
 
     test("admins: + New in the top bar, before the account circle", async () => {

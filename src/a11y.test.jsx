@@ -57,7 +57,7 @@ test("search, filters and icon buttons have accessible names", async () => {
     const search = screen.getByRole("textbox", {
         name: "Search by name or chip number",
     });
-    expect(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" })).toBeInTheDocument();
+    expect(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" })).toBeInTheDocument();
     // The filters are in the Filters panel
     await user.click(screen.getByRole("button", { name: "Filters" }));
     expect(screen.getByRole("combobox", { name: "Filter by enclosure" })).toBeInTheDocument();
@@ -109,9 +109,9 @@ test("the number of results is announced when filters change", async () => {
 
 test("the PDF dialog closes with Escape and focus returns to the PDF button", async () => {
     const { user } = setup();
-    const pdfButton = within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Create PDF" });
+    const pdfButton = within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Documents" });
     await user.click(pdfButton);
-    expect(screen.getByRole("dialog", { name: "Create PDF" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Documents" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
 
     await user.keyboard("{Escape}");

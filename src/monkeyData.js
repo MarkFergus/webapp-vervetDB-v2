@@ -27,6 +27,8 @@ const SICKBAY_MONKEY_COLUMNS = `${FEEDING_MONKEY_COLUMNS}, in_sickbay, sickbay_s
 // ...and its status (once released-status.sql has run): "sanctuary", or
 // "released" (kept on file, but not loaded)
 const STATUS_MONKEY_COLUMNS = `${SICKBAY_MONKEY_COLUMNS}, status`;
+// ...and a stay in an introcage (once introcage-stays.sql has run)
+const STAY_MONKEY_COLUMNS = `${STATUS_MONKEY_COLUMNS}, stay_introcage_id, stay_since, stay_note`;
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
 
@@ -91,6 +93,20 @@ export function toAppMonkey(row) {
     }
     // Once the database has a status (see released-status.sql)
     if ("status" in row) monkey.status = row.status;
+    // Once the database has stays (see introcage-stays.sql): the introcage
+    // it's staying in for now, or null (at home)
+    if ("stay_introcage_id" in row) {
+        const stay = row.stay_introcage_id ? places.byId[row.stay_introcage_id] : null;
+        monkey.stay = stay
+            ? {
+                  id: stay.id,
+                  introcage: stay.name,
+                  enclosure: places.byId[stay.parentId]?.name ?? null,
+                  since: row.stay_since,
+                  note: row.stay_note,
+              }
+            : null;
+    }
     return monkey;
 }
 
@@ -109,6 +125,10 @@ export function toDatabaseRow(monkey, troopIds) {
         description: monkey.desc,
     };
     if (monkey.introcageId !== undefined) row.introcage_id = monkey.introcageId ?? null;
+    // (a stay ends once its introcage becomes home: a move made in Edit)
+    if (monkey.stay && monkey.stay.id === monkey.introcageId) {
+        Object.assign(row, { stay_introcage_id: null, stay_since: null, stay_note: null });
+    }
     if (monkey.feeding) {
         const f = monkey.feeding;
         Object.assign(row, {
@@ -169,10 +189,11 @@ function throwIfError(...results) {
 // sickbay.sql / feeding.sql has run (a missing column). { result, columns }
 async function loadMonkeys() {
     let result;
-    for (const columns of [STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
+    for (const columns of [STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
         const query = supabase.from("monkeys").select(columns).order("id");
         // Released monkeys stay on file but don't appear in the app
-        result = await (columns === STATUS_MONKEY_COLUMNS ? query.neq("status", "released") : query);
+        const hasStatus = columns === STAY_MONKEY_COLUMNS || columns === STATUS_MONKEY_COLUMNS;
+        result = await (hasStatus ? query.neq("status", "released") : query);
         if (result.error?.code !== "42703") return { result, columns };
     }
     return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
@@ -291,19 +312,31 @@ export async function saveMonkeyPhotos(id, photos) {
     return toAppMonkey(data);
 }
 
-// Moves a monkey into Sickbay (with the date and a few words, both optional)
-// or back home (inSickbay false), leaving everything else as it is. Its home
-// and its Fed By don't change: the AM Plates List just counts it as fed by
-// Sickbay while it's in. Returns the saved monkey (site shape).
-export async function saveSickbay(id, { inSickbay, since = null, note = "" }) {
+// Where a monkey is for now, leaving its home (and its Fed By) as it is:
+//   { at: "home" }, { at: "sickbay", since, note }, or
+//   { at: "introcage", introcageId, since, note, fedBy } (a stay; fedBy,
+//   "sickbay" or "localTeam": a troop monkey's Fed By while it's there)
+// One place at a time: moving to one ends the other. The AM Plates List
+// counts it as fed by Sickbay while it's in Sickbay, or in the introcage
+// it's staying in. Returns the saved monkey (site shape).
+export async function saveWhereabouts(id, { at, introcageId = null, since = null, note = "", fedBy }) {
     const row = {
-        in_sickbay: inSickbay,
-        sickbay_since: inSickbay ? since || null : null,
-        sickbay_note: inSickbay ? note.trim() || null : null,
+        in_sickbay: at === "sickbay",
+        sickbay_since: at === "sickbay" ? since || null : null,
+        sickbay_note: at === "sickbay" ? note.trim() || null : null,
     };
+    // (only once the database has stays: until then, Sickbay as before)
+    if (monkeyColumns === STAY_MONKEY_COLUMNS) {
+        Object.assign(row, {
+            stay_introcage_id: at === "introcage" ? introcageId : null,
+            stay_since: at === "introcage" ? since || null : null,
+            stay_note: at === "introcage" ? note.trim() || null : null,
+        });
+        if (at === "introcage" && fedBy) row.fed_by = fedBy === "sickbay" ? "sickbay" : "local_team";
+    }
     const { data, error } = await supabase.from("monkeys").update(row).eq("id", id).select(monkeyColumns).single();
     if (error) {
-        console.error("Saving Sickbay failed:", error);
+        console.error("Saving where it is failed:", error);
         throw saveProblem(error);
     }
     return toAppMonkey(data);
