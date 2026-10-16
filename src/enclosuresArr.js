@@ -12,7 +12,7 @@
 //     introcages and areas only: troopDoor, plateSlot (true / false / null
 //     = not recorded), sleepingPerches (1–10 or null) }
 
-// (Care Units: Baby Care, Quarantine and Sickbay Care Unit, where new
+// (Care Units: Baby Care, Quarantine and Sickbay, where new
 // arrivals go: supabase/enclosure-types.sql)
 export const SECTION_NAMES = ["Top", "Middle", "Bottom", "Sickbay", "Care Units"];
 
@@ -38,12 +38,12 @@ const LAYOUT = [
 // The enclosures without a troop (supabase/enclosure-types.sql), listed
 // after the troop enclosures in their sections: the block with its
 // introcages, and the care units with their areas (full names; Quarantine
-// and Sickbay Care Unit are each one area, named the same as themselves)
+// and Sickbay are each one area, named the same as themselves)
 const OTHERS = [
     ["Bachelor Block", "block", "Top", ["Bachelor Block A", "Bachelor Block B"]],
     ["Baby Care", "care_unit", "Care Units", ["Dreamland", "Neverland", "Disneyland"]],
     ["Quarantine", "care_unit", "Care Units", ["Quarantine"]],
-    ["Sickbay Care Unit", "care_unit", "Care Units", ["Sickbay Care Unit"]],
+    ["Sickbay", "care_unit", "Care Units", ["Sickbay"]],
 ];
 
 // Introcages with their own name instead of "<enclosure> <code>"

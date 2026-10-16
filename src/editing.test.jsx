@@ -325,7 +325,7 @@ test("location: choosing another enclosure starts with its troop", async () => {
 
 const byKind = (type, name) => BUILT_IN_DATA.enclosures.find((e) => e.type === type && e.name === name);
 
-test("location: the care units; Sickbay Care Unit's one area is chosen by itself", async () => {
+test("location: the care units; Sickbay's one area is chosen by itself", async () => {
     const { user } = setup({ enclosuresLive: true });
     await openEditFor(user, "Aroha");
     // Baby Care: its three areas to choose from, no troop
@@ -333,11 +333,11 @@ test("location: the care units; Sickbay Care Unit's one area is chosen by itself
     expect(field("Location")).toHaveValue("");
     expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent))
         .toEqual(["Choose…", "Dreamland", "Neverland", "Disneyland"]);
-    // Sickbay Care Unit: just itself, already chosen
-    const unit = byKind("area", "Sickbay Care Unit");
-    await user.selectOptions(field("Enclosure"), `enclosure:${byKind("care_unit", "Sickbay Care Unit").id}`);
+    // Sickbay: just itself, already chosen
+    const unit = byKind("area", "Sickbay");
+    await user.selectOptions(field("Enclosure"), `enclosure:${byKind("care_unit", "Sickbay").id}`);
     expect(field("Location")).toHaveValue(String(unit.id));
-    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Sickbay Care Unit"]);
+    expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Sickbay"]);
     await user.click(within(form()).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: unit.id });
@@ -349,7 +349,7 @@ test("adding a monkey: a new arrival goes into a care unit (moved to its home la
     expect(within(form()).getByText(/New arrivals start in a care unit/)).toBeInTheDocument();
     // Only the care units: no troops, no Bachelor Block
     expect(within(field("Care Unit")).getAllByRole("option").map((o) => o.textContent))
-        .toEqual(["Choose…", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+        .toEqual(["Choose…", "Baby Care", "Quarantine", "Sickbay"]);
     await user.type(field("Name"), "Brand New");
     // Quarantine: one area, chosen by itself
     const area = byKind("area", "Quarantine");

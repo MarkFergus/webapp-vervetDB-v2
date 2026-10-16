@@ -312,7 +312,7 @@ describe("Location", () => {
             .map((b) => b.textContent);
         expect(names).toEqual([
             "Top Section", "Middle Section", "Bottom Section", "Sickbay Section", "Bandits",
-            "Baby Care", "Sickbay Care", "Quarantine", `Babies ${currentBabySeason()}`,
+            "Baby Care", "Sickbay", "Quarantine", `Babies ${currentBabySeason()}`,
         ]);
     });
 
@@ -477,11 +477,11 @@ describe("the Enclosures box and the care units", () => {
         expect(optionTexts()).toEqual(["All Enclosures", "Goliath"]);
     });
 
-    test("Baby Care, Sickbay Care (with the monkeys in Sickbay for now) and Quarantine, none twice", async () => {
+    test("Baby Care, Sickbay (with the monkeys in Sickbay for now) and Quarantine, none twice", async () => {
         const user = userEvent.setup();
         const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
         const monkeys = [
-            { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" },
+            { ...base, id: 1, name: "Ziggy", troop: null, introcage: "Sickbay", introcageType: "area", enclosure: "Sickbay" },
             { ...base, id: 2, name: "Nita", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
             { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: false },
             { ...base, id: 4, name: "Pip", troop: null, introcage: "Baby Care", introcageType: "area", enclosure: "Baby Care" },
@@ -489,7 +489,7 @@ describe("the Enclosures box and the care units", () => {
         ];
         render(<ShowPage monkeys={monkeys} />);
         await user.click(filtersButton());
-        await user.click(quickPill("Sickbay Care"));
+        await user.click(quickPill("Sickbay"));
         expect(shownNames().sort()).toEqual(["Nita", "Ziggy"]);
         // The enclosures box isn't narrowed (not a section)
         expect(optionTexts()).toContain("Goliath");

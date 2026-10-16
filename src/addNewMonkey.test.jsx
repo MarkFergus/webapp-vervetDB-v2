@@ -52,7 +52,7 @@ describe("New Arrival (the first choice)", () => {
         expect(field("Distinctive features")).toBeInTheDocument();
         // The Care Unit list has just the care units (the rest are under Other)
         expect(within(field("Care Unit")).getAllByRole("option").map((o) => o.textContent))
-            .toEqual(["Choose…", "Baby Care", "Quarantine", "Sickbay Care Unit"]);
+            .toEqual(["Choose…", "Baby Care", "Quarantine", "Sickbay"]);
     });
 
     test("saved as No Chip, with its Arrival Info kept apart", async () => {

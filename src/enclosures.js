@@ -9,7 +9,7 @@ const byName = (a, b) => a.name.localeCompare(b.name);
 // The kinds of enclosure (supabase/enclosure-types.sql). Enclosures:
 //   troop      a troop enclosure (Robert): a troop, plus its introcages
 //   block      Bachelor Block: introcages, no troop
-//   care_unit  Baby Care, Quarantine, Sickbay Care Unit: where new arrivals
+//   care_unit  Baby Care, Quarantine, Sickbay: where new arrivals
 //              go; areas, no troop
 // and inside them, where monkeys not in a troop live: introcage (in a
 // troop enclosure or block) and area (in a care unit)
@@ -78,13 +78,16 @@ export const troopMonkeys = (enclosure, monkeys) =>
 // Care Unit), until it's moved to a permanent location
 export const isNewArrival = (monkey) => monkey.introcageType === "area";
 
-// The Sickbay Care Unit also lists the monkeys who are in Sickbay for now
-// from elsewhere (their In Sickbay flag), next to its own new arrivals.
-export const SICKBAY_UNIT = "Sickbay Care Unit";
-export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && enclosure.name === SICKBAY_UNIT;
+// Sickbay (the care unit; once called "Sickbay Care Unit", to tell it apart
+// from the Sickbay section) also lists the monkeys who are in Sickbay for
+// now from elsewhere (their In Sickbay flag), next to its own new arrivals.
+export const SICKBAY_UNIT = "Sickbay";
+// (its old name too, until supabase/rename-sickbay.sql has run: remove then)
+export const isSickbayName = (name) => name === SICKBAY_UNIT || name === "Sickbay Care Unit";
+export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && isSickbayName(enclosure.name);
 
 // Monkeys in any of an enclosure's introcages / areas: its own, and anyone
-// staying in one of them from another enclosure (the Sickbay Care Unit:
+// staying in one of them from another enclosure (Sickbay, the care unit:
 // and everyone in Sickbay for now). NOTE: a visitor is counted both here
 // and at home, so the number is who is really there. A total for the whole
 // sanctuary mustn't add the enclosures up: count each monkey once, at its

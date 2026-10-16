@@ -583,7 +583,8 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         </div>
                         {isIntrocage && parent && (
                             <p className="Enclosures-parent">
-                                <BenchTreeIcon size={15} aria-hidden="true" />
+                                {/* (the cube: the introcage symbol, as on the cards) */}
+                                <IconCube size={15} aria-hidden="true" />
                                 {TYPE_NAMES[enclosure.type]} at <a href={enclosureHash(parent)}><PlaceName name={parent.name} /></a>
                             </p>
                         )}
@@ -610,10 +611,13 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                         <dd>{introcages.length}</dd>
                                     </div>
                                 )}
-                                <div>
-                                    <dt>Average age</dt>
-                                    <dd>{age === null ? "–" : age}</dd>
-                                </div>
+                                {/* (not a care unit: new arrivals come and go) */}
+                                {!isCareUnit(enclosure) && (
+                                    <div>
+                                        <dt>Average age</dt>
+                                        <dd>{age === null ? "–" : age}</dd>
+                                    </div>
+                                )}
                             </dl>
                         )}
                         {!isIntrocage && !noTroop && (
@@ -678,7 +682,8 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <dd>{sizeText(enclosure.size) ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
                                 </div>
                             )}
-                            {isIntrocage && (
+                            {/* (an introcage's: not a care unit's area, like Dreamland) */}
+                            {isIntrocage && enclosure.type === "introcage" && (
                                 <>
                                     {!inNoTroop && <DetailRow icon={IconDoor} label="Troop Door" value={yesNo(enclosure.troopDoor)} />}
                                     <DetailRow icon={IconBowl} label="Plate Slot" value={yesNo(enclosure.plateSlot)} />

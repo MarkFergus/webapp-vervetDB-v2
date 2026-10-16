@@ -53,8 +53,9 @@ function years(current) {
 function EnclosureForm({ enclosure, onClose, onSaved, noSize = false, noTroopDoor = false }) {
     // An introcage or area: one Description, and its own details
     const isIntrocage = isInside(enclosure);
-    // (only once the database has them: see introcage-fields.sql)
-    const hasIntrocageDetails = isIntrocage && "troopDoor" in enclosure;
+    // (an introcage's, not a care unit's area's; only once the database has
+    // them: see introcage-fields.sql)
+    const hasIntrocageDetails = enclosure.type === "introcage" && "troopDoor" in enclosure;
     const [year, month] = enclosure.established ? enclosure.established.split("-") : ["", ""];
     const [initial] = useState({
         description: enclosure.description ?? "",

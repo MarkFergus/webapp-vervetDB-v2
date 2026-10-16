@@ -7,7 +7,7 @@ import MonkeyRow from "./MonkeyRow";
 import { DEFAULT_FEEDING } from "./feeding";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 import enclosuresArr from "./enclosuresArr";
-import { introcageMonkeys, isNewArrival, monkeyCount } from "./enclosures";
+import { introcageMonkeys, isNewArrival, isSickbayUnit, monkeyCount } from "./enclosures";
 
 const MONKEY = {
     id: 1, name: "Nita", sex: "female", chip: "123", troop: null, introcage: "Goliath A", introcageType: "introcage",
@@ -20,7 +20,7 @@ const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Q
 
 describe("the pop-up's Sickbay button", () => {
     test.each([
-        ["Sickbay Care Unit A", "Sickbay Care Unit"],
+        ["Sickbay A", "Sickbay"],
         ["Quarantine A", "Quarantine"],
         ["Baby Care A", "Baby Care"],
     ])("isn't offered to a new arrival in a care unit (%s)", async (introcage, enclosure) => {
@@ -96,11 +96,11 @@ describe("the cards and rows", () => {
     });
 });
 
-describe("the Sickbay Care Unit's list", () => {
-    const unit = enclosuresArr.find((e) => e.name === "Sickbay Care Unit" && e.type === "care_unit");
+describe("Sickbay's list (the care unit)", () => {
+    const unit = enclosuresArr.find((e) => e.name === "Sickbay" && e.type === "care_unit");
     const goliath = enclosuresArr.find((e) => e.name === "Goliath" && e.type === "troop");
     const at = (name, extra) => ({ ...MONKEY, id: name.length * 100 + name.charCodeAt(0), name, ...extra });
-    const newcomer = at("Ziggy", { introcage: "Sickbay Care Unit", introcageType: "area", enclosure: "Sickbay Care Unit" });
+    const newcomer = at("Ziggy", { introcage: "Sickbay", introcageType: "area", enclosure: "Sickbay" });
     const visitor = at("Nita", { inSickbay: true, enclosure: "Goliath" });
     const home = at("Rocio", { enclosure: "Goliath" });
     const monkeys = [newcomer, visitor, home];
@@ -117,6 +117,11 @@ describe("the Sickbay Care Unit's list", () => {
     test("only a care-unit area's monkeys are new arrivals", () => {
         expect(isNewArrival(newcomer)).toBe(true);
         expect(isNewArrival(visitor)).toBe(false);
+    });
+
+    test("its old name (Sickbay Care Unit) still counts, until rename-sickbay.sql has run", () => {
+        expect(isSickbayUnit({ ...unit, name: "Sickbay Care Unit" })).toBe(true);
+        expect(isSickbayUnit({ ...unit, name: "Quarantine" })).toBe(false);
     });
 
     test("a monkey in Sickbay that is already admitted there is listed once", () => {

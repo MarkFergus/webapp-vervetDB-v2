@@ -25,12 +25,14 @@ export const MAP_HEIGHT = 841.9;
 const LABEL = "http://www.inkscape.org/namespaces/inkscape";
 
 // Enclosure name → its shape's label in the map, where they differ (the
-// block and the care units aren't "… troop"; the Sickbay Care Unit is the
+// block and the care units aren't "… troop"; Sickbay (the care unit) is the
 // Sickbay building)
 const MAP_LABELS = {
     "D&D": "Dino & Daniel troop",
     "Bachelor Block": "Bachelor block",
     Quarantine: "Quarantine",
+    Sickbay: "Sickbay building",
+    // (its old name, until supabase/rename-sickbay.sql has run: remove then)
     "Sickbay Care Unit": "Sickbay building",
 };
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
