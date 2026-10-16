@@ -111,7 +111,7 @@ function Nav({
     // Over the page: a new page, or a pop-up opening, puts it away
     const closeRailOver = () => setRailOver(false);
     useEffect(closeRailOver, [page, wide]);
-    // The account pop-up opened from the account menu's Changelog: starts there
+    // The account pop-up opened from the account menu's My Changes: starts there
     const [accountStart, setAccountStart] = useState(null);
     // Phones: the drawer
     const [drawerOpen, setDrawerOpen] = useState(false);

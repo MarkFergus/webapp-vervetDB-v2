@@ -4,8 +4,8 @@
 //   New / Added …  a new feature
 //   Improved …     an existing feature works or looks better
 //   Fixed …        a bug fixed
-// The About pop-up shows the current version, then every version's changes
-// under its own heading, newest first: a running changelog.
+// The About pop-up shows the current version and its changes, with a link
+// to the Updates page (UpdatesPage.jsx): every version, grouped by series.
 //
 // Version numbers: major.minor.patch
 //   major (1.0 → 2.0): a big milestone that changes how vervetDB works
@@ -218,17 +218,22 @@ export const CHANGELOG = [
 
 export const APP_VERSION = CHANGELOG[0].version;
 
-// About shows every version in the current series (same major.minor as the
-// latest, e.g. 1.1.1 and 1.1.0); older ones fold away under "Earlier
-// versions". So 1.2.0 starts a fresh list, and 1.1.x moves to "Earlier".
-export function currentSeries(changelog) {
-    const series = (version) => version.split(".").slice(0, 2).join(".");
-    const latest = series(changelog[0].version);
-    return {
-        current: changelog.filter((entry) => series(entry.version) === latest),
-        earlier: changelog.filter((entry) => series(entry.version) !== latest),
-    };
+// The Updates page (#updates): the versions grouped by series (same
+// major.minor, e.g. 1.5.0 and 1.5.1), newest first:
+//   [{ series: "1.12", releases: [entries…] }, …]
+export function seriesGroups(changelog) {
+    const groups = [];
+    for (const entry of changelog) {
+        const series = entry.version.split(".").slice(0, 2).join(".");
+        const last = groups[groups.length - 1];
+        if (last?.series === series) last.releases.push(entry);
+        else groups.push({ series, releases: [entry] });
+    }
+    return groups;
 }
+
+// Where the Updates page is
+export const UPDATES_HASH = "#updates";
 
 // "2 October 2026"
 export function releaseDate(date) {

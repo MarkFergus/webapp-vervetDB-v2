@@ -1,11 +1,12 @@
 // The About pop-up: version and latest changes, opened from the top bar,
-// the ☰ menu (phones) or the line at the bottom of the page.
+// the ☰ menu (phones) or the line at the bottom of the page; and the
+// Updates page (every version) from its See All Updates.
 import fs from "node:fs";
 import path from "node:path";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import { APP_VERSION, CHANGELOG, CHANGE_TYPES, currentSeries, releaseDate } from "./changelog";
+import { APP_VERSION, CHANGELOG, CHANGE_TYPES, releaseDate, seriesGroups } from "./changelog";
 
 const dialog = () => screen.getByRole("dialog", { name: "About vervetDB" });
 
@@ -29,12 +30,13 @@ test("package.json has the same version as the changelog", () => {
     expect(pkg.version).toBe(APP_VERSION);
 });
 
-test("the current series: same major.minor as the latest; the rest is earlier", () => {
-    const log = ["1.2.0", "1.1.2", "1.1.1", "1.0.0"].map((version) => ({ version }));
-    expect(currentSeries(log).current.map((e) => e.version)).toEqual(["1.2.0"]);
-    expect(currentSeries(log).earlier.map((e) => e.version)).toEqual(["1.1.2", "1.1.1", "1.0.0"]);
-    const patch = ["1.1.2", "1.1.1", "1.1.0", "1.0.1"].map((version) => ({ version }));
-    expect(currentSeries(patch).current.map((e) => e.version)).toEqual(["1.1.2", "1.1.1", "1.1.0"]);
+test("grouped by series (same major.minor), newest first", () => {
+    const log = ["1.12.0", "1.5.1", "1.5.0", "1.0.1", "1.0.0"].map((version) => ({ version }));
+    expect(seriesGroups(log).map((g) => [g.series, g.releases.map((e) => e.version)])).toEqual([
+        ["1.12", ["1.12.0"]],
+        ["1.5", ["1.5.1", "1.5.0"]],
+        ["1.0", ["1.0.1", "1.0.0"]],
+    ]);
 });
 
 test("dates read as words", () => {
@@ -59,21 +61,13 @@ test("the side rail's About opens it: version, date and latest changes", async (
     expect(within(dialog()).getByText(/not intended for public use\./)).toBeInTheDocument();
     expect(within(dialog()).getByText("– Built by Mark Fergus Ashcroft –")).toBeInTheDocument();
     expect(within(dialog()).getByText(/^© \d{4} Vervet Monkey Foundation\.\s*All photos and records belong to the Foundation/)).toBeInTheDocument();
-    // A running changelog: every version in the current series (e.g. 1.1.x)
-    // and its changes; "Earlier versions" opens the rest, newest first
-    const { current } = currentSeries(CHANGELOG);
-    const headings = () => within(dialog()).getAllByRole("heading", { level: 3 }).map((h) => h.textContent.replace("Major Update", ""));
-    const changes = () => within(dialog()).getAllByRole("listitem").map((li) => li.textContent);
-    expect(headings()).toEqual(current.map((entry) => `Version ${entry.version}`));
-    expect(changes()).toEqual(current.flatMap((entry) => entry.changes));
-    const earlier = within(dialog()).getByRole("button", { name: "Earlier versions" });
-    expect(earlier).toHaveAttribute("aria-expanded", "false");
-    await user.click(earlier);
-    expect(earlier).toHaveAttribute("aria-expanded", "true");
-    expect(headings()).toEqual(CHANGELOG.map((entry) => `Version ${entry.version}`));
-    expect(changes()).toEqual(CHANGELOG.flatMap((entry) => entry.changes));
-    await user.click(earlier); // folds them away again
-    expect(headings()).toHaveLength(current.length);
+    // Just the latest version and its changes, and the way to all of them
+    const headings = within(dialog()).getAllByRole("heading", { level: 3 }).map((h) => h.textContent.replace("Major Update", ""));
+    expect(headings).toEqual([`Version ${APP_VERSION}`]);
+    const changes = within(dialog()).getAllByRole("listitem").map((li) => li.textContent);
+    expect(changes).toEqual(CHANGELOG[0].changes);
+    expect(within(dialog()).getByRole("link", { name: "See All Updates" })).toHaveAttribute("href", "#updates");
+    expect(within(dialog()).queryByRole("button", { name: "Earlier versions" })).toBeNull();
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); // after its closing animation
 });
@@ -114,18 +108,56 @@ test("Open-Source Licences folds open: each project with a link, and the full te
     expect(within(dialog()).getByRole("link", { name: "Full Licence Texts" })).toHaveAttribute("href", "/licences.txt");
 });
 
-test("a major release has a Major Update pill beside its version", async () => {
-    const user = userEvent.setup();
-    render(<ShowPage />);
-    await openAbout(user);
-    const major = CHANGELOG.find((e) => e.major);
-    // (an earlier series: open "Earlier versions" to see it)
-    if (!currentSeries(CHANGELOG).current.includes(major)) {
-        await user.click(within(dialog()).getByRole("button", { name: "Earlier versions" }));
-    }
-    const heading = within(dialog()).getByRole("heading", { name: new RegExp(`^Version ${major.version.replace(/\./g, "\.")}`) });
-    expect(heading).toHaveTextContent(`Version ${major.version}Major Update`);
-    // Ordinary releases have none
-    const minor = CHANGELOG.find((e) => !e.major && currentSeries(CHANGELOG).current.includes(e));
-    if (minor) expect(within(dialog()).getByRole("heading", { name: `Version ${minor.version}` })).not.toHaveTextContent("Major Update");
+describe("the Updates page", () => {
+    afterEach(() => {
+        window.location.hash = "";
+    });
+
+    test("See All Updates: About closes and the Updates page opens", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage />);
+        await openAbout(user);
+        await user.click(within(dialog()).getByRole("link", { name: "See All Updates" }));
+        await waitFor(() => expect(screen.queryByRole("dialog", { name: "About vervetDB" })).toBeNull());
+        expect(window.location.hash).toBe("#updates");
+    });
+
+    test("every series, newest first; the newest open, each opens on its own", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage route="updates" />);
+        expect(screen.getByRole("heading", { level: 1, name: "Updates" })).toBeInTheDocument();
+        const groups = seriesGroups(CHANGELOG);
+        const toggles = screen.getAllByRole("button", { name: /^Version \d+\.\d+/ });
+        expect(toggles.map((t) => t.textContent.match(/^Version (\d+\.\d+)/)[1])).toEqual(groups.map((g) => g.series));
+        expect(toggles[0]).toHaveAttribute("aria-expanded", "true");
+        expect(toggles.slice(1).every((t) => t.getAttribute("aria-expanded") === "false")).toBe(true);
+        // The newest's versions and changes show
+        for (const change of groups[0].releases[0].changes) expect(screen.getByText(change)).toBeInTheDocument();
+        // Another opens on its own (the newest stays open)
+        const older = groups[groups.length - 1];
+        await user.click(toggles[toggles.length - 1]);
+        expect(toggles[toggles.length - 1]).toHaveAttribute("aria-expanded", "true");
+        expect(toggles[0]).toHaveAttribute("aria-expanded", "true");
+        for (const entry of older.releases) {
+            expect(screen.getByRole("heading", { level: 3, name: new RegExp(`^Version ${entry.version.replace(/\./g, "\\.")}`) })).toBeInTheDocument();
+        }
+        // Closes again
+        await user.click(toggles[0]);
+        expect(toggles[0]).toHaveAttribute("aria-expanded", "false");
+    });
+
+    test("a major release: Major Update on its series and its version", async () => {
+        const user = userEvent.setup();
+        render(<ShowPage route="updates" />);
+        expect(screen.getByRole("heading", { level: 1, name: "Updates" })).toBeInTheDocument();
+        const major = CHANGELOG.find((e) => e.major);
+        const series = major.version.split(".").slice(0, 2).join(".");
+        const toggle = screen.getByRole("button", { name: new RegExp(`^Version ${series.replace(".", "\\.")}\\b`) });
+        expect(toggle).toHaveTextContent("Major Update");
+        if (toggle.getAttribute("aria-expanded") === "false") await user.click(toggle);
+        expect(screen.getByRole("heading", { level: 3, name: new RegExp(`^Version ${major.version.replace(/\./g, "\\.")}`) })).toHaveTextContent("Major Update");
+        // Ordinary series have none
+        const plain = seriesGroups(CHANGELOG).find((g) => !g.releases.some((e) => e.major));
+        expect(screen.getByRole("button", { name: new RegExp(`^Version ${plain.series.replace(".", "\\.")}\\b`) })).not.toHaveTextContent("Major Update");
+    });
 });

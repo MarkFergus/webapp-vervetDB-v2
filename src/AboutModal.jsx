@@ -1,27 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
+import { IconArrowRight, IconChevronDown } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import MonkeyIcon from "./MonkeyIcon";
-import { CHANGELOG, currentSeries, releaseDate } from "./changelog";
+import { CHANGELOG, UPDATES_HASH, releaseDate } from "./changelog";
 import { CREDITS, LICENCES_FILE } from "./credits";
 import "./AboutModal.css";
 import CloseButton from "./CloseButton";
 
-// The About pop-up: which version of vervetDB this is, and a running
-// changelog: each version's changes under its own heading (changelog.js).
-// Every version in the current series shows (e.g. all the 1.1.x); older
-// series fold away under "Earlier versions" (see currentSeries). Below that,
-// the open-source software and fonts used fold away too (credits.js).
+// The About pop-up: which version of vervetDB this is, and what changed in
+// it (changelog.js), with "See All Updates" for the Updates page (every
+// version, UpdatesPage.jsx). Below that, the open-source software and fonts
+// used fold away (credits.js).
 // Opened from the ⓘ in the top bar, or the ☰ menu on phones.
-// One version: its heading (pink) and its changes
-function Release({ entry }) {
+
+// One version: its heading (pink) and its changes (also on the Updates
+// page). showDate: its release date under the heading
+export function Release({ entry, showDate = false }) {
     return (
         <div className="AboutModal-release">
             <h3>
                 Version {entry.version}
                 {entry.major && <span className="AboutModal-major">Major Update</span>}
             </h3>
+            {showDate && <p className="AboutModal-releaseDate">{releaseDate(entry.date)}</p>}
             <ul>
                 {entry.changes.map((change) => (
                     <li key={change}>{change}</li>
@@ -35,15 +37,10 @@ function AboutModal({ isOpen, onClose }) {
     const closeRef = useRef(null);
     useDialog(isOpen, closeRef, { onClose });
     const latest = CHANGELOG[0];
-    const { current, earlier } = currentSeries(CHANGELOG);
-    const [showEarlier, setShowEarlier] = useState(false);
     const [showLicences, setShowLicences] = useState(false);
     // Folded away again each time About opens
     useEffect(() => {
-        if (isOpen) {
-            setShowEarlier(false);
-            setShowLicences(false);
-        }
+        if (isOpen) setShowLicences(false);
     }, [isOpen]);
 
     return (
@@ -91,28 +88,12 @@ function AboutModal({ isOpen, onClose }) {
                                 <p className="AboutModal-credit">– Built by Mark Fergus Ashcroft –</p>
                                 <section className="AboutModal-changes" aria-labelledby="AboutModal-changesTitle">
                                     <h2 id="AboutModal-changesTitle">Latest changes</h2>
-                                    {current.map((entry) => (
-                                        <Release key={entry.version} entry={entry} />
-                                    ))}
-                                    {earlier.length > 0 && (
-                                        <button
-                                            type="button"
-                                            className="AboutModal-earlier"
-                                            aria-expanded={showEarlier}
-                                            aria-controls="AboutModal-earlierList"
-                                            onClick={() => setShowEarlier((shown) => !shown)}
-                                        >
-                                            Earlier versions
-                                            <IconChevronDown size={16} aria-hidden="true" />
-                                        </button>
-                                    )}
-                                    {showEarlier && (
-                                        <div id="AboutModal-earlierList">
-                                            {earlier.map((entry) => (
-                                                <Release key={entry.version} entry={entry} />
-                                            ))}
-                                        </div>
-                                    )}
+                                    <Release entry={latest} />
+                                    {/* Every version: the Updates page (About closes) */}
+                                    <a className="AboutModal-allUpdates" href={UPDATES_HASH} onClick={onClose}>
+                                        See All Updates
+                                        <IconArrowRight size={16} aria-hidden="true" />
+                                    </a>
                                 </section>
                                 <section className="AboutModal-licences" aria-label="Open-source licences">
                                     <button

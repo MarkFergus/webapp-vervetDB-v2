@@ -1,0 +1,108 @@
+/* The Updates page (UpdatesPage.jsx): every version, grouped by series.
+   The versions' own look (pink headings, Major Update pill, the list of
+   changes) is About's (AboutModal.css). */
+
+/* Centred, as wide as the list view at most (MonkeyRow.css) */
+.UpdatesPage {
+    box-sizing: border-box;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 12px 64px;
+    font-family: var(--font-ui);
+    color: var(--text);
+}
+
+.UpdatesPage-title {
+    margin: 16px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.15;
+    color: white;
+}
+
+.UpdatesPage-intro {
+    margin: 6px 0 20px;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+/* Each series: a row that opens its versions */
+.UpdatesPage-group {
+    border-top: 1px solid var(--line);
+}
+
+.UpdatesPage-group:last-child {
+    border-bottom: 1px solid var(--line);
+}
+
+.UpdatesPage-group h2 {
+    margin: 0;
+    font-size: inherit;
+}
+
+.UpdatesPage-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 4px;
+    font: inherit;
+    color: var(--text);
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.UpdatesPage-toggle:hover .UpdatesPage-series {
+    color: white;
+}
+
+.UpdatesPage-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.UpdatesPage-series {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* The date, then the chevron, at the right */
+.UpdatesPage-date {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.UpdatesPage-toggle svg {
+    flex: none;
+    color: var(--text-3);
+    transition: transform 0.15s;
+}
+
+.UpdatesPage-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+/* Its versions, under the row (no line above: the row has one) */
+.UpdatesPage-releases.AboutModal-changes {
+    margin: 0;
+    padding: 0 4px 18px;
+    border-top: none;
+}
+
+/* A version's date, under its heading (a series with more than one) */
+.AboutModal-releaseDate {
+    margin: -4px 0 8px;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+@media (min-width: 625px) {
+    .UpdatesPage {
+        padding: 0 24px 64px;
+    }
+}

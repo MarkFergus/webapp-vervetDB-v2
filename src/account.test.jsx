@@ -263,7 +263,7 @@ test("Request access shows who to email", async () => {
 });
 
 describe("the account menu (computers)", () => {
-    test("signed in, the circle opens a menu: name, email, Account, Changelog, Theme and Sign Out", async () => {
+    test("signed in, the circle opens a menu: name, email, Account, My Changes, Theme and Sign Out", async () => {
         const { user, dialog } = setup({ savedUser: EDITOR, names: { [EDITOR.id]: "Sam Smith" } });
         const circle = await screen.findByRole("button", { name: "Account (signed in)" });
         expect(circle).toHaveAttribute("aria-expanded", "false");
@@ -274,7 +274,7 @@ describe("the account menu (computers)", () => {
         expect(within(menu).getByText(EDITOR.email)).toBeInTheDocument();
         expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
             "Account",
-            "Changelog",
+            "My Changes",
             "ThemeDark",
             "Sign Out",
         ]);
@@ -304,7 +304,7 @@ describe("the account menu (computers)", () => {
         const circle = await screen.findByRole("button", { name: "Account (signed in)" });
         await user.click(circle);
         await user.keyboard("{ArrowDown}");
-        expect(screen.getByRole("menuitem", { name: "Changelog" })).toHaveFocus();
+        expect(screen.getByRole("menuitem", { name: "My Changes" })).toHaveFocus();
         await user.keyboard("{ArrowUp}{ArrowUp}");
         expect(screen.getByRole("menuitem", { name: "Sign Out" })).toHaveFocus();
         await user.keyboard("{ArrowDown}");
@@ -314,10 +314,10 @@ describe("the account menu (computers)", () => {
         expect(circle).toHaveFocus();
     });
 
-    test("accounts without a role (viewers): no Changelog", async () => {
+    test("accounts without a role (viewers): no My Changes", async () => {
         const { user } = setup({ savedUser: VIEWER });
         await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
-        expect(screen.queryByRole("menuitem", { name: "Changelog" })).toBeNull();
+        expect(screen.queryByRole("menuitem", { name: "My Changes" })).toBeNull();
     });
 
     test("a click outside closes it", async () => {

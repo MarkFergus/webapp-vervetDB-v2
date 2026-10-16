@@ -34,6 +34,7 @@ import {
 } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
 import Game from "./Game";
+import UpdatesPage from "./UpdatesPage";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
 import { monitoredTroops, monitoringGroups } from "./monitoring";
@@ -115,7 +116,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
         return (
             matchesLocation &&
             matchesTroop &&
-            // (a monkey in Sickbay for now is also under Sickbay Care: it is
+            // (a monkey in Sickbay for now is also under Sickbay: it is
             // one monkey in the list whichever are chosen, shown and counted once)
             inQuickFilters(monkey, quick) &&
             matchesYear &&
@@ -295,12 +296,14 @@ function ShowPage({
     const onEnclosures = isEnclosuresRoute(route);
     // The game (#game): under the same top bar, without the search box
     const onGame = route === "game";
+    // The Updates page (#updates): every version, from About
+    const onUpdates = route === "updates";
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame;
+    const offList = onEnclosures || onGame || onUpdates;
     // The game starts at the top
     useEffect(() => {
-        if (onGame) window.scrollTo?.(0, 0);
-    }, [onGame]);
+        if (onGame || onUpdates) window.scrollTo?.(0, 0);
+    }, [onGame, onUpdates]);
     const [modalList, setModalList] = useState(null);
     const neighbours = modalList ?? visibleMonkeys;
     const selectedIndex = neighbours.indexOf(selectedMonkey);
@@ -824,7 +827,7 @@ function ShowPage({
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -833,6 +836,8 @@ function ShowPage({
                 <div inert={isAnyModalOpen}>
                     <Game monkeys={monkeys} troops={troops} />
                 </div>
+            ) : onUpdates ? (
+                <UpdatesPage inert={isAnyModalOpen} />
             ) : onEnclosures ? (
                 <EnclosuresPage
                     route={route}

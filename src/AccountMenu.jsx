@@ -7,9 +7,9 @@ import "./AccountMenu.css";
 // Computers: the account circle at the top right (Nav.jsx). Signed out, it
 // opens the sign-in pop-up. Signed in, a menu drops down (like Supabase's):
 // who you are (photo, name, email), Account (the signed-in pop-up, for
-// now the account page), Changelog (staff: your own changes), Theme (Dark
+// now the account page), My Changes (staff: your own changes), Theme (Dark
 // only, for now) and Sign Out.
-//   onAccount: opens the account pop-up; onChangelog: opens it on the changelog
+//   onAccount: opens the account pop-up; onChangelog: opens it on My Changes
 function AccountMenu({ onAccount, onChangelog }) {
     const { user, role, name, avatarUrl, signOut } = useAuth();
     const [open, setOpen] = useState(false);
@@ -106,7 +106,7 @@ function AccountMenu({ onAccount, onChangelog }) {
                     {role && (
                         <button type="button" role="menuitem" onClick={choose(onChangelog)}>
                             <IconHistory stroke={1.75} size={18} aria-hidden="true" />
-                            Changelog
+                            My Changes
                         </button>
                     )}
                     {/* Light theme: coming later, so Dark for now */}

@@ -28,10 +28,10 @@ const ROLE_NAMES = { admin: "Admin", editor: "Editor", maintenance: "Maintenance
 //   forgot:      email a link for choosing a new password
 //   newPassword: choose a password (from an email link, or Change password)
 //   signed in:   who you are (staff: tap the picture to add a photo),
-//                Continue, Changelog (staff), Change password, Sign out
-//   changes:     the changelog: your own recent changes (MyChanges)
+//                Continue, My Changes (staff), Change password, Sign out
+//   changes:     My Changes: your own recent changes (MyChanges)
 // startView: open straight onto one of these, e.g. "changes" (the account
-//   menu's Changelog)
+//   menu's My Changes)
 function AccountModal({ isOpen, onClose, startView = null }) {
     const {
         user,
@@ -77,7 +77,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
         }
     }, [passwordSetup]);
 
-    // Opened from the account menu's Changelog: straight there
+    // Opened from the account menu's My Changes: straight there
     useEffect(() => {
         if (isOpen && startView) show(startView);
     }, [isOpen, startView]);
@@ -215,7 +215,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     Account
                 </button>
                 <h1 className="AccountModal-title" id="AccountModal-title">
-                    Changelog
+                    My Changes
                 </h1>
                 <p className="AccountModal-note">Your recent changes to vervetDB.</p>
                 <MyChanges />
@@ -356,7 +356,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                 {canChangePhoto && (
                     <button type="button" className="AccountModal-button is-quiet is-withIcon" onClick={() => show("changes")}>
                         <IconHistory stroke={2} aria-hidden="true" />
-                        Changelog
+                        My Changes
                     </button>
                 )}
                 <div className="AccountModal-actions">

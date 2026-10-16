@@ -1,5 +1,5 @@
 // The changelog: your own recent changes, in the account pop-up (computers:
-// the account menu → Changelog; phones: You → Changelog). Supabase is
+// the account menu → My Changes; phones: You → My Changes). Supabase is
 // replaced with a pretend version.
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -50,11 +50,11 @@ function setup(options) {
 
 async function openChangelog(user) {
     await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
-    await user.click(screen.getByRole("menuitem", { name: "Changelog" }));
-    return screen.getByRole("dialog", { name: "Changelog" });
+    await user.click(screen.getByRole("menuitem", { name: "My Changes" }));
+    return screen.getByRole("dialog", { name: "My Changes" });
 }
 
-test("the account menu's Changelog: your changes by day, newest first", async () => {
+test("the account menu's My Changes: your changes by day, newest first", async () => {
     const { user } = setup();
     const dialog = await openChangelog(user);
     expect(supabase.rpc).toHaveBeenCalledWith("my_changes", { max_rows: 50 });
@@ -87,9 +87,9 @@ test("← Account goes back to the signed-in pop-up; closing and reopening start
     await user.click(within(dialog).getByRole("button", { name: "Account" }));
     expect(screen.getByRole("dialog", { name: "Account" })).toBeInTheDocument();
 
-    // Phones (and the pop-up itself): Changelog from the signed-in pop-up
-    await user.click(screen.getByRole("button", { name: "Changelog" }));
-    expect(screen.getByRole("dialog", { name: "Changelog" })).toBeInTheDocument();
+    // Phones (and the pop-up itself): My Changes from the signed-in pop-up
+    await user.click(screen.getByRole("button", { name: "My Changes" }));
+    expect(screen.getByRole("dialog", { name: "My Changes" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -111,11 +111,11 @@ test("couldn't load: explained", async () => {
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Couldn't load your changes");
 });
 
-test("viewers: no Changelog button in the signed-in pop-up", async () => {
+test("viewers: no My Changes button in the signed-in pop-up", async () => {
     const { user } = setup({ role: null });
     await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
     await user.click(screen.getByRole("menuitem", { name: "Account" }));
-    expect(within(screen.getByRole("dialog", { name: "Account" })).queryByRole("button", { name: "Changelog" })).toBeNull();
+    expect(within(screen.getByRole("dialog", { name: "Account" })).queryByRole("button", { name: "My Changes" })).toBeNull();
 });
 
 test("day labels: Today, Yesterday, then the date", () => {
