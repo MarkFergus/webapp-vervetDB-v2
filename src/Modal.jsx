@@ -13,11 +13,12 @@ import {
     IconFirstAidKit,
     IconAmbulance,
     IconReportMedical,
-    IconDoorExit,
+    IconArrowBigLeftLines,
     IconTrees,
     IconSparkles,
     IconBolt,
     IconClipboardText,
+    IconArrowBigRightLines,
     IconCube,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -165,10 +166,12 @@ function Modal({
     const away = Boolean(monkey?.inSickbay || stayingIn);
     // Move to Introcage: when the database has stays and it's at home
     const canStay = Boolean(onWhereabouts && monkey && !away && stayChoices.length);
-    // Return: asks where to (home, or its own enclosure's introcages), or
-    // just goes home if there's nowhere else
+    // Return: from Sickbay, asks where to (home, or its own enclosure's
+    // introcages); otherwise (a stay, or nowhere else to go) just asks to
+    // confirm going home
     const ownChoices = stayChoices.filter((c) => c.own);
     const otherChoices = stayChoices.filter((c) => !c.own);
+    const returnAsks = Boolean(monkey?.inSickbay) && ownChoices.length > 0;
     const returnHome = { to: "return", introcageId: "", fedBy: "sickbay" };
     // A troop monkey going into an introcage (not already fed in one): who
     // feeds it there, Sickbay to start with
@@ -362,27 +365,24 @@ function Modal({
                                                         })
                                                     }
                                                 >
-                                                    <IconCube size={18} aria-hidden="true" />
+                                                    <IconArrowBigLeftLines size={18} aria-hidden="true" />
                                                     Move to Introcage
                                                 </button>
                                             )}
-                                            {/* Return: straight home, or (with somewhere else
-                                                to go) a choice first */}
+                                            {/* Return: a check first (from Sickbay, with
+                                                somewhere else to go: where to) */}
                                             {onWhereabouts && away && !formOpen && (
                                                 <button
                                                     type="button"
                                                     className="Modal-edit is-sickbay"
                                                     disabled={sickbayBusy}
                                                     onClick={() =>
-                                                        ownChoices.length ? setSickbayForm(returnHome) : changePlace(returnHome)
+                                                        setSickbayForm(returnHome)
                                                     }
                                                 >
-                                                    <IconDoorExit size={18} aria-hidden="true" />
-                                                    {sickbayBusy
-                                                        ? "Saving…"
-                                                        : ownChoices.length
-                                                          ? `Return From ${monkey.inSickbay ? "Sickbay" : "Introcage"}`
-                                                          : `Return to ${homeWord(monkey)}`}
+                                                    {/* (Move to Introcage's arrow, pointing the other way) */}
+                                                    <IconArrowBigRightLines size={18} aria-hidden="true" />
+                                                    {sickbayBusy ? "Saving…" : `Return to ${homeWord(monkey)}`}
                                                 </button>
                                             )}
                                             {onRelease && !formOpen && (
@@ -530,7 +530,11 @@ function Modal({
                                                     )}
                                                     {/* Return: home, or one of its own
                                                         enclosure's introcages (a new stay) */}
-                                                    {sickbayForm.to === "return" ? (
+                                                    {sickbayForm.to === "return" && !returnAsks ? (
+                                                        <p className="Modal-confirmText">
+                                                            Return {monkey.name} to {homeText(monkey)}?
+                                                        </p>
+                                                    ) : sickbayForm.to === "return" ? (
                                                         <label>
                                                             <span>Return To</span>
                                                             <select
@@ -682,6 +686,30 @@ function Modal({
                                                 : monkey.name
                                         }
                                     ></img>
+                                    {/* Its status (New Arrival, In Sickbay, In Gismo A):
+                                        on the photo, top left, like the cards */}
+                                    {(isNewArrival(monkey) || monkey.inSickbay || stayingIn) && (
+                                        <ul className="Modal-status" aria-label="Status">
+                                            {isNewArrival(monkey) && (
+                                                <li className="is-newArrival">
+                                                    <IconSparkles size={15} stroke={2} aria-hidden="true" />
+                                                    New Arrival
+                                                </li>
+                                            )}
+                                            {monkey.inSickbay && (
+                                                <li className="is-sickbay">
+                                                    <IconFirstAidKit size={15} stroke={2} aria-hidden="true" />
+                                                    In Sickbay
+                                                </li>
+                                            )}
+                                            {stayingIn && (
+                                                <li className="is-stay">
+                                                    <IconCube size={15} stroke={2} aria-hidden="true" />
+                                                    In <PlaceName name={stayingIn} />
+                                                </li>
+                                            )}
+                                        </ul>
+                                    )}
                                     {/* Still the grey placeholder: the same badge as the cards */}
                                     {isPlaceholderPhoto(monkey.img[currentIndex]) && (
                                         <span className="Modal-photoNeeded">
@@ -746,25 +774,6 @@ function Modal({
                                             </li>
                                         ) : (
                                             <li className="is-troop">{monkey.introcage ? <PlaceName name={monkey.introcage} /> : <PlaceName name={monkey.troop} suffix=" Troop" />}</li>
-                                        )}
-                                        {isNewArrival(monkey) && (
-                                            <li className="is-newArrival">
-                                                <IconSparkles size={15} stroke={2} aria-hidden="true" />
-                                                New Arrival
-                                            </li>
-                                        )}
-                                        {/* (right after where it lives) */}
-                                        {monkey.inSickbay && (
-                                            <li className="is-sickbay">
-                                                <IconFirstAidKit size={15} stroke={2} aria-hidden="true" />
-                                                In Sickbay
-                                            </li>
-                                        )}
-                                        {stayingIn && (
-                                            <li className="is-stay">
-                                                <IconCube size={15} stroke={2} aria-hidden="true" />
-                                                In <PlaceName name={stayingIn} />
-                                            </li>
                                         )}
                                         {/* Sex: just its symbol (the word is read out), so
                                             the pills fit one line */}

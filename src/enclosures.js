@@ -118,17 +118,19 @@ export const awayFrom = (introcage, monkeys) =>
     monkeys.filter((m) => m.introcage === introcage.name && m.stay).sort(byName);
 
 // Where a monkey can stay for now (Move to Introcage, and Return from
-// Sickbay or a stay): its own enclosure's introcages (own: true), then every
-// other enclosure's, in the enclosures' order; not its home introcage, nor
-// where it's staying already. [{ id, name, enclosure, own }]. None for a
-// new arrival (it lives in a care unit) or a monkey with no enclosure (the
-// Bandits).
+// Sickbay): its own enclosure's introcages (own: true), then (an introcage
+// monkey only: a troop monkey only ever goes into its own enclosure's)
+// every other enclosure's, in the enclosures' order; not its home
+// introcage, nor where it's staying already. [{ id, name, enclosure, own }].
+// None for a new arrival (it lives in a care unit), a Bachelor Block monkey
+// (only ever its own introcage or Sickbay), or a monkey with no enclosure
+// (the Bandits).
 export function stayChoices(monkey, enclosures) {
     const home = enclosures.find((e) => isEnclosure(e) && e.name === homeName(monkey));
-    if (!home || isCareUnit(home)) return [];
+    if (!home || isCareUnit(home) || home.type === "block") return [];
     const order = (e) => (e.id === home.id ? -1 : e.sortOrder);
     return enclosures
-        .filter((e) => isEnclosure(e) && !isCareUnit(e))
+        .filter((e) => isEnclosure(e) && !isCareUnit(e) && (monkey.introcage || e.id === home.id))
         .sort((a, b) => order(a) - order(b))
         .flatMap((e) =>
             introcagesOf(e, enclosures)

@@ -81,6 +81,16 @@ describe("where it can stay", () => {
         expect(choices.every((c) => !["Gismo A", "Gismo C"].includes(c.name))).toBe(true);
     });
 
+    test("a troop monkey: only its own enclosure's introcages", () => {
+        expect(stayChoices(ziggy, enclosuresArr).every((c) => c.own && c.enclosure === "Gismo")).toBe(true);
+        expect(stayChoices(ziggy, enclosuresArr).map((c) => c.name)).toEqual(["Gismo A", "Gismo C", "Gismo D"]);
+    });
+
+    test("none for a Bachelor Block monkey (its own introcage or Sickbay only)", () => {
+        const bachelor = { ...base, troop: null, introcage: "Bachelor Block A", introcageType: "introcage", enclosure: "Bachelor Block" };
+        expect(stayChoices(bachelor, enclosuresArr)).toEqual([]);
+    });
+
     test("none for a new arrival or the Bandits", () => {
         const arrival = { ...base, introcage: "Dreamland", introcageType: "area", enclosure: "Baby Care" };
         expect(stayChoices(arrival, enclosuresArr)).toEqual([]);
@@ -110,13 +120,14 @@ describe("the pop-up", () => {
     };
     const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
 
-    test("Move to Introcage: which one (its own enclosure's first), the date, a note, and Fed By (Sickbay to start with)", async () => {
+    test("Move to Introcage: which one (its own enclosure's), the date, a note, and Fed By (Sickbay to start with)", async () => {
         const saved = open({ ...ziggy, stay: null });
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Move to Introcage" }));
         const select = screen.getByLabelText("Introcage");
         expect(within(select).getByRole("group", { name: "Gismo" })).toBeInTheDocument();
-        expect(within(select).getByRole("group", { name: "Other Enclosures" })).toBeInTheDocument();
+        // (a troop monkey: only its own enclosure's introcages)
+        expect(within(select).queryByRole("group", { name: "Other Enclosures" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
         expect(screen.getByLabelText("Fed By")).toHaveValue("sickbay");
         expect(screen.queryByText(/will be on the AM Plates List/)).not.toBeInTheDocument();
@@ -155,21 +166,34 @@ describe("the pop-up", () => {
         expect(screen.getByRole("heading", { name: "Feeding" })).toBeInTheDocument();
     });
 
-    test("Return asks where to: home, or another introcage of its enclosure", async () => {
+    test("Return to Troop from a stay: no choices, just a check, then home", async () => {
         const saved = open(pip);
         await quickActions();
         expect(screen.queryByRole("button", { name: "Move to Introcage" })).not.toBeInTheDocument();
-        await userEvent.click(screen.getByRole("button", { name: "Return From Introcage" }));
-        const where = screen.getByLabelText("Return To");
-        expect(within(where).getAllByRole("option").map((o) => o.textContent)).toEqual(["Gismo Troop (Home)", "Gismo C", "Gismo D"]);
+        await userEvent.click(screen.getByRole("button", { name: "Return to Troop" }));
+        expect(screen.queryByLabelText("Return To")).not.toBeInTheDocument();
+        expect(screen.getByText("Return Pip to Gismo Troop?")).toBeInTheDocument();
+        expect(saved).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: "Confirm" })).toHaveClass("is-confirm");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home" }));
     });
 
-    test("Return from Sickbay to an introcage: a stay there", async () => {
+    test("Cancel: stays where it is", async () => {
+        const saved = open(pip);
+        await quickActions();
+        await userEvent.click(screen.getByRole("button", { name: "Return to Troop" }));
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(saved).not.toHaveBeenCalled();
+    });
+
+    test("Return from Sickbay asks where to: home, or an introcage of its enclosure (a stay there)", async () => {
         const saved = open({ ...ziggy, inSickbay: true });
         await quickActions();
-        await userEvent.click(screen.getByRole("button", { name: "Return From Sickbay" }));
+        await userEvent.click(screen.getByRole("button", { name: "Return to Troop" }));
+        expect(within(screen.getByLabelText("Return To")).getAllByRole("option").map((o) => o.textContent)).toEqual([
+            "Gismo Troop (Home)", "Gismo A", "Gismo C", "Gismo D",
+        ]);
         await userEvent.selectOptions(screen.getByLabelText("Return To"), "Gismo D");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved).toHaveBeenCalledTimes(1));

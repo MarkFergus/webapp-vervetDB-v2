@@ -53,6 +53,9 @@ describe("the pop-up's Sickbay button", () => {
         expect(screen.getByText("Fed by Sickbay while in Sickbay")).toBeInTheDocument();
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
+        // (a check first: green Confirm)
+        expect(screen.getByText("Return Nita to Goliath A?")).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(onWhereabouts).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home" }));
     });
 
@@ -67,6 +70,7 @@ describe("the pop-up's Sickbay button", () => {
         open({ ...MONKEY, inSickbay: true }, onWhereabouts);
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save right now.");
     });
 
