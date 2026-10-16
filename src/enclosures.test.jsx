@@ -367,12 +367,12 @@ describe("the sanctuary map", () => {
         expect(mapLabel("Robert")).toBe("Robert troop");
         expect(mapLabel("D&D")).toBe("Dino & Daniel troop");
         expect(Object.keys(SECTION_COLOURS)).toEqual(["Top", "Middle", "Bottom", "Sickbay", "Care Units"]);
-        // Every enclosure has a shape by that name in the map (not
-        // Baby Care yet: still to be labelled)
+        // Every enclosure has a shape by that name in the map (not Baby
+        // Care: no shape of its own, just its areas, in the next test)
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        const notYet = ["Baby Care"];
-        for (const e of enclosuresArr.filter((x) => isEnclosure(x) && !notYet.includes(x.name))) {
+        const areasOnly = ["Baby Care"];
+        for (const e of enclosuresArr.filter((x) => isEnclosure(x) && !areasOnly.includes(x.name))) {
             expect(svg, e.name).toContain(`inkscape:label="${mapLabel(e.name)}"`);
         }
     });
@@ -380,9 +380,11 @@ describe("the sanctuary map", () => {
     test("each introcage has its gate box(es) (or its own shape) in the map, named after it", async () => {
         const fs = await import("node:fs");
         const svg = fs.readFileSync("public/VMF_Sanctuary_Map.svg", "utf8").replace(/&amp;/g, "&");
-        // (and the block's: its two halves. Not the care units' areas yet:
-        // still to be labelled on the map)
-        const troopIds = new Set(enclosuresArr.filter((x) => hasTroop(x) || x.type === "block").map((x) => x.id));
+        // (and the block's: its two halves; and Baby Care's areas, the only
+        // care unit with more than one)
+        const troopIds = new Set(
+            enclosuresArr.filter((x) => hasTroop(x) || x.type === "block" || x.name === "Baby Care").map((x) => x.id)
+        );
         for (const e of enclosuresArr.filter((x) => troopIds.has(x.parentId))) {
             expect(svg, e.name).toContain(`inkscape:label="${e.name}"`);
         }

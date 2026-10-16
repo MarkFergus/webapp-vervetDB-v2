@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import { fullName } from "./places";
 import { createPortal } from "react-dom";
 import { IconArrowsMaximize, IconMap2 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import "./SanctuaryMap.css";
+import "./WholeMap.css";
 import CloseButton from "./CloseButton";
+import MapZoom from "./MapZoom";
+import useMapCamera, { cameraOn } from "./useMapCamera";
 
 // The sanctuary map (public/VMF_Sanctuary_Map.svg, drawn in Inkscape) on an
 // enclosure's page: in greyscale, zoomed in around the enclosure, with its
@@ -31,6 +34,12 @@ const MAP_LABELS = {
     "Sickbay Care Unit": "Sickbay building",
 };
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
+
+// Enclosures with no one shape of their own, just their areas in different
+// places: all of those picked out together
+const MAP_GROUPS = {
+    "Baby Care": ["Dreamland", "Neverland", "Disneyland"],
+};
 
 // The site's neon colours, by section
 export const SECTION_COLOURS = {
@@ -80,6 +89,7 @@ export function loadMap() {
 // box: { x, y, width, height }, inGates (gate boxes, not a shape found
 // elsewhere) }, or null if the map hasn't got it.
 //   key: "label:Robert troop" (the first shape with that Inkscape label),
+//   or "labels:Dreamland|Neverland" (the first shape, not a name, with each),
 //   or "gate:H&B C1" (every box with that label in the "Enclosure gates"
 //   layer: some introcages have two; or, if none, the shape with that label
 //   elsewhere, e.g. Koko D, an annex drawn with the enclosures)
@@ -92,6 +102,10 @@ function findPart(doc, key) {
     // The matching elements in a copy of the map
     function pick(root) {
         const all = [...root.getElementsByTagName("*")];
+        if (kind === "labels") {
+            const shape = (label) => all.find((el) => labelled(el, label) && !el.closest("text"));
+            return value.split("|").map(shape).filter(Boolean);
+        }
         if (kind !== "gate") {
             const first = all.find((el) => labelled(el, value));
             return first ? [first] : [];
@@ -187,13 +201,16 @@ const CARD_ASPECT = 40 / 21;
 function zoomBox(box, spread, smallest = 100, ASPECT = CARD_ASPECT) {
     // smallest: the narrowest view, as a 4:3 width (wide strips keep its height)
     let width = Math.max(box.width * spread, box.height * spread * ASPECT, smallest, smallest * 0.75 * ASPECT);
-    let height = width / ASPECT;
-    width = Math.min(width, MAP_WIDTH);
-    height = Math.min(height, MAP_HEIGHT);
-    const cx = box.x + box.width / 2;
-    const cy = box.y + box.height / 2;
-    const x = Math.min(Math.max(cx - width / 2, 0), MAP_WIDTH - width);
-    const y = Math.min(Math.max(cy - height / 2, 0), MAP_HEIGHT - height);
+    // No bigger than the map, unless that's needed to show the whole
+    // enclosure (a tall one in a wide strip)
+    const whole = Math.max(box.width * 1.08, box.height * 1.08 * ASPECT);
+    width = Math.max(Math.min(width, MAP_WIDTH, MAP_HEIGHT * ASPECT), whole);
+    const height = width / ASPECT;
+    // Kept within the map (centred on the enclosure when bigger than it)
+    const place = (centre, size, mapSize) =>
+        size >= mapSize ? centre - size / 2 : Math.min(Math.max(centre - size / 2, 0), mapSize - size);
+    const x = place(box.x + box.width / 2, width, MAP_WIDTH);
+    const y = place(box.y + box.height / 2, height, MAP_HEIGHT);
     return `${x} ${y} ${width} ${height}`;
 }
 
@@ -225,7 +242,8 @@ export const MAP_ICONS = [
 // The parts of the map for one enclosure (undefined while loading, null if
 // it isn't on the map). See SanctuaryMap for what's passed in.
 function useMapParts(enclosure, introcage, introcages) {
-    const label = mapLabel(enclosure.name);
+    const group = MAP_GROUPS[enclosure.name];
+    const label = group ? `labels:${group.join("|")}` : `label:${mapLabel(enclosure.name)}`;
     const introcageKey = introcages.join("|");
     const [parts, setParts] = useState(undefined);
     useEffect(() => {
@@ -233,7 +251,7 @@ function useMapParts(enclosure, introcage, introcages) {
         loadMap()
             .then((doc) => {
                 if (cancelled) return;
-                const outline = findPart(doc, `label:${label}`);
+                const outline = findPart(doc, label);
                 setParts(
                     outline && {
                         map: wholeMap(doc),
@@ -266,7 +284,7 @@ function useMapParts(enclosure, introcage, introcages) {
 
 // The map itself: faded, with the enclosure in colour.
 //   viewBox: the part to show; shownIcons: the icon ids to show (MAP_ICONS)
-function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
+function MapView({ parts, colour, viewBox, label, shownIcons = [], svgRef }) {
     // Ids for this copy's filters and mask (the card and the pop-up can both
     // be on the page), and a class to scope its icon rules to
     const id = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -288,7 +306,7 @@ function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
         ),
     ].join("\n");
     return (
-        <svg className={id} viewBox={viewBox} preserveAspectRatio="xMidYMid slice" role="img" aria-label={label}>
+        <svg ref={svgRef} className={id} viewBox={viewBox} preserveAspectRatio="xMidYMid slice" role="img" aria-label={label}>
             <style>{iconRules}</style>
             {/* Grey: no colour. Faded: grey, and washed towards white */}
             <filter id={grey}>
@@ -334,27 +352,76 @@ function MapView({ parts, colour, viewBox, label, shownIcons = [] }) {
 // to its enclosure in the map file)
 const ALL_ICONS = MAP_ICONS.map((icon) => icon.id);
 
-// The map in a pop-up, closer in (the enclosure almost fills it), with the
-// small icons showing
+// The map in a pop-up, closer in (the enclosure filling most of it), with the
+// small icons showing. Drag to move around and zoom in or out, as in the
+// Interactive Map (useMapCamera.js); the reset button goes back to the
+// enclosure.
+const PAGE = { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT };
+// Room left around the drawing when zoomed right out (a share of its size)
+const MARGIN = 0.015;
 function MapPopup({ parts, colour, enclosure, onClose }) {
     const closeRef = useRef(null);
-    useDialog(true, closeRef, { onClose });
+    const viewRef = useRef(null);
+    const svgRef = useRef(null);
+    // The drawing's edges (the map file is an A4 page with empty margins),
+    // once it's on the page (tests have no layout: the whole page)
+    const [bounds, setBounds] = useState(PAGE);
+    useLayoutEffect(() => {
+        const base = svgRef.current?.querySelector(".SanctuaryMap-base");
+        if (!base?.getBBox) return;
+        const box = base.getBBox();
+        if (!box.width || !box.height) return;
+        const pad = Math.max(box.width, box.height) * MARGIN;
+        setBounds({ x: box.x - pad, y: box.y - pad, width: box.width + 2 * pad, height: box.height + 2 * pad });
+    }, []);
+    const map = useMapCamera(bounds, viewRef);
+    const { camera, setCamera, view, size, aspect } = map;
+
+    // Where it starts (and the reset button goes back to): the enclosure,
+    // with some room around it (a small one: still room to zoom in)
+    const { box } = parts.outline;
+    const room = { width: Math.max(box.width * 1.4, 110), height: Math.max(box.height * 1.4, 82) };
+    const focus = {
+        x: box.x + box.width / 2 - room.width / 2,
+        y: box.y + box.height / 2 - room.height / 2,
+        ...room,
+    };
+    const start = cameraOn(focus, aspect, bounds);
+    const showEnclosure = () => setCamera(start);
+    const started = useRef(false);
+    useLayoutEffect(() => {
+        if (started.current || bounds === PAGE || size.width <= 1) return;
+        started.current = true;
+        setCamera(start);
+    });
+    const atStart =
+        Math.abs(camera.zoom - start.zoom) < 0.01 &&
+        Math.hypot(view.x + view.width / 2 - start.cx, view.y + view.height / 2 - start.cy) < 1;
+
+    useDialog(true, closeRef, { onClose, onKeyDown: (event) => map.onKeyDown(event, showEnclosure) });
+    const name = fullName(enclosure.name);
     return createPortal(
         <div className="MapPopup" role="dialog" aria-modal="true" aria-labelledby="MapPopup-title">
             <div className="MapPopup-overlay" onClick={onClose} />
             <div className="MapPopup-window">
-                <div className="MapPopup-header">
+                <div className="MapPopup-header WholeMap-header">
                     <h2 id="MapPopup-title"><PlaceName name={enclosure.name} /> on the map</h2>
+                    <div className="WholeMap-tools">
+                        <MapZoom map={map} reset={showEnclosure} resetLabel={`Back to ${name}`} atReset={atStart} />
+                    </div>
                     <CloseButton className="MapPopup-close" ref={closeRef} onClick={onClose} />
                 </div>
                 <div className="SanctuaryMap is-large" style={{ "--highlight": colour }}>
-                    <MapView
-                        parts={parts}
-                        colour={colour}
-                        viewBox={zoomBox(parts.outline.box, 1.15, 60, 4 / 3)}
-                        label={`Sanctuary map, close up on ${fullName(enclosure.name)}`}
-                        shownIcons={ALL_ICONS}
-                    />
+                    <div className="WholeMap-view" ref={viewRef} {...map.pointerHandlers}>
+                        <MapView
+                            svgRef={svgRef}
+                            parts={parts}
+                            colour={colour}
+                            viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
+                            label={`Sanctuary map, close up on ${name}`}
+                            shownIcons={ALL_ICONS}
+                        />
+                    </div>
                 </div>
             </div>
         </div>,
@@ -400,7 +467,7 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
         <MapView
             parts={parts}
             colour={colour}
-            viewBox={gate ? zoomBox(gate.box, 4, 100, aspect) : zoomBox(outline.box, introcage ? 1.4 : 2.6, 100, aspect)}
+            viewBox={gate ? zoomBox(gate.box, 4, 100, aspect) : zoomBox(outline.box, introcage ? 1.4 : 1.7, 100, aspect)}
             label={`Sanctuary map, with ${fullName(introcage && gate ? introcage : enclosure.name)} picked out`}
         />
     );

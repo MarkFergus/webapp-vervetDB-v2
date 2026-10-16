@@ -47,8 +47,8 @@
    gridtolerance="10"
    guidetolerance="10"
    id="namedview14775"
-   inkscape:cx="339.42812"
-   inkscape:cy="599.73933"
+   inkscape:cx="188.94002"
+   inkscape:cy="469.72204"
    inkscape:pagecheckerboard="0"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
@@ -63,7 +63,7 @@
    showgrid="false"
    inkscape:showpageshadow="2"
    inkscape:deskcolor="#d1d1d1"
-   inkscape:current-layer="layer-vehicle-paths"
+   inkscape:current-layer="layer-trees"
    inkscape:document-units="mm">
 	</sodipodi:namedview>
 <g
@@ -972,8 +972,7 @@
    transform="rotate(-6.817287)"
    width="4.6998591"
    height="5.4998355"
-   style="fill:none;stroke:#000000;stroke-width:0.749978;stroke-miterlimit:9.9997"
-   inkscape:label="Baby care room" />
+   style="fill:none;stroke:#000000;stroke-width:0.749978;stroke-miterlimit:9.9997" />
 <rect
    id="rect9428"
    x="195.48242"
@@ -982,12 +981,11 @@
    width="4.0998769"
    height="4.6998591"
    style="fill:#c59bdf;stroke:#000000;stroke-width:0.749978;stroke-miterlimit:9.9997;fill-opacity:1"
-   inkscape:label="Baby care room" />
+   inkscape:label="Neverland" />
 <polygon
    id="rect9430"
    points="256.3,508.6 261,508 261.7,513.9 257,514.4 "
    style="fill:none;stroke:#000000;stroke-width:0.75;stroke-miterlimit:10"
-   inkscape:label="Baby care room"
    transform="translate(-1.6685008,26.336325)" />
 <rect
    id="rect9432"
@@ -1001,8 +999,8 @@
 <rect
    id="rect-dreamland"
    inkscape:label="Dreamland"
-   x="72.673264"
-   y="414.44409"
+   x="72.523209"
+   y="409.39804"
    width="11.49948"
    height="7.1996746"
    transform="rotate(-7.7589726)"
@@ -1062,7 +1060,7 @@
    style="fill:none;stroke:#6b4d25;stroke-width:1.5;stroke-miterlimit:10" />
 <path
    id="path11828"
-   d="m 80.124924,423.68961 c 2.7,-1.6 5.1,-2.4 6.8,-2.9 2.3,-0.6 3.3,-0.7 6.1,-1.6 1.3,-0.4 3.000004,-1.1 4.900005,-2.1 0.3,-0.2 0.5,-0.3 0.7,-0.4"
+   d="m 81.369821,425.55696 c 2.7,-1.6 5.1,-2.4 6.8,-2.9 2.3,-0.6 3.3,-0.7 6.1,-1.6 1.3,-0.4 3.000004,-1.1 4.900005,-2.1 0.3,-0.2 0.5,-0.3 0.7,-0.4"
    style="fill:none;stroke:#6b4d25;stroke-width:1.5;stroke-miterlimit:10" />
 </g><g
    inkscape:label="Vehicle paths"
@@ -1792,7 +1790,7 @@
 </g><g
    inkscape:label="Tree"
    id="tree-240"
-   transform="translate(-1.3750757,26.189612)"><path
+   transform="translate(-4.4873193,25.567163)"><path
    id="path10146"
    d="m 117.7,352.2 c 0,0 0,1.1 -1.3,1.8 -0.4,0.2 -0.8,-0.1 -0.7,-0.5 0.2,-0.8 0.4,-1.8 0.4,-2.6 0,-1.4 -1.6,0.6 -1.6,0.6 l 0.3,2.1 c 0,0 -0.2,0.7 -0.7,1.3 -0.2,0.3 -0.7,0.2 -0.8,-0.2 -0.2,-0.6 -0.3,-1.6 0.3,-2.7 0.9,-2 -1.3,-0.2 -1.3,-0.2 0,0 0.6,1.6 0.2,3.4 -0.1,0.4 -0.5,0.5 -0.8,0.3 -0.6,-0.5 -1.4,-1.6 -1.4,-3.3 0,0 -0.1,1.5 -0.4,1.7 0,0 -1.3,-0.7 -1.4,-1.1 -0.1,-0.4 0,0.9 0,0.9 0,0 4.8,1.3 2.3,6.3 h 3.1 c 0,0 -1.9,-2.1 0.5,-3.9 2.4,-1.9 2.8,-1.5 3.4,-3.2 0.7,-1.8 -0.1,-0.7 -0.1,-0.7 z"
    style="fill:#c9b9a9" />
@@ -1853,7 +1851,7 @@
 </g>
 </g><g
    id="g10188"
-   transform="translate(0.81391261,21.797946)"
+   transform="translate(-1.6758822,26.777536)"
    inkscape:label="Tree">
 	<path
    id="path10174"
@@ -7094,12 +7092,12 @@
 </g>
 <rect
    id="rect9318"
-   x="55.854023"
-   y="416.74399"
-   transform="rotate(-7.7589726)"
-   width="12.599431"
-   height="14.399349"
-   style="fill:#f7c48f;stroke:#000000;stroke-width:0.749966;stroke-miterlimit:9.9995"
+   x="35.757832"
+   y="411.23709"
+   transform="matrix(0.99445711,-0.105143,0.17294471,0.98493153,0,0)"
+   width="16.068758"
+   height="14.388011"
+   style="fill:#f7c48f;stroke:#000000;stroke-width:0.846615;stroke-miterlimit:9.9995"
    inkscape:label="Office &amp; gift shop" />
 <g
    inkscape:label="Volunteer Village fence"
@@ -7192,8 +7190,10 @@
    style="fill:none;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10"
    inkscape:label="Bachelor block pointer" /><g
    id="g11826"
-   transform="translate(0.8139126,21.797946)"
-   inkscape:label="Bachelor block pointer">
+   transform="matrix(1,0,-0.08046263,0.59768687,33.706174,181.48715)"
+   inkscape:label="Bachelor block pointer"
+   inkscape:transform-center-x="-0.82993163"
+   inkscape:transform-center-y="0.0043363443">
 	<g
    id="g11824">
 		<line
@@ -7207,12 +7207,12 @@
    id="g11822">
 			<polygon
    id="polygon11820"
-   points="222.8,405.6 224,407.5 225,405.4 " />
+   points="224,407.5 225,405.4 222.8,405.6 " />
 		</g>
 	</g>
 </g><g
    id="g11826-5"
-   transform="rotate(-1.1865312,6418.7514,-733.20483)"
+   transform="matrix(1.0311677,-0.02311713,0.02135738,1.1161314,9.3234555,87.041944)"
    inkscape:label="Bachelor block pointer">
 	<g
    id="g11824-5"
@@ -7228,7 +7228,7 @@
    id="g11822-7">
 			<polygon
    id="polygon11820-1"
-   points="222.8,405.6 224,407.5 225,405.4 " />
+   points="224,407.5 225,405.4 222.8,405.6 " />
 		</g>
 	</g>
 </g><g
@@ -10075,24 +10075,53 @@
    x="251.35367"
    y="533.56976"><tspan
      style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:4.00016px;font-family:Bitter, serif;-inkscape-font-specification:'Bitter, serif, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
-     id="tspan3-2">Mariposa</tspan></text>
+     id="tspan3-2">Mariposa</tspan></text><g
+   id="g11826-5-9"
+   transform="matrix(0.53991577,0.41108037,-0.45473453,0.48808427,324.44916,233.34997)"
+   inkscape:label="Bachelor block pointer">
+	<g
+   id="g11824-5-4"
+   transform="matrix(1.0499711,-0.52096388,0.50959304,1.0733997,-214.26456,87.692485)">
+		<line
+   id="line11818-1-8"
+   x1="223.39999"
+   y1="397.20001"
+   x2="223.89999"
+   y2="405.79999"
+   style="fill:none;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10" />
+		<g
+   id="g11822-7-8">
+			<polygon
+   id="polygon11820-1-2"
+   points="222.8,405.6 224,407.5 225,405.4 " />
+		</g>
+	</g>
+</g><text
+   id="text9760-9-8-5"
+   transform="matrix(1.0206393,0.0106537,-0.0111371,0.97966181,0,0)"
+   style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:8.17289px;font-family:Bitter;-inkscape-font-specification:'Bitter, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:1.02066"
+   inkscape:label="Sickbay"
+   x="262.96194"
+   y="526.1723"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:4.00016px;font-family:Bitter, serif;-inkscape-font-specification:'Bitter, serif, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+     id="tspan3-2-5">Neverland</tspan></text>
 <text
    transform="scale(0.97087587,1.0299978)"
    id="text1"
-   style="font-size:5.82526px;stroke-width:0.970876;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:0.970876"
    inkscape:label="Tool shed"
-   x="260.660"
-   y="486.55588"><tspan
-     style="font-style:normal;font-variant:normal;font-stretch:normal;font-size:5.00021px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   x="262.58334"
+   y="486.75729"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
      id="tspan123">Tool shed</tspan></text>
 <text
    transform="scale(0.97800821,1.0224863)"
    id="text2"
-   style="font-size:5.86805px;stroke-width:0.978008;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:0.978008"
    inkscape:label="Section shed"
-   x="271.488"
-   y="484.10019"><tspan
-     style="font-style:normal;font-variant:normal;font-stretch:normal;font-size:5.00021px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   x="268.09363"
+   y="485.11478"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
      id="tspan122">Section shed</tspan></text>
 
 <text
@@ -10135,19 +10164,19 @@
    y="323.7215">Fire pit</text>
 <text
    id="text9798"
-   style="font-size:8.0406px;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   style="font-weight:400;font-size:8.0406px;font-family:'Hanken Grotesk', sans-serif;text-anchor:middle"
    inkscape:label="Office &amp;"
-   x="105.091"
-   y="396.88544"><tspan
-     style="font-style:normal;font-variant:normal;font-stretch:normal;font-size:6.00025px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   x="104.88352"
+   y="392.27313"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;font-size:6.00025px;font-family:'Hanken Grotesk', sans-serif;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
      id="tspan151">Office &amp;</tspan></text>
 <text
    id="text9802"
-   style="font-size:8.0406px;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   style="font-weight:400;font-size:8.0406px;font-family:'Hanken Grotesk', sans-serif;text-anchor:middle"
    inkscape:label="Gift shop"
-   x="108.209"
-   y="402.29315"><tspan
-     style="font-style:normal;font-variant:normal;font-stretch:normal;font-size:6.00025px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   x="107.79404"
+   y="397.47336"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;font-size:6.00025px;font-family:'Hanken Grotesk', sans-serif;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
      id="tspan150">Gift shop</tspan></text>
 <text
    id="text9806"
@@ -10340,18 +10369,18 @@
    y="396.04623">Quarantine</text>
 <text
    id="text11922"
-   transform="matrix(0.9643751,-0.35515782,0.33628094,0.91309615,0,0)"
-   style="font-size:8.04072px;stroke-width:1.02771;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
+   transform="matrix(1.0272086,-0.0316071,0.02993405,0.97259105,0,0)"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.00025px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:1.02771"
    inkscape:label="Edu"
-   x="-37.836"
-   y="472.95239">Edu</text>
+   x="101.13464"
+   y="461.21555">Education</text>
 <text
    id="text11924"
-   transform="matrix(0.9643751,-0.35515782,0.33628094,0.91309615,0,0)"
-   style="font-weight:400;font-size:8.04072px;font-family:'Hanken Grotesk', sans-serif;text-anchor:middle;stroke-width:1.02771"
+   transform="matrix(1.0272086,-0.0316071,0.02993405,0.97259105,0,0)"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.00025px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:1.02771"
    inkscape:label="centre"
-   x="-36.334999"
-   y="479.09894">Centre</text>
+   x="101.44393"
+   y="465.53519">Centre</text>
 <text
    id="text12228"
    style="font-size:7.5px;font-family:'Hanken Grotesk',sans-serif;font-weight:400;text-anchor:middle"
@@ -10439,9 +10468,9 @@
    y="618.5116">troop</text>
 <text
    id="text14463"
-   style="font-size:8px;font-family:Bitter,serif;font-weight:600;text-anchor:middle"
+   style="font-weight:600;font-size:8px;font-family:Bitter, serif;text-anchor:middle"
    inkscape:label="block"
-   x="224.600"
+   x="224.39252"
    y="418.22971">block</text>
 <text
    id="text8"
@@ -10480,9 +10509,9 @@
 <text
    id="text-dreamland"
    inkscape:label="Dreamland"
-   style="font-size:6.0402px;font-family:Bitter;font-weight:600;text-anchor:middle;-inkscape-font-specification:'Bitter, Semi-Bold';font-style:normal;font-stretch:normal;font-variant:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
-   x="137.286"
-   y="398.16605">Dreamland</text></g><g
+   style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:6.0402px;font-family:Bitter;-inkscape-font-specification:'Bitter, Semi-Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
+   x="138.32341"
+   y="393.18646">Dreamland</text></g><g
      inkscape:label="Gate letters"
      inkscape:groupmode="layer"
      id="layer-gate-letters"><text
@@ -10743,7 +10772,17 @@
    style="font-size:5.6px;font-family:'Hanken Grotesk',sans-serif;font-weight:500;fill:#1d1d1b;text-anchor:middle"
    inkscape:label="A"
    x="271.460"
-   y="420.237">A</text>
+   y="420.237">A</text><text
+   id="text14533-7"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, @wght=500';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 500;text-anchor:middle;fill:#1d1d1b"
+   inkscape:label="A"
+   x="224.52367"
+   y="429.24686">A</text><text
+   id="text14533-7-1"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.00016px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, @wght=500';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 500;text-anchor:middle;fill:#1d1d1b"
+   inkscape:label="A"
+   x="226.13914"
+   y="433.33301">B</text>
 <text
    id="text14535"
    style="font-size:5.6px;font-family:'Hanken Grotesk',sans-serif;font-weight:500;fill:#1d1d1b;text-anchor:middle"
@@ -11229,7 +11268,7 @@
 	<text
    id="text14733"
    transform="translate(458.5523,725.8152)"
-   style="font-size:12.6476px;fill:#1d1d1b;font-family:'Hanken Grotesk',sans-serif;font-weight:400">Baby Care</text>
+   style="font-weight:400;font-size:12.6476px;font-family:'Hanken Grotesk', sans-serif;fill:#1d1d1b">Care Units</text>
 	<text
    id="text14735"
    transform="translate(458.5521,556.7444)"

@@ -126,8 +126,9 @@ describe("tapping the map", () => {
         expect(onClose).toHaveBeenCalled();
     });
 
-    // (it slides back out to the left first)
-    const cardGone = () => waitFor(() => expect(screen.queryByRole("region")).toBeNull());
+    // (it slides back out to the left first; a slow machine running every
+    // test at once can take a while)
+    const cardGone = () => waitFor(() => expect(screen.queryByRole("region")).toBeNull(), { timeout: 3000 });
 
     test("a closing card slides out first, still picked out until it's gone", async () => {
         const { user } = await setup();

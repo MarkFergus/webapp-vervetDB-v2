@@ -612,11 +612,11 @@
         align-items: start;
     }
 
-    /* The map across the page, as tall as it was in its column (it zooms
-       in a little to fill the width) */
+    /* The map across the page, a wide strip (tall enough that a tall
+       enclosure, e.g. Camelot, still shows well) */
     .Enclosures-mapBlock .SanctuaryMap {
         aspect-ratio: auto;
-        height: 223px;
+        height: 300px;
     }
 
     .Enclosures-heading .Enclosures-recordTitle {

@@ -9,8 +9,10 @@
     border: 1px solid var(--line);
 }
 
+/* (never taller than the screen: the map fits whatever shape it's given) */
 .SanctuaryMap.is-large {
     aspect-ratio: 4 / 3;
+    max-height: calc(100svh - 140px);
 }
 
 .SanctuaryMap svg {
