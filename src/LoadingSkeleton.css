@@ -31,7 +31,7 @@
     }
 }
 
-/* Top bar: the real logo (dimmed), a search bar and the menu */
+/* Top bar: the name (computers), a search bar and the menu */
 .LoadingSkeleton-nav {
     display: flex;
     align-items: center;
@@ -44,21 +44,15 @@
     color: var(--accent);
 }
 
-/* "vervetDB" beside the logo: computers only, like the real top bar */
+/* "vervetDB": computers only, like the real top bar (no monkey: that's
+   in the search box now) */
 .LoadingSkeleton-title {
     display: none;
-    margin-left: 6px;
     font-family: var(--font-logo);
     font-weight: 800;
     font-size: 24px;
     line-height: 1;
     color: var(--text);
-}
-
-.LoadingSkeleton-logo svg {
-    display: block;
-    width: 30px;
-    height: 28px;
 }
 
 .LoadingSkeleton-search {
@@ -79,10 +73,12 @@
     border-radius: 50%;
 }
 
-/* The ☰ for the side rail: computers only */
+/* The ☰ for the side rail: computers only. The name after it starts where
+   the real top bar's does: the side rail's width from the left, like the
+   toolbar and cards (Nav.css .Nav-home; this ☰ is 36px wide) */
 .LoadingSkeleton-railButton {
     display: none;
-    margin-right: 14px;
+    margin-right: calc(var(--rail-width) - 36px);
 }
 
 /* The side rail (computers): a column of icons down the left */
@@ -208,8 +204,8 @@
     }
 }
 
-/* Wider screens: logo left, search in the middle, icons right; the name
-   from 870px (the same switch points as the real top bar, Nav.css) */
+/* Wider screens: the name left, search in the middle, icons right (the
+   same switch point as the real top bar, Nav.css) */
 @media (min-width: 690px) {
     .LoadingSkeleton-nav {
         display: grid;
@@ -228,6 +224,10 @@
     }
 
     .LoadingSkeleton-railButton {
+        display: block;
+    }
+
+    .LoadingSkeleton-title {
         display: block;
     }
 
@@ -250,12 +250,6 @@
 
     .LoadingSkeleton-bottomBar {
         display: none;
-    }
-}
-
-@media (min-width: 870px) {
-    .LoadingSkeleton-title {
-        display: block;
     }
 }
 

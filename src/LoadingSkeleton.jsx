@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import MonkeyIcon from "./MonkeyIcon";
 import "./NavBars.css"; // (the side rail's and bottom bar's sizes)
 import "./LoadingSkeleton.css";
 
@@ -39,7 +38,6 @@ function LoadingSkeleton() {
                     <span className="LoadingSkeleton-logo">
                         {/* Computers: the ☰ for the side rail */}
                         <span className="LoadingSkeleton-menu LoadingSkeleton-railButton" />
-                        <MonkeyIcon color="currentColor" role={undefined} aria-label={undefined} />
                         <span className="LoadingSkeleton-title">
                             vervet<span className="Nav-titleDB">DB</span>
                         </span>
