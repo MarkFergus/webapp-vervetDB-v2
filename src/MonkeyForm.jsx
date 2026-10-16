@@ -88,13 +88,25 @@ function MonkeyForm({
     useDialog(true, nameRef, { onClose: requestClose });
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
+    // A troop monkey moved into an introcage here (its new home): fed by
+    // Sickbay to start with, as a move like this is usually for its health
+    // (Sickbay can time its meals for food monitoring, or give special
+    // food). Changeable in Feeding below.
+    function withPlace(next) {
+        const into = chosenIntrocage(next, choices)?.type === "introcage";
+        const wasIn = chosenIntrocage(form, choices)?.type === "introcage";
+        if (!isNew && !monkey.introcage && !monkey.stay && next.feeding && into && !wasIn) {
+            return { ...next, feeding: { ...next.feeding, fedBy: "sickbay" } };
+        }
+        return next;
+    }
     // A new enclosure: with its troop to start with
     // (a block or care unit has no troop: an introcage / area needs
     // choosing, unless it has only one, like Quarantine)
     const chooseEnclosure = (event) => {
         const chosen = choices.find((c) => c.key === event.target.value);
         const onlyArea = chosen?.noTroop && chosen.introcages.length === 1 ? String(chosen.introcages[0].id) : "";
-        setForm({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea });
+        setForm(withPlace({ ...form, troop: event.target.value, location: chosen && !chosen.noTroop ? "troop" : onlyArea }));
     };
     const choice = choices.find((c) => c.key === form.troop);
     // New Arrival / Other: starting the Enclosure and Location boxes again
@@ -245,7 +257,7 @@ function MonkeyForm({
                             <span>Location <em>(required)</em></span>
                             <select
                                 value={form.location}
-                                onChange={set("location")}
+                                onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
                                 disabled={!choice}
                                 aria-invalid={Boolean(errors.location)}
                                 aria-describedby={describedBy("location")}

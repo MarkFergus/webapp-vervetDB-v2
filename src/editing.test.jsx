@@ -553,6 +553,31 @@ describe("feeding (introcage monkeys)", () => {
         expect(within(dialog).getByText("1 bowl, cut small")).toBeInTheDocument();
     });
 
+    test("a troop monkey moved into an introcage: fed by Sickbay to start with (changeable)", async () => {
+        // Aroha in the H&B troop, with the database's feeding (Local Team)
+        const inTroop = () =>
+            startingMonkeys().map((m) =>
+                m.name === "Aroha" ? { ...m, troop: "H&B", introcage: null, introcageId: null, enclosure: "H&B", feeding: { ...DEFAULT_FEEDING } } : m
+            );
+        const { user } = setup({ enclosuresLive: true, start: inTroop });
+        await openEditFor(user, "Aroha");
+        expect(feeding()).toBeNull();
+        await user.selectOptions(field("Location"), String(HB_C1.id));
+        expect(within(feeding()).getByLabelText("Fed By")).toHaveValue("sickbay");
+        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
+        await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).toMatchObject({ introcage_id: HB_C1.id, fed_by: "local_team" });
+    });
+
+    test("an introcage monkey moved to another introcage keeps its Fed By", async () => {
+        const { user } = setup({ enclosuresLive: true, start: withAroha });
+        await openEditFor(user, "Aroha");
+        const C2 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C2");
+        await user.selectOptions(field("Location"), String(C2.id));
+        expect(within(feeding()).getByLabelText("Fed By")).toHaveValue("localTeam");
+    });
+
     test("not for a troop monkey: moving back to the troop hides it", async () => {
         const { user } = setup({ enclosuresLive: true, start: withAroha });
         await openEditFor(user, "Aroha");
