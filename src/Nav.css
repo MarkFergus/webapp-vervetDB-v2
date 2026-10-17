@@ -126,7 +126,7 @@
 }
 
 .Nav-iconX:hover {
-    color: white;
+    color: var(--text-strong);
 }
 
 /* No search box (the game): the space it would take */
@@ -154,15 +154,15 @@
     font-size: 14px;
     font-weight: 700;
     color: var(--text);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--wash);
     border: none;
     border-radius: 999px;
     cursor: pointer;
 }
 
 .Nav-add:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.16);
+    color: var(--text-strong);
+    background-color: var(--wash-strong);
 }
 
 .Nav-account {
@@ -182,8 +182,8 @@
 }
 
 .Nav-account:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-strong);
+    background-color: var(--wash);
 }
 
 .Nav-add:focus-visible,
@@ -196,7 +196,7 @@
 
 /* Creating a Profile Book: the hourglass instead of the PDF icon */
 .hourglass {
-    color: white;
+    color: var(--text-strong);
     cursor: auto;
 }
 
@@ -245,7 +245,7 @@
 }
 
 .Nav-buttons .Nav-account.is-signed-in .Nav-avatar {
-    background-color: rgba(62, 207, 142, 0.15);
+    background-color: var(--green-wash);
 }
 
 /* ---- The menu buttons: ☰ on the left (computers: the side rail) or on
@@ -272,8 +272,8 @@
 
 .Nav-railButton:hover,
 .Nav-menuButton:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-strong);
+    background-color: var(--wash);
 }
 
 /* Phones: no side rail */

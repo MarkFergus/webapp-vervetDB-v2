@@ -98,7 +98,7 @@
 .Integration-list {
     margin-top: 4px;
     padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--wash);
 }
 
 .Integration-list ul {
@@ -117,7 +117,7 @@
 
 .Integration-period {
     font-size: 14px;
-    color: white;
+    color: var(--text-strong);
 }
 
 .Integration-text {
@@ -173,7 +173,7 @@
 }
 
 .Integration-icon:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--wash);
 }
 
 /* Injuries: two lines each. The date, description and buttons on one line;
@@ -193,7 +193,7 @@
 .Injury-date {
     flex: none;
     font-size: 14px;
-    color: white;
+    color: var(--text-strong);
     white-space: nowrap;
 }
 

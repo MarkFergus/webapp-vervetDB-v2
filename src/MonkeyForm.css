@@ -27,7 +27,7 @@
     position: fixed;
     z-index: 5;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--scrim);
 }
 
 .MonkeyForm-window {
@@ -55,7 +55,7 @@
     margin: 0;
     font-size: 22px;
     font-weight: 800;
-    color: white;
+    color: var(--text-strong);
 }
 
 /* The fields scroll; the header and buttons stay put */
@@ -123,7 +123,7 @@
 }
 
 .MonkeyForm-unknown:focus-visible {
-    outline: 2px solid white;
+    outline: 2px solid var(--text-strong);
     outline-offset: 2px;
 }
 
@@ -141,7 +141,7 @@
     padding: 9px 10px;
     font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-2);
     border: 2px solid var(--line-strong);
     border-radius: 8px;
@@ -306,7 +306,7 @@
     left: -5px;
     display: flex;
     padding: 2px;
-    color: var(--bg);
+    color: var(--on-status);
     background-color: #ffc53d;
     border-radius: 50%;
     box-shadow: 0 0 0 2px var(--surface-1);
@@ -330,7 +330,7 @@
     background-color: var(--surface-2);
     border: 1px solid var(--line-strong);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px var(--shadow);
 }
 
 .PhotoOptions-menu button {
@@ -349,7 +349,7 @@
 
 .PhotoOptions-menu button:hover:not(:disabled),
 .PhotoOptions-menu button:focus-visible {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--line);
     outline: none;
 }
@@ -392,7 +392,7 @@
 
 .MonkeyForm-iconButton:hover,
 .MonkeyForm-iconButton[aria-expanded="true"] {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-2);
 }
 
@@ -427,7 +427,7 @@
 
 /* At the photo limit */
 .MonkeyForm-full {
-    color: #ffb454;
+    color: var(--amber-text);
 }
 
 .MonkeyForm-addPhoto {
@@ -474,7 +474,7 @@
 .MonkeyForm-confirm {
     flex: 1;
     font-size: 15px;
-    color: white;
+    color: var(--text-strong);
 }
 
 .MonkeyForm-button {
@@ -521,7 +521,7 @@
 }
 
 .MonkeyForm-button.is-quiet:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     background: none;
     border-color: var(--text);
 }
@@ -585,7 +585,7 @@
 }
 
 .MonkeyForm-kind button:hover {
-    color: white;
+    color: var(--text-strong);
 }
 
 .MonkeyForm-kind button[aria-pressed="true"] {

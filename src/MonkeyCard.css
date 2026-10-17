@@ -44,7 +44,7 @@
     content: "";
     position: absolute;
     inset: 50% 0 0;
-    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--bg)); /* fades into the page colour */
+    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--photo-fade)); /* fades into the page colour */
     pointer-events: none;
 }
 
@@ -207,8 +207,8 @@
     font-size: 12px;
     font-weight: 700;
     line-height: 18px;
-    color: var(--bg);
-    background-color: #f5b83d;
+    color: var(--on-status);
+    background-color: var(--amber-text);
     border-radius: 4px;
 }
 
@@ -219,8 +219,8 @@
 
 /* "New Arrival": neon orange, so it can't be missed */
 .MonkeyCard-newArrival {
-    color: var(--bg);
-    background-color: #ff7a1a;
+    color: var(--on-status);
+    background-color: var(--orange);
 }
 
 /* No photo yet: a quiet photo icon in the middle of the grey placeholder */

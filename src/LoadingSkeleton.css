@@ -98,7 +98,7 @@
     height: var(--bottom-bar);
     padding-bottom: env(safe-area-inset-bottom);
     background-color: var(--bg);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--wash-soft);
 }
 
 .LoadingSkeleton-bottomBar .LoadingSkeleton-menu {

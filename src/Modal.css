@@ -5,7 +5,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--scrim);
 }
 
 .Modal-windowbox {
@@ -142,7 +142,7 @@
 }
 
 .Modal-edit:hover:not(:disabled) {
-    background-color: white;
+    background-color: var(--text-strong);
 }
 
 /* Photos, Share, Save image and the Quick Actions buttons: grey chips, so
@@ -213,7 +213,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.2;
-    color: white;
+    color: var(--text-strong);
     overflow-wrap: anywhere;
 }
 
@@ -242,7 +242,7 @@
 }
 
 .Modal-monkeyArrow:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-3);
 }
 
@@ -471,13 +471,13 @@
     font-size: 13px;
     font-weight: 700;
     line-height: 20px;
-    color: var(--bg);
+    color: var(--on-status);
     border-radius: 4px;
 }
 
 /* In Sickbay: amber, so it stands out */
 .Modal-status li.is-sickbay {
-    background-color: #f5b83d;
+    background-color: var(--amber-text);
 }
 
 /* Staying in an introcage for now (In Gismo A): teal */
@@ -487,7 +487,7 @@
 
 /* New Arrival: neon orange */
 .Modal-status li.is-newArrival {
-    background-color: #ff7a1a;
+    background-color: var(--orange);
 }
 
 /* A link to its enclosure's page: the whole pill */
@@ -590,7 +590,7 @@
     width: 36px;
     height: 36px;
     padding: 0;
-    color: #f5b83d; /* the Sickbay amber, like the actions inside */
+    color: var(--amber-text); /* the Sickbay amber, like the actions inside */
     background-color: var(--surface-2);
     border: none;
     border-radius: 8px; /* like the action buttons in it */
@@ -600,8 +600,8 @@
 
 .Modal-moreToggle:hover,
 .Modal-moreToggle[aria-expanded="true"] {
-    color: var(--bg);
-    background-color: #f5b83d;
+    color: var(--on-status);
+    background-color: var(--amber-text);
 }
 
 .Modal-moreToggle:focus-visible {
@@ -626,7 +626,7 @@
     background-color: var(--surface-1);
     border: 1px solid var(--line-strong);
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px var(--shadow);
     animation: Modal-moreDrop 0.15s ease-out;
 }
 
@@ -660,13 +660,13 @@
 
 /* The Sickbay button: a grey chip with amber text, like the In Sickbay chip */
 .Modal-edit.is-sickbay {
-    color: #f5b83d;
+    color: var(--amber-text);
     background-color: var(--surface-2);
 }
 
 .Modal-edit.is-sickbay:hover:not(:disabled) {
-    color: var(--bg);
-    background-color: #f5b83d;
+    color: var(--on-status);
+    background-color: var(--amber-text);
 }
 
 .Modal-sickbayForm {

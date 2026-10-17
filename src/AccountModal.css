@@ -4,7 +4,7 @@
     position: fixed;
     z-index: 1;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--scrim);
 }
 
 /* Near the top (--popup-top), growing downwards; on a short screen (or
@@ -105,7 +105,7 @@
     margin: 0;
     font-size: 24px;
     font-weight: 800;
-    color: white;
+    color: var(--text-strong);
     text-align: center;
 }
 
@@ -124,7 +124,7 @@
     text-align: center;
     font-size: 18px;
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 .AccountModal-email {
@@ -165,7 +165,7 @@
     margin-bottom: 4px;
     padding: 0;
     color: var(--green);
-    background-color: rgba(62, 207, 142, 0.15);
+    background-color: var(--green-wash);
     border: 2px solid currentColor;
     border-radius: 50%;
 }
@@ -236,12 +236,12 @@
 
 .AccountModal-badge.is-editor {
     color: var(--green);
-    background-color: rgba(62, 207, 142, 0.15);
+    background-color: var(--green-wash);
 }
 
 /* Maintenance accounts: amber */
 .AccountModal-badge.is-maintenance {
-    color: #f5a524;
+    color: var(--amber-text);
     background-color: rgba(245, 165, 36, 0.15);
 }
 
@@ -284,7 +284,7 @@
 }
 
 .AccountModal-button.is-quiet:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     background: none;
     border-color: var(--text);
 }
@@ -308,7 +308,7 @@
     padding: 10px 12px;
     font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-2);
     border: 2px solid var(--line-strong);
     border-radius: 8px;
@@ -406,4 +406,11 @@
 .AccountModal-access a {
     color: var(--accent);
     font-weight: 700;
+}
+
+/* Computers: Changelog is in the account drop-down instead (AccountMenu) */
+@media (min-width: 690px) {
+    .AccountModal-button.is-phoneOnly {
+        display: none;
+    }
 }

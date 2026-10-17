@@ -61,8 +61,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup();
         expect(drawer()).toBeNull();
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Scan QR Code", "Install & Use Offline", "About"]);
-        expect(drawerHeadings()).toEqual(["Tools", "App"]); // (Tools: just Scan)
+        expect(drawerItems()).toEqual(["Scan QR Code", "Install & Use Offline", "About", "Dark", "Light"]);
+        expect(drawerHeadings()).toEqual(["Tools", "App", "Theme"]); // (Tools: just Scan)
         expect(within(drawer()).getByRole("button", { name: "Close menu" })).toHaveFocus();
         await user.keyboard("{Escape}");
         expect(drawer()).toBeNull();
@@ -84,8 +84,8 @@ describe("phones: the drawer (☰, from the right)", () => {
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
         // (staff: Documents here, and the game, as Photos has its place in the bottom bar)
-        expect(drawerItems()).toEqual(["Add New Monkey", "Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About"]);
-        expect(drawerHeadings()).toEqual(["Tools", "App"]);
+        expect(drawerItems()).toEqual(["Add New Monkey", "Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About", "Dark", "Light"]);
+        expect(drawerHeadings()).toEqual(["Tools", "App", "Theme"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
         expect(screen.getByRole("dialog", { name: "Add New Monkey" })).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About", "Dark", "Light"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 

@@ -39,7 +39,7 @@
     aspect-ratio: auto;
     overflow: hidden;
     border-radius: 12px;
-    background-color: white;
+    background-color: white; /* (the map drawing: light in both themes) */
 }
 
 .WholeMap-view {
@@ -102,7 +102,7 @@
     background-color: var(--surface-1);
     border: 1px solid var(--line);
     border-radius: 10px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 18px var(--shadow);
     transform: translateX(-50%);
     pointer-events: none;
 }
@@ -174,7 +174,7 @@
     background-color: var(--surface-1);
     border: 1px solid var(--line);
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 8px 24px var(--shadow);
     animation: WholeMap-card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -234,7 +234,7 @@
     font-size: 17px;
     font-weight: 700;
     line-height: 1.2;
-    color: white;
+    color: var(--text-strong);
 }
 
 .WholeMap-cardText p {
@@ -267,7 +267,7 @@
 }
 
 .WholeMap-cardLink:focus-visible {
-    outline: 2px solid white;
+    outline: 2px solid var(--text-strong);
     outline-offset: 2px;
 }
 
@@ -290,7 +290,7 @@
 }
 
 .WholeMap-cardClose:hover {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-2);
 }
 
@@ -338,7 +338,7 @@
 }
 
 .WholeMap-tools button:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-3);
 }
 

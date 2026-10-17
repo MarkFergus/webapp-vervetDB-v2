@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { IconHistory, IconLogout, IconMoon, IconUser } from "@tabler/icons-react";
+import { IconCheck, IconHistory, IconLogout, IconMoon, IconSun, IconUser } from "@tabler/icons-react";
+import { setTheme, useTheme } from "./theme";
 import { useAuth } from "./auth";
 import Avatar from "./Avatar";
 import "./AccountMenu.css";
@@ -7,12 +8,20 @@ import "./AccountMenu.css";
 // Computers: the account circle at the top right (Nav.jsx). Signed out, it
 // opens the sign-in pop-up. Signed in, a menu drops down (like Supabase's):
 // who you are (photo, name, email), Account (the signed-in pop-up, for
-// now the account page), My Changes (staff: your own changes), Theme (Dark
-// only, for now) and Sign Out.
-//   onAccount: opens the account pop-up; onChangelog: opens it on My Changes
+// now the account page), Changelog (staff: your own changes), a Theme
+// section listing Dark and Light (like Supabase's: the chosen one ticked;
+// tapped, it switches and the menu stays open), and Sign Out.
+//   onAccount: opens the account pop-up; onChangelog: opens it on Changelog
+// The theme choices, in order
+const THEME_CHOICES = [
+    { id: "dark", label: "Dark", Icon: IconMoon },
+    { id: "light", label: "Light", Icon: IconSun },
+];
+
 function AccountMenu({ onAccount, onChangelog }) {
     const { user, role, name, avatarUrl, signOut } = useAuth();
     const [open, setOpen] = useState(false);
+    const theme = useTheme();
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
 
@@ -27,7 +36,7 @@ function AccountMenu({ onAccount, onChangelog }) {
     // Open: focus the first choice; a click or tap outside closes it
     useEffect(() => {
         if (!open) return;
-        menuRef.current?.querySelector("[role=menuitem]")?.focus();
+        menuRef.current?.querySelector("[role^=menuitem]")?.focus();
         function handlePointerDown(event) {
             const inside = menuRef.current?.contains(event.target) || buttonRef.current?.contains(event.target);
             if (!inside) setOpen(false);
@@ -38,7 +47,7 @@ function AccountMenu({ onAccount, onChangelog }) {
 
     // Escape closes; arrow keys move between the choices
     function handleKeyDown(event) {
-        const items = [...menuRef.current.querySelectorAll("[role=menuitem]")];
+        const items = [...menuRef.current.querySelectorAll("[role^=menuitem]")];
         const at = items.indexOf(document.activeElement);
         if (event.key === "Escape") {
             event.stopPropagation();
@@ -106,24 +115,29 @@ function AccountMenu({ onAccount, onChangelog }) {
                     {role && (
                         <button type="button" role="menuitem" onClick={choose(onChangelog)}>
                             <IconHistory stroke={1.75} size={18} aria-hidden="true" />
-                            My Changes
+                            Changelog
                         </button>
                     )}
-                    {/* Light theme: coming later, so Dark for now */}
-                    <button
-                        type="button"
-                        role="menuitem"
-                        className="AccountMenu-theme"
-                        aria-disabled="true"
-                        aria-label="Theme: Dark (Light coming soon)"
-                        title="Light theme coming soon"
-                    >
-                        <IconMoon stroke={1.75} size={18} aria-hidden="true" />
-                        Theme
-                        <span className="AccountMenu-value" aria-hidden="true">
-                            Dark
-                        </span>
-                    </button>
+                    <div className="AccountMenu-divider" role="separator" />
+                    {/* Theme: both choices, the chosen one ticked */}
+                    <div role="group" aria-labelledby="AccountMenu-themeTitle">
+                        <p className="AccountMenu-section" id="AccountMenu-themeTitle">
+                            Theme
+                        </p>
+                        {THEME_CHOICES.map(({ id, label, Icon }) => (
+                            <button
+                                key={id}
+                                type="button"
+                                role="menuitemradio"
+                                aria-checked={theme === id}
+                                onClick={() => setTheme(id)}
+                            >
+                                <Icon stroke={1.75} size={18} aria-hidden="true" />
+                                {label}
+                                {theme === id && <IconCheck className="AccountMenu-check" stroke={2} size={16} aria-hidden="true" />}
+                            </button>
+                        ))}
+                    </div>
                     <div className="AccountMenu-divider" role="separator" />
                     <button type="button" role="menuitem" onClick={choose(signOut)}>
                         <IconLogout stroke={1.75} size={18} aria-hidden="true" />

@@ -23,7 +23,7 @@
 .QuickPhotos-notice {
     margin: 0;
     font-size: 13px;
-    color: #ffe14d;
+    color: var(--amber-text);
 }
 
 /* ---- The photos ---- */
@@ -71,7 +71,7 @@
     padding: 6px 10px;
     font-family: var(--font-ui);
     text-align: left;
-    color: white;
+    color: var(--text-strong);
     background: none;
     border: 1px dashed var(--accent);
     border-radius: 8px;
@@ -144,7 +144,7 @@
 }
 
 .QuickPhotos-tools button:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
 }
 
 /* No room: pick one of their photos to replace */
@@ -159,7 +159,7 @@
     padding: 0;
     margin-bottom: 6px;
     font-size: 13px;
-    color: #ffe14d;
+    color: var(--amber-text);
 }
 
 .QuickPhotos-replaceChoices {
@@ -292,7 +292,7 @@
     padding: 10px 0;
     font-family: var(--font-ui);
     font-size: 16px; /* (16px: phones don't zoom in) */
-    color: white;
+    color: var(--text-strong);
     background: none;
     border: none;
     outline: none;
@@ -315,7 +315,7 @@
     padding: 8px;
     font-family: var(--font-ui);
     text-align: left;
-    color: white;
+    color: var(--text-strong);
     background: none;
     border: none;
     border-radius: 8px;

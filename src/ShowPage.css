@@ -18,7 +18,7 @@
     margin-left: calc(-1 * var(--rail-width));
     /* 12px from the edges on phones, like the cards (24px from 625px) */
     padding: 8px 12px;
-    background-color: rgba(18, 18, 18, 0.9);
+    background-color: var(--bar);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid transparent;
@@ -27,7 +27,7 @@
 
 /* Scrolled: a faint line where the photos slide under the header */
 .ShowPage-nav.is-scrolled {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
+    border-bottom-color: var(--wash-soft);
 }
 
 /* The monkey's pop-up goes over the header */
@@ -123,7 +123,7 @@
 }
 
 .ShowPage-filtersButton.is-active:hover {
-    background-color: white;
+    background-color: var(--text-strong);
 }
 
 .ShowPage-filtersButton.is-active .ShowPage-chevron {
@@ -178,7 +178,7 @@
 }
 
 .ShowPage-view button:hover {
-    color: white;
+    color: var(--text-strong);
 }
 
 .ShowPage-view button[aria-pressed="true"] {
@@ -408,7 +408,7 @@
     background-color: var(--surface-2);
     border: 2px solid var(--text-3);
     border-radius: 50%;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px var(--shadow);
     cursor: pointer;
     animation: ShowPage-toTop-in 0.2s ease-out;
 }

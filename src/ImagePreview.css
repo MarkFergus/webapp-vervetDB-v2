@@ -44,7 +44,7 @@
 }
 
 .ImagePreview-hint b {
-    color: white;
+    color: var(--text-strong);
 }
 
 .ImagePreview-box img {

@@ -9,7 +9,11 @@ import {
     IconPhotoPlus,
     IconPlus,
     IconScan,
+    IconMoon,
+    IconSun,
+    IconCheck,
 } from "@tabler/icons-react";
+import { setTheme, useTheme } from "./theme";
 import useDialog from "./useDialog";
 import EnclosuresNavIcon from "./EnclosuresNavIcon";
 import MonkeysNavIcon from "./MonkeysNavIcon";
@@ -51,6 +55,37 @@ function ProfileBookIcon({ busy, size }) {
         <IconHourglassLow className="hourglass" stroke={1.75} size={size} aria-hidden="true" />
     ) : (
         <IconFileTypePdf stroke={1.75} size={size} aria-hidden="true" />
+    );
+}
+
+// Theme (phones: the ☰ menu, for everyone; computers have it in the account
+// menu): its own section listing both choices, the chosen one ticked (like
+// Supabase's account menu); tapping one switches straight away, the menu
+// stays open
+const THEME_CHOICES = [
+    { id: "dark", label: "Dark", Icon: IconMoon },
+    { id: "light", label: "Light", Icon: IconSun },
+];
+
+function ThemeGroup({ groupClass, headingClass, itemClass }) {
+    const theme = useTheme();
+    return (
+        <div className={groupClass}>
+            <h2 className={headingClass}>Theme</h2>
+            {THEME_CHOICES.map(({ id, label, Icon }) => (
+                <button
+                    key={id}
+                    type="button"
+                    className={itemClass}
+                    aria-pressed={theme === id}
+                    onClick={() => setTheme(id)}
+                >
+                    <Icon stroke={1.75} size={24} aria-hidden="true" />
+                    <span>{label}</span>
+                    {theme === id && <IconCheck className="NavBars-check" stroke={2} size={18} aria-hidden="true" />}
+                </button>
+            ))}
+        </div>
     );
 }
 
@@ -284,6 +319,7 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                         About
                     </button>
                 </div>
+                <ThemeGroup groupClass="Drawer-group" headingClass="Drawer-heading" itemClass="Drawer-item" />
                 <p className="Drawer-footer">© {YEAR} Vervet Monkey Foundation</p>
             </div>
         </div>

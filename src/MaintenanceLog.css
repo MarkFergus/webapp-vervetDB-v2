@@ -59,7 +59,7 @@
     padding: 9px 10px;
     font-family: var(--font-ui);
     font-size: 16px; /* 16px stops phones zooming in on the box */
-    color: white;
+    color: var(--text-strong);
     background-color: var(--bg);
     border: 2px solid var(--line-strong);
     border-radius: 8px;

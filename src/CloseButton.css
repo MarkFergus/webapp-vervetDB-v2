@@ -16,7 +16,7 @@
 }
 
 .CloseButton:hover {
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-3);
 }
 

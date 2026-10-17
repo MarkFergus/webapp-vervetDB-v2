@@ -16,6 +16,17 @@
         <meta name="theme-color" content="#121212" />
         <!-- Dark from the very first moment, before the styles load (no white flash) -->
         <meta name="color-scheme" content="dark" />
+        <!-- Light, if that's the theme chosen on this device (src/theme.js):
+             set before anything draws, so the page never flashes dark first -->
+        <script>
+            try {
+                if (localStorage.getItem("vervetdb-theme") === "light") {
+                    document.documentElement.dataset.theme = "light";
+                    document.querySelector('meta[name="theme-color"]').content = "#ffffff";
+                    document.querySelector('meta[name="color-scheme"]').content = "light";
+                }
+            } catch (e) {}
+        </script>
         <!-- Already dark: tells the Dark Reader extension not to recolour it
              (it turned the faint hover circles on the top bar icons invisible) -->
         <meta name="darkreader-lock" />

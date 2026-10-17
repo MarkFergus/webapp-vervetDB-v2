@@ -42,6 +42,6 @@ body {
     padding: 8px 16px;
     text-align: center;
     font-size: 14px;
-    color: var(--bg);
+    color: var(--on-status);
     background-color: #ffb454;
 }

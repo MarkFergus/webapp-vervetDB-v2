@@ -32,16 +32,81 @@
     --pink-2: #ff6dbb;
     --danger: #ff4e45;
     --danger-2: #ff8a80;
+    /* Status fills (badges), the same in both themes, always with dark text */
+    --amber: #f5b83d; /* In Sickbay */
+    --orange: #ff7a1a; /* New Arrival */
+    --on-status: #121212; /* text and icons on amber, orange, teal and other bright fills */
+    --amber-text: #f5b83d; /* the Sickbay amber as text or an icon (Quick Actions) */
+    --orange-text: #ff6b1a; /* the game's Ultimate orange as text */
+    --map-paper: #f1f1f1; /* behind the sanctuary map (a light drawing in both themes) */
+    /* What changes between the themes, beyond the ladder above */
+    --text-strong: #ffffff; /* the strongest text: titles, the chosen chip's fill */
+    --wash-soft: rgba(255, 255, 255, 0.08); /* hover on bars and menus */
+    --wash: rgba(255, 255, 255, 0.1); /* hover on icon buttons; the current page */
+    --wash-strong: rgba(255, 255, 255, 0.16);
+    --green-wash: rgba(62, 207, 142, 0.15); /* the signed-in account icon */
+    --bar: rgba(18, 18, 18, 0.9); /* the blurred top and bottom bars */
+    --bar-line: rgba(255, 255, 255, 0.08);
+    --shadow: rgba(0, 0, 0, 0.5); /* things that float: menus, the rail over the page */
+    --shadow-strong: rgba(0, 0, 0, 0.6);
+    --scrim: rgba(0, 0, 0, 0.8); /* behind a pop-up */
+    --scrim-soft: rgba(0, 0, 0, 0.55); /* behind the drawer, the filter sheet */
+    --photo-fade: var(--bg); /* where a card photo's dark fade ends (the name sits on it) */
+    --selection: rgba(62, 166, 255, 0.4);
     --font-ui: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-display: "Bitter", Georgia, serif; /* monkey and place names, headings */
     --font-logo: "Saira", var(--font-ui); /* the vervetDB wordmark, the game's big type */
 
     font-family: var(--font-ui);
-    /* The site is dark only: scrollbars, dropdown menus and form boxes
-       drawn by the browser are dark too, whatever the device's setting */
+    /* Dark unless Light is chosen (below): scrollbars, dropdown menus and
+       form boxes drawn by the browser follow the theme, whatever the
+       device's own setting */
     color-scheme: dark;
     color: var(--text);
     background-color: var(--bg);
+}
+
+/* ---- Light (the account menu or the ☰ / side rail's Theme; remembered
+   on the device, set before the page draws: index.html, theme.js).
+   Crisp white like YouTube's light theme. Each colour keeps its one job;
+   the signal colours used as text are deeper so they read on white (all
+   pairs AA). Photos keep their dark fade, so names on them stay white. */
+:root[data-theme="light"] {
+    --bg: #ffffff;
+    --surface-1: #ffffff;
+    --surface-2: #f2f2f2;
+    --surface-3: #e5e5e5;
+    --field: #ffffff;
+    --line: #e5e5e5;
+    --line-strong: #c6c6c6;
+    --text: #0f0f0f;
+    --text-2: #5c5c5c;
+    --text-3: #636363;
+    --accent: #065fd4;
+    --accent-2: #0b4db0;
+    --green: #0c7f4b;
+    --green-2: #0a6a3f;
+    --on-green: #ffffff;
+    --pink: #c2006b;
+    --pink-2: #99005a;
+    --danger: #c5221f;
+    --danger-2: #a51b18;
+    --amber-text: #8a5300;
+    --orange-text: #b84300;
+    --text-strong: #0f0f0f;
+    --wash-soft: rgba(0, 0, 0, 0.05);
+    --wash: rgba(0, 0, 0, 0.06);
+    --wash-strong: rgba(0, 0, 0, 0.1);
+    --green-wash: rgba(12, 127, 75, 0.12);
+    --bar: rgba(255, 255, 255, 0.92);
+    --bar-line: rgba(0, 0, 0, 0.08);
+    --shadow: rgba(0, 0, 0, 0.16);
+    --shadow-strong: rgba(0, 0, 0, 0.2);
+    --scrim: rgba(0, 0, 0, 0.5);
+    --scrim-soft: rgba(0, 0, 0, 0.35);
+    --photo-fade: rgba(0, 0, 0, 0.78);
+    --selection: rgba(6, 95, 212, 0.2);
+    color-scheme: light;
 }
 
 body {
@@ -51,8 +116,8 @@ body {
 }
 
 ::selection {
-    color: white;
-    background-color: rgba(62, 166, 255, 0.4);
+    color: var(--text-strong);
+    background-color: var(--selection);
 }
 
 /* Outline shown when moving around with the keyboard (not on mouse clicks) */

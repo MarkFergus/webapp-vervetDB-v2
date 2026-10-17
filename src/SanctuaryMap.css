@@ -5,7 +5,7 @@
     aspect-ratio: 40 / 21;
     overflow: hidden;
     border-radius: 12px;
-    background-color: var(--text);
+    background-color: var(--map-paper);
     border: 1px solid var(--line);
 }
 
@@ -37,7 +37,7 @@
 .SanctuaryMap.has-introcage .SanctuaryMap-highlight * {
     /* (a solid light tint, not see-through, so the map's own name under it
        doesn't show through beside the one drawn on top) */
-    fill: color-mix(in srgb, var(--highlight) 38%, var(--text)) !important;
+    fill: color-mix(in srgb, var(--highlight) 38%, var(--map-paper)) !important;
 }
 
 /* The introcage's gate box: solid colour, dark outline */
@@ -133,7 +133,7 @@
 .MapPopup-overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--scrim);
 }
 
 .MapPopup-window {
@@ -159,7 +159,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 800;
-    color: white;
+    color: var(--text-strong);
 }
 
 

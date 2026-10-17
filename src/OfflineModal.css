@@ -34,7 +34,7 @@
 }
 
 .OfflineModal-section b {
-    color: white;
+    color: var(--text-strong);
 }
 
 .OfflineModal-steps,
@@ -134,6 +134,6 @@
 }
 
 .OfflineModal-stop:hover {
-    color: white;
+    color: var(--text-strong);
     border-color: var(--text);
 }

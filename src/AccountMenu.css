@@ -16,7 +16,7 @@
     background-color: var(--surface-2);
     border: 1px solid var(--line-strong);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px var(--shadow);
 }
 
 /* Who's signed in: photo, name and email */
@@ -36,7 +36,7 @@
     height: 36px;
     box-sizing: border-box;
     color: var(--green);
-    background-color: rgba(62, 207, 142, 0.15);
+    background-color: var(--green-wash);
     border: 1.75px solid currentColor;
     border-radius: 50%;
 }
@@ -57,7 +57,7 @@
 .AccountMenu-name {
     font-size: 15px;
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 .AccountMenu-email {
@@ -71,7 +71,7 @@
     background-color: var(--line-strong);
 }
 
-.AccountMenu-menu [role="menuitem"] {
+.AccountMenu-menu [role^="menuitem"] {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -86,25 +86,23 @@
     cursor: pointer;
 }
 
-.AccountMenu-menu [role="menuitem"]:hover,
-.AccountMenu-menu [role="menuitem"]:focus-visible {
-    color: white;
+.AccountMenu-menu [role^="menuitem"]:hover,
+.AccountMenu-menu [role^="menuitem"]:focus-visible {
+    color: var(--text-strong);
     background-color: var(--line);
     outline: none;
 }
 
-/* Theme: fixed on Dark for now (not clickable) */
-.AccountMenu-menu .AccountMenu-theme {
-    cursor: default;
-}
-
-.AccountMenu-menu .AccountMenu-theme:hover {
-    color: var(--text);
-    background: none;
-}
-
-.AccountMenu-value {
-    margin-left: auto;
-    font-size: 13px;
+/* The Theme section: a small label, then Dark and Light, the chosen one
+   ticked in the accent blue */
+.AccountMenu-section {
+    margin: 6px 12px 2px;
+    font-size: 12px;
+    font-weight: 700;
     color: var(--text-3);
+}
+
+.AccountMenu-check {
+    margin-left: auto;
+    color: var(--accent);
 }

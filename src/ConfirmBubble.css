@@ -13,7 +13,7 @@
     background-color: var(--surface-1);
     border: 1px solid var(--line-strong);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px var(--shadow);
     animation: ConfirmBubble-pop 0.12s ease-out;
 }
 

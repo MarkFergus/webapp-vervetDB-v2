@@ -57,7 +57,7 @@
     /* Narrower screens: over the page, which dims behind it */
     .SideRail.is-over {
         z-index: 3;
-        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.5);
+        box-shadow: 8px 0 24px var(--shadow);
         animation: SideRail-slide 0.18s ease-out;
     }
 
@@ -65,7 +65,7 @@
         position: fixed;
         z-index: 3;
         inset: var(--nav-height) 0 0 0;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: var(--scrim-soft);
     }
 }
 
@@ -134,8 +134,8 @@
 }
 
 .SideRail-item:hover:not(:disabled) {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-strong);
+    background-color: var(--wash-soft);
 }
 
 .SideRail-item:disabled {
@@ -151,17 +151,17 @@
 /* The page you're on */
 .SideRail-item[aria-current="page"] {
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 /* The page you're on: its icon white (the bottom bar's too) */
 .SideRail-item[aria-current="page"] svg,
 .BottomBar-tab[aria-current="page"] svg {
-    color: white;
+    color: var(--text-strong);
 }
 
 .SideRail.is-open .SideRail-item[aria-current="page"] {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--wash);
 }
 
 .SideRail-footer {
@@ -185,10 +185,10 @@
     height: var(--bottom-bar);
     padding-bottom: env(safe-area-inset-bottom);
     font-family: var(--font-ui);
-    background-color: rgba(18, 18, 18, 0.94);
+    background-color: var(--bar);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--wash-soft);
 }
 
 @media (min-width: 690px) {
@@ -218,7 +218,7 @@
 
 .BottomBar-tab[aria-current="page"] {
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 .BottomBar-tab:focus-visible,
@@ -250,7 +250,7 @@
 
 .BottomBar-tab.is-signed-in .BottomBar-avatar {
     color: var(--green);
-    background-color: rgba(62, 207, 142, 0.15);
+    background-color: var(--green-wash);
 }
 
 /* Map in the middle, the highlight: a bigger green circle with a white
@@ -266,7 +266,7 @@
     background-color: var(--green);
     border: none;
     border-radius: 50%;
-    box-shadow: 0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px var(--shadow);
     transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
@@ -311,7 +311,7 @@
 .Drawer-backdrop {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.55);
+    background-color: var(--scrim-soft);
     animation: Drawer-fade 0.2s ease-out;
 }
 
@@ -325,7 +325,7 @@
     width: min(255px, 72vw);
     padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
     background-color: var(--bg);
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
+    box-shadow: -8px 0 24px var(--shadow);
     animation: Drawer-slide 0.22s ease-out;
 }
 
@@ -363,7 +363,7 @@
     font-family: var(--font-logo);
     font-weight: 800;
     font-size: 20px;
-    color: white;
+    color: var(--text-strong);
 }
 
 /* Tools, App: like the opened-out side rail's groups */
@@ -413,8 +413,8 @@ a.Drawer-item {
 }
 
 .Drawer-item:hover:not(:disabled) {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-strong);
+    background-color: var(--wash-soft);
 }
 
 .Drawer-item:disabled {
@@ -430,16 +430,22 @@ a.Drawer-item {
 /* The page you're on: bold, its icon white (as in the side rail) */
 .Drawer-item[aria-current="page"] {
     font-weight: 700;
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-strong);
+    background-color: var(--wash);
 }
 
 .Drawer-item[aria-current="page"] svg {
-    color: white;
+    color: var(--text-strong);
 }
 
 .Drawer-footer {
     margin: auto 12px 0;
     font-size: 12px;
     color: var(--text-2);
+}
+
+/* Theme (side rail and ☰ menu): the chosen one's tick, at the right */
+.NavBars-check {
+    margin-left: auto;
+    color: var(--accent);
 }

@@ -25,7 +25,7 @@
 }
 
 .Enclosures-back:hover {
-    color: white;
+    color: var(--text-strong);
     border-color: var(--text-3);
 }
 
@@ -62,7 +62,7 @@
 }
 
 .Enclosures-step:hover {
-    color: white;
+    color: var(--text-strong);
     border-color: var(--text-3);
 }
 
@@ -117,7 +117,7 @@
     font-weight: 700;
     font-size: 32px;
     line-height: 1.15;
-    color: white;
+    color: var(--text-strong);
 }
 
 .Enclosures-subtitle {
@@ -232,7 +232,7 @@
     content: "";
     position: absolute;
     inset: 50% 0 0;
-    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--bg)); /* fades into the page colour */
+    background: linear-gradient(transparent, rgba(18, 18, 18, 0.6) 55%, var(--photo-fade)); /* fades into the page colour */
     pointer-events: none;
 }
 
@@ -443,7 +443,7 @@
 .IntrocageRow-name {
     font-size: 15px;
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 /* Who's in it (or "Empty"), on one line */
@@ -817,7 +817,7 @@
     margin: 0;
     font-size: 21px;
     font-weight: 800;
-    color: white;
+    color: var(--text-strong);
 }
 
 .Enclosures-block {

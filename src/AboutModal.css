@@ -4,7 +4,7 @@
     position: fixed;
     z-index: 1;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--scrim);
 }
 
 /* Near the top (--popup-top), growing downwards; on a short screen the
@@ -69,7 +69,7 @@
     margin: 10px 0 0;
     font-size: 22px;
     font-weight: 800;
-    color: white;
+    color: var(--text-strong);
     text-align: center;
 }
 

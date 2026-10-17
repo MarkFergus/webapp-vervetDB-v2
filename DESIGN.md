@@ -151,7 +151,7 @@ components:
 
 vervetDB is the category standard played straight: a first-class dark media app at YouTube and Supabase-dashboard craft, where the "videos" are monkeys. Faces lead. A near-black page carries a grid of rounded 5:4 photos with each monkey's name set on its own photo in Bitter, a slab serif that gives each monkey some personality, a quiet grey line of details below, and one row of soft chips above for narrowing the list. Chrome is small, precise and recessive so the photos do the talking.
 
-The system is dark only (`color-scheme: dark`), tonal rather than lined, and strictly tokenised: every colour comes from the `:root` set in `src/index.css`. One sky-blue accent handles links, focus and the active state of a few controls; selection in chips is white-fill, as on YouTube. Green, pink and two warm status colours each own exactly one job, so colour on screen always means something. Density is media-app density: 36px chips, 40px icon buttons, tight caption lines, generous photo area.
+The system is dark by default, with a crisp-white Light theme chosen per device (Theme in the account menu, the side rail and the ☰ menu; `:root[data-theme="light"]`), tonal rather than lined, and strictly tokenised: every colour comes from the `:root` set in `src/index.css`. One sky-blue accent handles links, focus and the active state of a few controls; selection in chips is white-fill, as on YouTube. Green, pink and two warm status colours each own exactly one job, so colour on screen always means something. Density is media-app density: 36px chips, 40px icon buttons, tight caption lines, generous photo area.
 
 It is minimal and uncluttered by owner direction: no decoration that does not carry information, one badge per card at most, and labels in plain Title Case words. The owner has rejected coloured sex icons and a "Photo Needed" badge; both are recorded as Don'ts below.
 
@@ -188,6 +188,9 @@ A YouTube-dark neutral ladder with one cool accent and a few single-purpose sign
 - **Paper White** (text): primary text and the white chosen-chip fill.
 - **Caption Grey** (text-2): details lines, section headings, chevrons, bottom-bar labels.
 - **Quiet Grey** (text-3): placeholders, hints, table headings, row details; still AA on every surface.
+
+### Light theme
+Crisp white, YouTube-light. The same roles remap; nothing is a mechanical inversion. Page, panels and the search field are white; raised things #f2f2f2, hover #e5e5e5; hairlines #e5e5e5 (strong #c6c6c6); text #0f0f0f, #5c5c5c, #636363. Signal colours used as text deepen so they pass AA on white: blue #065fd4 (hover #0b4db0), go green #0c7f4b with white text, pink #c2006b, alert red #c5221f, amber text #8a5300, orange text #b84300. The chosen chip becomes near-black with white text (`--text-strong`). Constant in both themes: the status fills (amber, orange, teal) with dark `--on-status` text, names on photos (white on the dark `--photo-fade`), and the sanctuary map's paper (`--map-paper`). Hover washes, bars, shadows and scrims are tokens too (`--wash*`, `--bar`, `--shadow*`, `--scrim*`).
 
 ### Named Rules
 **The Token-Only Rule.** Every colour is a `var(--…)` from `:root` in `src/index.css`; a raw hex in a component stylesheet is a defect, not a choice.

@@ -6,6 +6,7 @@
     --level-normal: var(--accent); /* blue */
     --level-hard: #ffb454; /* light orange */
     --level-expert: #ff6b1a; /* deep orange (kept clear of the red for wrong) */
+    --level-hard-text: #ffb454;
 
     /* Tallest the photo may be, so the whole game fits the window:
        everything else (heading, controls, answers, answer line, Next button)
@@ -14,16 +15,25 @@
     --photo-height: max(240px, calc(100svh - 540px));
 }
 
+/* Each level's colour as a fill (--level), as text on the page
+   (--level-text: deeper in Light, so it reads on white) and for text on its
+   fill (--on-level) */
 [data-level="normal"] {
     --level: var(--level-normal);
+    --level-text: var(--accent);
+    --on-level: var(--bg);
 }
 
 [data-level="hard"] {
     --level: var(--level-hard);
+    --level-text: var(--level-hard-text);
+    --on-level: var(--on-status);
 }
 
 [data-level="expert"] {
     --level: var(--level-expert);
+    --level-text: var(--orange-text);
+    --on-level: var(--on-status);
 }
 
 .Game {
@@ -51,7 +61,7 @@
 /* The Ultimate Challenge: the line turns bold and fiery */
 .Game[data-ultimate="true"] .Game-intro {
     font-weight: 800;
-    color: #ff6b1a;
+    color: var(--orange-text);
     text-shadow: 0 0 12px rgba(255, 107, 26, 0.45);
 }
 
@@ -121,7 +131,7 @@
 }
 
 .Game-chip:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     border-color: var(--text);
 }
 
@@ -202,7 +212,7 @@
 }
 
 .Game-card[aria-checked="true"] b {
-    color: var(--level);
+    color: var(--level-text);
 }
 
 /* Expert, when chosen: a steady fiery glow */
@@ -216,7 +226,7 @@
 /* The hardest game possible (all troops, Expert, all photos): the other
    picked options catch fire too, in the same deep orange */
 .Game[data-ultimate="true"] .Game-chip[aria-pressed="true"] {
-    color: var(--bg);
+    color: var(--on-status);
     background-color: #ff6b1a;
     border-color: #ff6b1a;
     box-shadow: 0 0 10px rgba(255, 107, 26, 0.45);
@@ -229,7 +239,7 @@
 
 .Game[data-ultimate="true"] .Game-card.is-round[aria-checked="true"] b,
 .Game[data-ultimate="true"] .Game-setup-count {
-    color: #ff6b1a;
+    color: var(--orange-text);
 }
 
 /* Round length: blue, like the troops */
@@ -247,7 +257,7 @@
     font-family: var(--font-logo);
     font-weight: 800;
     font-size: 24px;
-    color: var(--bg);
+    color: var(--on-level);
     background-color: var(--level);
     border: none;
     border-radius: 999px;
@@ -292,7 +302,7 @@
 }
 
 .Game-setup-start:focus-visible {
-    outline: 2px solid white;
+    outline: 2px solid var(--text-strong);
     outline-offset: 3px;
 }
 
@@ -313,7 +323,7 @@
 }
 
 .Game-setup-best b {
-    color: white;
+    color: var(--text-strong);
 }
 
 /* Photo count on the left, timer in the middle, big score on the right */
@@ -351,7 +361,7 @@
     font-family: var(--font-logo);
     font-weight: 800;
     font-size: 28px;
-    color: var(--level);
+    color: var(--level-text);
 }
 
 /* Last 2 seconds: pink */
@@ -478,7 +488,7 @@
     font-family: var(--font-ui);
     font-size: 17px;
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
     background-color: var(--surface-2);
     border: 2px solid var(--line-strong);
     border-radius: 8px;
@@ -537,7 +547,7 @@
     padding: 8px 16px;
     font-size: 15px;
     color: var(--text);
-    background-color: rgba(18, 18, 18, 0.85);
+    background-color: var(--bar);
     border-radius: 999px;
     opacity: 0;
     animation: Game-loading-in 0.2s ease-out 0.4s forwards;
@@ -573,7 +583,7 @@
     font-family: var(--font-logo);
     font-weight: 800;
     font-size: 28px;
-    color: var(--bg);
+    color: var(--on-level);
     background-color: var(--level);
     border: none;
     border-radius: 999px;
@@ -643,7 +653,7 @@
 }
 
 .Game-option:hover:not(:disabled) {
-    color: white;
+    color: var(--text-strong);
     border-color: var(--level);
 }
 
@@ -654,14 +664,14 @@
 
 .Game-option.is-correct {
     opacity: 1;
-    color: white;
+    color: var(--text-strong);
     border-color: var(--green);
     background-color: rgba(62, 207, 142, 0.2);
 }
 
 .Game-option.is-wrong {
     opacity: 1;
-    color: white;
+    color: var(--text-strong);
     border-color: var(--danger);
     background-color: rgba(255, 77, 79, 0.15);
 }
@@ -710,7 +720,7 @@
 .Game-feedback.is-correct,
 .Game-feedback.is-wrong {
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
     animation: Game-banner 0.25s ease-out;
 }
 
@@ -784,7 +794,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--bg);
+    color: var(--on-level);
     background-color: var(--level);
     border-radius: 999px;
 }
@@ -818,7 +828,7 @@
     display: block;
     margin-top: 2px;
     font-weight: 700;
-    color: #ffb454;
+    color: var(--amber-text);
 }
 
 .Game-end-message {
@@ -826,7 +836,7 @@
     font-weight: 800;
     font-size: 34px;
     line-height: 1.15;
-    color: var(--level);
+    color: var(--level-text);
     text-shadow: 0 0 16px color-mix(in srgb, var(--level) 50%, transparent);
     margin: 20px 0 8px;
 }
@@ -844,7 +854,7 @@
 .Game-end-score-value {
     font-size: 88px;
     line-height: 1;
-    color: white;
+    color: var(--text-strong);
 }
 
 .Game-end-score-total {
@@ -881,7 +891,7 @@
     margin: 4px 0 0;
     font-size: 20px;
     font-weight: 700;
-    color: white;
+    color: var(--text-strong);
 }
 
 .Game-end-actions {
@@ -901,7 +911,7 @@
 
 .Game-end .Game-next {
     margin: 0;
-    color: var(--level);
+    color: var(--level-text);
     border-color: var(--level);
 }
 
@@ -914,7 +924,7 @@
     font-family: var(--font-ui);
     font-size: 1rem;
     font-weight: 700;
-    color: var(--bg);
+    color: var(--on-level);
     background-color: var(--level);
     border: 1px solid var(--level);
     border-radius: 4px;
@@ -927,7 +937,7 @@
 
 /* Save image: outlined in the level's colour, beside the filled Share */
 .Game-share.is-quiet {
-    color: var(--level);
+    color: var(--level-text);
     background: none;
 }
 
@@ -950,7 +960,7 @@
 }
 
 .Game-end .Game-next:hover {
-    color: var(--bg);
+    color: var(--on-level);
     background-color: var(--level);
 }
 
@@ -1038,4 +1048,9 @@
     .Game-card {
         padding: 8px 4px;
     }
+}
+
+/* Light: the Hard level's orange as text, deeper so it reads on white */
+:root[data-theme="light"] .Game {
+    --level-hard-text: #8a5300;
 }

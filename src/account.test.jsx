@@ -263,7 +263,7 @@ test("Request access shows who to email", async () => {
 });
 
 describe("the account menu (computers)", () => {
-    test("signed in, the circle opens a menu: name, email, Account, My Changes, Theme and Sign Out", async () => {
+    test("signed in, the circle opens a menu: name, email, Account, Changelog, Theme and Sign Out", async () => {
         const { user, dialog } = setup({ savedUser: EDITOR, names: { [EDITOR.id]: "Sam Smith" } });
         const circle = await screen.findByRole("button", { name: "Account (signed in)" });
         expect(circle).toHaveAttribute("aria-expanded", "false");
@@ -274,13 +274,20 @@ describe("the account menu (computers)", () => {
         expect(within(menu).getByText(EDITOR.email)).toBeInTheDocument();
         expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
             "Account",
-            "My Changes",
-            "ThemeDark",
+            "Changelog",
             "Sign Out",
         ]);
-        // Theme: Dark only, for now
-        expect(within(menu).getByRole("menuitem", { name: "Theme: Dark (Light coming soon)" })).toHaveAttribute("aria-disabled", "true");
         expect(within(menu).getByRole("menuitem", { name: "Account" })).toHaveFocus();
+        // Theme: its own section, both choices, Dark ticked to start with;
+        // tapping Light switches (and the menu stays open)
+        const themes = within(within(menu).getByRole("group", { name: "Theme" })).getAllByRole("menuitemradio");
+        expect(themes.map((t) => [t.textContent, t.getAttribute("aria-checked")])).toEqual([["Dark", "true"], ["Light", "false"]]);
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Light" }));
+        expect(document.documentElement.dataset.theme).toBe("light");
+        expect(localStorage.getItem("vervetdb-theme")).toBe("light");
+        expect(within(menu).getByRole("menuitemradio", { name: "Light" })).toHaveAttribute("aria-checked", "true");
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Dark" }));
+        expect(document.documentElement.dataset.theme).toBe("dark");
 
         // Account: the signed-in pop-up, and the menu's put away
         await user.click(within(menu).getByRole("menuitem", { name: "Account" }));
@@ -304,7 +311,7 @@ describe("the account menu (computers)", () => {
         const circle = await screen.findByRole("button", { name: "Account (signed in)" });
         await user.click(circle);
         await user.keyboard("{ArrowDown}");
-        expect(screen.getByRole("menuitem", { name: "My Changes" })).toHaveFocus();
+        expect(screen.getByRole("menuitem", { name: "Changelog" })).toHaveFocus();
         await user.keyboard("{ArrowUp}{ArrowUp}");
         expect(screen.getByRole("menuitem", { name: "Sign Out" })).toHaveFocus();
         await user.keyboard("{ArrowDown}");
@@ -314,10 +321,10 @@ describe("the account menu (computers)", () => {
         expect(circle).toHaveFocus();
     });
 
-    test("accounts without a role (viewers): no My Changes", async () => {
+    test("accounts without a role (viewers): no Changelog", async () => {
         const { user } = setup({ savedUser: VIEWER });
         await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
-        expect(screen.queryByRole("menuitem", { name: "My Changes" })).toBeNull();
+        expect(screen.queryByRole("menuitem", { name: "Changelog" })).toBeNull();
     });
 
     test("a click outside closes it", async () => {
