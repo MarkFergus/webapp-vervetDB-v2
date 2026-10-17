@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
-    IconUsersGroup,
     IconChevronDown,
     IconFilterOff,
     IconLayoutGrid,
@@ -35,6 +34,7 @@ import {
 import EnclosuresPage from "./EnclosuresPage";
 import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
+import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
 import { monitoredTroops, monitoringGroups } from "./monitoring";
@@ -903,7 +903,7 @@ function ShowPage({
                     }
                     aria-hidden="true"
                 >
-                    <IconUsersGroup size={16} aria-hidden="true" />
+                    <MonkeysNavIcon size={16} aria-hidden="true" />
                     {countedMonkeys}
                     {/* Everyone (no filters, no search): say who is counted.
                         (Hidden when the row is too tight) */}

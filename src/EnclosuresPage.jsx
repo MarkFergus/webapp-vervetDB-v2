@@ -16,7 +16,6 @@ import {
     IconPencil,
     IconRuler2,
     IconTool,
-    IconUsersGroup,
 } from "@tabler/icons-react";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import SanctuaryMap from "./SanctuaryMap";
@@ -57,6 +56,7 @@ import {
 import "./Modal.css"; // the photo arrows and dots
 import "./EnclosuresPage.css";
 import BenchTreeIcon from "./BenchTreeIcon";
+import MonkeysNavIcon from "./MonkeysNavIcon";
 
 // The Enclosures pages, shown under the site's top bar (ShowPage): every
 // troop enclosure with its introcages, in section order (#enclosures), and
@@ -413,11 +413,24 @@ function EnclosureList({ enclosures, sections, monkeys, sort, onSort }) {
                                             <Picture enclosure={enclosure} introcages={inside} monkeys={living} />
                                             <span className="EnclosureCard-name"><PlaceName name={enclosure.name} /></span>
                                         </span>
+                                        {/* Each part whole: if they don't fit on one
+                                            line, the next goes onto the line below
+                                            (the "·" between them shows only on one line) */}
                                         <span className="EnclosureCard-meta">
-                                            {plural(living.length, hasTroop(enclosure) ? "troop monkey" : "monkey")}
-                                            {inside.length > 0 && ` · ${plural(inside.length, introcageWord(enclosure))}`}
+                                            <span>{plural(living.length, hasTroop(enclosure) ? "troop monkey" : "monkey")}</span>
+                                            {inside.length > 0 && (
+                                                <span className="is-more">
+                                                    <span className="visually-hidden"> · </span>
+                                                    {plural(inside.length, introcageWord(enclosure))}
+                                                </span>
+                                            )}
                                             {/* Sorted by size: each one's size too */}
-                                            {sort.key === "size" && enclosure.size != null && ` · ${sizeText(enclosure.size)}`}
+                                            {sort.key === "size" && enclosure.size != null && (
+                                                <span className="is-more">
+                                                    <span className="visually-hidden"> · </span>
+                                                    {sizeText(enclosure.size)}
+                                                </span>
+                                            )}
                                         </span>
                                     </a>
                                 </article>
@@ -529,7 +542,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     const jumps = isIntrocage
         ? [
               { key: "map", label: "Map", icon: IconMap2 },
-              { key: "residents", label: "Monkeys", icon: IconUsersGroup },
+              { key: "residents", label: "Monkeys", icon: MonkeysNavIcon },
               maintenanceJump,
           ]
         : [
@@ -538,7 +551,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                   ? [{ key: "introcages", label: introcagesTitle, icon: IconCube }]
                   : []),
               maintenanceJump,
-              { key: "monkeys", label: "Monkeys", icon: IconUsersGroup },
+              { key: "monkeys", label: "Monkeys", icon: MonkeysNavIcon },
           ];
 
     // Enclosures: before the monkeys; introcages: at the bottom
@@ -601,14 +614,35 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                                     <dt>No resident troop</dt>
                                     <dd>{TYPE_NAMES[enclosure.type]}</dd>
                                 </div>
-                                <div>
+                                {/* Tapped: down to the Monkeys list (opened), like
+                                    the jump buttons */}
+                                <div className="is-jump">
                                     <dt>Monkeys</dt>
                                     <dd>{inIntrocages.length}</dd>
+                                    <button
+                                        type="button"
+                                        className="Enclosures-statJump"
+                                        onClick={() => jump("monkeys")}
+                                        aria-label={`${inIntrocages.length} monkeys: go to the Monkeys list`}
+                                    >
+                                        <IconArrowDown size={14} aria-hidden="true" />
+                                    </button>
                                 </div>
                                 {introcages.length > 0 && (
-                                    <div>
+                                    // (a care unit's Areas: down to its list too)
+                                    <div className={isCareUnit(enclosure) ? "is-jump" : undefined}>
                                         <dt>{introcagesTitle}</dt>
                                         <dd>{introcages.length}</dd>
+                                        {isCareUnit(enclosure) && (
+                                            <button
+                                                type="button"
+                                                className="Enclosures-statJump"
+                                                onClick={() => jump("introcages")}
+                                                aria-label={`${introcages.length} areas: go to the Areas list`}
+                                            >
+                                                <IconArrowDown size={14} aria-hidden="true" />
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                                 {/* (not a care unit: new arrivals come and go) */}
@@ -645,7 +679,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
 
                         {/* The details, as label / value rows */}
                         <dl className="Enclosures-details">
-                            {isIntrocage && <DetailRow icon={IconUsersGroup} label="No. of Monkeys" value={residents(enclosure, monkeys).length} />}
+                            {isIntrocage && <DetailRow icon={MonkeysNavIcon} label="No. of Monkeys" value={residents(enclosure, monkeys).length} />}
                             <div>
                                 <dt>
                                     <IconMapPin size={16} aria-hidden="true" />

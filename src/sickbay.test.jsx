@@ -7,7 +7,7 @@ import MonkeyRow from "./MonkeyRow";
 import { DEFAULT_FEEDING } from "./feeding";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 import enclosuresArr from "./enclosuresArr";
-import { introcageMonkeys, isNewArrival, isSickbayUnit, monkeyCount } from "./enclosures";
+import { introcageMonkeys, isNewArrival, monkeyCount } from "./enclosures";
 
 const MONKEY = {
     id: 1, name: "Nita", sex: "female", chip: "123", troop: null, introcage: "Goliath A", introcageType: "introcage",
@@ -117,11 +117,6 @@ describe("Sickbay's list (the care unit)", () => {
     test("only a care-unit area's monkeys are new arrivals", () => {
         expect(isNewArrival(newcomer)).toBe(true);
         expect(isNewArrival(visitor)).toBe(false);
-    });
-
-    test("its old name (Sickbay Care Unit) still counts, until rename-sickbay.sql has run", () => {
-        expect(isSickbayUnit({ ...unit, name: "Sickbay Care Unit" })).toBe(true);
-        expect(isSickbayUnit({ ...unit, name: "Quarantine" })).toBe(false);
     });
 
     test("a monkey in Sickbay that is already admitted there is listed once", () => {

@@ -251,9 +251,47 @@
 }
 
 .EnclosureCard-meta {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 12px;
     margin-top: 6px;
     font-size: 14px;
     color: var(--text-2);
+    /* (a "·" starting a line, left of the edge, is cut off) */
+    overflow: hidden;
+}
+
+.EnclosureCard-meta > span {
+    white-space: nowrap;
+}
+
+/* The "·" before a part, drawn in the gap beside the part before it (one
+   in the text is for screen readers) */
+.EnclosureCard-meta .is-more {
+    position: relative;
+}
+
+.EnclosureCard-meta .is-more::before {
+    content: "·";
+    position: absolute;
+    left: -8px;
+}
+
+/* Cards too narrow for the longest line ("52 troop monkeys · 10
+   introcages"): every card puts its introcages on the second line, so
+   they all match */
+.EnclosureCard {
+    container-type: inline-size;
+}
+
+@container (max-width: 205px) {
+    .EnclosureCard-meta {
+        flex-direction: column;
+    }
+
+    .EnclosureCard-meta .is-more::before {
+        display: none;
+    }
 }
 
 @media (max-width: 624px) {
@@ -691,9 +729,50 @@
     color: var(--text-3);
 }
 
-/* A block or care unit's first box: across the whole row, saying what it is */
+/* A block or care unit's first box: across the whole row, saying what it is
+   (phones: beside Monkeys, below) */
 .Enclosures-stats .Enclosures-statKind {
     grid-column: 1 / -1;
+}
+
+@media (max-width: 759px) {
+    .Enclosures-stats .Enclosures-statKind {
+        grid-column: auto;
+    }
+}
+
+/* Monkeys (a block or care unit): the whole tile goes down to the Monkeys
+   list, with a small arrow in its corner, like the jump buttons */
+.Enclosures-stats div.is-jump {
+    position: relative;
+}
+
+.Enclosures-statJump {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 8px;
+    color: var(--text-3);
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.Enclosures-stats div.is-jump:hover {
+    border-color: var(--line-strong);
+}
+
+.Enclosures-statJump:hover,
+.Enclosures-statJump:focus-visible {
+    color: var(--accent);
+}
+
+.Enclosures-statJump:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 /* Narrow computer windows: the summary column is too narrow for the labels

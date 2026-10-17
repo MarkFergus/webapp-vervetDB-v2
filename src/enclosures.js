@@ -82,9 +82,7 @@ export const isNewArrival = (monkey) => monkey.introcageType === "area";
 // from the Sickbay section) also lists the monkeys who are in Sickbay for
 // now from elsewhere (their In Sickbay flag), next to its own new arrivals.
 export const SICKBAY_UNIT = "Sickbay";
-// (its old name too, until supabase/rename-sickbay.sql has run: remove then)
-export const isSickbayName = (name) => name === SICKBAY_UNIT || name === "Sickbay Care Unit";
-export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && isSickbayName(enclosure.name);
+export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && enclosure.name === SICKBAY_UNIT;
 
 // Monkeys in any of an enclosure's introcages / areas: its own, and anyone
 // staying in one of them from another enclosure (Sickbay, the care unit:

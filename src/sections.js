@@ -1,5 +1,5 @@
 import { currentBabySeason } from "./ages";
-import { isSickbayName } from "./enclosures";
+import { SICKBAY_UNIT } from "./enclosures";
 import { homeName } from "./places";
 
 // The sanctuary's sections and the troops in each, and the enclosures
@@ -24,8 +24,7 @@ export const SECTIONS = [
         id: "careUnits",
         label: "Care Units",
         chip: "Care Units",
-        // (and Sickbay's old name, until supabase/rename-sickbay.sql has run)
-        troops: ["Baby Care", "Quarantine", "Sickbay", "Sickbay Care Unit"],
+        troops: ["Baby Care", "Quarantine", "Sickbay"],
     },
     // The wild troop at the sanctuary: not in a section, so a "section" of its own
     { id: "bandits", label: "Bandits", chip: "Bandits", troops: ["Bandits"] },
@@ -53,7 +52,7 @@ export const QUICK_FILTERS = [
     { id: "bandits", section: "bandits", label: () => "Bandits" },
     { id: "babyCare", label: () => "Baby Care", test: (m) => homeName(m) === "Baby Care" },
     // (with the monkeys in Sickbay for now, as on its page)
-    { id: "sickbayCare", label: () => "Sickbay", test: (m) => isSickbayName(homeName(m)) || Boolean(m.inSickbay) },
+    { id: "sickbayCare", label: () => "Sickbay", test: (m) => homeName(m) === SICKBAY_UNIT || Boolean(m.inSickbay) },
     { id: "quarantine", label: () => "Quarantine", test: (m) => homeName(m) === "Quarantine" },
     // This season's sanctuary babies (born this baby season or since: the
     // year changes on 1 October), not the Bandits' wild-born babies

@@ -32,8 +32,6 @@ const MAP_LABELS = {
     "Bachelor Block": "Bachelor block",
     Quarantine: "Quarantine",
     Sickbay: "Sickbay building",
-    // (its old name, until supabase/rename-sickbay.sql has run: remove then)
-    "Sickbay Care Unit": "Sickbay building",
 };
 export const mapLabel = (enclosureName) => MAP_LABELS[enclosureName] ?? `${enclosureName} troop`;
 

@@ -537,6 +537,17 @@ describe("enclosures without a troop: Bachelor Block (a block) and the care unit
         expect(screen.queryByText("Introcages")).toBeNull();
     });
 
+    test("a care unit's Monkeys tile: down to the Monkeys list, opening it", async () => {
+        const user = userEvent.setup();
+        showWith(`enclosure/${BABY_CARE.id}`);
+        const fold = () => screen.getByRole("button", { name: /^Monkeys/, expanded: false });
+        expect(fold()).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: /go to the Monkeys list/ }));
+        expect(screen.getByRole("button", { name: /^Monkeys/, expanded: true })).toBeInTheDocument();
+        // (its Areas tile goes down to the Areas list)
+        expect(screen.getByRole("button", { name: /go to the Areas list/ })).toBeInTheDocument();
+    });
+
     test("Bachelor Block's page: a Block box, and Introcages", () => {
         showWith(`enclosure/${BACHELOR.id}`);
         const stats = document.querySelector(".Enclosures-stats");
