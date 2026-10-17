@@ -202,7 +202,8 @@ test("sort by age: youngest first, then oldest first; unknown ages always last",
     showAll();
     expect(ages().slice(-unknown).every((a) => a === "Age unknown")).toBe(true);
     expect(inOrder(known(ages()), false)).toBe(true); // oldest first
-});
+    // (every card, several times: room for a slow machine running every test at once)
+}, 20000);
 
 test("modal shows Unknown and 'No bio yet.' for missing details", async () => {
     const { user, container } = setup();

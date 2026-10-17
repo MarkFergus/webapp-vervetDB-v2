@@ -10,6 +10,8 @@ export const CREDITS = [
     { name: "Uicons by Flaticon", use: "Enclosure icon", licence: "Flaticon", url: "https://www.flaticon.com/uicons" },
     { name: "Bandit by Delapouite (game-icons.net)", use: "Bandits icon", licence: "CC BY 3.0", url: "https://game-icons.net/1x1/delapouite/bandit.html" },
     { name: "React-PDF", use: "The PDFs", licence: "MIT", url: "https://react-pdf.org" },
+    { name: "jsQR", use: "Scan QR Code (iPhones)", licence: "Apache-2.0", url: "https://github.com/cozmo/jsQR" },
+    { name: "QR Code Generator", use: "QR codes on Introcage Signs", licence: "MIT", url: "https://github.com/kazuhikoarase/qrcode-generator" },
     { name: "React Easy Crop", use: "Cropping photos", licence: "MIT", url: "https://github.com/ValentinH/react-easy-crop" },
     { name: "Workbox", use: "Offline use", licence: "MIT", url: "https://developer.chrome.com/docs/workbox" },
     { name: "Hanken Grotesk", use: "Font", licence: "OFL", url: "https://fonts.google.com/specimen/Hanken+Grotesk" },

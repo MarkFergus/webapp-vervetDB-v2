@@ -359,7 +359,9 @@ const ALL_ICONS = MAP_ICONS.map((icon) => icon.id);
 const PAGE = { x: 0, y: 0, width: MAP_WIDTH, height: MAP_HEIGHT };
 // Room left around the drawing when zoomed right out (a share of its size)
 const MARGIN = 0.015;
-function MapPopup({ parts, colour, enclosure, onClose }) {
+//   introcage: on an introcage's page, its name (its box picked out, and
+//   where it starts)
+function MapPopup({ parts, colour, enclosure, introcage = null, onClose }) {
     const closeRef = useRef(null);
     const viewRef = useRef(null);
     const svgRef = useRef(null);
@@ -378,9 +380,13 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
     const { camera, setCamera, view, size, aspect } = map;
 
     // Where it starts (and the reset button goes back to): the enclosure,
-    // with some room around it (a small one: still room to zoom in)
-    const { box } = parts.outline;
-    const room = { width: Math.max(box.width * 1.4, 110), height: Math.max(box.height * 1.4, 82) };
+    // with some room around it (a small one: still room to zoom in); an
+    // introcage: its box, with its neighbours around it
+    const picked = introcage && parts.gate;
+    const { box } = picked ? parts.gate : parts.outline;
+    const room = picked
+        ? { width: 150, height: 112 }
+        : { width: Math.max(box.width * 1.4, 110), height: Math.max(box.height * 1.4, 82) };
     const focus = {
         x: box.x + box.width / 2 - room.width / 2,
         y: box.y + box.height / 2 - room.height / 2,
@@ -399,19 +405,19 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
         Math.hypot(view.x + view.width / 2 - start.cx, view.y + view.height / 2 - start.cy) < 1;
 
     useDialog(true, closeRef, { onClose, onKeyDown: (event) => map.onKeyDown(event, showEnclosure) });
-    const name = fullName(enclosure.name);
+    const name = fullName(picked ? introcage : enclosure.name);
     return createPortal(
-        <div className="MapPopup" role="dialog" aria-modal="true" aria-labelledby="MapPopup-title">
+        <div className="MapPopup is-place" role="dialog" aria-modal="true" aria-labelledby="MapPopup-title">
             <div className="MapPopup-overlay" onClick={onClose} />
             <div className="MapPopup-window">
                 <div className="MapPopup-header WholeMap-header">
-                    <h2 id="MapPopup-title"><PlaceName name={enclosure.name} /> on the map</h2>
+                    <h2 id="MapPopup-title"><PlaceName name={picked ? introcage : enclosure.name} /> on the map</h2>
                     <div className="WholeMap-tools">
                         <MapZoom map={map} reset={showEnclosure} resetLabel={`Back to ${name}`} atReset={atStart} />
                     </div>
                     <CloseButton className="MapPopup-close" ref={closeRef} onClick={onClose} />
                 </div>
-                <div className="SanctuaryMap is-large" style={{ "--highlight": colour }}>
+                <div className={`SanctuaryMap is-large${picked ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
                     <div className="WholeMap-view" ref={viewRef} {...map.pointerHandlers}>
                         <MapView
                             svgRef={svgRef}
@@ -435,7 +441,8 @@ function MapPopup({ parts, colour, enclosure, onClose }) {
 //   too, and the map zooms in on it (with its enclosure around it)
 //   introcages: the names of the enclosure's introcages: their boxes and
 //   letters aren't faded (they're part of the enclosure)
-// On an enclosure's page, tapping the map opens it in a pop-up.
+// Tapping the map opens it in a pop-up to zoom and move around (an
+// introcage's page: starting at its box).
 function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] }) {
     const parts = useMapParts(enclosure, introcage, introcages);
     const [popupOpen, setPopupOpen] = useState(false);
@@ -471,22 +478,17 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
             label={`Sanctuary map, with ${fullName(introcage && gate ? introcage : enclosure.name)} picked out`}
         />
     );
-    if (introcage) {
-        return (
-            <div ref={cardRef} className={`SanctuaryMap${gate ? " has-introcage" : ""}`} style={{ "--highlight": colour }}>
-                {view}
-            </div>
-        );
-    }
+    // (an introcage: its box picked out too, and the pop-up starts there)
+    const picked = introcage && gate;
     return (
         <>
             <button
                 type="button"
                 ref={cardRef}
-                className="SanctuaryMap is-button"
+                className={`SanctuaryMap is-button${picked ? " has-introcage" : ""}`}
                 style={{ "--highlight": colour }}
                 onClick={() => setPopupOpen(true)}
-                aria-label={`Open the map of ${enclosure.name}`}
+                aria-label={`Open the map of ${picked ? introcage : enclosure.name}`}
             >
                 {view}
                 <span className="SanctuaryMap-expand" aria-hidden="true">
@@ -494,7 +496,13 @@ function SanctuaryMap({ enclosure, section, introcage = null, introcages = [] })
                 </span>
             </button>
             {popupOpen && (
-                <MapPopup parts={parts} colour={colour} enclosure={enclosure} onClose={() => setPopupOpen(false)} />
+                <MapPopup
+                    parts={parts}
+                    colour={colour}
+                    enclosure={enclosure}
+                    introcage={picked ? introcage : null}
+                    onClose={() => setPopupOpen(false)}
+                />
             )}
         </>
     );

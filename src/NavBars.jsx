@@ -8,6 +8,7 @@ import {
     IconMap2,
     IconPhotoPlus,
     IconPlus,
+    IconScan,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import EnclosuresNavIcon from "./EnclosuresNavIcon";
@@ -212,7 +213,8 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
 //   onAddMonkey: admins only (Add New Monkey first)
 //   onProfileBook: staff (any role): Documents; isGeneratingPDF: while one's made
 //   showGame: staff with Photos in their bottom bar, in the game's place
-export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, showGame, page, onOffline, onAbout }) {
+//   onScan: Scan QR Code (everyone: an Introcage Sign's code → its page)
+export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, showGame, onScan, page, onOffline, onAbout }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
     if (!open) return null;
@@ -231,7 +233,7 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                     </span>
                     <CloseButton className="Drawer-close" onClick={onClose} ref={closeRef} label="Close menu" />
                 </div>
-                {(onAddMonkey || onProfileBook || showGame) && (
+                {(onAddMonkey || onProfileBook || onScan || showGame) && (
                     <div className="Drawer-group">
                         <h2 className="Drawer-heading">Tools</h2>
                         {onAddMonkey && (
@@ -250,6 +252,12 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                             >
                                 <ProfileBookIcon busy={isGeneratingPDF} size={24} />
                                 {isGeneratingPDF ? "Creating PDF…" : "Documents"}
+                            </button>
+                        )}
+                        {onScan && (
+                            <button type="button" className="Drawer-item" onClick={then(onScan)}>
+                                <IconScan stroke={1.75} size={24} aria-hidden="true" />
+                                Scan QR Code
                             </button>
                         )}
                         {showGame && (

@@ -8,6 +8,8 @@
 // section ("Koko – Middle Section"), so a cage with its own name
 // (Groomingdales) still says where it is. An empty introcage: its features
 // instead (e.g. "Usually opened for Koko D group"), as on its page.
+// At the bottom right, a QR code: a phone camera opens the introcage's page
+// on vervetDB (by its id, so renaming it never breaks a printed sign).
 import { ageInYears } from "./ages";
 import { bySection, introcagesOf, residents } from "./enclosures";
 import { fullName } from "./places";
@@ -16,11 +18,17 @@ import { REPORT_FONT, textWidth } from "./pdfTextWidth";
 // More monkeys than this: a whole page
 export const HALF_SIGN_MOST = 3;
 
-// Sizes in points (1 mm = 72 / 25.4 pt)
+// Sizes in points (1 mm = 72 / 25.4 pt); qr: the QR code's size (big
+// enough for a phone to read from arm's length)
 const MM = 72 / 25.4;
-export const HALF_SIGN = { width: 120 * MM, height: 160 * MM, padding: 8 * MM };
+export const HALF_SIGN = { width: 120 * MM, height: 160 * MM, padding: 8 * MM, qr: 25 * MM };
 // A whole page's sign: A4 portrait less a 12 mm margin
-export const FULL_SIGN = { width: 186 * MM, height: 273.6 * MM, padding: 11 * MM };
+export const FULL_SIGN = { width: 186 * MM, height: 273.6 * MM, padding: 11 * MM, qr: 30 * MM };
+
+// The address a sign's QR code opens (the live site, wherever the PDF is
+// made), e.g. https://vervetdb.com/#enclosure/26
+export const SITE_URL = "https://vervetdb.com/";
+export const signLink = (introcage) => `${SITE_URL}#enclosure/${introcage.id}`;
 
 // The text sizes on a half sign (a whole page's: FULL_SCALE times bigger),
 // and how far a crowded sign can shrink (a half sign: before it takes a
@@ -32,6 +40,7 @@ export const TEXT = {
     name: 17,
     details: 11,
     bio: 11,
+    caption: 8,
     updated: 6,
 };
 export const LINE = 1.3;
@@ -92,6 +101,7 @@ export function signFor(introcage, monkeys, enclosures = [], today = new Date())
             .join(" – "),
         monkeys: living.map((m) => ({ name: m.name, details: details(m, today), bio: (m.bio ?? "").trim() })),
         info: living.length ? "" : [introcage.features, introcage.description].filter(Boolean).join("\n\n").trim(),
+        link: signLink(introcage),
     };
     const half = living.length <= HALF_SIGN_MOST && fit(sign, HALF_SIGN, 1);
     if (half) return { ...sign, full: false, scale: half };
@@ -142,11 +152,12 @@ export function signHeight(sign, scale, box) {
         if (m.bio) height += gaps(scale).bio + lines(m.bio, "bio");
     });
     if (!sign.monkeys.length) height += lines(sign.info || EMPTY_TEXT, "bio");
-    return height + size("updated") * LINE + gaps(scale).updated;
+    // (the footer: the QR code, with the caption and date beside it)
+    return height + gaps(scale).updated + box.qr;
 }
 
 // The space under the section (with its line), between monkeys, above a
-// bio, and above "Updated …"
+// bio, and above the footer (the QR code and "Updated …")
 export const gaps = (scale) => ({ rule: 18 * scale, monkey: 14 * scale, bio: 3 * scale, updated: 8 * scale });
 
 // An empty introcage with nothing written about it

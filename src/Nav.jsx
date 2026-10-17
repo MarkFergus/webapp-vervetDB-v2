@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IconX, IconMenu2, IconPlus } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
@@ -9,6 +9,7 @@ import MonkeyIcon from "./MonkeyIcon";
 import AccountMenu from "./AccountMenu";
 import { BottomBar, Drawer, SideRail } from "./NavBars";
 import WholeMap from "./WholeMap";
+import QrScanner from "./QrScanner";
 import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
@@ -115,6 +116,12 @@ function Nav({
     const [accountStart, setAccountStart] = useState(null);
     // Phones: the drawer
     const [drawerOpen, setDrawerOpen] = useState(false);
+    // Scan QR Code (phones, the ☰ menu): the camera, until a sign is read
+    const [scanOpen, setScanOpen] = useState(false);
+    const scanned = useCallback((hash) => {
+        setScanOpen(false);
+        window.location.hash = hash;
+    }, []);
     // Map (the side rail, bottom bar or drawer): the Interactive Map pop-up
     const [mapOpen, setMapOpen] = useState(false);
     const showMap = () => setMapOpen(true);
@@ -275,6 +282,7 @@ function Nav({
                         isGeneratingPDF={isGeneratingPDF}
                         // (staff with Photos in the bottom bar, in the game's place)
                         showGame={Boolean(onAddPhotos)}
+                        onScan={() => setScanOpen(true)}
                         page={page}
                         onOffline={toggleOffline}
                         onAbout={toggleAbout}
@@ -282,6 +290,7 @@ function Nav({
                 </>,
                 document.body
             )}
+            {scanOpen && <QrScanner onClose={() => setScanOpen(false)} onFound={scanned} />}
             {/* The pop-ups are drawn at the top level of the page (a portal),
                 not inside the header: the pinned header's blur would
                 otherwise trap them in its own small strip */}

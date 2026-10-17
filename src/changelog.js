@@ -21,6 +21,13 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.12.1",
+        date: "2026-10-17",
+        changes: [
+            "New QR codes on Introcage Signs and Scan QR Code in the ☰ menu (being tested: printed signs don't have them yet)",
+        ],
+    },
+    {
         version: "1.12.0",
         date: "2026-10-16",
         changes: [

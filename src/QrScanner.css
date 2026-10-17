@@ -1,0 +1,88 @@
+/* Scan QR Code (QrScanner.jsx): the camera, filling the screen, with a
+   frame to hold the code in */
+
+.QrScanner {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    padding: max(10px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    font-family: var(--font-ui);
+    color: var(--text);
+    background-color: var(--bg);
+}
+
+.QrScanner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.QrScanner-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+}
+
+.QrScanner-view {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: black;
+}
+
+.QrScanner-view video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* A square in the middle, its corners marked */
+.QrScanner-frame {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(64vw, 280px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35);
+    outline: 3px solid var(--accent);
+    outline-offset: -3px;
+    pointer-events: none;
+}
+
+.QrScanner-problem {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-2);
+}
+
+.QrScanner-problem p {
+    margin: 0;
+    max-width: 300px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.QrScanner-hint {
+    min-height: 20px;
+    margin: 12px 0 0;
+    font-size: 15px;
+    text-align: center;
+    color: var(--text-2);
+}

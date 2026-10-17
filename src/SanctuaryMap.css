@@ -162,3 +162,36 @@
     color: white;
 }
 
+
+/* Phones: an enclosure's or introcage's map pop-up fills the screen (like
+   the Interactive Map, WholeMap.css), clear of the notch and home bar */
+@media (max-width: 624px) {
+    .MapPopup.is-place {
+        padding: 0;
+    }
+
+    .MapPopup.is-place::before {
+        content: none;
+    }
+
+    .MapPopup.is-place .MapPopup-window {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100svh;
+        height: 100dvh;
+        max-height: none;
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+        border-radius: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    /* The map takes all the height left under the title and zoom row */
+    .MapPopup.is-place .SanctuaryMap.is-large {
+        flex: 1;
+        min-height: 0;
+        aspect-ratio: auto;
+        max-height: none;
+    }
+}

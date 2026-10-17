@@ -1,10 +1,12 @@
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Path, Svg, StyleSheet } from "@react-pdf/renderer";
+import qrcode from "qrcode-generator";
 import { REPORT_FONT } from "./pdfFonts";
 import { EMPTY_TEXT, FULL_SIGN, HALF_SIGN, LINE, TEXT, gaps } from "./introcageSigns";
 
 // Introcage Signs: two 12 × 16 cm signs side by side on a landscape A4
 // page, each in a thin border to cut along; a full sign (more than three
-// monkeys) on a portrait A4 page of its own. See introcageSigns.js.
+// monkeys) on a portrait A4 page of its own. See introcageSigns.js. Each
+// has a QR code at the bottom right for its page on vervetDB.
 //   pages: signPages(); date: e.g. "16 Oct 2026" (when it was made)
 
 const styles = StyleSheet.create({
@@ -49,14 +51,45 @@ const styles = StyleSheet.create({
         fontStyle: "italic",
         lineHeight: LINE,
     },
-    // When it was made (so an old sign can be spotted), at the bottom
-    updated: {
+    // The bottom: the caption and when it was made (so an old sign can be
+    // spotted) on the left, the QR code on the right
+    footer: {
         marginTop: "auto",
-        textAlign: "right",
+        flexDirection: "row",
+        alignItems: "flex-end",
+        justifyContent: "space-between",
+    },
+    footerText: {
+        flexShrink: 1,
+        marginRight: 10,
+        color: "#555",
+        lineHeight: LINE,
+    },
+    updated: {
         color: "#777",
         lineHeight: LINE,
     },
 });
+
+// A QR code drawn as squares (crisp at any print size), the "M" level of
+// error correction (still reads if a little is scratched or dirty)
+function QrCode({ text, size }) {
+    const qr = qrcode(0, "M");
+    qr.addData(text);
+    qr.make();
+    const count = qr.getModuleCount();
+    let d = "";
+    for (let row = 0; row < count; row++) {
+        for (let col = 0; col < count; col++) {
+            if (qr.isDark(row, col)) d += `M${col} ${row}h1v1h-1z`;
+        }
+    }
+    return (
+        <Svg width={size} height={size} viewBox={`0 0 ${count} ${count}`}>
+            <Path d={d} fill="#000" />
+        </Svg>
+    );
+}
 
 function Sign({ sign, box, date }) {
     const size = (key) => TEXT[key] * sign.scale;
@@ -75,7 +108,13 @@ function Sign({ sign, box, date }) {
                 </View>
             ))}
             {!sign.monkeys.length && <Text style={[styles.info, { fontSize: size("bio") }]}>{sign.info || EMPTY_TEXT}</Text>}
-            <Text style={[styles.updated, { fontSize: size("updated"), paddingTop: gap.updated }]}>Updated {date}</Text>
+            <View style={[styles.footer, { paddingTop: gap.updated }]}>
+                <View style={styles.footerText}>
+                    <Text style={{ fontSize: size("caption") }}>Scan for this introcage's page</Text>
+                    <Text style={[styles.updated, { fontSize: size("updated") }]}>Updated {date}</Text>
+                </View>
+                <QrCode text={sign.link} size={box.qr} />
+            </View>
         </View>
     );
 }

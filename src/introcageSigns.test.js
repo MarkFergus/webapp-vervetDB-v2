@@ -66,6 +66,11 @@ describe("a sign", () => {
         ]);
     });
 
+    test("its QR code's link: the introcage's page on the live site, by its id", () => {
+        const cage = byName("Gismo A");
+        expect(signFor(cage, [], enclosuresArr, TODAY).link).toBe(`https://vervetdb.com/#enclosure/${cage.id}`);
+    });
+
     test("Bachelor Block's: the block's name before the section", () => {
         expect(signFor(byName("Bachelor Block A"), [], enclosuresArr, TODAY).section).toBe("Bachelor Block – Top Section");
     });

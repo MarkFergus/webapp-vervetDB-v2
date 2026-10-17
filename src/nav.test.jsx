@@ -57,12 +57,12 @@ describe("phones: the drawer (☰, from the right)", () => {
     const drawerItems = () => [...drawer().querySelectorAll(".Drawer-item")].map((i) => i.textContent);
     const drawerHeadings = () => [...drawer().querySelectorAll("h2")].map((h) => h.textContent);
 
-    test("visitors: Install & Use Offline and About (the game's in the bottom bar); Escape closes it, back to ☰", async () => {
+    test("visitors: Scan QR Code, Install & Use Offline and About (the game's in the bottom bar); Escape closes it, back to ☰", async () => {
         const { user, menuButton } = setup();
         expect(drawer()).toBeNull();
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Install & Use Offline", "About"]);
-        expect(drawerHeadings()).toEqual(["App"]); // (no Tools: nothing in it)
+        expect(drawerItems()).toEqual(["Scan QR Code", "Install & Use Offline", "About"]);
+        expect(drawerHeadings()).toEqual(["Tools", "App"]); // (Tools: just Scan)
         expect(within(drawer()).getByRole("button", { name: "Close menu" })).toHaveFocus();
         await user.keyboard("{Escape}");
         expect(drawer()).toBeNull();
@@ -84,7 +84,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         await screen.findByRole("button", { name: "Add New Monkey" }); // (the top bar's, on computers)
         await user.click(menuButton());
         // (staff: Documents here, and the game, as Photos has its place in the bottom bar)
-        expect(drawerItems()).toEqual(["Add New Monkey", "Documents", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Add New Monkey", "Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(drawerHeadings()).toEqual(["Tools", "App"]);
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
@@ -95,7 +95,7 @@ describe("phones: the drawer (☰, from the right)", () => {
         const { user, menuButton } = setup({ signedIn: true });
         await screen.findByRole("button", { name: "You (signed in)" });
         await user.click(menuButton());
-        expect(drawerItems()).toEqual(["Documents", "Monkey Guesser", "Install & Use Offline", "About"]);
+        expect(drawerItems()).toEqual(["Documents", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About"]);
         expect(screen.queryByRole("button", { name: "Add New Monkey" })).toBeNull(); // nor in the top bar
     });
 
