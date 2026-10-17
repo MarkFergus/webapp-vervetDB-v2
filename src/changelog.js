@@ -23,10 +23,7 @@ export const CHANGELOG = [
     {
         version: "1.12.2",
         date: "2026-10-17",
-        changes: [
-            "New Light theme: choose Dark or Light under Theme (the account menu, or the ☰ menu on phones)",
-            "Improved My Location: a round button on the Interactive Map, easier to find",
-        ],
+        changes: ["New Light theme available"],
     },
     {
         version: "1.12.1",
