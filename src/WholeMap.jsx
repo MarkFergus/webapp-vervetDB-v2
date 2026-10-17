@@ -27,7 +27,8 @@ import "./WholeMap.css";
 // (+ / − / 0, arrows to move).
 // Tapping an enclosure, introcage or area picks it out and shows a small
 // card (photo, name, Open Page); tapping anywhere else puts it away.
-// My Location (title bar): a blue dot where the phone is (mapGeo.js), with
+// My Location (a round button floating on the map, bottom right): a blue
+// dot where the phone is (mapGeo.js), with
 // a circle for how sure it is. The position stays on the phone, and it's
 // only followed while the map is open with My Location on.
 
@@ -265,16 +266,6 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
                         how many times bigger, so it feels even all the way */}
                     {markup && (
                         <div className="WholeMap-tools">
-                            <button
-                                type="button"
-                                className={`WholeMap-locate${locationStatus === "finding" ? " is-finding" : ""}`}
-                                onClick={toggleLocation}
-                                aria-pressed={following}
-                                aria-label="My Location"
-                                title="My Location"
-                            >
-                                <IconCurrentLocation size={18} aria-hidden="true" />
-                            </button>
                             <MapZoom
                                 map={map}
                                 reset={() => setCamera(wholeOf(bounds))}
@@ -329,6 +320,19 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
                         <p className="WholeMap-location" role="status">
                             {LOCATION_MESSAGES[locationStatus] ?? ""}
                         </p>
+                        {/* My Location: a round button floating on the map,
+                            bottom right where a thumb finds it (as on Google
+                            and Apple Maps); blue while it's following you */}
+                        <button
+                            type="button"
+                            className={`WholeMap-locate${locationStatus === "finding" ? " is-finding" : ""}`}
+                            onClick={toggleLocation}
+                            aria-pressed={following}
+                            aria-label="My Location"
+                            title="My Location"
+                        >
+                            <IconCurrentLocation size={24} stroke={2} aria-hidden="true" />
+                        </button>
                         {/* The tapped place: its photo, name, what it is,
                             and the way to its page */}
                         {card && (

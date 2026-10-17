@@ -90,8 +90,9 @@
 .WholeMap-location {
     position: absolute;
     left: 50%;
-    bottom: 10px;
-    max-width: calc(100% - 20px);
+    bottom: 18px;
+    /* (clear of My Location, bottom right) */
+    max-width: calc(100% - 140px);
     box-sizing: border-box;
     margin: 0;
     padding: 8px 14px;
@@ -353,10 +354,43 @@
     outline-offset: 2px;
 }
 
-/* My Location on: blue (pulsing while it looks for you) */
-.WholeMap-tools .WholeMap-locate[aria-pressed="true"] {
+/* My Location: a round button floating on the map, bottom right (where a
+   thumb finds it, as on Google and Apple Maps); blue while it's on,
+   pulsing while it looks for you */
+.WholeMap-locate {
+    position: absolute;
+    z-index: 2;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    color: var(--text);
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    box-shadow: 0 4px 14px var(--shadow);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.WholeMap-locate:hover {
+    color: var(--text-strong);
+    background-color: var(--surface-2);
+}
+
+.WholeMap-locate:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.WholeMap-locate[aria-pressed="true"] {
     color: var(--bg);
     background-color: var(--accent);
+    border-color: var(--accent);
 }
 
 .WholeMap-locate.is-finding {
