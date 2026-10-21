@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.12.3",
+        date: "2026-10-21",
+        changes: ["Improved enclosure pages with a redesign"],
+    },
+    {
         version: "1.12.2",
         date: "2026-10-17",
         changes: ["New Light theme available"],

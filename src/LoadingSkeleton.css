@@ -207,10 +207,17 @@
 /* Wider screens: the name left, search in the middle, icons right (the
    same switch point as the real top bar, Nav.css) */
 @media (min-width: 690px) {
+    /* (search centred beside the side rail, as Nav.css: the logo reaching
+       back over the rail) */
     .LoadingSkeleton-nav {
         display: grid;
         grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
         column-gap: 16px;
+        padding-left: calc(16px + var(--rail-width));
+    }
+
+    .LoadingSkeleton-logo {
+        margin-left: calc(-1 * var(--rail-width));
     }
 
     .LoadingSkeleton-search {

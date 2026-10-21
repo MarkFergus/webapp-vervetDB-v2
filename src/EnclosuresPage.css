@@ -928,6 +928,19 @@
     border-bottom: 1px solid var(--line);
 }
 
+/* A soft fade under it, so what scrolls up under it fades out rather than
+   meeting the line hard (over the page's own gap when it isn't stuck) */
+.Enclosures-sectionNav::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + 1px); /* (below its line) */
+    right: 0;
+    left: 0;
+    height: 16px;
+    background: linear-gradient(var(--bg), transparent);
+    pointer-events: none;
+}
+
 .Enclosures-sectionButton {
     display: flex;
     flex: 1;

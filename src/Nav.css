@@ -287,17 +287,23 @@
    the middle of the space between logo and buttons). The search bar grows
    first (up to 540px), then the sides share what's left. Below 690px it's
    the phone layout. */
+/* The middle of the page beside the side rail, so it's centred over the
+   lists and pages below (both 16px past the rail, 24px from the right): the
+   grid starts past the rail, and the logo reaches back over the rail into
+   that space */
 @media (min-width: 690px) {
     .Nav {
         display: grid;
         grid-template-columns: minmax(max-content, 1fr) minmax(240px, 540px) minmax(max-content, 1fr);
         column-gap: 16px;
+        padding-left: var(--rail-width);
     }
 
     .Nav-start {
         display: flex;
         align-items: center;
         justify-self: start;
+        margin-left: calc(-1 * var(--rail-width));
     }
 
     /* The wordmark starts exactly where the toolbar and cards do: the side
