@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { IconPlus, IconTool, IconTrash } from "@tabler/icons-react";
-import { addMaintenance, deleteMaintenance, loadMaintenance } from "./monkeyData";
+import { addMaintenance, deleteMaintenance, loadMaintenance, maintenanceKindsAvailable } from "./monkeyData";
 import "./MaintenanceLog.css";
 
-// An enclosure's maintenance log: dated entries, newest first, each with who
-// wrote it in. Editors can add entries; admins can delete them.
+// An enclosure's maintenance log: dated entries, newest first, each with its
+// Maintenance Type (Routine or Repair) and who wrote it in. Editors can add
+// entries; admins can delete them.
 //   live: the database has the log (false before enclosures.sql, or offline)
 
 // Today, as "2026-10-07" (in the phone's own time zone)
@@ -12,6 +13,9 @@ function today() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+// The Maintenance Types (supabase/maintenance-kind.sql)
+export const MAINTENANCE_TYPES = { routine: "Routine", repair: "Repair" };
 
 // "2026-10-05" → "5 Oct 2026"
 function dayText(date) {
@@ -23,7 +27,7 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
     const [entries, setEntries] = useState(undefined); // undefined = loading
     const [problem, setProblem] = useState(null);
     const [adding, setAdding] = useState(false);
-    const [draft, setDraft] = useState({ doneOn: today(), details: "" });
+    const [draft, setDraft] = useState({ doneOn: today(), kind: "", details: "" });
     const [busy, setBusy] = useState(false);
     const [confirming, setConfirming] = useState(null); // the entry id to delete
 
@@ -49,6 +53,12 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
     async function handleAdd(event) {
         event.preventDefault();
         const details = draft.details.trim();
+        // (once the database has them)
+        const withKind = maintenanceKindsAvailable();
+        if (withKind && !draft.kind) {
+            setProblem("Please choose the Maintenance Type.");
+            return;
+        }
         if (!details) {
             setProblem("Please say what was done.");
             return;
@@ -56,12 +66,12 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
         setBusy(true);
         setProblem(null);
         try {
-            const saved = await addMaintenance(enclosure.id, { doneOn: draft.doneOn, details });
+            const saved = await addMaintenance(enclosure.id, { doneOn: draft.doneOn, kind: draft.kind, details });
             // Newest first, by the day it was done
             setEntries((list) =>
                 [saved, ...(list ?? [])].sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.id - a.id)
             );
-            setDraft({ doneOn: today(), details: "" });
+            setDraft({ doneOn: today(), kind: "", details: "" });
             setAdding(false);
         } catch (error) {
             setProblem(error.message);
@@ -89,16 +99,32 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
             {canAdd &&
                 (adding ? (
                     <form className="MaintenanceLog-form" onSubmit={handleAdd}>
-                        <label className="MaintenanceLog-field is-date">
-                            <span>Date done</span>
-                            <input
-                                type="date"
-                                value={draft.doneOn}
-                                max={today()}
-                                required
-                                onChange={(e) => setDraft({ ...draft, doneOn: e.target.value })}
-                            />
-                        </label>
+                        {/* The date, and beside it Routine or Repair */}
+                        <div className="MaintenanceLog-row">
+                            <label className="MaintenanceLog-field is-date">
+                                <span>Date done</span>
+                                <input
+                                    type="date"
+                                    value={draft.doneOn}
+                                    max={today()}
+                                    required
+                                    onChange={(e) => setDraft({ ...draft, doneOn: e.target.value })}
+                                />
+                            </label>
+                            {maintenanceKindsAvailable() && (
+                                <label className="MaintenanceLog-field is-kind">
+                                    <span>Maintenance Type</span>
+                                    <select value={draft.kind} onChange={(e) => setDraft({ ...draft, kind: e.target.value })}>
+                                        <option value="">Choose…</option>
+                                        {Object.entries(MAINTENANCE_TYPES).map(([value, label]) => (
+                                            <option key={value} value={value}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
+                        </div>
                         <label className="MaintenanceLog-field">
                             <span>What was done</span>
                             <textarea
@@ -145,7 +171,13 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
                 <ol className="MaintenanceLog-list">
                     {entries.map((entry) => (
                         <li key={entry.id} className="MaintenanceLog-entry">
-                            <time dateTime={entry.doneOn}>{dayText(entry.doneOn)}</time>
+                            {/* The date, with its Maintenance Type under it */}
+                            <span className="MaintenanceLog-when">
+                                <time dateTime={entry.doneOn}>{dayText(entry.doneOn)}</time>
+                                {entry.kind && (
+                                    <span className={`MaintenanceLog-kind is-${entry.kind}`}>{MAINTENANCE_TYPES[entry.kind]}</span>
+                                )}
+                            </span>
                             <p>{entry.details}</p>
                             <span className="MaintenanceLog-who">
                                 {entry.loggedBy ? `Logged by ${entry.loggedBy}` : "Logged"}

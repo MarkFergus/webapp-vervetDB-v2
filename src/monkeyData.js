@@ -433,25 +433,44 @@ export async function saveEnclosure(enclosure, changes) {
     };
 }
 
-// A log entry, as the site uses it: { id, doneOn ("2026-10-05"), details,
+// A log entry, as the site uses it: { id, doneOn ("2026-10-05"), kind
+// ("routine" / "repair", or null: logged before there were kinds), details,
 // loggedBy (the name before the @), loggedAt }
 const toAppEntry = (row) => ({
     id: row.id,
     doneOn: row.done_on,
+    kind: row.kind ?? null,
     details: row.details,
     loggedBy: row.logged_by_name,
     loggedAt: row.logged_at,
 });
-const ENTRY_COLUMNS = "id, done_on, details, logged_by_name, logged_at";
+const OLD_ENTRY_COLUMNS = "id, done_on, details, logged_by_name, logged_at";
+// ...and Routine / Repair (once maintenance-kind.sql has run)
+const KIND_ENTRY_COLUMNS = `${OLD_ENTRY_COLUMNS}, kind`;
+// Whether the database has kinds: null until known
+let hasMaintenanceKind = null;
+const entryColumns = () => (hasMaintenanceKind === false ? OLD_ENTRY_COLUMNS : KIND_ENTRY_COLUMNS);
+
+// Whether entries can be Routine / Repair (maintenance-kind.sql has run)
+export const maintenanceKindsAvailable = () => hasMaintenanceKind === true;
 
 // An enclosure's maintenance log, newest first
 export async function loadMaintenance(enclosureId) {
-    const { data, error } = await supabase
-        .from("maintenance")
-        .select(ENTRY_COLUMNS)
-        .eq("enclosure_id", enclosureId)
-        .order("done_on", { ascending: false })
-        .order("id", { ascending: false });
+    const query = (columns) =>
+        supabase
+            .from("maintenance")
+            .select(columns)
+            .eq("enclosure_id", enclosureId)
+            .order("done_on", { ascending: false })
+            .order("id", { ascending: false });
+    let { data, error } = await query(entryColumns());
+    // (before maintenance-kind.sql: without them)
+    if (error?.code === "42703" && hasMaintenanceKind !== false) {
+        hasMaintenanceKind = false;
+        ({ data, error } = await query(OLD_ENTRY_COLUMNS));
+    } else if (!error) {
+        hasMaintenanceKind = hasMaintenanceKind ?? true;
+    }
     if (error) {
         console.error("Loading the maintenance log failed:", error);
         throw new Error("Couldn't load the maintenance log. Please check your connection.");
@@ -459,13 +478,15 @@ export async function loadMaintenance(enclosureId) {
     return data.map(toAppEntry);
 }
 
-// Adds an entry ({ doneOn, details }); who and when are filled in by the
-// database. Returns the saved entry.
-export async function addMaintenance(enclosureId, { doneOn, details }) {
+// Adds an entry ({ doneOn, kind, details }); who and when are filled in by
+// the database. Returns the saved entry.
+export async function addMaintenance(enclosureId, { doneOn, kind, details }) {
+    const row = { enclosure_id: enclosureId, done_on: doneOn, details };
+    if (maintenanceKindsAvailable() && kind) row.kind = kind;
     const { data, error } = await supabase
         .from("maintenance")
-        .insert({ enclosure_id: enclosureId, done_on: doneOn, details })
-        .select(ENTRY_COLUMNS)
+        .insert(row)
+        .select(entryColumns())
         .single();
     if (error) {
         console.error("Adding maintenance failed:", error);

@@ -7,7 +7,8 @@
     max-width: 940px;
 }
 
-/* "+ Add Entry": a quiet pill, like the page's other buttons */
+/* "+ Add Entry": an outline button (the app's 6px corners, like the Edit
+   form's buttons) */
 .MaintenanceLog-add {
     display: inline-flex;
     align-self: flex-start;
@@ -19,13 +20,15 @@
     color: var(--accent);
     background: none;
     border: 1px solid var(--accent);
-    border-radius: 999px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background-color 0.15s;
 }
 
 .MaintenanceLog-add:hover {
     color: var(--accent-2);
     border-color: var(--accent-2);
+    background-color: var(--surface-2);
 }
 
 /* Adding an entry: date, details, buttons */
@@ -53,6 +56,7 @@
 }
 
 .MaintenanceLog-field input,
+.MaintenanceLog-field select,
 .MaintenanceLog-field textarea {
     box-sizing: border-box;
     width: 100%;
@@ -73,6 +77,7 @@
 }
 
 .MaintenanceLog-field input:focus,
+.MaintenanceLog-field select:focus,
 .MaintenanceLog-field textarea:focus {
     border-color: var(--accent);
 }
@@ -81,31 +86,65 @@
     max-width: 200px;
 }
 
+/* The date and the Maintenance Type side by side (wrapping on the
+   narrowest phones) */
+.MaintenanceLog-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+}
+
+.MaintenanceLog-row .MaintenanceLog-field {
+    flex: 1 1 140px;
+}
+
+.MaintenanceLog-field.is-kind {
+    max-width: 200px;
+}
+
+.MaintenanceLog-field select {
+    cursor: pointer;
+}
+
 .MaintenanceLog-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
 }
 
+/* Cancel and Add Entry: the Edit form's buttons (MonkeyForm.css) */
 .MaintenanceLog-button {
-    padding: 8px 16px;
+    padding: 6px 14px;
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
-    border-radius: 999px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
+/* Cancel: a quiet outline that lights up on hover */
 .MaintenanceLog-button.is-quiet {
     color: var(--text);
     background: none;
-    border: 1px solid var(--line);
+    border: 1px solid var(--line-strong);
 }
 
+.MaintenanceLog-button.is-quiet:hover:not(:disabled) {
+    color: var(--text-strong);
+    border-color: var(--text);
+}
+
+/* Add Entry: the site's green, like Save */
 .MaintenanceLog-button.is-save {
-    color: var(--bg);
-    background-color: var(--accent);
-    border: 1px solid var(--accent);
+    color: var(--on-green);
+    background-color: var(--green);
+    border: 1px solid var(--green);
+}
+
+.MaintenanceLog-button.is-save:hover:not(:disabled) {
+    background-color: var(--green-2);
+    border-color: var(--green-2);
 }
 
 .MaintenanceLog-button:disabled {
@@ -136,11 +175,34 @@
     border-bottom: 1px solid var(--surface-2);
 }
 
-.MaintenanceLog-entry time {
+/* The date, its Maintenance Type under it */
+.MaintenanceLog-when {
     grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.MaintenanceLog-entry time {
     font-size: 14px;
     font-weight: 700;
     color: var(--text);
+}
+
+/* Routine (quiet) or Repair (amber, so repairs stand out down the log) */
+.MaintenanceLog-kind {
+    padding: 1px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+}
+
+.MaintenanceLog-kind.is-repair {
+    color: var(--amber-text);
+    border-color: var(--amber-text);
 }
 
 .MaintenanceLog-entry p {
@@ -170,6 +232,7 @@
 
 .MaintenanceLog-delete:hover {
     color: var(--danger);
+    background-color: var(--surface-2);
 }
 
 .MaintenanceLog-confirm {
@@ -181,21 +244,33 @@
     color: var(--text);
 }
 
+/* Keep / Delete: small versions of the same buttons */
 .MaintenanceLog-confirm button {
     padding: 3px 10px;
     font-family: inherit;
     font-size: 13px;
     color: var(--text);
     background: none;
-    border: 1px solid var(--line);
-    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.MaintenanceLog-confirm button:hover:not(:disabled) {
+    color: var(--text-strong);
+    border-color: var(--text);
 }
 
 .MaintenanceLog-confirm button.is-danger {
     color: var(--bg);
     background-color: var(--danger);
     border-color: var(--danger);
+}
+
+.MaintenanceLog-confirm button.is-danger:hover:not(:disabled) {
+    background-color: var(--danger-2);
+    border-color: var(--danger-2);
 }
 
 /* Phones: the date above the details */

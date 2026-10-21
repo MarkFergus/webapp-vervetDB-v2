@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
     IconChevronLeft,
@@ -23,6 +23,7 @@ import {
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
+import { FormLockContext, isTyping } from "./formLock";
 import { drawMonkeyImage } from "./monkeyImage";
 import { ageLabel } from "./ages";
 import { monkeyHash, monkeyUrl } from "./monkeyLink";
@@ -191,6 +192,15 @@ function Modal({
     // A tap outside Quick Actions closes it, unless one of its forms is open
     // (so a half-filled form isn't lost)
     const formOpen = Boolean(sickbayForm || releaseForm || integrationForm || injuryForm);
+    // Any form open in the pop-up (these, or one in a list: editing an
+    // injury, adding an update…) holds it: no other monkey and no closing
+    // until its Cancel or Confirm (formLock.js)
+    const [lockCount, setLockCount] = useState(0);
+    const lock = useCallback(() => {
+        setLockCount((n) => n + 1);
+        return () => setLockCount((n) => n - 1);
+    }, []);
+    const locked = formOpen || lockCount > 0;
     useEffect(() => {
         if (!moreOpen || formOpen) return;
         function handlePointerDown(event) {
@@ -273,10 +283,14 @@ function Modal({
 
     const photoSwipe = useSwipe(handleImgClick, (monkey?.img.length ?? 0) > 1);
 
-    // Escape closes; left/right arrow keys move between monkeys
+    // Escape closes; left/right arrow keys move between monkeys (not while
+    // typing in a box, or while a form holds the pop-up)
     useDialog(isModalOpen, closeButtonRef, {
-        onClose: handleClose,
+        onClose() {
+            if (!locked) handleClose();
+        },
         onKeyDown(event) {
+            if (locked || isTyping(event.target)) return;
             if (event.key === "ArrowLeft" && prevMonkey) {
                 handleClick("prev");
             } else if (event.key === "ArrowRight" && nextMonkey) {
@@ -286,6 +300,8 @@ function Modal({
     });
 
     return (
+        // (forms inside hold the pop-up: formLock.js)
+        <FormLockContext.Provider value={lock}>
         <AnimatePresence>
             {isModalOpen && (
                 <div
@@ -296,7 +312,7 @@ function Modal({
                 >
                     <motion.div
                         className="Modal-overlay"
-                        onClick={handleClose}
+                        onClick={locked ? undefined : handleClose}
                         initial={{ opacity: 0 }}
                         animate={{
                             opacity: 1,
@@ -325,7 +341,7 @@ function Modal({
                     >
                         <div className="Modal-window">
                             <div className="Modal-close">
-                                <CloseButton ref={closeButtonRef} onClick={handleClose} />
+                                <CloseButton ref={closeButtonRef} onClick={handleClose} disabled={locked} />
                             </div>
                             {/* Quick Actions (editors): an icon top left (opposite
                                 close) that drops down the quick actions; each one's
@@ -638,7 +654,7 @@ function Modal({
                                         type="button"
                                         className="Modal-monkeyArrow"
                                         onClick={() => handleClick("prev")}
-                                        disabled={!prevMonkey}
+                                        disabled={!prevMonkey || locked}
                                         aria-label="Previous monkey"
                                     >
                                         <IconChevronLeft size={22} stroke={2} aria-hidden="true" />
@@ -657,7 +673,7 @@ function Modal({
                                         type="button"
                                         className="Modal-monkeyArrow"
                                         onClick={() => handleClick("next")}
-                                        disabled={!nextMonkey}
+                                        disabled={!nextMonkey || locked}
                                         aria-label="Next monkey"
                                     >
                                         <IconChevronRight size={22} stroke={2} aria-hidden="true" />
@@ -956,6 +972,7 @@ function Modal({
                 </div>
             )}
         </AnimatePresence>
+        </FormLockContext.Provider>
     );
 }
 

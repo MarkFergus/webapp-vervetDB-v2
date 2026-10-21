@@ -14,6 +14,7 @@ import {
 } from "./monkeyData";
 import { summaryDate } from "./feeding";
 import useScrollIntoView from "./useScrollIntoView";
+import { useFormLock } from "./formLock";
 import "./IntegrationReports.css";
 
 // Injuries: a section of a monkey's pop-up (staff only). Editors
@@ -108,6 +109,8 @@ export function useInjuries(monkeyId, staff) {
 //   kind: "injury", or "update" (an update on one: "Details")
 export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = false, kind = "injury" }) {
     const isUpdate = kind === "update";
+    // (holds the pop-up while it's open: see formLock.js)
+    useFormLock();
     // Editing in a list: brought fully into view as it opens
     const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(initial);

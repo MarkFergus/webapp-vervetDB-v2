@@ -955,7 +955,7 @@
     color: var(--text-3);
     background: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 6px; /* (the app's buttons: MonkeyForm.css) */
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s;
 }

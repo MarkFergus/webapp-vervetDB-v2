@@ -17,8 +17,9 @@ let log; // the pretend maintenance table
 function fakeSupabase({ signedIn = true, admin = true, role } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     log = [
-        { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", details: "Cleared the drain", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
-        { id: 2, enclosure_id: ROBERT.id, done_on: "2026-10-01", details: "Fixed the gate latch", logged_by_name: "mark", logged_at: "2026-10-01T09:00:00Z" },
+        // (an older entry, from before Maintenance Types: none)
+        { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", kind: null, details: "Cleared the drain", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
+        { id: 2, enclosure_id: ROBERT.id, done_on: "2026-10-01", kind: "repair", details: "Fixed the gate latch", logged_by_name: "mark", logged_at: "2026-10-01T09:00:00Z" },
     ];
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({
         data: { session: signedIn ? { user: EDITOR } : null },
@@ -301,14 +302,15 @@ describe("the maintenance log", () => {
         await openMaintenance(user);
         const entries = await screen.findAllByRole("listitem");
         expect(entries.map((e) => e.textContent)).toEqual([
-            "1 Oct 2026Fixed the gate latchLogged by mark",
+            // (its Maintenance Type under the date)
+            "1 Oct 2026RepairFixed the gate latchLogged by mark",
             "12 Sept 2026Cleared the drainLogged by sam",
         ]);
         // Visitors can read it, not add to it
         expect(screen.queryByRole("button", { name: "Add Entry" })).toBeNull();
     });
 
-    test("editors add an entry: the date (today to start with) and what was done", async () => {
+    test("editors add an entry: the date (today to start with), Routine or Repair, and what was done", async () => {
         const { user } = setup();
         await openMaintenance(user);
         await user.click(await screen.findByRole("button", { name: "Add Entry" }));
@@ -316,20 +318,28 @@ describe("the maintenance log", () => {
         expect(date.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
         await user.clear(date);
         await user.type(date, "2026-10-05");
+        const type = screen.getByRole("combobox", { name: "Maintenance Type" });
+        expect([...type.options].map((o) => o.text)).toEqual(["Choose…", "Routine", "Repair"]);
+        await user.selectOptions(type, "Routine");
         await user.type(screen.getByRole("textbox", { name: "What was done" }), "Replaced the shade cloth");
         await user.click(screen.getByRole("button", { name: "Add Entry" }));
 
         await waitFor(() => expect(saved.inserts).toHaveLength(1));
         // Who logged it isn't sent: the database fills it in
-        expect(saved.inserts[0]).toEqual({ enclosure_id: ROBERT.id, done_on: "2026-10-05", details: "Replaced the shade cloth" });
+        expect(saved.inserts[0]).toEqual({
+            enclosure_id: ROBERT.id, done_on: "2026-10-05", kind: "routine", details: "Replaced the shade cloth",
+        });
         const entries = await screen.findAllByRole("listitem");
-        expect(entries[0]).toHaveTextContent("5 Oct 2026Replaced the shade clothLogged by mark");
+        expect(entries[0]).toHaveTextContent("5 Oct 2026RoutineReplaced the shade clothLogged by mark");
     });
 
-    test("an entry needs saying what was done", async () => {
+    test("an entry needs its Maintenance Type, and saying what was done", async () => {
         const { user } = setup();
         await openMaintenance(user);
         await user.click(await screen.findByRole("button", { name: "Add Entry" }));
+        await user.click(screen.getByRole("button", { name: "Add Entry" }));
+        expect(screen.getByRole("alert")).toHaveTextContent("Please choose the Maintenance Type.");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Maintenance Type" }), "Repair");
         await user.click(screen.getByRole("button", { name: "Add Entry" }));
         expect(screen.getByRole("alert")).toHaveTextContent("Please say what was done.");
         expect(saved.inserts).toHaveLength(0);

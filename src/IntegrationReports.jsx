@@ -4,6 +4,7 @@ import { addIntegration, deleteIntegration, loadIntegration, saveIntegration } f
 import { summaryDate } from "./feeding";
 import ConfirmBubble from "./ConfirmBubble";
 import useScrollIntoView from "./useScrollIntoView";
+import { useFormLock } from "./formLock";
 import "./IntegrationReports.css";
 
 // Integration Reports: staff reports on how a monkey's integration is going
@@ -81,6 +82,8 @@ export function useIntegration(monkeyId, staff) {
 //   initial: { from, to, report }; onSave(values) async (throws a message
 //   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
 export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = false }) {
+    // (holds the pop-up while it's open: see formLock.js)
+    useFormLock();
     // Editing in a list: brought fully into view as it opens
     const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(initial);

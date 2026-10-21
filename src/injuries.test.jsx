@@ -171,3 +171,49 @@ describe("Monitoring in the pop-up (staff)", () => {
         expect(loadMonitoring).not.toHaveBeenCalled();
     });
 });
+
+describe("an open form holds the pop-up until its Cancel", () => {
+    const OTHER = { ...MONKEY, id: 8, name: "Rocio" };
+    const openWithNeighbours = () => {
+        const handlePrevNext = vi.fn();
+        const onClose = vi.fn();
+        render(
+            <Modal
+                isModalOpen monkey={MONKEY} onClose={onClose} handlePrevNext={handlePrevNext}
+                prevMonkey={OTHER} nextMonkey={OTHER} staff={ADMIN}
+            />
+        );
+        return { handlePrevNext, onClose };
+    };
+
+    test("no arrow keys to other monkeys, no Escape, no close or previous / next buttons; back after Cancel", async () => {
+        loadInjuries.mockResolvedValue([injury(1)]);
+        const { handlePrevNext, onClose } = openWithNeighbours();
+        await userEvent.click(await screen.findByRole("button", { name: "Add Update" }));
+        const details = screen.getByRole("textbox", { name: "Details" });
+        // Typing: the arrows move the cursor
+        await userEvent.type(details, "Healing{arrowleft}{arrowright}");
+        // Not typing (focus elsewhere in the pop-up): still held
+        details.blur();
+        await userEvent.keyboard("{ArrowRight}{ArrowLeft}{Escape}");
+        expect(handlePrevNext).not.toHaveBeenCalled();
+        expect(onClose).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: "Close" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Next monkey" })).toBeDisabled();
+        // Cancel: free again
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(screen.getByRole("button", { name: "Close" })).toBeEnabled();
+        await userEvent.keyboard("{ArrowRight}");
+        expect(handlePrevNext).toHaveBeenCalledWith("next");
+    });
+
+    test("New Injury (Quick Actions) holds it too", async () => {
+        const { handlePrevNext, onClose } = openWithNeighbours();
+        await screen.findByRole("button", { name: "Quick Actions" });
+        await quickActions();
+        await userEvent.click(screen.getByRole("button", { name: "New Injury" }));
+        await userEvent.keyboard("{ArrowLeft}{Escape}");
+        expect(handlePrevNext).not.toHaveBeenCalled();
+        expect(onClose).not.toHaveBeenCalled();
+    });
+});
