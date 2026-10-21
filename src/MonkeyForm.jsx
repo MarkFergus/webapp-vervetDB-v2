@@ -3,8 +3,9 @@ import { fullName } from "./places";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
-import { deleteMonkey, saveArrivalInfo, saveMonkey, troopHome } from "./monkeyData";
+import { deleteMonkey, saveArrivalInfo, saveMonitoring, saveMonkey, troopHome } from "./monkeyData";
 import useArrivalInfo from "./useArrivalInfo";
+import useMonitoring from "./useMonitoring";
 import { placeChoices } from "./enclosures";
 import { BABY_FEEDING, isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
@@ -70,9 +71,24 @@ function MonkeyForm({
         }
     }, [isNew, arrivalInfo.available, arrivalInfo.info]);
     const showArrival = arrivalInfo.available && (isNew ? rescue : true);
+    // Monitoring (admins, once the database has it): Condition Check and
+    // Notes for Monitoring, for the Troop Monitoring Notes. Kept apart
+    // (staff only), like the Arrival Info.
+    const monitoringInfo = useMonitoring(monkey?.id ?? null, !isNew && isAdmin);
+    const [monitoring, setMonitoring] = useState({ conditionCheck: false, notes: "" });
+    const [monitoringSaved, setMonitoringSaved] = useState({ conditionCheck: false, notes: "" });
+    useEffect(() => {
+        if (monitoringInfo.available) {
+            const { conditionCheck, notes } = monitoringInfo.value;
+            setMonitoring({ conditionCheck, notes });
+            setMonitoringSaved({ conditionCheck, notes });
+        }
+    }, [monitoringInfo.available, monitoringInfo.value]);
+    const monitoringChanged =
+        monitoring.conditionCheck !== monitoringSaved.conditionCheck || monitoring.notes.trim() !== monitoringSaved.notes.trim();
     const inCareUnit = isNew ? rescue : chosenIntrocage(form, choices)?.type === "area";
     const hideBio = showArrival && inCareUnit;
-    const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved;
+    const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved || monitoringChanged;
     // Photos uploaded while this form is open (tidied up if not kept)
     const uploadedHere = useRef([]);
 
@@ -124,6 +140,9 @@ function MonkeyForm({
     const setFeeding = (field, value) => setForm({ ...form, feeding: { ...form.feeding, [field]: value } });
     // Babies' plates are always cut small with fruit
     const baby = isBaby({ year: form.year });
+    // The hints say "he" / "she" (or "they", sex unknown)
+    const he = { male: "he", female: "she" }[form.sex] ?? "they";
+    const his = { male: "his", female: "her" }[form.sex] ?? "their";
 
     // Chip unknown: empties the box and leaves it (closing the phone
     // keyboard). "Clear" undoes it the same way; so does typing a number.
@@ -154,6 +173,14 @@ function MonkeyForm({
                     await saveArrivalInfo(saved.id, arrival);
                 } catch (error) {
                     window.alert(`${saved.name} was saved, but the Arrival Info wasn't: ${error.message} Please open Edit to add it again.`);
+                }
+            }
+            // ...and so is the Monitoring
+            if (monitoringInfo.available && monitoringChanged) {
+                try {
+                    await saveMonitoring(saved.id, monitoring);
+                } catch (error) {
+                    window.alert(`${saved.name} was saved, but the Monitoring wasn't: ${error.message} Please open Edit to add it again.`);
                 }
             }
             // Tidy up: photos this monkey had, or that were uploaded here,
@@ -424,13 +451,13 @@ function MonkeyForm({
                             </div>
                             {monkey?.inSickbay && (
                                 <p className="MonkeyForm-hint">
-                                    Currently in Sickbay, so fed by Sickbay until they return. This setting applies
+                                    Currently in Sickbay, so fed by Sickbay until {he} {he === "they" ? "return" : "returns"}. This setting applies
                                     again then.
                                 </p>
                             )}
                             {form.feeding.fedBy === "sickbay" ? (
                                 <p className="MonkeyForm-hint">
-                                    Sickbay delivers its plates (Special Plates on the AM Plates List).
+                                    Sickbay delivers {his} plates (Special Plates on the AM Plates List).
                                 </p>
                             ) : (
                                 <>
@@ -502,6 +529,36 @@ function MonkeyForm({
                                     </div>
                                 </>
                             )}
+                        </fieldset>
+                    )}
+
+                    {/* Monitoring (admins), at the very bottom: for the Troop Monitoring Notes */}
+                    {monitoringInfo.available && (
+                        <fieldset className="MonkeyForm-feeding MonkeyForm-monitoring">
+                            <legend>Monitoring</legend>
+                            <div className="MonkeyForm-checks">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={monitoring.conditionCheck}
+                                        onChange={(e) => setMonitoring({ ...monitoring, conditionCheck: e.target.checked })}
+                                    />
+                                    Priority Condition Check
+                                </label>
+                            </div>
+                            <p className="MonkeyForm-hint">
+                                Listed under &ldquo;Priority Condition Checks&rdquo; on the Troop Monitoring Notes.
+                            </p>
+                            <label className="MonkeyForm-field">
+                                <span>Notes for Monitoring</span>
+                                <textarea
+                                    rows={3}
+                                    value={monitoring.notes}
+                                    maxLength={1000}
+                                    placeholder="e.g. Check she's eating ok and her interactions"
+                                    onChange={(e) => setMonitoring({ ...monitoring, notes: e.target.value })}
+                                />
+                            </label>
                         </fieldset>
                     )}
                 </div>

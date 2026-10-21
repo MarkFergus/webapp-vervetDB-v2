@@ -39,9 +39,15 @@ function ModalPDF({
     plateMonkeys = 0,
     plateIntrocages = 0,
     // monitoringCount: the troop's monkeys on its Monitoring Sheet;
-    // monitorTroops: the troops that are monitored (not the Bandits)
+    // monitorTroops: the troops that are monitored (not the Bandits);
+    // monitoringParts: which to create ({ sheet, notes }: the Sheet and / or
+    // the Monitoring Notes), onChangeMonitoringParts(parts); canNotes: the
+    // Notes are offered (staff only)
     monitoringCount = 0,
     monitorTroops = troops,
+    monitoringParts = { sheet: true, notes: false },
+    onChangeMonitoringParts,
+    canNotes = false,
     // Introcage Signs ("introcageSign"): the introcages to choose from
     // (signChoices), the ids chosen, how many pages they make, and what to
     // call to change the list
@@ -56,9 +62,12 @@ function ModalPDF({
     const isProfileBook = report === "profileBook";
     const isMonitoring = report === "monitoring";
     const isSigns = report === "introcageSign";
+    // (Troop Monitoring: just the Sheet, unless the Notes can be had)
+    const parts = canNotes ? monitoringParts : { sheet: true, notes: false };
+    const noParts = !parts.sheet && !parts.notes;
     const REPORT_NAMES = {
         profileBook: "Profile Book",
-        monitoring: "Troop Monitoring Sheet",
+        monitoring: parts.sheet && parts.notes ? "Troop Monitoring PDF" : parts.notes ? "Troop Monitoring Notes" : "Troop Monitoring Sheet",
         amPlates: "AM Plates List",
         introcageSign: "Introcage Signs",
     };
@@ -148,7 +157,7 @@ function ModalPDF({
                                             {/* (A–Z) */}
                                             <option value="amPlates">AM Plates List</option>
                                             <option value="introcageSign">Introcage Sign</option>
-                                            <option value="monitoring">Troop Monitoring Sheet</option>
+                                            <option value="monitoring">Troop Monitoring</option>
                                             <option value="profileBook">Troop Profile Book</option>
                                         </select>
                                     </label>
@@ -225,21 +234,51 @@ function ModalPDF({
                                                     )}
                                                 </select>
                                             </label>
+                                            {/* Troop Monitoring (staff): the Sheet, the Notes, or both */}
+                                            {isMonitoring && canNotes && (
+                                                <div className="ModalPDF-parts" role="group" aria-label="Include">
+                                                    {[
+                                                        ["sheet", "Monitoring Sheet"],
+                                                        ["notes", "Monitoring Notes"],
+                                                    ].map(([key, label]) => (
+                                                        <label key={key}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={parts[key]}
+                                                                disabled={isGeneratingPDF}
+                                                                onChange={(e) =>
+                                                                    onChangeMonitoringParts?.({ ...parts, [key]: e.target.checked })
+                                                                }
+                                                            />
+                                                            {label}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
                                             <p className="ModalPDF-subdetails">
-                                                {(isMonitoring ? monitoringCount : monkeyCount) === 0 ? (
+                                                {isMonitoring && noParts ? (
+                                                    "Choose the Monitoring Sheet, the Monitoring Notes, or both."
+                                                ) : (isMonitoring ? monitoringCount : monkeyCount) === 0 ? (
                                                     "No monkeys in this troop yet."
+                                                ) : isMonitoring ? (
+                                                    // (just the troop: e.g. "Creates a Monitoring Sheet
+                                                    // and Monitoring Notes for Goliath.")
+                                                    <>
+                                                        Creates{" "}
+                                                        {parts.sheet && parts.notes
+                                                            ? "a Monitoring Sheet and Monitoring Notes"
+                                                            : parts.notes
+                                                              ? "Monitoring Notes"
+                                                              : "a Monitoring Sheet"}{" "}
+                                                        {/* (runs on: "for" kept with the name) */}
+                                                        for{"\u00a0"}
+                                                        <b>{fullName(book)}</b>.
+                                                    </>
                                                 ) : (
                                                     <>
-                                                        {isMonitoring
-                                                            ? "Creates a Troop Monitoring Sheet for"
-                                                            : "Creates a formatted Profile Book for"}{" "}
+                                                        Creates a formatted Profile Book for{" "}
                                                         <span className="ModalPDF-line">
-                                                            <b>
-                                                                {isMonitoring
-                                                                    ? `${monitoringCount} ${monitoringCount === 1 ? "monkey" : "monkeys"}`
-                                                                    : `${monkeyCount} ${plural}`}
-                                                            </b>{" "}
-                                                            from <b>{troopNote}</b>.
+                                                            <b>{`${monkeyCount} ${plural}`}</b> from <b>{troopNote}</b>.
                                                         </span>
                                                     </>
                                                 )}
@@ -299,7 +338,7 @@ function ModalPDF({
                                                     : isAmPlates
                                                       ? plateCount === 0
                                                       : isMonitoring
-                                                        ? monitoringCount === 0
+                                                        ? monitoringCount === 0 || noParts
                                                         : monkeyCount === 0)
                                             }
                                             className="ModalPDF-createBtn"

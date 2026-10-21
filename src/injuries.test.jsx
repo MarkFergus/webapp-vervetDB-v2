@@ -2,7 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
-import { addInjury, loadInjuries, setInjuryHealed } from "./monkeyData";
+import { addInjury, addInjuryUpdate, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -13,6 +13,12 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     saveInjury: vi.fn(),
     setInjuryHealed: vi.fn(),
     deleteInjury: vi.fn(),
+    // (monitoring.sql has run)
+    injuryUpdatesAvailable: () => true,
+    addInjuryUpdate: vi.fn(),
+    saveInjuryUpdate: vi.fn(),
+    deleteInjuryUpdate: vi.fn(),
+    loadMonitoring: vi.fn(),
 }));
 
 const MONKEY = {
@@ -34,6 +40,7 @@ const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Q
 beforeEach(() => {
     vi.clearAllMocks();
     loadInjuries.mockResolvedValue([]);
+    loadMonitoring.mockResolvedValue({ conditionCheck: false, notes: "", updatedByName: null, updatedAt: null });
 });
 
 test("New Injury asks the date (today) and a description, then lists it under Injuries", async () => {
@@ -93,4 +100,74 @@ test("maintenance staff see injuries, but can't add them or mark them healed", a
 test("visitors (not staff) never load injuries", () => {
     open(null);
     expect(loadInjuries).not.toHaveBeenCalled();
+});
+
+describe("updates on an injury", () => {
+    const update = (id, extra = {}) => ({
+        id, date: "2026-10-19", details: `Update ${id}`, loggedBy: "u-admin", loggedByName: "Sam", loggedAt: "2026-10-19T09:00:00Z", ...extra,
+    });
+
+    test("listed under the injury, oldest first; Add Update asks the date (today) and the details", async () => {
+        loadInjuries.mockResolvedValue([injury(1, { updates: [update(5, { date: "2026-10-12" })] })]);
+        addInjuryUpdate.mockImplementation(async (_id, values) => update(6, values));
+        open(ADMIN);
+        const item = (await screen.findByText("Cut 1")).closest("li");
+        expect(within(within(item).getByRole("list", { name: "Updates" })).getByText("Update 5")).toBeInTheDocument();
+        await userEvent.click(within(item).getByRole("button", { name: "Add Update" }));
+        const date = screen.getByLabelText("Date");
+        expect(date.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        await userEvent.type(screen.getByRole("textbox", { name: "Details" }), " Healing well ");
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(addInjuryUpdate).toHaveBeenCalledWith(1, { date: date.value, details: "Healing well" });
+        const updates = within(screen.getByRole("list", { name: "Updates" })).getAllByRole("listitem").map((li) => li.textContent);
+        expect(updates.at(-1)).toMatch(/Healing well/);
+    });
+
+    test("asks for the details before saving", async () => {
+        loadInjuries.mockResolvedValue([injury(1)]);
+        open(ADMIN);
+        await userEvent.click(await screen.findByRole("button", { name: "Add Update" }));
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(screen.getByRole("alert")).toHaveTextContent("Please write the update.");
+        expect(addInjuryUpdate).not.toHaveBeenCalled();
+    });
+
+    test("deleting one (admins, or whoever added it), with a red confirm", async () => {
+        loadInjuries.mockResolvedValue([injury(1, { updates: [update(5)] })]);
+        deleteInjuryUpdate.mockResolvedValue();
+        open(ADMIN);
+        await userEvent.click(await screen.findByRole("button", { name: "Delete update" }));
+        const bubble = screen.getByRole("dialog", { name: "Delete this update?" });
+        expect(within(bubble).getByRole("button", { name: "Confirm" })).toHaveClass("is-danger");
+        await userEvent.click(within(bubble).getByRole("button", { name: "Confirm" }));
+        expect(deleteInjuryUpdate).toHaveBeenCalledWith(5);
+        expect(screen.queryByText("Update 5")).not.toBeInTheDocument();
+    });
+
+    test("maintenance staff see the updates, but can't add, change or delete them; healed injuries take no more", async () => {
+        loadInjuries.mockResolvedValue([injury(1, { updates: [update(5, { loggedBy: "u-admin" })] })]);
+        open(MAINTENANCE);
+        expect(await screen.findByText("Update 5")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Add Update" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Delete update" })).not.toBeInTheDocument();
+    });
+});
+
+describe("Monitoring in the pop-up (staff)", () => {
+    test("Condition Check and the Notes for Monitoring, once there's something", async () => {
+        loadMonitoring.mockResolvedValue({ conditionCheck: true, notes: "Check she's eating ok", updatedByName: "Sam", updatedAt: null });
+        open(MAINTENANCE);
+        const section = (await screen.findByRole("heading", { name: "Monitoring" })).closest("section");
+        expect(section).toHaveTextContent("Priority Condition Check");
+        expect(section).toHaveTextContent("Check she's eating ok");
+    });
+
+    test("nothing set: no Monitoring section; visitors never load it", async () => {
+        open(MAINTENANCE);
+        await screen.findByRole("heading", { name: "Bio" });
+        expect(screen.queryByRole("heading", { name: "Monitoring" })).not.toBeInTheDocument();
+        loadMonitoring.mockClear();
+        open(null);
+        expect(loadMonitoring).not.toHaveBeenCalled();
+    });
 });

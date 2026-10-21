@@ -256,19 +256,21 @@ describe("the Troop Monitoring Sheet", () => {
     test("the troop's monkeys (no Orphans/Babies to choose), saved as monitoring_sheet_<troop>_<date>.pdf", async () => {
         const { user, openMenuItem } = setup();
         await openMenuItem();
-        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring");
         const troop = screen.getByRole("combobox", { name: "Troop" });
         expect(within(troop).queryByRole("option", { name: /Orphans/ })).toBeNull();
         await user.selectOptions(troop, "D&D");
         const count = monkeysArr.filter((m) => m.troop === "D&D").length;
         expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(
-            `Creates a Troop Monitoring Sheet for ${count} monkeys from Dino & Daniel Troop.`
+            "Creates a Monitoring Sheet for Dino & Daniel."
         );
         await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" }));
         const save = await screen.findByRole("button", { name: "Save PDF" }, { timeout: 5000 });
         expect(screen.getByText(/Your Troop Monitoring Sheet is ready/)).toBeInTheDocument();
-        const { title, groups } = pdf.mock.lastCall[0].props;
-        expect(title).toBe("Dino & Daniel Troop Monitoring");
+        // (not staff: just the Sheet, no Monitoring Notes)
+        expect(pdf.mock.lastCall[0].props.notes).toBeNull();
+        const { title, groups } = pdf.mock.lastCall[0].props.sheet;
+        expect(title).toBe("Dino & Daniel Monitoring Sheet");
         expect(groups.flatMap((g) => g.monkeys).every((m) => m.troop === "D&D")).toBe(true);
         expect(groups.flatMap((g) => g.monkeys)).toHaveLength(count);
         await user.click(save);
@@ -283,7 +285,7 @@ describe("the Troop Monitoring Sheet", () => {
         await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Profile Book");
         expect(options()).toContain("Bandits");
         await user.selectOptions(screen.getByRole("combobox", { name: "Troop" }), "Bandits");
-        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring");
         expect(options()).toEqual(["Goliath"]);
         expect(screen.getByRole("combobox", { name: "Troop" })).toHaveValue("Goliath");
     });
@@ -292,7 +294,7 @@ describe("the Troop Monitoring Sheet", () => {
         const { user, openPdfModal } = setup();
         await openPdfModal();
         await user.selectOptions(screen.getByRole("combobox", { name: "Troop" }), "Orphans/Babies (" + currentBabySeason() + ")");
-        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring Sheet");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Document" }), "Troop Monitoring");
         expect(screen.getByRole("combobox", { name: "Troop" }).value).not.toMatch(/babies/i);
     });
 });

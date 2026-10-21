@@ -754,3 +754,8 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+
+/* Notes for Monitoring: kept as typed, line breaks and all */
+.Modal-monitoringNotes {
+    white-space: pre-line;
+}

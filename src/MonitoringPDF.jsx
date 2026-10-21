@@ -1,5 +1,5 @@
 import { Document, Page, View, Text, StyleSheet, Svg, Circle, Line, Polyline } from "@react-pdf/renderer";
-import { FORM_FONT } from "./pdfFonts";
+import { FORM_FONT, REPORT_FONT } from "./pdfFonts";
 import { MONITORING_CHECKS, MONITORING_COLUMNS, monitoringPages } from "./monitoring";
 import { textWidth } from "./pdfTextWidth";
 
@@ -8,13 +8,13 @@ import { textWidth } from "./pdfTextWidth";
 // session, every other row lightly tinted to read across. The names column
 // is just wide enough for the longest name; the session boxes share the
 // rest evenly.
-//   title: e.g. "Gismo Troop Monitoring"; groups: monitoringGroups()
+//   title: e.g. "Gismo Monitoring Sheet"; groups: monitoringGroups()
 
 const LINE = "0.6pt solid #000";
 // A4 portrait, less the margins and the title
 const PAGE_HEIGHT = 841.89;
 const MARGIN = 24;
-const TITLE_HEIGHT = 34;
+const TITLE_HEIGHT = 35;
 
 const styles = StyleSheet.create({
     page: {
@@ -23,8 +23,10 @@ const styles = StyleSheet.create({
         fontFamily: FORM_FONT,
         color: "#000",
     },
+    // (the title in the Profile Book's serif)
     title: {
-        fontSize: 13,
+        fontFamily: REPORT_FONT,
+        fontSize: 14,
         fontWeight: "bold",
         textAlign: "center",
         textDecoration: "underline",
@@ -119,7 +121,9 @@ function Boxes({ height, style }) {
     return Array.from({ length: MONITORING_COLUMNS }, (_, i) => <View key={i} style={[styles.box, { height }, style]} />);
 }
 
-function MonitoringPDF({ title, groups }) {
+// The sheet's pages (one, or more for a big troop), to go in a Document:
+// on their own (MonitoringPDF) or with the Monitoring Notes
+export function MonitoringSheetPages({ title, groups }) {
     // One page, or a big troop over more (monitoringPages): page 1 has all
     // the checks; the others just the Date row, so the sessions line up
     const pages = monitoringPages(groups);
@@ -146,7 +150,7 @@ function MonitoringPDF({ title, groups }) {
     const checkSize = (check) => Math.min(fontSize, (fontSize * (nameWidth - PADDING)) / textWidth(check, fontSize, true));
     const nameCell = [styles.nameCell, { width: nameWidth, height }];
     return (
-        <Document title={title}>
+        <>
             {pages.map((page, p) => (
                 <Page key={p} size="A4" style={styles.page}>
                     {/* (the page number beside the title, not underlined with it) */}
@@ -198,6 +202,14 @@ function MonitoringPDF({ title, groups }) {
                     </View>
                 </Page>
             ))}
+        </>
+    );
+}
+
+function MonitoringPDF({ title, groups }) {
+    return (
+        <Document title={title}>
+            <MonitoringSheetPages title={title} groups={groups} />
         </Document>
     );
 }

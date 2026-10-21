@@ -536,7 +536,8 @@ describe("feeding (introcage monkeys)", () => {
         expect(feeding()).not.toBeNull();
         await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Sickbay");
         expect(within(feeding()).queryByLabelText("AM Plates")).toBeNull();
-        expect(within(feeding()).getByText(/Sickbay delivers its plates/)).toBeInTheDocument();
+        // (Aroha's a male: "his")
+        expect(within(feeding()).getByText(/Sickbay delivers his plates/)).toBeInTheDocument();
         await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
         await user.selectOptions(within(feeding()).getByLabelText("AM Plates"), "2 Plates");
         await user.click(within(feeding()).getByRole("checkbox", { name: "Metal Plate" }));

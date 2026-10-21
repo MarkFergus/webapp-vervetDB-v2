@@ -36,6 +36,7 @@ import { isNewArrival } from "./enclosures";
 import { IntegrationForm, IntegrationList, newReportDates, useIntegration } from "./IntegrationReports";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useArrivalInfo from "./useArrivalInfo";
+import useMonitoring from "./useMonitoring";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import "./Modal.css";
 import CloseButton from "./CloseButton";
@@ -102,6 +103,10 @@ function Modal({
         monkey?.id,
         Boolean(isModalOpen && staff?.canSee && monkey && isNewArrival(monkey))
     );
+    // Monitoring (staff): Condition Check and Notes for Monitoring, set by
+    // admins in Edit (loaded again once it's saved: a new monkey object)
+    const monitoring = useMonitoring(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey), monkey);
+    const { conditionCheck, notes: monitoringNotes } = monitoring.value;
     // Released (new arrivals): its little form (date and details)
     const [releaseForm, setReleaseForm] = useState(null);
     const [releaseBusy, setReleaseBusy] = useState(false);
@@ -857,6 +862,20 @@ function Modal({
                                                 ]
                                                     .filter(Boolean)
                                                     .join(" · ")}
+                                            </p>
+                                        </section>
+                                    )}
+                                    {/* Monitoring (staff): only once there's something */}
+                                    {monitoring.available && (conditionCheck || monitoringNotes) && (
+                                        <section className="Modal-section">
+                                            <h2 className="Modal-label">Monitoring</h2>
+                                            <p className="Modal-feeding">
+                                                {conditionCheck && (
+                                                    <span>
+                                                        <b>Priority Condition Check</b>
+                                                    </span>
+                                                )}
+                                                {monitoringNotes && <span className="Modal-monitoringNotes">{monitoringNotes}</span>}
                                             </p>
                                         </section>
                                     )}

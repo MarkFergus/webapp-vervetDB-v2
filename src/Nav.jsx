@@ -55,6 +55,9 @@ function Nav({
     pdfPlateMonkeys,
     pdfMonitoringCount,
     pdfMonitorTroops,
+    pdfMonitoringParts,
+    onChangeMonitoringParts,
+    pdfCanNotes,
     pdfSignChoices,
     pdfSignList,
     pdfSignPageCount,
@@ -314,6 +317,9 @@ function Nav({
                         plateMonkeys={pdfPlateMonkeys}
                         monitoringCount={pdfMonitoringCount}
                         monitorTroops={pdfMonitorTroops}
+                        monitoringParts={pdfMonitoringParts}
+                        onChangeMonitoringParts={onChangeMonitoringParts}
+                        canNotes={pdfCanNotes}
                         signChoices={pdfSignChoices}
                         signList={pdfSignList}
                         signPageCount={pdfSignPageCount}

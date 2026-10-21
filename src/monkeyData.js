@@ -554,11 +554,27 @@ export async function deleteIntegration(id) {
 
 // ---- Injuries: a monkey's injuries (current and healed) ----
 
-// An injury, as the site uses it: { id, date ("2026-10-13"), description,
-// loggedBy (the writer's account id), loggedByName, loggedAt, healedOn
-// (null while it's current), healedByName }
+// An update on an injury, as the site uses it: { id, date, details,
+// loggedBy (the writer's account id), loggedByName, loggedAt }
+const toAppUpdate = (row) => ({
+    id: row.id,
+    date: row.update_date,
+    details: row.details,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+    loggedAt: row.logged_at,
+});
+const UPDATE_COLUMNS = "id, update_date, details, logged_by, logged_by_name, logged_at";
+// Oldest first (they follow the injury down the page)
+const byUpdateDate = (a, b) => a.date.localeCompare(b.date) || a.id - b.id;
+
+// An injury, as the site uses it: { id, monkeyId, date ("2026-10-13"),
+// description, loggedBy (the writer's account id), loggedByName, loggedAt,
+// healedOn (null while it's current), healedByName, updates ([] before
+// monitoring.sql has run) }
 const toAppInjury = (row) => ({
     id: row.id,
+    monkeyId: row.monkey_id,
     date: row.injury_date,
     description: row.description,
     loggedBy: row.logged_by,
@@ -566,21 +582,63 @@ const toAppInjury = (row) => ({
     loggedAt: row.logged_at,
     healedOn: row.healed_on,
     healedByName: row.healed_by_name,
+    updates: (row.injury_updates ?? []).map(toAppUpdate).sort(byUpdateDate),
 });
 const INJURY_COLUMNS =
-    "id, injury_date, description, logged_by, logged_by_name, logged_at, healed_on, healed_by_name";
+    "id, monkey_id, injury_date, description, logged_by, logged_by_name, logged_at, healed_on, healed_by_name";
+// ...with their updates (once monitoring.sql has run)
+const INJURY_WITH_UPDATES = `${INJURY_COLUMNS}, injury_updates (${UPDATE_COLUMNS})`;
+// Whether the database has injury updates: null until known
+let hasInjuryUpdates = null;
+
+// Injuries, with their updates if the database has them (falling back to
+// just the injuries before monitoring.sql has run). query(columns) → a
+// Supabase query.
+async function selectInjuries(query) {
+    if (hasInjuryUpdates !== false) {
+        const result = await query(INJURY_WITH_UPDATES);
+        if (!result.error) {
+            hasInjuryUpdates = true;
+            return result.data.map(toAppInjury);
+        }
+        if (!isOlderDatabase(result.error)) throw result.error;
+        hasInjuryUpdates = false;
+    }
+    const { data, error } = await query(INJURY_COLUMNS);
+    if (error) throw error;
+    return data.map(toAppInjury);
+}
+
+// Whether injuries can have updates (monitoring.sql has run)
+export const injuryUpdatesAvailable = () => hasInjuryUpdates === true;
 
 // A monkey's injuries (current and healed), newest first. Throws if the
 // database hasn't got them yet (injuries.sql) or can't be reached.
 export async function loadInjuries(monkeyId) {
-    const { data, error } = await supabase
-        .from("injuries")
-        .select(INJURY_COLUMNS)
-        .eq("monkey_id", monkeyId)
-        .order("injury_date", { ascending: false })
-        .order("id", { ascending: false });
-    if (error) throw error;
-    return data.map(toAppInjury);
+    return selectInjuries((columns) =>
+        supabase
+            .from("injuries")
+            .select(columns)
+            .eq("monkey_id", monkeyId)
+            .order("injury_date", { ascending: false })
+            .order("id", { ascending: false })
+    );
+}
+
+// The current (not healed) injuries of these monkeys, with their updates,
+// oldest first: for the Monitoring Notes. Throws if the database can't be
+// reached, or this isn't staff.
+export async function loadCurrentInjuries(monkeyIds) {
+    if (!monkeyIds.length) return [];
+    return selectInjuries((columns) =>
+        supabase
+            .from("injuries")
+            .select(columns)
+            .in("monkey_id", monkeyIds)
+            .is("healed_on", null)
+            .order("injury_date")
+            .order("id")
+    );
 }
 
 // Adds an injury ({ date, description }); who and when are filled in by the
@@ -598,7 +656,8 @@ export async function addInjury(monkeyId, { date, description }) {
     return toAppInjury(data);
 }
 
-// Changes an injury's date or description (admins, or whoever added it)
+// Changes an injury's date or description (admins, or whoever added it).
+// (its updates aren't sent back: the caller keeps them)
 export async function saveInjury(id, { date, description }) {
     const { data, error } = await supabase
         .from("injuries")
@@ -632,4 +691,99 @@ export async function deleteInjury(id) {
         throw saveProblem(error);
     }
     if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
+}
+
+// An update on an injury ({ date, details }); who and when are filled in by
+// the database. Returns the saved update.
+export async function addInjuryUpdate(injuryId, { date, details }) {
+    const { data, error } = await supabase
+        .from("injury_updates")
+        .insert({ injury_id: injuryId, update_date: date, details })
+        .select(UPDATE_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Adding an injury update failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppUpdate(data);
+}
+
+// Changes an update's date or details (admins, or whoever added it)
+export async function saveInjuryUpdate(id, { date, details }) {
+    const { data, error } = await supabase
+        .from("injury_updates")
+        .update({ update_date: date, details })
+        .eq("id", id)
+        .select(UPDATE_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Saving an injury update failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppUpdate(data);
+}
+
+// Deletes an update (admins, or whoever added it)
+export async function deleteInjuryUpdate(id) {
+    const { data, error } = await supabase.from("injury_updates").delete().eq("id", id).select("id");
+    if (error) {
+        console.error("Deleting an injury update failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
+}
+
+// ---- Monitoring: Condition Check and Notes for Monitoring (staff only) ----
+
+// A monkey's monitoring, as the site uses it: { conditionCheck, notes ("" if
+// none), updatedByName, updatedAt }
+export const NO_MONITORING = { conditionCheck: false, notes: "", updatedByName: null, updatedAt: null };
+const toAppMonitoring = (row) =>
+    row
+        ? {
+              conditionCheck: row.condition_check,
+              notes: row.notes ?? "",
+              updatedByName: row.updated_by_name,
+              updatedAt: row.updated_at,
+          }
+        : NO_MONITORING;
+const MONITORING_COLUMNS = "monkey_id, condition_check, notes, updated_by_name, updated_at";
+
+// A monkey's monitoring (NO_MONITORING if none). Throws if the database
+// hasn't got it yet (monitoring.sql), or this isn't staff.
+export async function loadMonitoring(monkeyId) {
+    const { data, error } = await supabase.from("monitoring").select(MONITORING_COLUMNS).eq("monkey_id", monkeyId).maybeSingle();
+    if (error) throw error;
+    return toAppMonitoring(data);
+}
+
+// These monkeys' monitoring: monkey id → monitoring (only those that have
+// some). For the Monitoring Notes.
+export async function loadMonitoringFor(monkeyIds) {
+    if (!monkeyIds.length) return {};
+    const { data, error } = await supabase.from("monitoring").select(MONITORING_COLUMNS).in("monkey_id", monkeyIds);
+    if (error) throw error;
+    return Object.fromEntries(data.map((row) => [row.monkey_id, toAppMonitoring(row)]));
+}
+
+// Saves it (admins): { conditionCheck, notes }. Nothing ticked or written
+// clears it. Returns what's saved.
+export async function saveMonitoring(monkeyId, { conditionCheck, notes }) {
+    const text = notes.trim();
+    if (!conditionCheck && !text) {
+        const { error } = await supabase.from("monitoring").delete().eq("monkey_id", monkeyId);
+        if (error) throw saveProblem(error);
+        return NO_MONITORING;
+    }
+    const row = { condition_check: conditionCheck, notes: text || null };
+    const updated = await supabase.from("monitoring").update(row).eq("monkey_id", monkeyId).select(MONITORING_COLUMNS);
+    if (updated.error) throw saveProblem(updated.error);
+    if (updated.data?.length) return toAppMonitoring(updated.data[0]);
+    const { data, error } = await supabase
+        .from("monitoring")
+        .insert({ monkey_id: monkeyId, ...row })
+        .select(MONITORING_COLUMNS)
+        .single();
+    if (error) throw saveProblem(error);
+    return toAppMonitoring(data);
 }

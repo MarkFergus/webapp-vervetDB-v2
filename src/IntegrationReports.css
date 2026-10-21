@@ -226,6 +226,36 @@
     font-size: 13px;
 }
 
+/* An injury's updates: indented under it, with a line on their left, the
+   same layout a little smaller */
+.Integration-list .Injury-updates {
+    align-self: stretch;
+    margin: 6px 0 0 4px;
+    padding: 0 0 0 12px;
+    list-style: none;
+    border-left: 2px solid var(--line);
+}
+
+.Integration-list li.Injury-update {
+    padding: 3px 0;
+}
+
+.Injury-update .Injury-date {
+    font-size: 13px;
+}
+
+.Injury-update .Injury-text {
+    font-size: 14px;
+}
+
+/* Add Update: a small chip under the injury, like Healed? */
+.Modal-edit.Injury-addUpdate {
+    height: 28px;
+    margin-top: 6px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
 /* Phones: the date above, the description and buttons under it */
 @media (max-width: 459px) {
     .Injury-line {

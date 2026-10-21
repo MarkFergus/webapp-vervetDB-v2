@@ -592,3 +592,15 @@
     color: var(--green);
     background-color: rgba(76, 212, 128, 0.16);
 }
+
+/* Monitoring: the Condition Check tick on its own line, its hint right
+   under it */
+.MonkeyForm-monitoring .MonkeyForm-checks {
+    align-self: start;
+    grid-template-columns: auto;
+    min-height: 0;
+}
+
+.MonkeyForm-monitoring .MonkeyForm-checks + .MonkeyForm-hint {
+    margin-top: -6px;
+}

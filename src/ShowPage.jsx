@@ -9,7 +9,8 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA, saveRelease, saveWhereabouts, troopHome } from "./monkeyData";
+import { BUILT_IN_DATA, loadCurrentInjuries, loadMonitoringFor, saveRelease, saveWhereabouts, troopHome } from "./monkeyData";
+import { monitoringNotes } from "./monitoringNotes";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
 import { preparePhotosForPdf } from "./pdfPhotos";
@@ -266,6 +267,10 @@ function ShowPage({
     );
     const monitoring = useMemo(() => monitoringGroups(monkeys, pdfBook, new Date(), troopHome(pdfBook) ?? pdfBook), [monkeys, pdfBook]);
     const pdfMonitoringCount = monitoring.reduce((n, g) => n + g.monkeys.length, 0);
+    // Troop Monitoring: the Sheet and / or the Monitoring Notes (staff only:
+    // its details are staff only, from the live database)
+    const pdfCanNotes = Boolean(role && editable);
+    const [pdfMonitoringParts, setPdfMonitoringParts] = useState({ sheet: true, notes: true });
     // Introcage Signs: the introcages to choose from, the ones chosen (kept
     // while the app's open, so closing the pop-up doesn't lose the list),
     // and the pages they make
@@ -517,20 +522,43 @@ function ShowPage({
         // monitored: the first monitored troop instead)
         if (report === "monitoring" && !monitorTroops.includes(pdfBook)) setPdfBook(monitorTroops[0]);
     }
-    // A Troop Monitoring Sheet: no photos, so quick
+    // Troop Monitoring: the Sheet and / or the Monitoring Notes, in one PDF.
+    // No photos, so quick; the Notes load the troop's monitoring and current
+    // injuries first (staff only).
     async function createMonitoring() {
+        const parts = pdfCanNotes ? pdfMonitoringParts : { sheet: true, notes: false };
         setIsGeneratingPDF(true);
         setPdfError(null);
         setPdfProgress({ done: 0, total: 0 });
         try {
-            const [{ pdf }, { default: MonitoringPDF }] = await Promise.all([
+            const [{ pdf }, { default: MonitoringDocument }] = await Promise.all([
                 import("@react-pdf/renderer"),
-                import("./MonitoringPDF"),
+                import("./MonitoringNotesPDF"),
             ]);
-            const title = `${fullName(pdfBook)} Troop Monitoring`;
-            const blob = await pdf(<MonitoringPDF title={title} groups={monitoring} />).toBlob();
+            const troop = fullName(pdfBook);
+            let notes = null;
+            if (parts.notes) {
+                const ids = monitoring.flatMap((g) => g.monkeys.map((m) => m.id));
+                let details;
+                try {
+                    details = await Promise.all([loadMonitoringFor(ids), loadCurrentInjuries(ids)]);
+                } catch (err) {
+                    console.error(err);
+                    setPdfError("Couldn't load the Monitoring Notes. Check your internet connection, then try again.");
+                    return;
+                }
+                const [byMonkey, injuries] = details;
+                notes = {
+                    title: `${troop} Monitoring Notes`,
+                    date: summaryDate(),
+                    notes: monitoringNotes({ groups: monitoring, monitoring: byMonkey, injuries }),
+                };
+            }
+            const sheet = parts.sheet ? { title: `${troop} Monitoring Sheet`, groups: monitoring } : null;
+            const blob = await pdf(<MonitoringDocument sheet={sheet} notes={notes} />).toBlob();
             const date = new Date().toISOString().slice(0, 10);
-            setPdfReady({ blob, filename: `monitoring_sheet_${pdfBook.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf` });
+            const kind = parts.sheet && parts.notes ? "monitoring" : parts.notes ? "monitoring_notes" : "monitoring_sheet";
+            setPdfReady({ blob, filename: `${kind}_${pdfBook.replace(/[^a-z0-9]+/gi, "_")}_${date}.pdf` });
         } catch (err) {
             console.error(err);
             setPdfError("Couldn't create the PDF. Check your internet connection, then try again.");
@@ -801,6 +829,12 @@ function ShowPage({
                     pdfPlateMonkeys={pdfPlateMonkeys}
                     pdfMonitoringCount={pdfMonitoringCount}
                     pdfMonitorTroops={monitorTroops}
+                    pdfMonitoringParts={pdfMonitoringParts}
+                    onChangeMonitoringParts={(parts) => {
+                        setPdfMonitoringParts(parts);
+                        setPdfReady(null);
+                    }}
+                    pdfCanNotes={pdfCanNotes}
                     pdfSignChoices={pdfSignChoices}
                     pdfSignList={pdfSignList}
                     pdfSignPageCount={pdfSignPages.length}

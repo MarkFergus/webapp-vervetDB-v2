@@ -107,6 +107,31 @@
     outline: none;
 }
 
+/* Troop Monitoring: the Sheet and / or the Notes, two ticks side by side */
+.ModalPDF-parts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 24px;
+    margin: -8px 8px 20px;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.ModalPDF-parts label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ModalPDF-parts input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
 /* What it will create: the main line */
 .ModalPDF-subdetails {
     font-size: 17px;
