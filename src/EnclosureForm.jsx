@@ -15,7 +15,7 @@ import CloseButton from "./CloseButton";
 // window as the monkey form: Photos, About (enclosures), Features, Size and
 // Established (enclosures, month and year); introcages and areas also Troop
 // Door, Plate Slot (yes / no) and Sleeping Perches (1–10).
-//   noSize: a block or care unit (its introcages / areas have sizes)
+//   noSize: a care unit (not applicable) or a block (its introcages have sizes)
 //   noTroopDoor: in a block or care unit (no troop to open onto)
 //   onSaved(savedEnclosure) after a successful save
 

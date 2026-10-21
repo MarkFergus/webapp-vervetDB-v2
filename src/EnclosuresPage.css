@@ -165,7 +165,8 @@
 }
 
 /* Headings on a record: small grey capitals, like the field names in forms */
-.Enclosures-block h2 {
+.Enclosures-block h2,
+.Enclosures-info h2 {
     margin: 0 0 10px;
     font-size: 12px;
     font-weight: 700;
@@ -471,38 +472,18 @@
     margin: 0 auto;
 }
 
-/* ---- The top of a record: picture beside the summary (computers) ---- */
+/* ---- The top of a record: the name, the row of icons, then the numbers
+   and details ---- */
 
-/* Phones: picture, summary, About / Features, map */
-.Enclosures-hero {
-    display: grid;
-    grid-template-areas: "heading" "picture" "summary" "jumps" "text" "map";
-    gap: 0 28px;
-}
-
-.Enclosures-hero > .Enclosures-picture {
-    grid-area: picture;
-}
-
-.Enclosures-heading {
-    grid-area: heading;
-}
-
-.Enclosures-summary {
-    grid-area: summary;
-}
-
-.Enclosures-text {
-    grid-area: text;
-}
-
-.Enclosures-mapBlock {
-    grid-area: map;
+/* The numbers and details (computers: side by side) */
+.Enclosures-info {
+    margin-top: 16px;
 }
 
 .Enclosures-summary {
     min-width: 0;
 }
+
 
 /* The name, with Edit (editors) on the right */
 .Enclosures-titleRow {
@@ -586,9 +567,15 @@
         padding: 10px 2px;
     }
 
-    .Enclosures-details div:nth-child(even) {
+    /* (which column each is in: inPairs in EnclosuresPage.jsx) */
+    .Enclosures-details div.is-right {
         padding-left: 14px;
         border-left: 1px solid var(--surface-2);
+    }
+
+    /* Type, when there's an odd number: a row of its own */
+    .Enclosures-details div.is-wide {
+        grid-column: 1 / -1;
     }
 
     .Enclosures-details dt {
@@ -600,6 +587,62 @@
         padding-left: 24px;
         text-align: left;
         white-space: nowrap;
+    }
+}
+
+/* A care unit's list: one row each (label left, value right), the whole
+   width up to 450px, no wider */
+.Enclosures-summary.is-stacked {
+    max-width: 450px;
+}
+
+@media (max-width: 759px) {
+    .Enclosures-summary.is-stacked .Enclosures-details {
+        display: block;
+    }
+
+    .Enclosures-summary.is-stacked .Enclosures-details div,
+    .Enclosures-summary.is-stacked .Enclosures-details div.is-right {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 11px 2px;
+        border-left: none;
+    }
+
+    .Enclosures-summary.is-stacked .Enclosures-details dt {
+        font-size: 14px;
+    }
+
+    .Enclosures-summary.is-stacked .Enclosures-details dd {
+        padding-left: 0;
+        text-align: right;
+    }
+}
+
+/* A troop enclosure's details: one row each too on the narrowest phones */
+@media (max-width: 399px) {
+    .Enclosures-summary.is-troop .Enclosures-details {
+        display: block;
+    }
+
+    .Enclosures-summary.is-troop .Enclosures-details div,
+    .Enclosures-summary.is-troop .Enclosures-details div.is-right,
+    .Enclosures-summary.is-troop .Enclosures-details div.is-wide {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 11px 2px;
+        border-left: none;
+    }
+
+    .Enclosures-summary.is-troop .Enclosures-details dt {
+        font-size: 14px;
+    }
+
+    .Enclosures-summary.is-troop .Enclosures-details dd {
+        padding-left: 0;
+        text-align: right;
     }
 }
 
@@ -634,20 +677,44 @@
     color: var(--text-3);
 }
 
-/* Computers: two columns (picture | summary), the jump buttons across
-   both, then text | map */
+/* Computers: the numbers on the left, the details on the right (an
+   introcage, with no numbers: its details in two columns) */
 @media (min-width: 760px) {
-    .Enclosures-hero {
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-        grid-template-areas:
-            "picture heading"
-            "picture summary"
-            "jumps jumps"
-            "text text"
-            "map map";
-        /* The name's row only as tall as the name: the numbers right under */
-        grid-template-rows: auto 1fr;
-        align-items: start;
+    .Enclosures-summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0 28px;
+    }
+
+    /* The tiles as tall as the details beside them, each row sharing the
+       height, the number and label centred in each tile */
+    .Enclosures-summary .Enclosures-stats {
+        grid-auto-rows: 1fr;
+    }
+
+    .Enclosures-summary .Enclosures-stats div {
+        justify-content: center;
+    }
+
+    .Enclosures-summary .Enclosures-details {
+        align-self: start;
+    }
+
+    /* A care unit: no tiles, just the details */
+    .Enclosures-summary.is-stacked {
+        display: block;
+    }
+
+    .Enclosures-summary .Enclosures-stats,
+    .Enclosures-summary .Enclosures-details {
+        margin-top: 0;
+    }
+
+    .Enclosures-info.is-noStats .Enclosures-details {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 28px;
     }
 
     /* The map across the page, a wide strip (tall enough that a tall
@@ -658,17 +725,7 @@
     }
 
     .Enclosures-heading .Enclosures-recordTitle {
-        margin-top: 6px;
         font-size: 38px;
-    }
-
-    .Enclosures-summary .Enclosures-stats {
-        margin-top: 5px;
-    }
-
-    /* Level with the name beside it */
-    .Enclosures-picture.is-large {
-        margin-top: 14px;
     }
 }
 
@@ -729,55 +786,16 @@
     color: var(--text-3);
 }
 
-/* A block or care unit's first box: across the whole row, saying what it is
-   (phones: beside Monkeys, below) */
-.Enclosures-stats .Enclosures-statKind {
-    grid-column: 1 / -1;
+/* A block or care unit (two or three boxes): sharing the row equally */
+.Enclosures-stats.is-few {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
 }
 
-@media (max-width: 759px) {
-    .Enclosures-stats .Enclosures-statKind {
-        grid-column: auto;
-    }
-}
-
-/* Monkeys (a block or care unit): the whole tile goes down to the Monkeys
-   list, with a small arrow in its corner, like the jump buttons */
-.Enclosures-stats div.is-jump {
-    position: relative;
-}
-
-.Enclosures-statJump {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    padding: 8px;
-    color: var(--text-3);
-    background: none;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.Enclosures-stats div.is-jump:hover {
-    border-color: var(--line-strong);
-}
-
-.Enclosures-statJump:hover,
-.Enclosures-statJump:focus-visible {
-    color: var(--accent);
-}
-
-.Enclosures-statJump:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-/* Narrow computer windows: the summary column is too narrow for the labels
-   on one line, so the tiles share it equally and long labels wrap */
-@media (min-width: 760px) and (max-width: 959px) {
+/* Phones and narrow computer windows: the tiles share the width equally
+   (the same size), long labels wrapping onto two lines */
+@media (max-width: 959px) {
     .Enclosures-stats {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 6px;
@@ -822,174 +840,8 @@
 
 .Enclosures-block {
     margin-top: 28px;
-    /* Jumped to: clear of the top bar */
-    scroll-margin-top: 84px;
-}
-
-/* ---- Jump buttons: a list under the numbers that scrolls down to a part
-   of the page ---- */
-
-.Enclosures-jumps {
-    grid-area: jumps;
-    display: flex;
-    flex-direction: column;
-    margin-top: 14px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background-color: var(--surface-1);
-}
-
-.Enclosures-jump {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 11px 14px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    text-align: left;
-    color: var(--text);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.15s;
-}
-
-.Enclosures-jump + .Enclosures-jump {
-    border-top: 1px solid var(--line);
-}
-
-.Enclosures-jump svg {
-    flex-shrink: 0;
-    color: var(--text-3);
-}
-
-.Enclosures-jumpLabel {
-    flex: 1;
-}
-
-.Enclosures-jump:hover {
-    background-color: var(--surface-2);
-}
-
-.Enclosures-jump:hover .Enclosures-jumpArrow {
-    color: var(--accent);
-}
-
-.Enclosures-jump:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .Enclosures-jump {
-        transition: none;
-    }
-}
-
-/* Three (an introcage's): one row whenever they fit (from 380px; a little
-   tighter on narrow phones) */
-@media (min-width: 380px) {
-    .Enclosures-jumps.is-few {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jump {
-        flex: 1 1 auto;
-        justify-content: center;
-        padding: 11px 10px;
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jump + .Enclosures-jump {
-        border-top: none;
-        border-left: 1px solid var(--line);
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jumpLabel {
-        flex: none;
-    }
-}
-
-/* Narrow phones: two per row (the third across the bottom), so two rows */
-@media (max-width: 379px) {
-    .Enclosures-jumps.is-few {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jump {
-        gap: 7px;
-        padding: 11px 10px;
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jump:nth-child(2) {
-        border-top: none;
-        border-left: 1px solid var(--line);
-    }
-
-    .Enclosures-jumps.is-few .Enclosures-jump:nth-child(3) {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (min-width: 380px) and (max-width: 459px) {
-    .Enclosures-jumps.is-few .Enclosures-jump {
-        gap: 6px;
-        padding: 11px 6px;
-    }
-}
-
-/* Phones and small tablets: two per row, so at most two rows */
-@media (max-width: 759px) {
-    .Enclosures-jumps:not(.is-few) {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .Enclosures-jumps:not(.is-few) .Enclosures-jump + .Enclosures-jump {
-        border-top: none;
-    }
-
-    .Enclosures-jumps:not(.is-few) .Enclosures-jump:nth-child(n + 3) {
-        border-top: 1px solid var(--line);
-    }
-
-    .Enclosures-jumps:not(.is-few) .Enclosures-jump:nth-child(even) {
-        border-left: 1px solid var(--line);
-    }
-}
-
-/* Narrow phones: a little tighter */
-@media (max-width: 459px) {
-    .Enclosures-jumps:not(.is-few) .Enclosures-jump {
-        gap: 7px;
-        padding: 11px 10px;
-    }
-}
-
-/* Computers: one row across the page, the buttons side by side */
-@media (min-width: 760px) {
-    .Enclosures-jumps {
-        flex-direction: row;
-        margin-top: 24px;
-    }
-
-    .Enclosures-jump {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .Enclosures-jump + .Enclosures-jump {
-        border-top: none;
-        border-left: 1px solid var(--line);
-    }
-
-    .Enclosures-jumpLabel {
-        flex: none;
-    }
+    /* Jumped to: clear of the top bar and the row of icons */
+    scroll-margin-top: calc(var(--nav-height) + 60px);
 }
 
 .Enclosures-block > p {
@@ -1057,5 +909,115 @@
 .Enclosures-missing {
     margin: 48px 0;
     text-align: center;
+    color: var(--text-3);
+}
+
+/* ---- The parts of the page: a row of icons that stays under the top bar ---- */
+
+.Enclosures-sectionNav {
+    position: sticky;
+    z-index: 1;
+    top: var(--nav-height);
+    display: flex;
+    gap: 4px;
+    margin: 7px 0 0;
+    padding: 6px 0;
+    /* (solid: the lists scroll under it) */
+    background-color: var(--bg);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.Enclosures-sectionButton {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+    height: 40px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
+    background: none;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.Enclosures-sectionButton svg {
+    flex-shrink: 0;
+}
+
+.Enclosures-sectionButton:hover {
+    color: var(--text);
+    background-color: var(--surface-2);
+}
+
+/* The part being read */
+.Enclosures-sectionButton.is-active {
+    color: var(--text-strong);
+    background-color: var(--surface-2);
+}
+
+.Enclosures-sectionButton:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* Phones and narrow windows: icons only, so they always fit (the name is
+   the tooltip and what a screen reader says) */
+@media (max-width: 899px) {
+    .Enclosures-sectionLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Enclosures-sectionButton {
+        transition: none;
+    }
+}
+
+/* The photos: one at a time, not too big on a computer */
+.Enclosures-photos .Enclosures-picture {
+    max-width: 640px;
+    margin-top: 0;
+}
+
+/* About: the description at the top, the features at the end under their
+   own small heading */
+.Enclosures-description,
+.Enclosures-about p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.Enclosures-description {
+    margin-bottom: 16px;
+}
+
+.Enclosures-about {
+    margin-top: 18px;
+}
+
+.Enclosures-description.Enclosures-none,
+.Enclosures-about p.Enclosures-none {
+    color: var(--text-3);
+}
+
+.Enclosures-subhead {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text-3);
 }

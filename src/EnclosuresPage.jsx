@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
-    IconArrowDown,
     IconArrowLeft,
     IconBed,
     IconBowl,
     IconCalendar,
     IconDoor,
+    IconHome,
+    IconInfoCircle,
     IconChevronDown,
     IconChevronLeft,
     IconChevronRight,
@@ -14,6 +15,7 @@ import {
     IconMap2,
     IconMapPin,
     IconPencil,
+    IconPhoto,
     IconRuler2,
     IconTool,
 } from "@tabler/icons-react";
@@ -66,15 +68,27 @@ import MonkeysNavIcon from "./MonkeysNavIcon";
 //   that group with previous / next
 
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
+// Just the word, for a number tile's label ("1 Monkey", "3 Monkeys")
+const wordFor = (n, word, many = `${word}s`) => (n === 1 ? word : many);
+
+// Care units' cages, which aren't recorded as areas of their own (they
+// share one area): how many, and what they're called
+const CARE_UNIT_CAGES = {
+    Quarantine: { count: 6, word: "Quarantine Cage" },
+    Sickbay: { count: 10, word: "Patient Cage" },
+};
+
+// An enclosure's Type, in its details
+const ENCLOSURE_TYPES = { troop: "Troop Enclosure", block: "Block Enclosure", care_unit: "Care Unit" };
 
 // An introcage's yes / no details (null or missing: not recorded)
 const yesNo = (value) => (value === true ? "Yes" : value === false ? "No" : null);
 
 // One of the details rows: icon and label on the left, the value (or "Not
 // recorded") on the right
-function DetailRow({ icon: Icon, label, value }) {
+function DetailRow({ icon: Icon, label, value, className }) {
     return (
-        <div>
+        <div className={className || undefined}>
             <dt>
                 <Icon size={16} aria-hidden="true" />
                 {label}
@@ -82,6 +96,23 @@ function DetailRow({ icon: Icon, label, value }) {
             <dd>{value ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
         </div>
     );
+}
+
+// The details, laid out for phones (two side by side): which are in the
+// right-hand column (a line on their left), and the wide one (Type) across
+// a whole row when there's an odd number. Gives each row its className.
+function inPairs(rows) {
+    const odd = rows.length % 2 === 1;
+    let column = 0;
+    return rows.map(({ wide, ...row }) => {
+        if (wide && odd) {
+            column = 0;
+            return { ...row, className: "is-wide" };
+        }
+        const className = column === 1 ? "is-right" : undefined;
+        column = 1 - column;
+        return { ...row, className };
+    });
 }
 
 // "← Enclosures" / "← H&B": back up a level
@@ -266,20 +297,59 @@ function Ranking({ label, rank, unknown = "Not known" }) {
     );
 }
 
-// Buttons that scroll down to a part of the page (opening it if it's
-// folded away): a row across the page under the details on computers, a
-// list on phones.
+// The parts of the page as a row of icons that stays under the top bar
+// while scrolling: tapping one scrolls down to it (opening it if it's
+// folded away), and the part being read is lit up. Icons only on phones,
+// so the row always fits; their names beside them on computers.
 //   jumps: [{ key, label, icon }]; onJump(key)
-function JumpList({ jumps, onJump }) {
+function SectionNav({ jumps, onJump }) {
+    const ref = useRef(null);
+    const [active, setActive] = useState(null);
+    const keys = jumps.map((j) => j.key).join(" ");
+
+    // The part being read: the last one whose top has gone up under the bar
+    // (at the very bottom of the page: the last part)
+    useEffect(() => {
+        const list = keys.split(" ");
+        let frame = 0;
+        function update() {
+            const line = (ref.current?.getBoundingClientRect().bottom ?? 0) + 24;
+            let current = null;
+            for (const key of list) {
+                const top = document.getElementById(jumpId(key))?.getBoundingClientRect().top;
+                if (top !== undefined && top <= line) current = key;
+            }
+            const root = document.documentElement;
+            if (current && window.innerHeight + window.scrollY >= root.scrollHeight - 2) current = list.at(-1);
+            setActive(current);
+        }
+        const onScroll = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(update);
+        };
+        update();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onScroll);
+        };
+    }, [keys]);
+
     return (
-        // Three or fewer (an introcage's): kept in one row on all but the
-        // narrowest phones
-        <nav className={`Enclosures-jumps${jumps.length <= 3 ? " is-few" : ""}`} aria-label="On this page">
+        <nav ref={ref} className="Enclosures-sectionNav" aria-label="On this page">
             {jumps.map(({ key, label, icon: Icon }) => (
-                <button key={key} type="button" className="Enclosures-jump" onClick={() => onJump(key)}>
-                    <Icon size={18} stroke={1.75} aria-hidden="true" />
-                    <span className="Enclosures-jumpLabel">{label}</span>
-                    <IconArrowDown size={16} className="Enclosures-jumpArrow" aria-hidden="true" />
+                <button
+                    key={key}
+                    type="button"
+                    className={`Enclosures-sectionButton${active === key ? " is-active" : ""}`}
+                    aria-current={active === key ? "true" : undefined}
+                    title={label}
+                    onClick={() => onJump(key)}
+                >
+                    <Icon size={20} stroke={1.75} aria-hidden="true" />
+                    <span className="Enclosures-sectionLabel">{label}</span>
                 </button>
             ))}
         </nav>
@@ -504,8 +574,9 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     // introcages / areas; those have no troop door
     const noTroop = !isIntrocage && !hasTroop(enclosure);
     const inNoTroop = Boolean(parent) && !hasTroop(parent);
-    // Size: on its introcages / areas instead (a one-area care unit: its own)
-    const noSize = noTroop && introcages.length > 0;
+    // No Size: a care unit (not applicable), or a block (on its introcages
+    // instead)
+    const noSize = isCareUnit(enclosure) || (noTroop && introcages.length > 0);
     // (an introcage: who's in it now, then those who live here but are
     // staying in another introcage for now, with their badge)
     const living = isIntrocage
@@ -517,55 +588,78 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
     // The troop's average age (a block or care unit: its monkeys')
     const age = isIntrocage ? null : averageAge(noTroop ? inIntrocages : troop);
 
-    // Which folding parts are open: all but an enclosure's (long) monkey
-    // list to start with
+    // Which folding parts are open: all of them to start with
     const [open, setOpen] = useState({
-        introcages: true, maintenance: true, monkeys: false, residents: true,
+        introcages: true, maintenance: true, monkeys: true, residents: true,
     });
     const foldProps = (key) => ({
         open: open[key],
         onToggle: () => setOpen((o) => ({ ...o, [key]: !o[key] })),
         jumpId: jumpId(key),
     });
-    // Scroll down to a part, opening it first if it's folded away
+    // Scroll down to a part, opening it first if it's folded away (About:
+    // back to the top)
     function jump(key) {
         if (key in open) setOpen((o) => ({ ...o, [key]: true }));
         requestAnimationFrame(() => {
-            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-            document.getElementById(jumpId(key))?.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
+            const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+            if (key === "about") window.scrollTo?.({ top: 0, behavior });
+            else document.getElementById(jumpId(key))?.scrollIntoView?.({ behavior, block: "start" });
         });
     }
     // A care unit's are its "Areas"
     const introcagesTitle = isCareUnit(enclosure) ? "Areas" : "Introcages";
-    // In the page's order (an introcage: its monkeys before Maintenance)
-    const maintenanceJump = { key: "maintenance", label: "Maintenance", icon: IconTool };
-    const jumps = isIntrocage
-        ? [
-              { key: "map", label: "Map", icon: IconMap2 },
-              { key: "residents", label: "Monkeys", icon: MonkeysNavIcon },
-              maintenanceJump,
-          ]
-        : [
-              { key: "map", label: "Map", icon: IconMap2 },
-              ...(introcages.length
-                  ? [{ key: "introcages", label: introcagesTitle, icon: IconCube }]
-                  : []),
-              maintenanceJump,
-              { key: "monkeys", label: "Monkeys", icon: MonkeysNavIcon },
-          ];
+    // The description at the top (an introcage's one field), and an
+    // enclosure's features at the end of About: each left out when there's
+    // nothing written, unless they can fill it in
+    const description = (isIntrocage ? enclosure.features : enclosure.description) || "";
+    const features = isIntrocage ? "" : enclosure.features || "";
+    const showDescription = Boolean(description) || editing.canEditDetails;
+    const showFeatures = !isIntrocage && (Boolean(features) || editing.canEditDetails);
+    // In the page's order
+    // (About: the top of the page)
+    const jumps = [
+        { key: "about", label: "About", icon: IconInfoCircle },
+        // (a care unit's areas, like Baby Care's rooms: a house)
+        ...(introcages.length ? [{ key: "introcages", label: introcagesTitle, icon: isCareUnit(enclosure) ? IconHome : IconCube }] : []),
+        { key: isIntrocage ? "residents" : "monkeys", label: "Monkeys", icon: MonkeysNavIcon },
+        { key: "map", label: "Map", icon: IconMap2 },
+        { key: "photos", label: "Photos", icon: IconPhoto },
+        { key: "maintenance", label: "Maintenance", icon: IconTool },
+    ];
 
-    // Enclosures: before the monkeys; introcages: at the bottom
-    const maintenance = (
-        <Fold title="Maintenance" {...foldProps("maintenance")}>
-            <MaintenanceLog
-                enclosure={enclosure}
-                live={editing.live}
-                canAdd={editing.canLog}
-                canDelete={editing.canDelete}
-            />
-        </Fold>
+    // The details, in order. A care unit's numbers come first: its monkeys,
+    // then its areas or cages (it has no tiles).
+    const careUnit = isCareUnit(enclosure);
+    const cages = careUnit ? CARE_UNIT_CAGES[enclosure.name] : null;
+    const sectionText = !enclosure.section ? (
+        <span className="Enclosures-unset">Not set</span>
+    ) : isCareUnit(parent ?? enclosure) ? (
+        // a care unit (and its areas): "Care Units"
+        enclosure.section
+    ) : (
+        `${enclosure.section} Section`
     );
-
+    const detailRows = inPairs([
+        isIntrocage && { icon: MonkeysNavIcon, label: "No. of Monkeys", value: residents(enclosure, monkeys).length },
+        careUnit && { icon: MonkeysNavIcon, label: "Monkeys", value: inIntrocages.length },
+        careUnit && introcages.length > 0 && { icon: IconHome, label: introcagesTitle, value: introcages.length },
+        cages && { icon: IconCube, label: `${cages.word}s`, value: cages.count },
+        // What kind of enclosure it is (an introcage: "Introcage at …" under its name)
+        !isIntrocage && { icon: BenchTreeIcon, label: "Type", value: ENCLOSURE_TYPES[enclosure.type], wide: true },
+        { icon: IconMapPin, label: "Section", value: sectionText },
+        !isIntrocage && { icon: IconCalendar, label: "Established", value: established },
+        // (not for a care unit, or a block: its introcages have sizes)
+        !noSize && { icon: IconRuler2, label: "Size", value: sizeText(enclosure.size) },
+        // (an introcage's: not a care unit's area, like Dreamland)
+        ...(isIntrocage && enclosure.type === "introcage"
+            ? [
+                  !inNoTroop && { icon: IconDoor, label: "Troop Door", value: yesNo(enclosure.troopDoor) },
+                  { icon: IconBowl, label: "Plate Slot", value: yesNo(enclosure.plateSlot) },
+                  { icon: IconBed, label: "Sleeping Perches", value: enclosure.sleepingPerches },
+              ]
+            : []),
+    ].filter(Boolean));
     return (
         <>
             {/* Centred, the same width as the monkey list view */}
@@ -578,94 +672,74 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     <BackLink href={parent ? enclosureHash(parent) : ENCLOSURES_HASH} label={parent ? fullName(parent.name) : "Enclosures"} />
                     {steps && <Steps steps={steps} kind={isIntrocage ? "introcage" : "enclosure"} onStep={onStep} />}
                 </div>
-                {/* Computers (iNaturalist style): picture, then About and
-                    Features on the left; name, numbers, details, then the map
-                    on the right. Phones: one after another. */}
-                <div className="Enclosures-hero">
-                    {/* The name (phones: above the picture; computers: beside it) */}
-                    <div className="Enclosures-heading">
-                        <div className="Enclosures-titleRow">
-                            <h1 className="Enclosures-recordTitle"><PlaceName name={enclosure.name} /></h1>
-                            {editing.canEditDetails && (
-                                // The same Edit button as a monkey's pop-up
-                                <button type="button" className="Modal-edit Enclosures-edit" onClick={() => setIsEditing(true)}>
-                                    <IconPencil size={18} aria-hidden="true" />
-                                    Edit
-                                </button>
-                            )}
-                        </div>
-                        {isIntrocage && parent && (
-                            <p className="Enclosures-parent">
-                                {/* (the cube: the introcage symbol, as on the cards) */}
-                                <IconCube size={15} aria-hidden="true" />
-                                {TYPE_NAMES[enclosure.type]} at <a href={enclosureHash(parent)}><PlaceName name={parent.name} /></a>
-                            </p>
+                {/* The name, the row of icons, then the numbers and details
+                    (the photos have their own part further down) */}
+                <div className="Enclosures-heading">
+                    <div className="Enclosures-titleRow">
+                        <h1 className="Enclosures-recordTitle"><PlaceName name={enclosure.name} /></h1>
+                        {editing.canEditDetails && (
+                            // The same Edit button as a monkey's pop-up
+                            <button type="button" className="Modal-edit Enclosures-edit" onClick={() => setIsEditing(true)}>
+                                <IconPencil size={18} aria-hidden="true" />
+                                Edit
+                            </button>
                         )}
                     </div>
-                    <Picture enclosure={enclosure} introcages={introcages} monkeys={living} large />
-                    <div className="Enclosures-summary">
+                    {isIntrocage && parent && (
+                        <p className="Enclosures-parent">
+                            {/* (the cube: the introcage symbol, as on the cards) */}
+                            <IconCube size={15} aria-hidden="true" />
+                            {TYPE_NAMES[enclosure.type]} at <a href={enclosureHash(parent)}><PlaceName name={parent.name} /></a>
+                        </p>
+                    )}
+                </div>
+
+                <SectionNav jumps={jumps} onJump={jump} />
+
+                {/* About: the top of the page. The description, the numbers
+                    and details, then the features */}
+                <section className={`Enclosures-info${isIntrocage ? " is-noStats" : ""}`} id={jumpId("about")}>
+                    <h2>About</h2>
+                    {showDescription && (
+                        <p className={`Enclosures-description${description ? "" : " Enclosures-none"}`}>
+                            {description || "No description yet."}
+                        </p>
+                    )}
+                    {/* (a care unit: no tiles, its numbers in the details,
+                        half the page wide on computers) */}
+                    <div className={`Enclosures-summary${careUnit ? " is-stacked" : ""}${hasTroop(enclosure) && !isIntrocage ? " is-troop" : ""}`}>
                         {/* The numbers, worked out from the monkeys (an
-                            introcage's one number is in the details instead) */}
-                        {/* A block or care unit: what it is, then its monkeys
-                            (no troop, so no troop numbers or rankings) */}
-                        {noTroop && (
-                            <dl className="Enclosures-stats">
-                                <div className="Enclosures-statKind">
-                                    <dt>No resident troop</dt>
-                                    <dd>{TYPE_NAMES[enclosure.type]}</dd>
-                                </div>
-                                {/* Tapped: down to the Monkeys list (opened), like
-                                    the jump buttons */}
-                                <div className="is-jump">
-                                    <dt>Monkeys</dt>
+                            introcage's or care unit's are in the details instead) */}
+                        {/* Bachelor Block: its monkeys (no troop, so no troop
+                            numbers or rankings; what it is: Type, below) */}
+                        {noTroop && !careUnit && (
+                            <dl className="Enclosures-stats is-few">
+                                <div>
+                                    <dt>{wordFor(inIntrocages.length, "Monkey")}</dt>
                                     <dd>{inIntrocages.length}</dd>
-                                    <button
-                                        type="button"
-                                        className="Enclosures-statJump"
-                                        onClick={() => jump("monkeys")}
-                                        aria-label={`${inIntrocages.length} monkeys: go to the Monkeys list`}
-                                    >
-                                        <IconArrowDown size={14} aria-hidden="true" />
-                                    </button>
                                 </div>
-                                {introcages.length > 0 && (
-                                    // (a care unit's Areas: down to its list too)
-                                    <div className={isCareUnit(enclosure) ? "is-jump" : undefined}>
-                                        <dt>{introcagesTitle}</dt>
-                                        <dd>{introcages.length}</dd>
-                                        {isCareUnit(enclosure) && (
-                                            <button
-                                                type="button"
-                                                className="Enclosures-statJump"
-                                                onClick={() => jump("introcages")}
-                                                aria-label={`${introcages.length} areas: go to the Areas list`}
-                                            >
-                                                <IconArrowDown size={14} aria-hidden="true" />
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                                {/* (not a care unit: new arrivals come and go) */}
-                                {!isCareUnit(enclosure) && (
-                                    <div>
-                                        <dt>Average age</dt>
-                                        <dd>{age === null ? "–" : age}</dd>
-                                    </div>
-                                )}
+                                <div>
+                                    <dt>{wordFor(introcages.length, "Introcage")}</dt>
+                                    <dd>{introcages.length}</dd>
+                                </div>
+                                <div>
+                                    <dt>Average age</dt>
+                                    <dd>{age === null ? "–" : age}</dd>
+                                </div>
                             </dl>
                         )}
                         {!isIntrocage && !noTroop && (
                             <dl className="Enclosures-stats">
                                 <div>
-                                    <dt>Troop monkeys</dt>
+                                    <dt>{wordFor(troop.length, "Troop monkey")}</dt>
                                     <dd>{troop.length}</dd>
                                 </div>
                                 <div>
-                                    <dt>Introcage monkeys</dt>
+                                    <dt>{wordFor(inIntrocages.length, "Introcage monkey")}</dt>
                                     <dd>{inIntrocages.length}</dd>
                                 </div>
                                 <div>
-                                    <dt>Introcages</dt>
+                                    <dt>{wordFor(introcages.length, "Introcage")}</dt>
                                     <dd>{introcages.length}</dd>
                                 </div>
                                 <Ranking label="Largest enclosure" rank={sizeRank(enclosure, enclosures)} unknown="Size not recorded" />
@@ -677,96 +751,31 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                             </dl>
                         )}
 
-                        {/* The details, as label / value rows */}
+                        {/* The details, as label / value rows (phones: two
+                            side by side, Type across a row of its own when
+                            there's an odd number) */}
                         <dl className="Enclosures-details">
-                            {isIntrocage && <DetailRow icon={MonkeysNavIcon} label="No. of Monkeys" value={residents(enclosure, monkeys).length} />}
-                            <div>
-                                <dt>
-                                    <IconMapPin size={16} aria-hidden="true" />
-                                    Section
-                                </dt>
-                                {/* e.g. "Top Section"; a care unit (and its areas): "Care Units" */}
-                                <dd>
-                                    {!enclosure.section ? (
-                                        <span className="Enclosures-unset">Not set</span>
-                                    ) : isCareUnit(parent ?? enclosure) ? (
-                                        enclosure.section
-                                    ) : (
-                                        `${enclosure.section} Section`
-                                    )}
-                                </dd>
-                            </div>
-                            {!isIntrocage && (
-                                <div>
-                                    <dt>
-                                        <IconCalendar size={16} aria-hidden="true" />
-                                        Established
-                                    </dt>
-                                    <dd>{established ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
-                                </div>
-                            )}
-                            {/* (not for a block or care unit with introcages /
-                                areas: those have sizes) */}
-                            {!noSize && (
-                                <div>
-                                    <dt>
-                                        <IconRuler2 size={16} aria-hidden="true" />
-                                        Size
-                                    </dt>
-                                    <dd>{sizeText(enclosure.size) ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
-                                </div>
-                            )}
-                            {/* (an introcage's: not a care unit's area, like Dreamland) */}
-                            {isIntrocage && enclosure.type === "introcage" && (
-                                <>
-                                    {!inNoTroop && <DetailRow icon={IconDoor} label="Troop Door" value={yesNo(enclosure.troopDoor)} />}
-                                    <DetailRow icon={IconBowl} label="Plate Slot" value={yesNo(enclosure.plateSlot)} />
-                                    <DetailRow icon={IconBed} label="Sleeping Perches" value={enclosure.sleepingPerches} />
-                                </>
-                            )}
+                            {detailRows.map((row) => (
+                                <DetailRow key={row.label} {...row} />
+                            ))}
                         </dl>
                     </div>
 
-                    <JumpList jumps={jumps} onJump={jump} />
-
-                    <div className="Enclosures-text">
-                        {!isIntrocage && (
-                            <section className="Enclosures-block">
-                                <h2>About</h2>
-                                <p className={enclosure.description ? undefined : "Enclosures-none"}>
-                                    {enclosure.description || "No description yet."}
-                                </p>
-                            </section>
-                        )}
-                        <section className="Enclosures-block">
-                            {/* (introcages: their one field, so "Description") */}
-                            <h2>{isIntrocage ? "Description" : "Features"}</h2>
-                            <p className={enclosure.features ? "Enclosures-features" : "Enclosures-none"}>
-                                {enclosure.features || (isIntrocage ? "No description yet." : "No features listed yet.")}
+                    {showFeatures && (
+                        <div className="Enclosures-about">
+                            <h3 className="Enclosures-subhead">Features</h3>
+                            <p className={features ? "Enclosures-features" : "Enclosures-none"}>
+                                {features || "No features listed yet."}
                             </p>
-                        </section>
-                    </div>
-
-                    {/* The sanctuary map with this enclosure picked out (an
-                        introcage: its enclosure) */}
-                    <section className="Enclosures-block Enclosures-mapBlock" id={jumpId("map")}>
-                        <h2>Map</h2>
-                        <SanctuaryMap
-                            enclosure={parent ?? enclosure}
-                            section={enclosure.section}
-                            introcage={isIntrocage ? enclosure.name : null}
-                            introcages={introcagesOf(parent ?? enclosure, enclosures).map((e) => e.name)}
-                        />
-                    </section>
-                </div>
+                        </div>
+                    )}
+                </section>
 
                 {!isIntrocage && introcages.length > 0 && (
                     <Fold title={introcagesTitle} count={introcages.length} {...foldProps("introcages")}>
                         <IntrocageList introcages={introcages} monkeys={monkeys} />
                     </Fold>
                 )}
-
-                {!isIntrocage && maintenance}
 
                 {isIntrocage ? (
                     <MonkeyGroup
@@ -788,7 +797,39 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     />
                 )}
 
-                {isIntrocage && maintenance}
+                {/* The sanctuary map with this enclosure picked out (an
+                    introcage: its enclosure) */}
+                <section className="Enclosures-block Enclosures-mapBlock" id={jumpId("map")}>
+                    <h2>Map</h2>
+                    <SanctuaryMap
+                        enclosure={parent ?? enclosure}
+                        section={enclosure.section}
+                        introcage={isIntrocage ? enclosure.name : null}
+                        introcages={introcagesOf(parent ?? enclosure, enclosures).map((e) => e.name)}
+                    />
+                </section>
+
+                {/* Its own photos, one at a time */}
+                <section className="Enclosures-block Enclosures-photos" id={jumpId("photos")}>
+                    <h2>
+                        Photos
+                        {enclosure.photos.length > 0 && <span className="Enclosures-count">{enclosure.photos.length}</span>}
+                    </h2>
+                    {enclosure.photos.length ? (
+                        <PhotoSlides key={enclosure.id} photos={enclosure.photos} name={enclosure.name} />
+                    ) : (
+                        <p className="Enclosures-none">No photos yet.</p>
+                    )}
+                </section>
+
+                <Fold title="Maintenance" {...foldProps("maintenance")}>
+                    <MaintenanceLog
+                        enclosure={enclosure}
+                        live={editing.live}
+                        canAdd={editing.canLog}
+                        canDelete={editing.canDelete}
+                    />
+                </Fold>
             </article>
             {isEditing && (
                 <EnclosureForm

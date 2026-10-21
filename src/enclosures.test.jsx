@@ -154,7 +154,7 @@ describe("an enclosure's record", () => {
         expect(screen.getByText("Size").closest("div")).toHaveTextContent("Not recorded");
         const stat = (label) => screen.getByText(label, { selector: "dt" }).nextSibling.textContent;
         expect(stat("Troop monkeys")).toBe(String(hbTroop.length));
-        expect(stat("Introcage monkeys")).toBe("1");
+        expect(stat("Introcage monkey")).toBe("1"); // (one: "monkey")
         expect(stat("Introcages")).toBe("4");
         // Rankings among the troop enclosures, and the troop's average age
         expect(stat("Size not recorded")).toBe("–");
@@ -168,21 +168,26 @@ describe("an enclosure's record", () => {
         expect(c1).toHaveAttribute("href", enclosureHash(HB_C1));
         expect(c1).toHaveTextContent("Aroha");
         expect(screen.getByRole("link", { name: /^Holt & Barrington A/ })).toHaveTextContent("Empty");
-        // Maintenance comes before the monkeys, open too
+        // Introcages, the monkeys, the map, photos, then Maintenance last (all open)
         expect(screen.getByText(/maintenance log will show here once vervetDB is online/)).toBeInTheDocument();
         const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-        expect(headings.indexOf("Maintenance")).toBeLessThan(headings.findIndex((h) => h.startsWith("Monkeys")));
-        // The monkeys stay folded away until asked for
-        expect(screen.queryByRole("button", { name: /^Agatha,|^Apollo,/ })).toBeNull();
+        expect(headings.map((h) => h.replace(/\d+$/, ""))).toEqual(["About", "Introcages", "Monkeys", "Map", "Photos", "Maintenance"]);
+        // No photo at the top: its own photos have their own part
+        expect(screen.getByText("No photos yet.")).toBeInTheDocument();
+        // (nothing written, and not an editor: no description or features)
+        expect(screen.queryByText("No description yet.")).toBeNull();
+        expect(screen.queryByText("Features")).toBeNull();
+        // The monkeys: open to start with, and fold away
         const toggle = document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-monkeys"]');
-        expect(toggle).toHaveAttribute("aria-expanded", "false");
-        await user.click(toggle);
         expect(toggle).toHaveAttribute("aria-expanded", "true");
         // One list: the troop, then Aroha (in H&B C1) last
         const list = screen.getByRole("heading", { name: /^Monkeys/ }).parentElement;
         const rows = within(list).getAllByRole("button").slice(1); // (after the heading's own button)
         expect(rows).toHaveLength(hbTroop.length + 1);
         expect(rows.at(-1)).toHaveAccessibleName(/^Aroha, .*in Holt & Barrington C1/);
+        await user.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(screen.queryByRole("button", { name: /^Aroha,/ })).toBeNull();
     });
 
     test("an introcage: its enclosure (link back), residents, no established date", async () => {
@@ -196,8 +201,9 @@ describe("an enclosure's record", () => {
         const first = document.querySelector(".Enclosures-details > div");
         expect(first).toHaveTextContent("No. of Monkeys1");
         expect(screen.getByText("Section").closest("div")).toHaveTextContent("Bottom Section");
-        // Its one field is its description; no rankings or average age
-        expect(screen.getByRole("heading", { name: "Description" })).toBeInTheDocument();
+        // Nothing written about it (and not an editor): no description; no
+        // rankings or average age
+        expect(document.querySelector(".Enclosures-description")).toBeNull();
         expect(screen.queryByText("Average age")).toBeNull();
         expect(screen.getByRole("button", { name: /^Aroha,/ })).toBeInTheDocument();
     });
@@ -215,11 +221,16 @@ describe("an enclosure's record", () => {
         expect(popUp).not.toHaveTextContent("troop");
     });
 
-    test("jump buttons: Map, Introcages, Maintenance and Monkeys, opening the monkey list", async () => {
+    test("the row of icons: About (the top), Introcages, Monkeys, Map, Photos, Maintenance; opening a folded list", async () => {
         const { user } = showPage(`enclosure/${HB.id}`);
         const jumps = within(screen.getByRole("navigation", { name: "On this page" }));
         const labels = jumps.getAllByRole("button").map((b) => b.textContent);
-        expect(labels).toEqual(["Map", "Introcages", "Maintenance", "Monkeys"]);
+        expect(labels).toEqual(["About", "Introcages", "Monkeys", "Map", "Photos", "Maintenance"]);
+        // (each one's name is its tooltip too: phones show the icons only)
+        expect(jumps.getAllByRole("button").map((b) => b.title)).toEqual(labels);
+        const toggle = document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-monkeys"]');
+        await user.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
         const scrolled = vi.fn();
         Element.prototype.scrollIntoView = scrolled;
         await user.click(jumps.getByRole("button", { name: /^Monkeys/ }));
@@ -227,14 +238,19 @@ describe("an enclosure's record", () => {
         expect(scrolled.mock.contexts[0]).toHaveAttribute("id", "Enclosures-jump-monkeys");
         expect(document.querySelector('.Enclosures-toggle[aria-controls="Enclosures-monkeys"]')).toHaveAttribute("aria-expanded", "true");
         delete Element.prototype.scrollIntoView;
+        // About: back to the top of the page
+        const toTop = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+        await user.click(jumps.getByRole("button", { name: "About" }));
+        await waitFor(() => expect(toTop).toHaveBeenCalledWith(expect.objectContaining({ top: 0 })));
+        toTop.mockRestore();
     });
 
-    test("an introcage: jump buttons Map, Monkeys, Maintenance; Maintenance at the bottom", () => {
+    test("an introcage: icons About, Monkeys, Map, Photos, Maintenance; Maintenance at the bottom", () => {
         showPage(`enclosure/${HB_C1.id}`);
         const jumps = within(screen.getByRole("navigation", { name: "On this page" }));
-        expect(jumps.getAllByRole("button").map((b) => b.textContent)).toEqual(["Map", "Monkeys", "Maintenance"]);
+        expect(jumps.getAllByRole("button").map((b) => b.textContent)).toEqual(["About", "Monkeys", "Map", "Photos", "Maintenance"]);
         const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-        expect(headings.slice(-2)).toEqual(["Monkeys1", "Maintenance"]);
+        expect(headings.slice(-4)).toEqual(["Monkeys1", "Map", "Photos", "Maintenance"]);
     });
 
     test("an enclosure that's gone: a message and a way back", () => {
@@ -521,37 +537,50 @@ describe("enclosures without a troop: Bachelor Block (a block) and the care unit
         expect(card("Bachelor Block")).toHaveTextContent(/0 monkeys · 2 introcages/i);
     });
 
-    test("a care unit's page: a Care Unit box, its monkeys and areas; no average age, troop numbers, rankings or Size", () => {
+    // A care unit's details, in order, as "label value"
+    const details = () => [...document.querySelectorAll(".Enclosures-details > div")].map((d) => `${d.querySelector("dt").textContent} ${d.querySelector("dd").textContent}`);
+
+    test("a care unit's page: no tiles; Monkeys, Areas, Type, Section, Established in its details; no average age, rankings or Size", () => {
         showWith(`enclosure/${BABY_CARE.id}`);
         expect(screen.getByRole("heading", { level: 1, name: "Baby Care" })).toBeInTheDocument();
-        const stats = document.querySelector(".Enclosures-stats");
-        expect([...stats.querySelectorAll("dd")].map((d) => d.textContent)).toEqual(["Care Unit", "2", "3"]);
-        expect(stats).not.toHaveTextContent("Average age");
-        expect(stats).not.toHaveTextContent("Troop monkeys");
-        expect(stats).not.toHaveTextContent("Largest");
+        expect(document.querySelector(".Enclosures-stats")).toBeNull();
+        expect(details()).toEqual(["Monkeys 2", "Areas 3", "Type Care Unit", "Section Care Units", `Established ${establishedText(BABY_CARE.established) ?? "Not recorded"}`]);
+        expect(screen.queryByText("Average age")).toBeNull();
+        expect(screen.queryByText(/Largest/)).toBeNull();
         expect(screen.queryByText("Size")).toBeNull();
-        // In the Care Units section
-        expect(screen.getByText("Care Units")).toBeInTheDocument();
-        // Areas, not Introcages (the jump button and the folding list)
+        // Areas, not Introcages (the icon and the folding list)
         expect(screen.getAllByRole("button", { name: /^Areas/ })).toHaveLength(2);
         expect(screen.queryByText("Introcages")).toBeNull();
+        // Phones: five, so Type has a row of its own; the rest in pairs
+        const rows = [...document.querySelectorAll(".Enclosures-details > div")].map((d) => d.className);
+        expect(rows).toEqual(["", "is-right", "is-wide", "", "is-right"]);
     });
 
-    test("a care unit's Monkeys tile: down to the Monkeys list, opening it", async () => {
-        const user = userEvent.setup();
+    test("an enclosure's Type in its details: Troop Enclosure, Block Enclosure, Care Unit", () => {
+        const type = () => screen.getByText("Type").closest("div");
         showWith(`enclosure/${BABY_CARE.id}`);
-        const fold = () => screen.getByRole("button", { name: /^Monkeys/, expanded: false });
-        expect(fold()).toBeInTheDocument();
-        await user.click(screen.getByRole("button", { name: /go to the Monkeys list/ }));
-        expect(screen.getByRole("button", { name: /^Monkeys/, expanded: true })).toBeInTheDocument();
-        // (its Areas tile goes down to the Areas list)
-        expect(screen.getByRole("button", { name: /go to the Areas list/ })).toBeInTheDocument();
+        expect(type()).toHaveTextContent("Care Unit");
+        // (the row of icons does the jumping: no buttons on the numbers)
+        expect(screen.queryByRole("button", { name: /go to the Monkeys list/ })).toBeNull();
+        cleanup();
+        showWith(`enclosure/${BACHELOR.id}`);
+        expect(type()).toHaveTextContent("Block Enclosure");
+    });
+
+    test("Quarantine's and Sickbay's cages, in their details", () => {
+        const unit = (name) => enclosuresArr.find((e) => e.type === "care_unit" && e.name === name);
+        const one = { ...monkeysArr[0], troop: null, introcage: "Quarantine", enclosure: "Quarantine" };
+        showWith(`enclosure/${unit("Quarantine").id}`, [one]);
+        expect(details().slice(0, 3)).toEqual(["Monkeys 1", "Quarantine Cages 6", "Type Care Unit"]);
+        cleanup();
+        showWith(`enclosure/${unit("Sickbay").id}`, []);
+        expect(details().slice(0, 2)).toEqual(["Monkeys 0", "Patient Cages 10"]);
     });
 
     test("Bachelor Block's page: a Block box, and Introcages", () => {
         showWith(`enclosure/${BACHELOR.id}`);
         const stats = document.querySelector(".Enclosures-stats");
-        expect(stats.querySelector("dd")).toHaveTextContent("Block");
+        expect(stats).not.toHaveTextContent("Block");
         expect(stats).toHaveTextContent("Introcages2");
         // (its monkeys are long-term: their average age stays)
         expect(stats).toHaveTextContent("Average age");
@@ -593,11 +622,11 @@ describe("enclosures without a troop: Bachelor Block (a block) and the care unit
         // (the area's own link, from before: the unit's page too)
         render(<ShowPage route={`enclosure/${area.id}`} monkeys={[inUnit]} enclosures={enclosuresArr} sections={SECTION_NAMES} />);
         expect(screen.getByRole("heading", { level: 1, name: "Sickbay" })).toBeInTheDocument();
-        expect(screen.getByText("Care Unit")).toBeInTheDocument();
+        expect(screen.getByText("Type").closest("div")).toHaveTextContent("Care Unit");
         expect(screen.queryByRole("button", { name: /^Areas/ })).toBeNull();
-        expect(document.querySelector(".Enclosures-stats")).not.toHaveTextContent("Areas");
-        // Its own Size (it has no areas listed to have them)
-        expect(screen.getByText("Size")).toBeInTheDocument();
+        expect(screen.queryByText("Areas")).toBeNull();
+        // No Size: not applicable to a care unit
+        expect(screen.queryByText("Size")).toBeNull();
     });
 
     test("a new arrival's choices: the care units only", () => {
