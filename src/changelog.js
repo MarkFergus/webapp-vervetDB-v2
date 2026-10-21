@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.13.0",
+        date: "2026-10-21",
+        changes: [
+            "New Troop Monitoring Notes in Documents under Troop Monitoring",
+            "Added Monitoring to monkey records: Priority Condition Check and Notes for Monitoring",
+            "Added updates to injuries",
+            "Added Maintenance Type (Routine or Repair) to the maintenance log",
+        ],
+    },
+    {
         version: "1.12.3",
         date: "2026-10-21",
         changes: ["Improved enclosure pages with a redesign"],
