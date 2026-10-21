@@ -106,6 +106,30 @@
     flex: 1;
 }
 
+/* Small phones: a little closer together, so Edit, Photos and the three
+   icons still fit one row */
+@media (max-width: 399px) {
+    .Modal-footer {
+        gap: 6px;
+    }
+
+    .Modal-footer .Modal-edit:not(.is-quiet) {
+        padding: 0 11px;
+    }
+}
+
+/* The smallest phones: Photos is just its icon too */
+@media (max-width: 349px) {
+    .Modal-photosLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
 .Modal-edit:disabled {
     opacity: 0.6;
     cursor: default;
@@ -158,8 +182,8 @@
     background-color: var(--surface-3);
 }
 
-/* Phones: Share and Save image are round icon buttons, so they fit on one
-   row with Edit and Photos (their names are still read out) */
+/* Phones: Full Profile is a round icon button too, so they all fit on one
+   row with Edit and Photos (its name is still read out) */
 @media (max-width: 459px) {
     .Modal-edit.is-quiet {
         justify-content: center;
@@ -176,6 +200,23 @@
         clip-path: inset(50%);
         white-space: nowrap;
     }
+}
+
+/* Share and Save image: round icon buttons at every width (the name is
+   still read out) */
+.Modal-edit.is-icon {
+    justify-content: center;
+    width: 36px;
+    padding: 0;
+}
+
+.Modal-edit.is-icon .Modal-editLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 .Modal-edit.is-quiet:hover:not(:disabled) {

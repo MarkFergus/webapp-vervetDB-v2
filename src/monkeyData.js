@@ -573,6 +573,76 @@ export async function deleteIntegration(id) {
     if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it, can delete it.");
 }
 
+// ---- Monkey Records: a monkey's Rehabilitation and Medical records ----
+
+// A record, as the site uses it: { id, section ("rehabilitation" /
+// "medical"), date ("2026-10-21"), category ("vet_visit"), details,
+// loggedBy (the writer's account id), loggedByName, loggedAt }
+const toAppRecord = (row) => ({
+    id: row.id,
+    section: row.section,
+    date: row.record_date,
+    category: row.category,
+    details: row.details,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+    loggedAt: row.logged_at,
+});
+const RECORD_COLUMNS = "id, section, record_date, category, details, logged_by, logged_by_name, logged_at";
+
+// A monkey's records (both sections), newest first. Throws if the database
+// hasn't got them yet (monkey-records.sql) or can't be reached.
+export async function loadRecords(monkeyId) {
+    const { data, error } = await supabase
+        .from("monkey_records")
+        .select(RECORD_COLUMNS)
+        .eq("monkey_id", monkeyId)
+        .order("record_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw error;
+    return data.map(toAppRecord);
+}
+
+// Adds a record ({ section, date, category, details }); who and when are
+// filled in by the database. Returns the saved record.
+export async function addRecord(monkeyId, { section, date, category, details }) {
+    const { data, error } = await supabase
+        .from("monkey_records")
+        .insert({ monkey_id: monkeyId, section, record_date: date, category, details })
+        .select(RECORD_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Adding a record failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppRecord(data);
+}
+
+// Changes a record's date, category or details (admins, or whoever wrote it)
+export async function saveRecord(id, { date, category, details }) {
+    const { data, error } = await supabase
+        .from("monkey_records")
+        .update({ record_date: date, category, details })
+        .eq("id", id)
+        .select(RECORD_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Saving a record failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppRecord(data);
+}
+
+// Deletes a record (admins, or whoever wrote it)
+export async function deleteRecord(id) {
+    const { data, error } = await supabase.from("monkey_records").delete().eq("id", id).select("id");
+    if (error) {
+        console.error("Deleting a record failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it, can delete it.");
+}
+
 // ---- Injuries: a monkey's injuries (current and healed) ----
 
 // An update on an injury, as the site uses it: { id, date, details,

@@ -1,0 +1,221 @@
+/* A monkey's full page: built from the enclosure record's parts
+   (EnclosuresPage.css); just what's different is here */
+
+/* View Card and Edit, beside the name */
+.MonkeyPage-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+
+/* Profile: the photos, then the facts (computers: side by side) */
+.MonkeyPage-profileTop {
+    display: grid;
+    gap: 16px;
+}
+
+.MonkeyPage-photos .Enclosures-picture {
+    margin-top: 0;
+    aspect-ratio: 1;
+}
+
+/* (the facts sit right under the photos on phones, no gap above) */
+.MonkeyPage-facts.Enclosures-details {
+    margin-top: 0;
+}
+
+/* Phones: the "Profile" heading under the photos, above the facts (the
+   photos lead the page, right under the icon bar) */
+@media (max-width: 689px) {
+    .MonkeyPage-profile {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .MonkeyPage-profileTop {
+        display: contents;
+    }
+
+    .MonkeyPage-photos {
+        order: -2;
+    }
+
+    .MonkeyPage-profile > h2 {
+        order: -1;
+        margin-top: 18px;
+    }
+}
+
+/* Tablets and computers (past the phone layout, 690px: NavBars.css):
+   side by side. The photo stays its full size (456px, half the page) for
+   as long as it can: the list narrows first, down to 240px, then the photo
+   gets smaller. */
+@media (min-width: 690px) {
+    .MonkeyPage-profileTop {
+        grid-template-columns: minmax(0, 456px) minmax(240px, 1fr);
+        align-items: start;
+        gap: 28px;
+    }
+}
+
+/* ...and while the list is narrow (below 760px, where the details would
+   go two side by side), one row each: label left, value right */
+@media (min-width: 690px) and (max-width: 759px) {
+    .MonkeyPage-facts.Enclosures-details {
+        display: block;
+    }
+
+    .MonkeyPage-facts.Enclosures-details div {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 11px 2px;
+        border-left: none;
+    }
+
+    .MonkeyPage-facts.Enclosures-details dd {
+        padding-left: 0;
+        text-align: right;
+        white-space: normal;
+    }
+}
+
+/* Bio and description: kept as typed, line breaks and all */
+.MonkeyPage-text {
+    white-space: pre-line;
+}
+
+/* Arrival Info: the Arrival Details, and the details beside them on
+   computers (phones: under them) */
+.MonkeyPage-arrival {
+    display: grid;
+    gap: 18px;
+}
+
+@media (min-width: 690px) {
+    .MonkeyPage-arrival.has-text {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: start;
+        gap: 28px;
+    }
+}
+
+/* The Arrival Details: a box of text, like the forms' text boxes */
+.MonkeyPage-arrivalText {
+    padding: 12px 14px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.MonkeyPage-arrivalText p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Rows on their own (not two side by side on phones), no wider than the
+   page's half */
+.MonkeyPage-rows.Enclosures-details {
+    display: block;
+    max-width: 456px;
+    margin-top: 0;
+}
+
+.MonkeyPage-rows.Enclosures-details div {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 11px 2px;
+    border-left: none;
+}
+
+.MonkeyPage-rows.Enclosures-details dd {
+    padding-left: 0;
+    text-align: right;
+    white-space: normal;
+}
+
+/* ---- Records: two tabs, like a browser's ---- */
+
+/* A line along the bottom, which the chosen tab sits over (so it joins
+   the list below) */
+.MonkeyPage-tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.MonkeyPage-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: -1px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.MonkeyPage-tab:hover {
+    color: var(--text);
+    background-color: var(--surface-2);
+}
+
+/* The chosen one: the panel's colour, its lines up the sides, and none
+   underneath */
+.MonkeyPage-tab.is-active {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    border-color: var(--line);
+}
+
+.MonkeyPage-tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* Phones: the tabs share the width; narrow ones drop the icons so the
+   three names fit */
+@media (max-width: 459px) {
+    .MonkeyPage-tabs {
+        gap: 2px;
+    }
+
+    .MonkeyPage-tab {
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+        padding: 10px 6px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 419px) {
+    .MonkeyPage-tab svg {
+        display: none;
+    }
+}
+
+/* The chosen tab's lists, in a panel joined to it */
+.MonkeyPage-tabPanel {
+    padding: 10px 16px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .MonkeyPage-tab {
+        transition: none;
+    }
+}

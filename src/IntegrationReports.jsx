@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
-import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { addIntegration, deleteIntegration, loadIntegration, saveIntegration } from "./monkeyData";
 import { summaryDate } from "./feeding";
-import ConfirmBubble from "./ConfirmBubble";
 import useScrollIntoView from "./useScrollIntoView";
 import { useFormLock } from "./formLock";
 import "./IntegrationReports.css";
 
 // Integration Reports: staff reports on how a monkey's integration is going
-// (usually weekly). Shown on the monkey's pop-up, under Quick Actions, for
-// staff only; editors and admins add them, admins or whoever wrote one can
-// change or delete it. (supabase/integration-reports.sql)
+// (usually weekly). Listed on the monkey's page, in Records → Integration
+// (MonkeyRecords.jsx), for staff only; editors and admins add them, admins
+// or whoever wrote one can change or delete it.
+// (supabase/integration-reports.sql)
 
 export const MAX_REPORT = 500;
 
@@ -78,7 +77,7 @@ export function useIntegration(monkeyId, staff) {
     };
 }
 
-// From / To side by side, then the report, then Confirm and Cancel.
+// Date Start / Date End side by side, then the report, then Confirm and Cancel.
 //   initial: { from, to, report }; onSave(values) async (throws a message
 //   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
 export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = false }) {
@@ -94,7 +93,7 @@ export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = fa
 
     async function confirm() {
         if (!values.from || !values.to) return setProblem("Please choose both dates.");
-        if (values.to < values.from) return setProblem("The To date can't be before the From date.");
+        if (values.to < values.from) return setProblem("The end date can't be before the start date.");
         if (!report) return setProblem("Please write the report.");
         setBusy(true);
         setProblem(null);
@@ -110,11 +109,11 @@ export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = fa
         <div className="Integration-form" ref={formRef}>
             <div className="Integration-dates">
                 <label>
-                    <span>From</span>
+                    <span>Date Start</span>
                     <input type="date" value={values.from} max={values.to || undefined} onChange={set("from")} />
                 </label>
                 <label>
-                    <span>To</span>
+                    <span>Date End</span>
                     <input type="date" value={values.to} min={values.from || undefined} onChange={set("to")} />
                 </label>
             </div>
@@ -145,107 +144,5 @@ export function IntegrationForm({ initial, onSave, onCancel, scrollIntoView = fa
                 </button>
             </div>
         </div>
-    );
-}
-
-// The fold-out list under Quick Actions: "Integration Reports (3)"
-export function IntegrationList({ integration, open, onToggle }) {
-    const [editing, setEditing] = useState(null); // an entry id
-    const [deleting, setDeleting] = useState(null); // an entry id, to confirm
-    const [problem, setProblem] = useState(null);
-    const [busy, setBusy] = useState(false);
-    const cancelDelete = useCallback(() => setDeleting(null), []);
-    const { entries } = integration;
-    // Hidden until there is at least one report
-    if (!integration.available || entries.length === 0) return null;
-
-    async function remove(id) {
-        setBusy(true);
-        setProblem(null);
-        try {
-            await integration.remove(id);
-            setDeleting(null);
-        } catch (err) {
-            setProblem(err.message);
-        } finally {
-            setBusy(false);
-        }
-    }
-
-    return (
-        <section className="Integration-list">
-            <button type="button" className="Integration-toggle" aria-expanded={open} onClick={onToggle}>
-                Integration Reports ({entries.length})
-                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
-            </button>
-            {open && (
-                <ul>
-                    {entries.map((entry) => (
-                        <li key={entry.id}>
-                            {editing === entry.id ? (
-                                <IntegrationForm
-                                    scrollIntoView
-                                    initial={{ from: entry.from, to: entry.to, report: entry.report }}
-                                    onSave={async (values) => {
-                                        await integration.update(entry.id, values);
-                                        setEditing(null);
-                                    }}
-                                    onCancel={() => setEditing(null)}
-                                />
-                            ) : (
-                                <>
-                                    {/* The dates on the left; small Edit / Delete icons on
-                                        the right (admins, or whoever wrote it). Delete asks
-                                        in a small bubble above them. */}
-                                    <div className="Integration-head">
-                                        <b className="Integration-period">{periodText(entry.from, entry.to)}</b>
-                                        {integration.canChange(entry) && (
-                                            <span className="Integration-icons">
-                                                <button
-                                                    type="button"
-                                                    className="Integration-icon is-edit"
-                                                    aria-label="Edit"
-                                                    title="Edit"
-                                                    onClick={() => setEditing(entry.id)}
-                                                >
-                                                    <IconPencil size={17} aria-hidden="true" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="Integration-icon is-delete"
-                                                    aria-label="Delete"
-                                                    title="Delete"
-                                                    onClick={() => setDeleting(entry.id)}
-                                                >
-                                                    <IconTrash size={17} aria-hidden="true" />
-                                                </button>
-                                                {deleting === entry.id && (
-                                                    <ConfirmBubble
-                                                        question="Delete this report?"
-                                                        danger
-                                                        busy={busy}
-                                                        onConfirm={() => remove(entry.id)}
-                                                        onCancel={cancelDelete}
-                                                    />
-                                                )}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="Integration-text">{entry.report}</p>
-                                    <span className="Integration-by">
-                                        Added by {entry.loggedByName ?? "Staff"} on {summaryDate(new Date(entry.loggedAt))}
-                                    </span>
-                                </>
-                            )}
-                        </li>
-                    ))}
-                    {problem && (
-                        <li className="Integration-problem" role="alert">
-                            {problem}
-                        </li>
-                    )}
-                </ul>
-            )}
-        </section>
     );
 }

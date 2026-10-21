@@ -86,7 +86,7 @@ const yesNo = (value) => (value === true ? "Yes" : value === false ? "No" : null
 
 // One of the details rows: icon and label on the left, the value (or "Not
 // recorded") on the right
-function DetailRow({ icon: Icon, label, value, className }) {
+export function DetailRow({ icon: Icon, label, value, className }) {
     return (
         <div className={className || undefined}>
             <dt>
@@ -101,7 +101,7 @@ function DetailRow({ icon: Icon, label, value, className }) {
 // The details, laid out for phones (two side by side): which are in the
 // right-hand column (a line on their left), and the wide one (Type) across
 // a whole row when there's an odd number. Gives each row its className.
-function inPairs(rows) {
+export function inPairs(rows) {
     const odd = rows.length % 2 === 1;
     let column = 0;
     return rows.map(({ wide, ...row }) => {
@@ -116,7 +116,7 @@ function inPairs(rows) {
 }
 
 // "← Enclosures" / "← H&B": back up a level
-function BackLink({ href, label }) {
+export function BackLink({ href, label }) {
     return (
         <a href={href} className="Enclosures-back">
             <IconArrowLeft size={16} aria-hidden="true" />
@@ -166,7 +166,7 @@ function Steps({ steps, kind, onStep }) {
 // An enclosure's photos on its record: one at a time, with round previous /
 // next buttons and a dot per photo (like a monkey's pop-up); on phones, swipe
 // sideways
-function PhotoSlides({ photos, name }) {
+export function PhotoSlides({ photos, name }) {
     const [index, setIndex] = useState(0);
     // Slid in from this side after a change ("next" / "prev"), or null
     const [slideFrom, setSlideFrom] = useState(null);
@@ -261,7 +261,7 @@ function Picture({ enclosure, introcages = [], monkeys, large = false }) {
 // A heading that folds its list open and shut. The record keeps which are
 // open (so the jump buttons can open one). jumpId: the section's id, to
 // scroll to.
-function Fold({ title, count, open, onToggle, jumpId, children }) {
+export function Fold({ title, count, open, onToggle, jumpId, children }) {
     const id = `Enclosures-${title.toLowerCase().replace(/\s+/g, "-")}`;
     return (
         <section className="Enclosures-block" id={jumpId}>
@@ -284,7 +284,7 @@ function Fold({ title, count, open, onToggle, jumpId, children }) {
 }
 
 // The jump buttons' sections: section id on the page
-const jumpId = (key) => `Enclosures-jump-${key}`;
+export const jumpId = (key) => `Enclosures-jump-${key}`;
 
 // A number tile for a ranking among the troop enclosures: "3rd" / "Largest
 // troop", or a dash with unknown (e.g. "Size not recorded") below it
@@ -302,7 +302,7 @@ function Ranking({ label, rank, unknown = "Not known" }) {
 // folded away), and the part being read is lit up. Icons only on phones,
 // so the row always fits; their names beside them on computers.
 //   jumps: [{ key, label, icon }]; onJump(key)
-function SectionNav({ jumps, onJump }) {
+export function SectionNav({ jumps, onJump }) {
     const ref = useRef(null);
     const [active, setActive] = useState(null);
     const keys = jumps.map((j) => j.key).join(" ");

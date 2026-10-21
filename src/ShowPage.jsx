@@ -19,7 +19,7 @@ import MonkeyForm from "./MonkeyForm";
 import QuickPhotos from "./QuickPhotos";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
-import { isMonkeyHash, monkeyFromHash, monkeyHash } from "./monkeyLink";
+import { isMonkeyHash, isMonkeyPageRoute, monkeyFromHash, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
 import { fullName, homeName, inIntrocage, placeName, staying } from "./places";
 import {
     enclosureFromRoute,
@@ -33,6 +33,7 @@ import {
     troopMonkeys,
 } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
+import MonkeyPage from "./MonkeyPage";
 import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
 import MonkeysNavIcon from "./MonkeysNavIcon";
@@ -170,7 +171,7 @@ function ShowPage({
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
-    const { user, role, isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
+    const { user, role, ready, isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
     const canEdit = editable && isEditor;
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
@@ -220,6 +221,10 @@ function ShowPage({
         if (id == null) return;
         recentIds.current = [id, ...recentIds.current.filter((x) => x !== id)].slice(0, 10);
     }, [isModalOpen, selectedMonkey]);
+    // Staff (any role, with the database live) see Injuries and a monkey's
+    // page's Records; Quick Actions (Sickbay, Released, New Injury, Healed?)
+    // and adding records are admins only, for now
+    const staff = role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null;
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -303,8 +308,19 @@ function ShowPage({
     const onGame = route === "game";
     // The Updates page (#updates): every version, from About
     const onUpdates = route === "updates";
+    // A monkey's full page (#monkeys/<name>-<enclosure>)
+    const onMonkeyPage = isMonkeyPageRoute(route);
+    const pageMonkey = onMonkeyPage ? monkeyFromPageRoute(route, monkeys) : null;
+    // The full profile is for staff only (any role): anyone else following
+    // a link to one gets the monkey's pop-up instead (once we know who's
+    // signed in)
+    const pageLocked = onMonkeyPage && !role;
+    useEffect(() => {
+        if (!pageLocked || !ready) return;
+        window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
+    }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage;
     // The game starts at the top
     useEffect(() => {
         if (onGame || onUpdates) window.scrollTo?.(0, 0);
@@ -378,8 +394,9 @@ function ShowPage({
     const pageAddress = () => window.location.pathname + window.location.search;
 
     function showInAddress(m) {
-        // (on the Enclosures pages the address stays on the enclosure)
-        if (onEnclosures) return;
+        // (on the Enclosures pages, and a monkey's page, the address stays
+        // on that page)
+        if (onEnclosures || onMonkeyPage) return;
         const hash = monkeyHash(m);
         if (window.location.hash === hash) return;
         if (isMonkeyHash(window.location.hash)) {
@@ -440,6 +457,18 @@ function ShowPage({
         showInAddress(m);
         setSelectedMonkey(m);
     }
+    // The pop-up's Full Profile: the monkey's page in place of the pop-up (so
+    // Back goes to wherever the pop-up was opened from)
+    function openPage(m) {
+        setIsModalOpen(false);
+        const hash = monkeyPageHash(m);
+        if (isMonkeyHash(window.location.hash)) {
+            pushedAddress.current = false;
+            window.location.replace(hash);
+        } else {
+            window.location.hash = hash;
+        }
+    }
     function startEdit(monkey) {
         setIsModalOpen(false);
         leaveAddress();
@@ -478,6 +507,12 @@ function ShowPage({
     function handleSaved(saved) {
         onMonkeySaved(saved);
         setEditing(null);
+        // On its page: stay there (a new name: a new address)
+        if (onMonkeyPage) {
+            const hash = monkeyPageHash(saved);
+            if (window.location.hash !== hash) window.location.replace(hash);
+            return;
+        }
         openModal(saved, modalList && modalList.map((m) => (m.id === saved.id ? saved : m)));
     }
     // Move to Sickbay / Move to Introcage / Return: saved straight away, and
@@ -499,6 +534,8 @@ function ShowPage({
     }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
+        // (its page has gone too: back to the list)
+        if (onMonkeyPage) window.location.hash = "";
         setEditing(null);
         setSelectedMonkey(null);
     }
@@ -779,19 +816,18 @@ function ShowPage({
                     handlePrevNext={handlePrevNext}
                     prevMonkey={prevMonkey}
                     nextMonkey={nextMonkey}
+                    // (none for just one: e.g. View Card)
                     position={
-                        selectedIndex === -1
+                        selectedIndex === -1 || neighbours.length < 2
                             ? null
                             : { number: selectedIndex + 1, total: neighbours.length }
                     }
                     onEdit={canEdit ? startEdit : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
-                    // Quick Actions (Sickbay, Released, New Injury, Integration Report, and
-                    // Healed?): admins only, for now.
-                    // Integration Reports and Injuries: staff (any role) see them
-                    staff={
-                        role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null
-                    }
+                    // (see staff above)
+                    staff={staff}
+                    // (staff only; not when opened from that page: View Card)
+                    onOpenPage={role && !onMonkeyPage ? openPage : undefined}
                     // Released: new arrivals only (living in a care unit), once the database has a status
                     onRelease={
                         canEdit && isAdmin && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
@@ -872,6 +908,18 @@ function ShowPage({
                 </div>
             ) : onUpdates ? (
                 <UpdatesPage inert={isAnyModalOpen} />
+            ) : onMonkeyPage ? (
+                // (nothing while checking who's signed in, or leaving)
+                pageLocked ? null : (
+                    <MonkeyPage
+                        monkey={pageMonkey}
+                        staff={staff}
+                        onEdit={canEdit ? startEdit : undefined}
+                        // View Card: its pop-up, on its own (no previous / next)
+                        onOpenCard={(m) => openModal(m, [m])}
+                        inert={isAnyModalOpen}
+                    />
+                )
             ) : onEnclosures ? (
                 <EnclosuresPage
                     route={route}

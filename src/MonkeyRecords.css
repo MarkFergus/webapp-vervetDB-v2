@@ -1,0 +1,152 @@
+/* A monkey's Rehabilitation / Medical records (MonkeyRecords.jsx): "+ New
+   … Record", then the records in columns: Date | Category | Details */
+
+.Records-new {
+    margin: 6px 0 12px;
+}
+
+/* The form: where the button was, a little room below it */
+.Records-form {
+    margin: 6px 0 16px;
+}
+
+.Records-form select {
+    box-sizing: border-box;
+    width: 100%;
+    height: 38px;
+    padding: 0 10px;
+    font-family: var(--font-ui);
+    font-size: 16px; /* (16px: phones don't zoom in on it) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+}
+
+/* Editing one: the form in its place in the list */
+.Records-editing {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--surface-2);
+}
+
+/* A row: date, category, details, then Edit / Delete (if theirs) */
+.Records-row {
+    display: grid;
+    grid-template-columns: 112px 118px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 11px 2px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--surface-2);
+}
+
+/* Integration: Date Start | Date End | Integration Report */
+.Records-row.is-integration {
+    grid-template-columns: 112px 112px minmax(0, 1fr) auto;
+}
+
+/* The column headings: small grey capitals, like the monkey list's */
+.Records-header {
+    padding-top: 4px;
+    padding-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+    border-bottom-color: var(--line);
+}
+
+.Records-date {
+    color: var(--text-2);
+    white-space: nowrap;
+}
+
+/* The category: a small grey pill */
+.Records-category {
+    display: inline-block;
+    padding: 2px 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.Records-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.Records-text {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.Records-icons {
+    margin: -3px 0 0;
+}
+
+/* "–" between the dates: phones only, where they share a line */
+.Records-dash {
+    display: none;
+}
+
+/* A failed delete: under the icons, right-aligned */
+.Records-problem {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: max-content;
+    max-width: 240px;
+    font-size: 13px;
+    text-align: right;
+}
+
+.Records-none {
+    margin: 6px 0 4px;
+}
+
+/* Phones: the date and category on one line (Edit / Delete on the right),
+   the details under them across the row; no headings (no columns) */
+@media (max-width: 559px) {
+    .Records-header {
+        display: none;
+    }
+
+    .Records-row,
+    .Records-row.is-integration {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 6px 10px;
+        align-items: center;
+    }
+
+    .Records-dash {
+        display: inline;
+    }
+
+    /* (the two dates read as one: "4th Oct 2026 – 11th Oct 2026") */
+    .Records-row.is-integration {
+        column-gap: 4px;
+    }
+
+    .Records-row.is-integration .Records-icons {
+        margin-left: 6px;
+    }
+
+    .Records-details {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .Records-icons {
+        grid-column: 3;
+        grid-row: 1;
+    }
+}

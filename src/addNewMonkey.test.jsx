@@ -1,9 +1,10 @@
 // Add New Monkey: a New Arrival or Other, and a new arrival's Arrival Info
-// (staff only, in place of the Bio while it lives in a care unit)
+// (staff only, shown on the monkey's page), with the Bio as for any monkey
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import MonkeyForm from "./MonkeyForm";
 import Modal from "./Modal";
+import MonkeyPage from "./MonkeyPage";
 import { BUILT_IN_DATA, loadArrivalInfo, saveArrivalInfo, saveMonkey } from "./monkeyData";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -38,7 +39,7 @@ beforeEach(() => {
 });
 
 describe("New Arrival (the first choice)", () => {
-    test("Care Unit and Location, Sex and Birth year; no Chip; Arrival Info instead of Bio", async () => {
+    test("Care Unit and Location, Sex and Birth year; no Chip; the Bio and the Arrival Info", async () => {
         add();
         expect(kind("New Arrival")).toHaveAttribute("aria-pressed", "true");
         expect(field("Care Unit")).toBeInTheDocument();
@@ -47,7 +48,7 @@ describe("New Arrival (the first choice)", () => {
         expect(field("Birth year")).toBeInTheDocument();
         expect(screen.queryByLabelText("Chip")).not.toBeInTheDocument();
         expect(await screen.findByLabelText(/Arrival Info/)).toBeInTheDocument();
-        expect(screen.queryByLabelText("Bio")).not.toBeInTheDocument();
+        expect(screen.getByLabelText("Bio")).toBeInTheDocument();
         // Features stay: any identification marks matter if it escapes
         expect(field("Distinctive features")).toBeInTheDocument();
         // The Care Unit list has just the care units (the rest are under Other)
@@ -149,12 +150,12 @@ describe("editing", () => {
         enclosure: "Quarantine",
     };
 
-    test("in a care unit: Arrival Info in place of the Bio", async () => {
+    test("in a care unit: the Bio and the Arrival Info", async () => {
         loadArrivalInfo.mockResolvedValue("Arrived 3 Oct");
         edit({ ...base, introcage: "Quarantine", introcageId: QUARANTINE_AREA.id, introcageType: "area" });
         const box = await screen.findByLabelText(/Arrival Info/);
         await waitFor(() => expect(box).toHaveValue("Arrived 3 Oct"));
-        expect(screen.queryByLabelText("Bio")).not.toBeInTheDocument();
+        expect(screen.getByLabelText("Bio")).toBeInTheDocument();
     });
 
     test("in a troop enclosure: the Bio, and the Arrival Info kept on record", async () => {
@@ -183,28 +184,35 @@ describe("the pop-up", () => {
         id: 12, name: "Pip", sex: "female", chip: "", year: 2020, img: ["x.jpg"], bio: "A bio", desc: "",
         troop: null, introcage: "Quarantine", introcageType: "area", enclosure: "Quarantine",
     };
-    const open = (monkey, staff) =>
-        render(<Modal isModalOpen monkey={monkey} onClose={() => {}} handlePrevNext={() => {}} staff={staff} />);
     const STAFF = { canSee: true, canAdd: false, userId: "u1", isAdmin: false };
 
-    test("staff see a new arrival's Arrival Info in place of its Bio", async () => {
-        loadArrivalInfo.mockResolvedValue("Found by Sam Smith\nBrought in on the 3rd");
-        open(RESCUE, STAFF);
-        expect(await screen.findByText("Arrival Info")).toBeInTheDocument();
-        expect(screen.getByText(/Found by Sam Smith/)).toBeInTheDocument();
-        expect(screen.queryByText("Bio")).not.toBeInTheDocument();
-    });
-
-    test("visitors (or a rescue moved to a troop) just see the Bio, and nothing is loaded for them", () => {
-        open(RESCUE, null);
+    test("shows the Bio, even for staff and new arrivals: the Arrival Info is on the monkey's page", () => {
+        render(<Modal isModalOpen monkey={RESCUE} onClose={() => {}} handlePrevNext={() => {}} staff={STAFF} />);
         expect(screen.getByText("Bio")).toBeInTheDocument();
         expect(screen.queryByText("Arrival Info")).not.toBeInTheDocument();
         expect(loadArrivalInfo).not.toHaveBeenCalled();
     });
+});
 
-    test("a monkey in a troop enclosure shows its Bio even for staff", () => {
-        open({ ...RESCUE, introcage: null, introcageType: null, troop: "Goliath", enclosure: "Goliath" }, STAFF);
-        expect(screen.getByText("Bio")).toBeInTheDocument();
+describe("the monkey's page", () => {
+    const MONKEY = {
+        id: 12, name: "Pip", sex: "female", chip: "", year: 2020, img: ["x.jpg"], bio: "A bio", desc: "",
+        troop: "Goliath", introcage: null, introcageType: null, enclosure: "Goliath",
+    };
+    const STAFF = { canSee: true, canAdd: false, userId: "u1", isAdmin: false };
+
+    test("staff see the Arrival Details in Arrival Info (any monkey, not just new arrivals)", async () => {
+        loadArrivalInfo.mockResolvedValue("Found by Sam Smith\nBrought in on the 3rd");
+        render(<MonkeyPage monkey={MONKEY} staff={STAFF} />);
+        expect(await screen.findByText(/Found by Sam Smith/)).toBeInTheDocument();
+        expect(screen.getByText("Arrival Details")).toBeInTheDocument();
+        expect(loadArrivalInfo).toHaveBeenCalledWith(12);
+    });
+
+    test("visitors: no Arrival Details, and nothing is loaded for them", () => {
+        render(<MonkeyPage monkey={MONKEY} staff={null} />);
+        expect(screen.getByRole("heading", { name: "Arrival Info" })).toBeInTheDocument();
+        expect(screen.queryByText("Arrival Details")).not.toBeInTheDocument();
         expect(loadArrivalInfo).not.toHaveBeenCalled();
     });
 });

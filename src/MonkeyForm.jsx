@@ -86,8 +86,6 @@ function MonkeyForm({
     }, [monitoringInfo.available, monitoringInfo.value]);
     const monitoringChanged =
         monitoring.conditionCheck !== monitoringSaved.conditionCheck || monitoring.notes.trim() !== monitoringSaved.notes.trim();
-    const inCareUnit = isNew ? rescue : chosenIntrocage(form, choices)?.type === "area";
-    const hideBio = showArrival && inCareUnit;
     const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved || monitoringChanged;
     // Photos uploaded while this form is open (tidied up if not kept)
     const uploadedHere = useRef([]);
@@ -415,12 +413,12 @@ function MonkeyForm({
                         full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
                     />
 
-                    {!hideBio && (
-                        <label className="MonkeyForm-field">
-                            <span>Bio</span>
-                            <textarea rows={4} value={form.bio} onChange={set("bio")} />
-                        </label>
-                    )}
+                    {/* (every monkey, new arrivals too: their Arrival Info is
+                        below, shown on the monkey's page) */}
+                    <label className="MonkeyForm-field">
+                        <span>Bio</span>
+                        <textarea rows={4} value={form.bio} onChange={set("bio")} />
+                    </label>
 
                     {/* A new arrival's arrival details: staff only, up to 2000 characters */}
                     {showArrival && (
