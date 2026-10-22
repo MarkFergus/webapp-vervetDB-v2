@@ -23,14 +23,13 @@ export const CHANGELOG = [
     {
         version: "1.14.0",
         date: "2026-10-22",
+        major: true,
         changes: [
-            "New Full Profile page for each monkey (staff), from Full Profile on its card",
-            "New Records on the Full Profile: Rehabilitation, Medical and Integration",
-            "New Movement records, added for every move to Sickbay, an introcage, or a new home",
+            "New Full Profile page for each monkey (staff only)",
             "Added Species, Birth Date and Current Location to monkey records",
             "Improved Quick Actions: now open to editors, with a date and reason for every move",
             "Improved the maintenance log: staff can edit and delete their own entries",
-            "Improved the monkey card's buttons, so they fit on one row",
+            "Improved navigation menus",
         ],
     },
     {
