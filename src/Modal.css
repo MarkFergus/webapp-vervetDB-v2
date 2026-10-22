@@ -675,9 +675,11 @@
     justify-content: flex-start;
 }
 
-/* A form open in it: 90% of the pop-up, for room to type */
+/* A form open in it: 90% of the pop-up, for room to type, with the app's
+   blue border (like Edit's new-home form) so it stands out */
 .Modal-moreRow.is-form {
     width: 90%;
+    border-color: var(--accent);
 }
 
 /* The forms' boxes: the panel's full width */

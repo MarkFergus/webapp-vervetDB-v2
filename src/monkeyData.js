@@ -29,8 +29,24 @@ const SICKBAY_MONKEY_COLUMNS = `${FEEDING_MONKEY_COLUMNS}, in_sickbay, sickbay_s
 const STATUS_MONKEY_COLUMNS = `${SICKBAY_MONKEY_COLUMNS}, status`;
 // ...and a stay in an introcage (once introcage-stays.sql has run)
 const STAY_MONKEY_COLUMNS = `${STATUS_MONKEY_COLUMNS}, stay_introcage_id, stay_since, stay_note`;
+// ...and its species (once species.sql has run)
+const SPECIES_MONKEY_COLUMNS = `${STAY_MONKEY_COLUMNS}, species`;
+// ...and its birth date (once birth-date.sql has run)
+const BIRTH_MONKEY_COLUMNS = `${SPECIES_MONKEY_COLUMNS}, birth_date, birth_date_approx`;
+// Newest first: each set has all the ones after it (loadMonkeys tries them
+// in turn)
+const COLUMN_SETS = [
+    BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
+    FEEDING_MONKEY_COLUMNS,
+];
+// Whether the database's set includes `columns` (the newer ones do)
+const has = (columns) => COLUMN_SETS.includes(monkeyColumns) && COLUMN_SETS.indexOf(monkeyColumns) <= COLUMN_SETS.indexOf(columns);
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
+// Whether monkeys have a species (species.sql has run): for a new monkey's form
+export const speciesAvailable = () => has(SPECIES_MONKEY_COLUMNS);
+// ...and a birth date (birth-date.sql has run)
+export const birthDateAvailable = () => has(BIRTH_MONKEY_COLUMNS);
 
 // Looking up places while turning rows into monkeys: enclosures by id, and
 // each troop's home enclosure. Set by loadMonkeyData (built-in until then).
@@ -93,6 +109,14 @@ export function toAppMonkey(row) {
     }
     // Once the database has a status (see released-status.sql)
     if ("status" in row) monkey.status = row.status;
+    // ...and a species: "vervet", "samango" or "bush_baby" (species.sql)
+    if ("species" in row) monkey.species = row.species;
+    // ...and a birth date: "2026-11-12" or null (unknown), and whether it's
+    // a guess (birth-date.sql)
+    if ("birth_date" in row) {
+        monkey.birthDate = row.birth_date;
+        monkey.birthDateApprox = row.birth_date_approx;
+    }
     // Once the database has stays (see introcage-stays.sql): the introcage
     // it's staying in for now, or null (at home)
     if ("stay_introcage_id" in row) {
@@ -125,6 +149,13 @@ export function toDatabaseRow(monkey, troopIds) {
         description: monkey.desc,
     };
     if (monkey.introcageId !== undefined) row.introcage_id = monkey.introcageId ?? null;
+    // (once the database has species)
+    if (monkey.species !== undefined) row.species = monkey.species;
+    // (once the database has birth dates; only a date can be a guess)
+    if (monkey.birthDate !== undefined) {
+        row.birth_date = monkey.birthDate || null;
+        row.birth_date_approx = Boolean(monkey.birthDate && monkey.birthDateApprox);
+    }
     // (a stay ends once its introcage becomes home: a move made in Edit)
     if (monkey.stay && monkey.stay.id === monkey.introcageId) {
         Object.assign(row, { stay_introcage_id: null, stay_since: null, stay_note: null });
@@ -189,10 +220,10 @@ function throwIfError(...results) {
 // sickbay.sql / feeding.sql has run (a missing column). { result, columns }
 async function loadMonkeys() {
     let result;
-    for (const columns of [STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS, FEEDING_MONKEY_COLUMNS]) {
+    for (const columns of COLUMN_SETS) {
         const query = supabase.from("monkeys").select(columns).order("id");
         // Released monkeys stay on file but don't appear in the app
-        const hasStatus = columns === STAY_MONKEY_COLUMNS || columns === STATUS_MONKEY_COLUMNS;
+        const hasStatus = COLUMN_SETS.indexOf(columns) <= COLUMN_SETS.indexOf(STATUS_MONKEY_COLUMNS);
         result = await (hasStatus ? query.neq("status", "released") : query);
         if (result.error?.code !== "42703") return { result, columns };
     }
@@ -286,14 +317,29 @@ function saveProblem(error) {
     return new Error("Couldn't save right now. Please check your connection and try again.");
 }
 
+// A move's date and reason, sent along with it: the database adds the
+// Movement record (supabase/movement-records.sql).
+//   move: { on ("2026-10-21"), reason } or null
+const moveColumns = (move) => (move ? { moved_on: move.on || null, move_reason: move.reason?.trim() || null } : {});
+
+// Saves a change to a monkey, with the move's date and reason if there's
+// one. Before movement-records.sql has run (no such columns), saved
+// without them (and no record is made).
+async function updateMonkey(id, row, move) {
+    const send = (r) => supabase.from("monkeys").update(r).eq("id", id).select(monkeyColumns).single();
+    if (!move) return send(row);
+    const result = await send({ ...row, ...moveColumns(move) });
+    return isOlderDatabase(result.error) ? send(row) : result;
+}
+
 // Saves a monkey (site shape). With an id, updates that monkey; without one,
 // adds a new monkey. Returns the saved monkey (site shape, with its id).
-export async function saveMonkey(monkey, troopIds, id) {
+//   move: changing where it lives (Edit): its date and reason, or null
+export async function saveMonkey(monkey, troopIds, id, move = null) {
     const row = toDatabaseRow(monkey, troopIds);
-    const request = id
-        ? supabase.from("monkeys").update(row).eq("id", id)
-        : supabase.from("monkeys").insert(row);
-    const { data, error } = await request.select(monkeyColumns).single();
+    const { data, error } = id
+        ? await updateMonkey(id, row, move)
+        : await supabase.from("monkeys").insert(row).select(monkeyColumns).single();
     if (error) {
         console.error("Saving monkey failed:", error);
         throw saveProblem(error);
@@ -319,6 +365,7 @@ export async function saveMonkeyPhotos(id, photos) {
 // One place at a time: moving to one ends the other. The AM Plates List
 // counts it as fed by Sickbay while it's in Sickbay, or in the introcage
 // it's staying in. Returns the saved monkey (site shape).
+// The move's date and reason (since, note) go into its Movement record.
 export async function saveWhereabouts(id, { at, introcageId = null, since = null, note = "", fedBy }) {
     const row = {
         in_sickbay: at === "sickbay",
@@ -326,7 +373,7 @@ export async function saveWhereabouts(id, { at, introcageId = null, since = null
         sickbay_note: at === "sickbay" ? note.trim() || null : null,
     };
     // (only once the database has stays: until then, Sickbay as before)
-    if (monkeyColumns === STAY_MONKEY_COLUMNS) {
+    if (has(STAY_MONKEY_COLUMNS)) {
         Object.assign(row, {
             stay_introcage_id: at === "introcage" ? introcageId : null,
             stay_since: at === "introcage" ? since || null : null,
@@ -334,7 +381,7 @@ export async function saveWhereabouts(id, { at, introcageId = null, since = null
         });
         if (at === "introcage" && fedBy) row.fed_by = fedBy === "sickbay" ? "sickbay" : "local_team";
     }
-    const { data, error } = await supabase.from("monkeys").update(row).eq("id", id).select(monkeyColumns).single();
+    const { data, error } = await updateMonkey(id, row, { on: since, reason: note });
     if (error) {
         console.error("Saving where it is failed:", error);
         throw saveProblem(error);

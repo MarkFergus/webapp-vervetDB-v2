@@ -106,6 +106,33 @@
     min-height: 15px;
 }
 
+/* Birth Date's "Approx?" tick box: small, on the right of its name (in
+   the name's case, not capitals) */
+.MonkeyForm-approx {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: -4px 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.MonkeyForm .MonkeyForm-approx input {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
 /* Just blue text, no pill */
 .MonkeyForm-unknown {
     margin: -4px 0;
@@ -459,6 +486,7 @@
 
 /* Buttons along the bottom */
 .MonkeyForm-footer {
+    position: relative; /* (the new home's form floats above it) */
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -469,6 +497,58 @@
 
 .MonkeyForm-spacer {
     flex: 1;
+}
+
+/* Save with a new home: a small form floating just above the buttons
+   (over the end of the form), like Quick Actions' forms */
+.MonkeyForm-movePanel {
+    position: absolute;
+    z-index: 2;
+    right: 12px;
+    bottom: calc(100% - 6px);
+    box-sizing: border-box;
+    width: min(380px, calc(100% - 24px));
+    padding: 14px;
+    background-color: var(--surface-1);
+    /* (the app's blue, as on a box being typed in: it stands out from the form) */
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px var(--shadow);
+    animation: MonkeyForm-rise 0.15s ease-out;
+}
+
+/* (its boxes: the panel's full width) */
+.MonkeyForm-movePanel .Modal-sickbayForm input {
+    max-width: none;
+}
+
+.MonkeyForm-movePanel .MonkeyForm-hint {
+    margin: 6px 0 0;
+}
+
+/* "! Updates …'s home location": the icon in front */
+.MonkeyForm-moveHint {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.MonkeyForm-moveHint svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+@keyframes MonkeyForm-rise {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .MonkeyForm-movePanel {
+        animation: none;
+    }
 }
 
 .MonkeyForm-confirm {
@@ -550,8 +630,18 @@
 }
 
 @media (max-width: 420px) {
-    .MonkeyForm-row {
+    .MonkeyForm-row:not(.is-pair) {
         grid-template-columns: 1fr;
+    }
+
+    /* Birth Date and Birth Year: always side by side */
+    .MonkeyForm-row.is-pair {
+        gap: 8px;
+    }
+
+    .MonkeyForm-row.is-pair .MonkeyForm-labelRow {
+        flex-wrap: wrap;
+        row-gap: 4px;
     }
 }
 

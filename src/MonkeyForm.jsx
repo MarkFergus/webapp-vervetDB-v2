@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { fullName } from "./places";
 import { motion } from "motion/react";
+import { IconAlertCircle } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
-import { deleteMonkey, saveArrivalInfo, saveMonitoring, saveMonkey, troopHome } from "./monkeyData";
+import { deleteMonkey, saveArrivalInfo, saveMonitoring, saveMonkey, birthDateAvailable, speciesAvailable, troopHome } from "./monkeyData";
+import { SPECIES } from "./species";
+import { seasonOf } from "./ages";
 import useArrivalInfo from "./useArrivalInfo";
 import useMonitoring from "./useMonitoring";
 import { placeChoices } from "./enclosures";
@@ -11,6 +14,7 @@ import { BABY_FEEDING, isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
+import "./Modal.css"; // the Quick Actions form look (the new home)
 import "./MonkeyForm.css";
 import CloseButton from "./CloseButton";
 
@@ -20,6 +24,17 @@ import CloseButton from "./CloseButton";
 //   enclosures: for the Location box's introcages (only offered when
 //               enclosuresLive: the database can save them)
 //   onSaved(savedMonkey) / onDeleted(id): after a successful save / delete
+// Today as the date box wants it ("2026-10-22")
+const todayText = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+// Where a monkey lives, in full: "Gismo Troop" or "Holt & Barrington C1"
+const homeLabel = (m) => (m.introcage ? fullName(m.introcage) : `${fullName(m.troop)} Troop`);
+// Where it is for now, away from home ("Sickbay", "Gismo A"), or null
+const awayIn = (m) => (m.inSickbay ? "Sickbay" : m.stay ? fullName(m.stay.introcage) : null);
+
 // Birth years to choose from: this year back to 1997, or back to `current`
 // if it's older (so an existing record never loses its year)
 function birthYears(current) {
@@ -47,7 +62,13 @@ function MonkeyForm({
     const choices = other ? allChoices : careChoices;
     const [initial] = useState(() =>
         isNew
-            ? emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : "")
+            ? {
+                  ...emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : ""),
+                  // (a Vervet to start with, once the database has species)
+                  ...(speciesAvailable() && { species: "vervet" }),
+                  // (birth date unknown to start with, once it has them)
+                  ...(birthDateAvailable() && { birthDate: "", birthDateApprox: false }),
+              }
             : formFromMonkey(monkey, careChoices)
     );
     const [form, setForm] = useState(initial);
@@ -55,6 +76,14 @@ function MonkeyForm({
     const [problem, setProblem] = useState(null);
     const [busy, setBusy] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
+    // A new home (Save): the date and reason before saving, for its
+    // Movement record. null, or { values, on, reason }
+    const [moveStep, setMoveStep] = useState(null);
+    // (its date box: focused as it opens)
+    const moveDateRef = useRef(null);
+    useEffect(() => {
+        if (moveStep) moveDateRef.current?.focus();
+    }, [Boolean(moveStep)]);
     const [uploading, setUploading] = useState(false);
     const photosRef = useRef(null);
 
@@ -99,7 +128,8 @@ function MonkeyForm({
         deletePhotos(uploadedHere.current);
         onClose();
     }
-    useDialog(true, nameRef, { onClose: requestClose });
+    // (Escape with the new home's form open: just that closes)
+    useDialog(true, nameRef, { onClose: () => (moveStep ? setMoveStep(null) : requestClose()) });
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
     // A troop monkey moved into an introcage here (its new home): fed by
@@ -161,10 +191,23 @@ function MonkeyForm({
         setErrors(found);
         setProblem(null);
         if (Object.keys(found).length) return;
+        // A new home: first its date and reason
+        const newHome =
+            (values.troop ?? null) !== (monkey?.troop ?? null) || (values.introcage ?? null) !== (monkey?.introcage ?? null);
+        if (!isNew && newHome) {
+            setMoveStep({ values, on: todayText(), reason: "" });
+            return;
+        }
+        await save(values);
+    }
+
+    // move: { on, reason } when it's moving (its Movement record), or null
+    async function save(values, move = null) {
         setBusy(true);
+        setProblem(null);
         try {
             // (its stay goes along: it ends if its introcage is now home)
-            const saved = await saveMonkey({ ...values, stay: monkey?.stay }, troopIds, monkey?.id);
+            const saved = await saveMonkey({ ...values, stay: monkey?.stay }, troopIds, monkey?.id, move);
             // Arrival Info is kept apart (staff only); the monkey is already saved
             if (showArrival && arrival.trim() !== arrivalSaved.trim()) {
                 try {
@@ -279,7 +322,7 @@ function MonkeyForm({
                             {errorFor("troop")}
                         </label>
                         <label className="MonkeyForm-field">
-                            <span>Location <em>(required)</em></span>
+                            <span>Home Location <em>(required)</em></span>
                             <select
                                 value={form.location}
                                 onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
@@ -307,7 +350,20 @@ function MonkeyForm({
                         </p>
                     )}
 
+                    {/* Species (once the database has species) and Sex */}
                     <div className="MonkeyForm-row">
+                        {form.species !== undefined && (
+                            <label className="MonkeyForm-field">
+                                <span>Species</span>
+                                <select value={form.species} onChange={set("species")}>
+                                    {Object.entries(SPECIES).map(([key, label]) => (
+                                        <option key={key} value={key}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
                         <label className="MonkeyForm-field">
                             <span>Sex</span>
                             <select value={form.sex} onChange={set("sex")}>
@@ -316,6 +372,47 @@ function MonkeyForm({
                                 <option value="">Unknown</option>
                             </select>
                         </label>
+                    </div>
+
+                    {/* Birth Date (once the database has them; blank:
+                        unknown, Approx?: a guess) and Birth Year, side by
+                        side. With a date, the year is its season (from 1
+                        July), filled in and fixed */}
+                    <div className="MonkeyForm-row is-pair">
+                        {/* (Approx? can be ticked first: it only counts
+                            once there's a date) */}
+                        {form.birthDate !== undefined && (
+                            <div className="MonkeyForm-field">
+                                <span className="MonkeyForm-labelRow">
+                                    <label htmlFor="MonkeyForm-birthDate">Birth Date</label>
+                                    <label className="MonkeyForm-approx">
+                                        <input
+                                            type="checkbox"
+                                            checked={Boolean(form.birthDateApprox)}
+                                            onChange={(e) => setForm({ ...form, birthDateApprox: e.target.checked })}
+                                        />
+                                        Approx?
+                                    </label>
+                                </span>
+                                <input
+                                    id="MonkeyForm-birthDate"
+                                    type="date"
+                                    value={form.birthDate}
+                                    max={todayText()}
+                                    onChange={(e) => {
+                                        const date = e.target.value;
+                                        setForm({
+                                            ...form,
+                                            birthDate: date,
+                                            year: date ? String(seasonOf(date)) : form.year,
+                                        });
+                                    }}
+                                    aria-invalid={Boolean(errors.birthDate)}
+                                    aria-describedby={describedBy("birthDate")}
+                                />
+                                {errorFor("birthDate")}
+                            </div>
+                        )}
                         <label className="MonkeyForm-field">
                             <span>Birth year</span>
                             {/* This year back to 1997 (or further, if this
@@ -323,6 +420,7 @@ function MonkeyForm({
                             <select
                                 value={form.year}
                                 onChange={set("year")}
+                                disabled={Boolean(form.birthDate)}
                                 aria-invalid={Boolean(errors.year)}
                                 aria-describedby={describedBy("year")}
                             >
@@ -567,6 +665,73 @@ function MonkeyForm({
                 </p>
 
                 <div className="MonkeyForm-footer">
+                    {/* The new home: a small form over the form, just above
+                        Save, like Quick Actions' (saying so if it's away for
+                        now): its date and why */}
+                    {moveStep && (
+                        <div className="MonkeyForm-movePanel" role="group" aria-label="Change home location">
+                            <div className="Modal-sickbayForm">
+                                <div>
+                                    {awayIn(monkey) ? (
+                                        <>
+                                            <p className="Modal-confirmText">
+                                                {moveStep.values.name} is temporarily in {awayIn(monkey)}, change home location to{" "}
+                                                {homeLabel(moveStep.values)}?
+                                            </p>
+                                            <p className="MonkeyForm-hint MonkeyForm-moveHint">
+                                                <IconAlertCircle size={14} aria-hidden="true" />
+                                                Use Quick Actions in the monkey card to log temporary movements.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="Modal-confirmText">
+                                                Move {moveStep.values.name} to a new home location at {homeLabel(moveStep.values)}?
+                                            </p>
+                                            <p className="MonkeyForm-hint MonkeyForm-moveHint">
+                                                <IconAlertCircle size={14} aria-hidden="true" />
+                                                Updates {moveStep.values.name}&rsquo;s home location. Use Quick Actions to update current location.
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                <label>
+                                    <span>Date Moved</span>
+                                    <input
+                                        ref={moveDateRef}
+                                        type="date"
+                                        value={moveStep.on}
+                                        max={todayText()}
+                                        onChange={(e) => setMoveStep({ ...moveStep, on: e.target.value })}
+                                    />
+                                </label>
+                                <label>
+                                    <span>Reason (optional)</span>
+                                    <input
+                                        type="text"
+                                        value={moveStep.reason}
+                                        maxLength={200}
+                                        placeholder="e.g. integrated into the troop"
+                                        onChange={(e) => setMoveStep({ ...moveStep, reason: e.target.value })}
+                                    />
+                                </label>
+                                <div className="Modal-sickbayActions">
+                                    <button
+                                        type="button"
+                                        className="Modal-edit is-confirm"
+                                        onClick={() => save(moveStep.values, { on: moveStep.on, reason: moveStep.reason })}
+                                        disabled={busy || !moveStep.on}
+                                    >
+                                        {busy ? "Saving…" : "Confirm"}
+                                    </button>
+                                    {/* Cancel: back to the form, nothing saved */}
+                                    <button type="button" className="Modal-edit is-soft" onClick={() => setMoveStep(null)} disabled={busy}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {confirmingDelete ? (
                         <>
                             <span className="MonkeyForm-confirm">Delete {monkey.name} for good?</span>

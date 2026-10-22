@@ -9,7 +9,8 @@ import {
     IconHeartHandshake,
     IconId,
     IconDoorEnter,
-    IconMapPin,
+    IconHome,
+    IconCurrentLocation,
     IconPencil,
     IconRosetteDiscountCheck,
     IconReportMedical,
@@ -23,8 +24,10 @@ import { useInjuries } from "./Injuries";
 import { IntegrationRecords, RecordList, otherRows, useRecords } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
 import { ageInYears } from "./ages";
-import { fullName, homeName } from "./places";
+import { fullName, homeName, staying } from "./places";
 import BenchTreeIcon from "./BenchTreeIcon";
+import { SPECIES } from "./species";
+import { summaryDate } from "./feeding";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
 
@@ -40,6 +43,8 @@ import "./MonkeyPage.css";
 //     Medical         injuries, medicine, treatment, vet visits, observations
 //     Integration     integration reports (moved here from the pop-up)
 // The pop-up stays as the quick look; every record lives here.
+
+const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
 // "9 years old", "1 year old", "Baby" (under 1), or null (not known)
 function ageWords(year) {
@@ -156,21 +161,48 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
             else document.getElementById(jumpId(key))?.scrollIntoView?.({ behavior, block: "start" });
         });
     }
-    // Where it lives: its enclosure ("Goliath"), then where in it
-    // ("Goliath Troop" or "Goliath A"); then the rest (phones: two side by
-    // side, Microchip across the last row)
+    // Where it lives: its enclosure ("Goliath"), where in it ("Goliath
+    // Troop" or "Goliath A"), and where it is now; then the rest (phones:
+    // two side by side)
     // (the Bandits: none. The built-in copy has no enclosures: its troop's)
     const enclosureName = "enclosure" in monkey ? monkey.enclosure : homeName(monkey);
     const profileRows = inPairs([
         { icon: BenchTreeIcon, label: "Enclosure", value: enclosureName ? fullName(enclosureName) : "None" },
-        { icon: IconMapPin, label: "Location", value: homeText(monkey) },
+        { icon: IconHome, label: "Home Location", value: homeText(monkey) },
+        // Where it is now: Sickbay or the introcage it's staying in (Quick
+        // Actions), else home
+        {
+            icon: IconCurrentLocation,
+            label: "Current Location",
+            value: monkey.inSickbay ? "Sickbay" : staying(monkey) ? fullName(staying(monkey)) : homeText(monkey),
+        },
         { icon: IconCalendarEvent, label: "Age", value: ageWords(monkey.year) },
-        { icon: IconGenderBigender, label: "Sex", value: SEX_WORDS[monkey.sex] ?? null },
-        // (only the year is recorded so far: its birth season, see ages.js)
-        { icon: IconCalendar, label: "Birth Date", value: null },
+        // (Birth Date and Birth Year next to each other: side by side on
+        // phones. Once the database has birth dates: "14th Feb 2024", with a
+        // grey "(approx.)" before it for a guess, "(app.)" after it on phones)
+        {
+            icon: IconCalendar,
+            label: "Birth Date",
+            value: monkey.birthDate ? (
+                <>
+                    {/* (computers: "(approx.)" before the date, so the
+                        dates line up on the right; phones: "(app.)" after
+                        it, so it fits) */}
+                    {monkey.birthDateApprox && <span className="MonkeyPage-approx MonkeyPage-approxLong">(approx.) </span>}
+                    {dayText(monkey.birthDate)}
+                    {monkey.birthDateApprox && (
+                        <span className="MonkeyPage-approx MonkeyPage-approxShort" aria-hidden="true">
+                            {" "}
+                            (app.)
+                        </span>
+                    )}
+                </>
+            ) : null,
+        },
         { icon: IconCalendar, label: "Birth Year", value: monkey.year || null },
-        // (not recorded yet: Vervet, Samango or Bush Baby)
-        { icon: IconDna2, label: "Species", value: null },
+        { icon: IconGenderBigender, label: "Sex", value: SEX_WORDS[monkey.sex] ?? null },
+        // (once the database has species: species.sql)
+        { icon: IconDna2, label: "Species", value: SPECIES[monkey.species] ?? null },
         // (once the database has a status: Sanctuary or Released, so far)
         { icon: IconRosetteDiscountCheck, label: "Status", value: STATUS_WORDS[monkey.status] ?? null },
         {
@@ -280,7 +312,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
                                     key={tab}
                                     section={tab}
                                     records={records}
-                                    others={otherRows(tab, { monkey, injuries })}
+                                    others={otherRows(tab, { injuries })}
                                 />
                             )}
                         </div>

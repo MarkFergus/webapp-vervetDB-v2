@@ -3,6 +3,8 @@
 // database's rules (supabase/schema.sql), so problems are explained here in
 // plain words instead of being refused by the database.
 
+import { seasonOf } from "./ages";
+
 // Shown on cards when a monkey has no photo yet
 export const PLACEHOLDER_PHOTO = "https://i.ibb.co/2YvYtBJ/blank-image-min.jpg";
 
@@ -32,6 +34,13 @@ export function formFromMonkey(monkey, choices = []) {
         introcageId: monkey.introcageId,
         // undefined: the database has no feeding yet (so it isn't saved)
         feeding: monkey.feeding && { ...monkey.feeding },
+        // undefined: the database has no species yet (so it isn't saved)
+        species: monkey.species,
+        // ...or birth dates: "" = unknown
+        ...(monkey.birthDate !== undefined && {
+            birthDate: monkey.birthDate ?? "",
+            birthDateApprox: Boolean(monkey.birthDateApprox),
+        }),
         sex: monkey.sex ?? "",
         year: monkey.year === "" ? "" : String(monkey.year),
         // A chip of null means "unknown" (an empty chip means "no chip")
@@ -100,7 +109,18 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
 
     let year = "";
     const yearText = form.year.trim();
-    if (yearText) {
+    // A birth date (once the database has them): its Birth Year is the
+    // season it falls in
+    const birthDate = form.birthDate || "";
+    if (birthDate) {
+        const today = new Date();
+        const todayText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || birthDate < "1980-07-01" || birthDate > todayText) {
+            errors.birthDate = "Birth date should be a real date, not in the future, or left blank if unknown.";
+        } else {
+            year = seasonOf(birthDate);
+        }
+    } else if (yearText) {
         year = Number(yearText);
         if (!/^\d{4}$/.test(yearText) || year < 1980 || year > thisYear) {
             errors.year = `Birth year should be between 1980 and ${thisYear}, or left blank if unknown.`;
@@ -134,6 +154,11 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
             // Feeding: kept as it is whether it shows or not (it only means
             // something in an introcage), so a move back finds it again
             ...(form.feeding && { feeding: form.feeding }),
+            ...(form.species !== undefined && { species: form.species }),
+            ...(form.birthDate !== undefined && {
+                birthDate: birthDate || null,
+                birthDateApprox: Boolean(birthDate && form.birthDateApprox),
+            }),
             sex,
             year,
             chip: chipResult.error ? "" : chipResult.chip,

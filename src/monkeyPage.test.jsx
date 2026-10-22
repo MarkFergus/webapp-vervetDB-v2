@@ -2,10 +2,20 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
-import { NEW_RECORDS_OPEN, RecordList } from "./MonkeyRecords";
+import { NEW_RECORDS_OPEN, RecordList, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./monkeysArr";
+import { loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
 import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
+
+// The records: from a mocked database (none, unless a test says)
+vi.mock("./monkeyData", async (importOriginal) => ({
+    ...(await importOriginal()),
+    loadRecords: vi.fn(),
+}));
+beforeEach(() => {
+    loadRecords.mockResolvedValue([]);
+});
 
 // Signed in as staff (the full profile is staff only), unless a test
 // signs out (visitor = true)
@@ -40,7 +50,9 @@ test("the page shows the name, the icon bar and the Profile facts", () => {
     expect(screen.getByText("Arrival Reason")).toBeInTheDocument();
     // Where it lives: its enclosure, then its troop (or introcage)
     expect(screen.getByText("Enclosure").closest("div")).toHaveTextContent("Holt & Barrington");
-    expect(screen.getByText("Location").closest("div")).toHaveTextContent("Holt & Barrington Troop");
+    expect(screen.getByText("Home Location").closest("div")).toHaveTextContent("Holt & Barrington Troop");
+    // ...and where it is now (at home)
+    expect(screen.getByText("Current Location").closest("div")).toHaveTextContent("Holt & Barrington Troop");
     // Visitors: no records
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
     // (no troop link under the name)
@@ -51,6 +63,7 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
     const user = userEvent.setup();
     const staff = { canSee: true, canAdd: false, userId: "staff-1", isAdmin: false };
     render(<MonkeyPage monkey={{ ...aroha, inSickbay: true, sickbaySince: "2026-10-01", sickbayNote: "Limping" }} staff={staff} />);
+    expect(screen.getByText("Current Location").closest("div")).toHaveTextContent("Sickbay");
     expect(screen.getByText("Microchip")).toBeInTheDocument();
     expect(screen.getByText("19806")).toBeInTheDocument();
     const bar = screen.getByRole("navigation", { name: "On this page" });
@@ -62,10 +75,9 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
         "Integration",
     ]);
     expect(screen.getByRole("tab", { name: "Rehabilitation" })).toHaveAttribute("aria-selected", "true");
-    // Where it is now: a Movement row
-    const table = screen.getByRole("table", { name: "Rehabilitation records" });
-    expect(within(table).getByText("Movement")).toBeInTheDocument();
-    expect(within(table).getByText("Moved to Sickbay: Limping")).toBeInTheDocument();
+    // (moves are Movement records of their own, from the database: none
+    // made up from where it is now)
+    expect(screen.getByText("No rehabilitation records yet.")).toBeInTheDocument();
     await user.click(screen.getByRole("tab", { name: "Medical" }));
     expect(screen.getByText("No medical records yet.")).toBeInTheDocument();
     // Records folds away
@@ -79,7 +91,8 @@ function fakeRecords(entries = [], { canAdd = true } = {}) {
         available: true,
         entries,
         canAdd,
-        canChange: () => true,
+        canEdit: () => true,
+        canDelete: () => true,
         add: vi.fn(async () => {}),
         update: vi.fn(async () => {}),
         remove: vi.fn(async () => {}),
@@ -160,7 +173,13 @@ test("the pop-up's Full Profile opens the monkey's page", async () => {
     window.location.hash = "";
 });
 
-test("Birth Date (not recorded yet), then Birth Year", () => {
+test("Birth Date (with approx.), then Birth Year", () => {
+    render(<MonkeyPage monkey={{ ...aroha, year: 2023, birthDate: "2024-02-14", birthDateApprox: true }} staff={null} />);
+    expect(screen.getByText("Birth Date").closest("div")).toHaveTextContent("(approx.) 14th Feb 2024");
+    expect(screen.getByText("Birth Year").closest("div")).toHaveTextContent("2023");
+});
+
+test("Birth Date unknown: Not recorded, then Birth Year", () => {
     render(<MonkeyPage monkey={aroha} staff={null} />);
     expect(screen.getByText("Birth Date").closest("div")).toHaveTextContent("Not recorded");
     expect(screen.getByText("Birth Year").closest("div")).toHaveTextContent("2016");
@@ -189,5 +208,46 @@ test("visitors following a full profile's link get the monkey's pop-up instead",
 
 test("the new Rehabilitation / Medical Record buttons are off for now (Integration's stays on)", () => {
     expect(NEW_RECORDS_OPEN).toBe(false);
+});
+
+describe("Movement records (added by the database for every move)", () => {
+    const movement = {
+        id: 5, section: "rehabilitation", date: "2026-10-20", category: "movement",
+        details: "Moved from Gismo Troop to Sickbay: leg wound", loggedBy: "staff-1", loggedByName: "Sam",
+    };
+    const note = {
+        id: 6, section: "rehabilitation", date: "2026-10-19", category: "observation",
+        details: "Calm", loggedBy: "staff-1", loggedByName: "Sam",
+    };
+    // The real list, loaded the real way (the database: mocked)
+    function Records({ staff }) {
+        return <RecordList section="rehabilitation" records={useRecords(1, staff)} others={[]} />;
+    }
+    const rowOf = (text) => screen.getByText(text).closest("[role='row']");
+
+    test("whoever wrote them can't edit or delete them (their other records: both)", async () => {
+        loadRecords.mockResolvedValue([movement, note]);
+        render(<Records staff={{ canSee: true, canAdd: true, userId: "staff-1", isAdmin: false }} />);
+        await screen.findByText("Calm");
+        expect(within(rowOf("Moved from Gismo Troop to Sickbay: leg wound")).queryByRole("button")).not.toBeInTheDocument();
+        expect(within(rowOf("Calm")).getByRole("button", { name: "Edit" })).toBeInTheDocument();
+        expect(within(rowOf("Calm")).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    });
+
+    test("admins can delete them, not edit them", async () => {
+        loadRecords.mockResolvedValue([movement]);
+        render(<Records staff={{ canSee: true, canAdd: true, userId: "admin-1", isAdmin: true }} />);
+        const row = rowOf(await screen.findByText(/Moved from Gismo Troop/).then((el) => el.textContent));
+        expect(within(row).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+        expect(within(row).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    });
+});
+
+test("Species: its name, or Not recorded before the database has it", () => {
+    const { unmount } = render(<MonkeyPage monkey={{ ...aroha, species: "samango" }} staff={null} />);
+    expect(screen.getByText("Species").closest("div")).toHaveTextContent("Samango Monkey");
+    unmount();
+    render(<MonkeyPage monkey={aroha} staff={null} />);
+    expect(screen.getByText("Species").closest("div")).toHaveTextContent("Not recorded");
 });
 

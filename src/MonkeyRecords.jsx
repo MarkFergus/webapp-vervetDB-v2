@@ -4,17 +4,16 @@ import ConfirmBubble from "./ConfirmBubble";
 import { addRecord, deleteRecord, loadRecords, saveRecord } from "./monkeyData";
 import { IntegrationForm, newReportDates } from "./IntegrationReports";
 import { summaryDate } from "./feeding";
-import { fullName, staying } from "./places";
 import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
 
 // A monkey's records, on its page (staff only), one list per tab:
 //   Rehabilitation, Medical   Date | Category | Details; staff add them with
-//     "+ New … Record" (supabase/monkey-records.sql). The records kept
-//     elsewhere so far are listed in with them: injuries (and their
-//     updates), and where it's staying now. Those are changed where they're
-//     added (the pop-up's Quick Actions).
+//     "+ New … Record" (supabase/monkey-records.sql). Every move adds a
+//     Movement record by itself (movement-records.sql). Injuries (and their
+//     updates) are listed in with Medical's; those are changed where
+//     they're added (the pop-up's Quick Actions).
 //   Integration   Date Start | Date End | Integration Report
 //     (supabase/integration-reports.sql)
 
@@ -52,6 +51,8 @@ const todayText = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+const isWriterOrAdmin = (staff, entry) => Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId));
+
 // One monkey's records, loaded when staff open its page. available: the
 // database has them (false before monkey-records.sql, or offline), and
 // this is staff.
@@ -79,8 +80,12 @@ export function useRecords(monkeyId, staff) {
         available: state.available,
         entries: state.entries,
         canAdd: NEW_RECORDS_OPEN && state.available && Boolean(staff?.canAdd),
-        // Admins, or whoever wrote it
-        canChange: (entry) => state.available && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+        // Admins, or whoever wrote it. A Movement record is a log of what
+        // happened: never changed, and only admins delete one
+        // (movement-records.sql)
+        canEdit: (entry) => state.available && entry.category !== "movement" && isWriterOrAdmin(staff, entry),
+        canDelete: (entry) =>
+            state.available && Boolean(staff?.isAdmin || (entry.category !== "movement" && isWriterOrAdmin(staff, entry))),
         async add(values) {
             const saved = await addRecord(monkeyId, values);
             change((list) => [...list, saved]);
@@ -97,28 +102,11 @@ export function useRecords(monkeyId, staff) {
 }
 
 // The records kept elsewhere, as rows of a section's list (not changed
-// here): { key, date, category, details, by }
-export function otherRows(section, { monkey, injuries }) {
-    if (section === "rehabilitation") {
-        const stayingIn = staying(monkey);
-        const since = monkey.inSickbay ? monkey.sickbaySince : monkey.stay?.since;
-        const note = monkey.inSickbay ? monkey.sickbayNote : monkey.stay?.note;
-        const now =
-            (monkey.inSickbay || stayingIn) && since
-                ? [
-                      {
-                          key: "now",
-                          date: since,
-                          category: "movement",
-                          details: [monkey.inSickbay ? "Moved to Sickbay" : `Moved to ${fullName(stayingIn)}`, note]
-                              .filter(Boolean)
-                              .join(": "),
-                          by: "Current location",
-                      },
-                  ]
-                : [];
-        return now;
-    }
+// here): { key, date, category, details, by }. Medical: its injuries and
+// their updates. (Rehabilitation: none; its moves are Movement records of
+// its own, added by the database: movement-records.sql)
+export function otherRows(section, { injuries }) {
+    if (section !== "medical") return [];
     return [...injuries.current, ...injuries.healed].flatMap((e) => [
         {
             key: `injury-${e.id}`,
@@ -140,6 +128,7 @@ export function otherRows(section, { monkey, injuries }) {
 // Edit / Delete at the end of a row (admins, or whoever wrote it). Delete
 // asks first in a small bubble.
 //   onEdit(); onDelete() async (throws a message to show)
+//   (no onEdit / onDelete: that icon's left out)
 function RowIcons({ onEdit, onDelete, question }) {
     const [deleting, setDeleting] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -158,18 +147,22 @@ function RowIcons({ onEdit, onDelete, question }) {
     }
     return (
         <span className="Integration-icons Records-icons">
-            <button type="button" className="Integration-icon is-edit" aria-label="Edit" title="Edit" onClick={onEdit}>
-                <IconPencil size={17} aria-hidden="true" />
-            </button>
-            <button
-                type="button"
-                className="Integration-icon is-delete"
-                aria-label="Delete"
-                title="Delete"
-                onClick={() => setDeleting(true)}
-            >
-                <IconTrash size={17} aria-hidden="true" />
-            </button>
+            {onEdit && (
+                <button type="button" className="Integration-icon is-edit" aria-label="Edit" title="Edit" onClick={onEdit}>
+                    <IconPencil size={17} aria-hidden="true" />
+                </button>
+            )}
+            {onDelete && (
+                <button
+                    type="button"
+                    className="Integration-icon is-delete"
+                    aria-label="Delete"
+                    title="Delete"
+                    onClick={() => setDeleting(true)}
+                >
+                    <IconTrash size={17} aria-hidden="true" />
+                </button>
+            )}
             {deleting && <ConfirmBubble question={question} danger busy={busy} onConfirm={remove} onCancel={cancel} />}
             {problem && (
                 <span className="Integration-problem Records-problem" role="alert">
@@ -318,11 +311,11 @@ export function RecordList({ section, records, others }) {
                                     <span className="Records-text">{row.details}</span>
                                     <span className="Integration-by">{row.by}</span>
                                 </span>
-                                {row.entry && records.canChange(row.entry) && (
+                                {row.entry && (records.canEdit(row.entry) || records.canDelete(row.entry)) && (
                                     <RowIcons
                                         question="Delete this record?"
-                                        onEdit={() => setEditing(row.entry.id)}
-                                        onDelete={() => records.remove(row.entry.id)}
+                                        onEdit={records.canEdit(row.entry) ? () => setEditing(row.entry.id) : undefined}
+                                        onDelete={records.canDelete(row.entry) ? () => records.remove(row.entry.id) : undefined}
                                     />
                                 )}
                             </div>

@@ -129,7 +129,7 @@ function Modal({
                         // (a troop monkey: who feeds it while it's there)
                         ...(asksFedBy(form) && { fedBy }),
                     }
-                  : { at: "home" };
+                  : { at: "home", since, note };
         try {
             await onWhereabouts(monkey, details);
             setSickbayForm(null);
@@ -168,7 +168,7 @@ function Modal({
     const ownChoices = stayChoices.filter((c) => c.own);
     const otherChoices = stayChoices.filter((c) => !c.own);
     const returnAsks = Boolean(monkey?.inSickbay) && ownChoices.length > 0;
-    const returnHome = { to: "return", introcageId: "", fedBy: "sickbay" };
+    const returnHome = { to: "return", introcageId: "", fedBy: "sickbay", since: todayText(), note: "" };
     // A troop monkey going into an introcage (not already fed in one): who
     // feeds it there, Sickbay to start with
     const asksFedBy = (form) =>
@@ -511,48 +511,55 @@ function Modal({
                                                     )}
                                                     {/* Return: home, or one of its own
                                                         enclosure's introcages (a new stay) */}
-                                                    {sickbayForm.to === "return" && !returnAsks ? (
-                                                        <p className="Modal-confirmText">
-                                                            Return {monkey.name} to {homeText(monkey)}?
-                                                        </p>
-                                                    ) : sickbayForm.to === "return" ? (
-                                                        <label>
-                                                            <span>Return To</span>
-                                                            <select
-                                                                value={sickbayForm.introcageId}
-                                                                onChange={(e) => setSickbayForm({ ...sickbayForm, introcageId: e.target.value })}
-                                                            >
-                                                                <option value="">{homeText(monkey)} (Home)</option>
-                                                                {ownChoices.map((c) => (
-                                                                    <option key={c.id} value={c.id}>
-                                                                        {fullName(c.name)}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </label>
-                                                    ) : (
-                                                        <>
+                                                    {sickbayForm.to === "return" &&
+                                                        (returnAsks ? (
                                                             <label>
-                                                                <span>Date Moved</span>
-                                                                <input
-                                                                    type="date"
-                                                                    value={sickbayForm.since}
-                                                                    max={todayText()}
-                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
-                                                                />
+                                                                <span>Return To</span>
+                                                                <select
+                                                                    value={sickbayForm.introcageId}
+                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, introcageId: e.target.value })}
+                                                                >
+                                                                    <option value="">{homeText(monkey)} (Home)</option>
+                                                                    {ownChoices.map((c) => (
+                                                                        <option key={c.id} value={c.id}>
+                                                                            {fullName(c.name)}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
                                                             </label>
-                                                            <label>
-                                                                <span>Note (optional)</span>
-                                                                <input
-                                                                    type="text"
-                                                                    value={sickbayForm.note}
-                                                                    maxLength={200}
-                                                                    placeholder={sickbayForm.to === "sickbay" ? "e.g. leg wound" : "e.g. integration with Poppy"}
-                                                                    onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
-                                                                />
-                                                            </label>
-                                                        </>
-                                                    )}
+                                                        ) : (
+                                                            <p className="Modal-confirmText">
+                                                                Return {monkey.name} to {homeText(monkey)}?
+                                                            </p>
+                                                        ))}
+                                                    {/* Every move: its date and why (they go
+                                                        into its Movement record; a stay or
+                                                        Sickbay also shows them while it lasts) */}
+                                                    <label>
+                                                        <span>Date Moved</span>
+                                                        <input
+                                                            type="date"
+                                                            value={sickbayForm.since}
+                                                            max={todayText()}
+                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, since: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <label>
+                                                        <span>Reason (optional)</span>
+                                                        <input
+                                                            type="text"
+                                                            value={sickbayForm.note}
+                                                            maxLength={200}
+                                                            placeholder={
+                                                                sickbayForm.to === "sickbay"
+                                                                    ? "e.g. leg wound"
+                                                                    : sickbayForm.to === "return"
+                                                                      ? "e.g. wound healed"
+                                                                      : "e.g. integration with Poppy"
+                                                            }
+                                                            onChange={(e) => setSickbayForm({ ...sickbayForm, note: e.target.value })}
+                                                        />
+                                                    </label>
                                                     {/* A troop monkey going into an introcage
                                                         (not already fed in one): who feeds it
                                                         there (Sickbay to start with); fed by the

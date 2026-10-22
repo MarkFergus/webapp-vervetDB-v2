@@ -80,6 +80,34 @@
     }
 }
 
+/* A guessed birth date's "(approx.)": quieter than the date, before it
+   (phones: "(app.)" after it, so it fits; "approx." is still what's read
+   out) */
+.MonkeyPage-approx {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+.MonkeyPage-approxShort {
+    display: none;
+}
+
+@media (max-width: 759px) {
+    .MonkeyPage-approxLong {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .MonkeyPage-approxShort {
+        display: inline;
+    }
+}
+
 /* Bio and description: kept as typed, line breaks and all */
 .MonkeyPage-text {
     white-space: pre-line;

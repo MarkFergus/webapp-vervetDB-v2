@@ -11,6 +11,13 @@ export function currentBabySeason(today = new Date()) {
     return today.getMonth() >= BIRTHDAY_MONTH ? year : year - 1;
 }
 
+// The birth season a date of birth falls in ("2026-11-12" → 2026,
+// "2024-02-14" → 2023): from 1 July. (A birth date's Birth Year.)
+export function seasonOf(date) {
+    const [year, month] = date.split("-").map(Number);
+    return month >= 7 ? year : year - 1;
+}
+
 // Age in whole years from the birth year (0 = a baby, under 1), or null if
 // the year isn't known
 export function ageInYears(year, today = new Date()) {

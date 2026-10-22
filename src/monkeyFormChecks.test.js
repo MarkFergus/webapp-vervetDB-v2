@@ -1,3 +1,4 @@
+import { seasonOf } from "./ages";
 import { checkForm, emptyForm, formFromMonkey, PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 // The Enclosure + Location choices (see placeChoices)
@@ -194,3 +195,45 @@ describe("where the monkey lives", () => {
         expect(formFromMonkey(monkey, CHOICES)).toMatchObject({ troop: "enclosure:90", location: "91" });
     });
 });
+
+describe("birth date (once the database has them)", () => {
+    test("its Birth Year is the season it falls in: from 1 July", () => {
+        expect(seasonOf("2026-11-12")).toBe(2026);
+        expect(seasonOf("2024-02-14")).toBe(2023);
+        expect(seasonOf("2024-07-01")).toBe(2024);
+        expect(seasonOf("2024-06-30")).toBe(2023);
+    });
+
+    const base = { name: "Kai", troop: "Goliath", sex: "", year: "", chip: "", img: [], bio: "", desc: "" };
+    const choices = [{ key: "Goliath", introcages: [] }];
+
+    test("filled in from the monkey: blank for unknown", () => {
+        expect(formFromMonkey({ ...base, birthDate: null, birthDateApprox: false })).toMatchObject({
+            birthDate: "",
+            birthDateApprox: false,
+        });
+        expect(formFromMonkey({ ...base, birthDate: "2024-02-14", birthDateApprox: true })).toMatchObject({
+            birthDate: "2024-02-14",
+            birthDateApprox: true,
+        });
+        expect(formFromMonkey(base)).not.toHaveProperty("birthDate");
+    });
+
+    test("saved with the year it gives (whatever the year box says), and its Approx", () => {
+        const form = { ...formFromMonkey({ ...base, birthDate: null }), year: "2010", birthDate: "2024-02-14", birthDateApprox: true };
+        const { errors, values } = checkForm(form, choices);
+        expect(errors).toEqual({});
+        expect(values).toMatchObject({ year: 2023, birthDate: "2024-02-14", birthDateApprox: true });
+    });
+
+    test("blank: unknown (no guess), and the year as chosen", () => {
+        const form = { ...formFromMonkey({ ...base, birthDate: null }), year: "2015", birthDate: "", birthDateApprox: true };
+        expect(checkForm(form, choices).values).toMatchObject({ year: 2015, birthDate: null, birthDateApprox: false });
+    });
+
+    test("not in the future", () => {
+        const form = { ...formFromMonkey({ ...base, birthDate: null }), birthDate: "2999-01-01" };
+        expect(checkForm(form, choices).errors.birthDate).toMatch(/not in the future/);
+    });
+});
+

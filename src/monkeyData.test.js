@@ -1,7 +1,7 @@
 // Checks the real data loader (setupTests.js replaces it everywhere else)
 import { supabase } from "./supabase";
 
-const { loadMonkeyData, toAppMonkey, toDatabaseRow, BUILT_IN_DATA } = await vi.importActual("./monkeyData");
+const { loadMonkeyData, saveWhereabouts, toAppMonkey, toDatabaseRow, BUILT_IN_DATA } = await vi.importActual("./monkeyData");
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -178,3 +178,42 @@ test("before feeding.sql: the monkeys load without feeding", async () => {
     expect(data.monkeys[0]).not.toHaveProperty("feeding");
     expect(data.enclosuresLive).toBe(true);
 });
+
+// A pretend update request: records what was sent, then answers with
+// answers[n] for the nth request
+function fakeUpdates(answers) {
+    const sent = [];
+    vi.spyOn(supabase, "from").mockImplementation(() => ({
+        update(r) {
+            sent.push(r);
+            const answer = answers[sent.length - 1];
+            const chain = { eq: () => chain, select: () => chain, single: () => Promise.resolve(answer) };
+            return chain;
+        },
+    }));
+    return sent;
+}
+
+test("a move sends its date and reason along (the database adds its Movement record)", async () => {
+    const sent = fakeUpdates([{ data: row, error: null }]);
+    await saveWhereabouts(7, { at: "sickbay", since: "2026-10-20", note: " leg wound " });
+    expect(sent[0]).toMatchObject({ in_sickbay: true, moved_on: "2026-10-20", move_reason: "leg wound" });
+});
+
+test("before movement-records.sql has run: the move is saved without them", async () => {
+    const sent = fakeUpdates([{ data: null, error: { code: "PGRST204" } }, { data: row, error: null }]);
+    await saveWhereabouts(7, { at: "home", since: "2026-10-21", note: "" });
+    expect(sent).toHaveLength(2);
+    expect(sent[0]).toHaveProperty("moved_on", "2026-10-21");
+    expect(sent[1]).not.toHaveProperty("moved_on");
+    expect(sent[1]).toMatchObject({ in_sickbay: false });
+});
+
+test("species: read and saved once the database has it (species.sql)", () => {
+    expect(toAppMonkey(row)).not.toHaveProperty("species");
+    expect(toAppMonkey({ ...row, species: "samango" }).species).toBe("samango");
+    const monkey = toAppMonkey({ ...row, troops: { name: "Jalamango" }, species: "samango" });
+    expect(toDatabaseRow(monkey, { Jalamango: 28 })).toMatchObject({ species: "samango" });
+    expect(toDatabaseRow(toAppMonkey(row), { Camelot: 1 })).not.toHaveProperty("species");
+});
+

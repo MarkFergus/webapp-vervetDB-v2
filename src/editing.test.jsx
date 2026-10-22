@@ -1,7 +1,7 @@
 // Editing, adding and deleting monkeys. Supabase is replaced with a pretend
 // version that records what would be saved.
 import { useState } from "react";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { supabase } from "./supabase";
 import { AuthProvider } from "./auth";
@@ -298,9 +298,20 @@ test("location: moving a monkey into one of its enclosure's introcages, and back
     const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
     await user.selectOptions(field("Location"), String(c1.id));
     await user.click(within(form()).getByRole("button", { name: "Save" }));
+    // A move: its date and reason first (for its Movement record)
+    expect(within(form()).getByText("Move Aroha to a new home location at Holt & Barrington C1?")).toBeInTheDocument();
+    expect(
+        within(form()).getByText("Updates Aroha’s home location. Use Quick Actions to update current location.")
+    ).toBeInTheDocument();
+    expect(saved.updates).toHaveLength(0);
+    fireEvent.change(within(form()).getByLabelText("Date Moved"), { target: { value: "2026-10-20" } });
+    await user.type(within(form()).getByLabelText("Reason (optional)"), "Separated for a while");
+    await user.click(within(form()).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     // In the introcage, not the troop
-    expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: c1.id });
+    expect(saved.updates[0].row).toMatchObject({
+        troop_id: null, introcage_id: c1.id, moved_on: "2026-10-20", move_reason: "Separated for a while",
+    });
     expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("Holt & Barrington C1");
 
     // Back to the troop
@@ -309,6 +320,7 @@ test("location: moving a monkey into one of its enclosure's introcages, and back
     expect(field("Location")).toHaveValue(String(c1.id));
     await user.selectOptions(field("Location"), "troop");
     await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await user.click(within(form()).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(saved.updates).toHaveLength(2));
     expect(saved.updates[1].row).toMatchObject({ troop_id: TROOP_IDS["H&B"], introcage_id: null });
 });
@@ -339,6 +351,7 @@ test("location: the care units; Sickbay's one area is chosen by itself", async (
     expect(field("Location")).toHaveValue(String(unit.id));
     expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Sickbay"]);
     await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await user.click(within(form()).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row).toMatchObject({ troop_id: null, introcage_id: unit.id });
 });
@@ -567,6 +580,7 @@ describe("feeding (introcage monkeys)", () => {
         expect(within(feeding()).getByLabelText("Fed By")).toHaveValue("sickbay");
         await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
         await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await user.click(within(form()).getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
         expect(saved.updates[0].row).toMatchObject({ introcage_id: HB_C1.id, fed_by: "local_team" });
     });
@@ -626,3 +640,82 @@ test("...and an admin has it", async () => {
     await user.click(await screen.findByRole("button", { name: "Quick Actions" }));
     expect(screen.getByRole("button", { name: "Move to Sickbay" })).toBeInTheDocument();
 });
+
+test("a move's Cancel goes back to the form without saving; no move, no question", async () => {
+    const { user } = setup({ enclosuresLive: true });
+    await openEditFor(user, "Aroha");
+    const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
+    await user.selectOptions(field("Location"), String(c1.id));
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    // (its own Cancel: not the form's)
+    await user.click(within(screen.getByRole("group", { name: "Change home location" })).getByRole("button", { name: "Cancel" }));
+    expect(within(form()).queryByLabelText("Date Moved")).not.toBeInTheDocument();
+    expect(field("Location")).toHaveValue(String(c1.id));
+    expect(saved.updates).toHaveLength(0);
+    // Back where it was: saved straight away, no move question
+    await user.selectOptions(field("Location"), "troop");
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).not.toHaveProperty("moved_on");
+});
+
+test("a new home while it's away (In Sickbay): says so, then saves with the date and reason", async () => {
+    const inSickbay = () => startingMonkeys().map((m) => (m.name === "Aroha" ? { ...m, inSickbay: true, sickbaySince: "2026-10-20" } : m));
+    const { user } = setup({ enclosuresLive: true, start: inSickbay });
+    await openEditFor(user, "Aroha");
+    const c1 = BUILT_IN_DATA.enclosures.find((e) => e.name === "H&B C1");
+    await user.selectOptions(field("Location"), String(c1.id));
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    expect(
+        within(form()).getByText("Aroha is temporarily in Sickbay, change home location to Holt & Barrington C1?")
+    ).toBeInTheDocument();
+    expect(within(form()).getByText("Use Quick Actions in the monkey card to log temporary movements.")).toBeInTheDocument();
+    await user.type(within(form()).getByLabelText("Reason (optional)"), "Separating from the troop");
+    await user.click(within(form()).getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).toMatchObject({ introcage_id: c1.id, move_reason: "Separating from the troop" });
+});
+
+test("Species: changed in Edit and saved (once the database has species)", async () => {
+    const withSpecies = () => startingMonkeys().map((m) => (m.name === "Aroha" ? { ...m, species: "vervet" } : m));
+    const { user } = setup({ enclosuresLive: true, start: withSpecies });
+    await openEditFor(user, "Aroha");
+    expect(within(field("Species")).getAllByRole("option").map((o) => o.textContent)).toEqual([
+        "Vervet Monkey",
+        "Samango Monkey",
+        "Bush Baby",
+    ]);
+    await user.selectOptions(field("Species"), "samango");
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).toMatchObject({ species: "samango" });
+});
+
+test("Birth Date beside Birth Year: a date fills in the year (its season) and fixes it; Approx? for a guess", async () => {
+    const withBirthDates = () => startingMonkeys().map((m) => (m.name === "Aroha" ? { ...m, birthDate: null, birthDateApprox: false } : m));
+    const { user } = setup({ enclosuresLive: true, start: withBirthDates });
+    await openEditFor(user, "Aroha");
+    const approx = within(form()).getByRole("checkbox", { name: "Approx?" });
+    // Unknown: the year's chosen as before. Approx? can be ticked first
+    expect(field("Birth Date")).toHaveValue("");
+    expect(field("Birth year")).toBeEnabled();
+    await user.click(approx);
+    fireEvent.change(field("Birth Date"), { target: { value: "2024-02-14" } });
+    expect(field("Birth year")).toHaveValue("2023");
+    expect(field("Birth year")).toBeDisabled();
+    expect(approx).toBeChecked();
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).toMatchObject({ birth_date: "2024-02-14", birth_date_approx: true, birth_year: 2023 });
+});
+
+test("Approx? ticked with no date: no guess is saved (unknown)", async () => {
+    const withBirthDates = () => startingMonkeys().map((m) => (m.name === "Aroha" ? { ...m, birthDate: null, birthDateApprox: false } : m));
+    const { user } = setup({ enclosuresLive: true, start: withBirthDates });
+    await openEditFor(user, "Aroha");
+    await user.click(within(form()).getByRole("checkbox", { name: "Approx?" }));
+    await user.click(within(form()).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved.updates).toHaveLength(1));
+    expect(saved.updates[0].row).toMatchObject({ birth_date: null, birth_date_approx: false });
+});
+

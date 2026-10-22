@@ -132,7 +132,7 @@ describe("the pop-up", () => {
         expect(screen.getByLabelText("Fed By")).toHaveValue("sickbay");
         expect(screen.queryByText(/will be on the AM Plates List/)).not.toBeInTheDocument();
         await userEvent.selectOptions(select, "Gismo A");
-        await userEvent.type(screen.getByLabelText("Note (optional)"), "integration");
+        await userEvent.type(screen.getByLabelText("Reason (optional)"), "integration");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
         expect(saved.mock.calls[0][1]).toEqual({
@@ -176,7 +176,7 @@ describe("the pop-up", () => {
         expect(saved).not.toHaveBeenCalled();
         expect(screen.getByRole("button", { name: "Confirm" })).toHaveClass("is-confirm");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(saved).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home" }));
+        await waitFor(() => expect(saved).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home", since: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), note: "" }));
     });
 
     test("Cancel: stays where it is", async () => {

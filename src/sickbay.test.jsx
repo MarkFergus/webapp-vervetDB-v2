@@ -1,5 +1,5 @@
 // In Sickbay: the pop-up's Move to Sickbay / Return buttons, and the badges
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
 import MonkeyCard from "./MonkeyCard";
@@ -37,7 +37,7 @@ describe("the pop-up's Sickbay button", () => {
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Move to Sickbay" }));
         expect(screen.getByLabelText("Date Moved")).toBeInTheDocument();
-        await userEvent.type(screen.getByLabelText("Note (optional)"), "leg wound");
+        await userEvent.type(screen.getByLabelText("Reason (optional)"), "leg wound");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(onWhereabouts).toHaveBeenCalledTimes(1));
         const [monkey, details] = onWhereabouts.mock.calls[0];
@@ -55,8 +55,13 @@ describe("the pop-up's Sickbay button", () => {
         await userEvent.click(screen.getByRole("button", { name: "Return to Introcage" }));
         // (a check first: green Confirm)
         expect(screen.getByText("Return Nita to Goliath A?")).toBeInTheDocument();
+        // ...with the move's date and reason, like every move (its Movement record)
+        fireEvent.change(screen.getByLabelText("Date Moved"), { target: { value: "2026-10-20" } });
+        await userEvent.type(screen.getByLabelText("Reason (optional)"), "wound healed");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(onWhereabouts).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home" }));
+        await waitFor(() =>
+            expect(onWhereabouts).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), { at: "home", since: "2026-10-20", note: "wound healed" })
+        );
     });
 
     test("a troop monkey returns to its Troop", async () => {
