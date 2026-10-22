@@ -1,6 +1,7 @@
-/* The top bar. Phones: logo, search filling the middle, ☰ (the drawer).
-   Computers (the media query at the end): ☰ (the side rail), logo and name,
-   search in the middle of the page, then + Add and the account circle.
+/* The top bar. Phones: ☰ (the drawer), search filling the middle, the
+   account circle.
+   Computers (the media query at the end): the name, top left; search in
+   the middle of the page, then + Add and the account circle.
    The side rail, bottom bar and drawer: NavBars.css. */
 
 /* ---- Layout ---- */
@@ -134,35 +135,19 @@
     flex: 1;
 }
 
-/* ---- Computers: + Add (admins) and the account circle ---- */
+/* ---- The account circle (top right, phones too) ---- */
 
 .Nav-buttons {
-    display: none;
+    display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 10px;
     height: 40px; /* the search bar's height */
 }
 
-/* + Add: a soft pill, like YouTube's "+ Create" */
-.Nav-add {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    height: 36px;
-    padding: 0 14px 0 10px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    background-color: var(--wash);
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-}
-
-.Nav-add:hover {
-    color: var(--text-strong);
-    background-color: var(--wash-strong);
+/* Phones: ☰ first (top left) */
+.Nav-menuButton {
+    order: -1;
 }
 
 .Nav-account {
@@ -186,7 +171,6 @@
     background-color: var(--wash);
 }
 
-.Nav-add:focus-visible,
 .Nav-account:focus-visible,
 .Nav-railButton:focus-visible,
 .Nav-menuButton:focus-visible {
@@ -248,10 +232,8 @@
     background-color: var(--green-wash);
 }
 
-/* ---- The menu buttons: ☰ on the left (computers: the side rail) or on
-   the right (phones: the drawer) ---- */
-
-
+/* ---- The menu buttons: ☰ top left (computers: the side rail; phones:
+   the drawer) ---- */
 
 .Nav-railButton,
 .Nav-menuButton {
@@ -276,6 +258,7 @@
     background-color: var(--wash);
 }
 
+/* Phones: no side rail */
 /* Phones: no side rail */
 .Nav-railButton {
     display: none;
@@ -306,18 +289,16 @@
         margin-left: calc(-1 * var(--rail-width));
     }
 
-    /* The wordmark starts exactly where the toolbar and cards do: the side
-       rail's width (plus the page's 16px) from the left, the ☰ before it */
-    .Nav-home {
-        margin-left: calc(var(--rail-width) - 40px);
+    /* ☰ above the side rail's icons (lined up with them), the wordmark
+       beside it */
+    .Nav-railButton {
+        display: flex;
+        margin-left: -16px;
+        margin-right: 8px;
     }
 
     .Nav-title {
         display: block;
-    }
-
-    .Nav-railButton {
-        display: flex;
     }
 
     .Nav-searchbar {

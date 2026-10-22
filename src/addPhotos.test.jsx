@@ -275,7 +275,7 @@ test("phones: the bottom bar's Add Photos opens the photo picker straight away (
     const bar = screen.getByRole("navigation", { name: "Main" });
     await user.click(within(bar).getByRole("button", { name: "Add Photos" }));
     expect(click).toHaveBeenCalledTimes(1);
-    // (in the game's place: Map stays in the middle)
+    // (in Scan's place: Map stays in the middle)
     expect(within(bar).getByRole("button", { name: "Interactive Map" })).toBeInTheDocument();
-    expect(within(bar).queryByRole("link", { name: "Game" })).toBeNull();
+    expect(within(bar).queryByRole("button", { name: "Scan QR Code" })).toBeNull();
 });

@@ -9,27 +9,22 @@ import {
     IconPhotoPlus,
     IconPlus,
     IconScan,
-    IconMoon,
-    IconSun,
-    IconCheck,
 } from "@tabler/icons-react";
-import { setTheme, useTheme } from "./theme";
 import useDialog from "./useDialog";
 import EnclosuresNavIcon from "./EnclosuresNavIcon";
 import MonkeysNavIcon from "./MonkeysNavIcon";
-import Avatar from "./Avatar";
 import "./NavBars.css";
 import CloseButton from "./CloseButton";
 
 // The site's ways around, beside the top bar (Nav.jsx):
-//   SideRail   computers: down the left, YouTube-style. Small (icons with
-//              tiny labels) to start with; ☰ opens it out with full labels.
-//   BottomBar  phones: Monkeys · Enclosures · Map (staff: Add Photos) ·
-//              Game (staff: Documents) · You
-//   Drawer     phones: ☰ (top right) slides it in from the right, in groups
-//              like the opened-out side rail: Tools (Add New Monkey (admins),
-//              Interactive Map (staff), Monkey Guesser (staff)), then App
-//              (Install & Use Offline, About)
+//   SideRail   computers: down the left, Supabase-style: icons, opening
+//              out over the page with their names on hover
+//   BottomBar  phones: Monkeys · Enclosures · Map · Scan · Game (staff:
+//              Photos · Documents)
+//   Drawer     phones: ☰ (top left) slides it in from the left: everything
+//              (the bottom bar is quick access)
+// (The account circle is in the top bar, top right, on both. Admins: Add
+// New Monkey at the top of the side rail and the drawer)
 // Documents is for staff only (any role), wherever it is
 // page: "monkeys", "enclosures" or "game" (that one shows as current)
 
@@ -58,143 +53,94 @@ function ProfileBookIcon({ busy, size }) {
     );
 }
 
-// Theme (phones: the ☰ menu, for everyone; computers have it in the account
-// menu): its own section listing both choices, the chosen one ticked (like
-// Supabase's account menu); tapping one switches straight away, the menu
-// stays open
-const THEME_CHOICES = [
-    { id: "dark", label: "Dark", Icon: IconMoon },
-    { id: "light", label: "Light", Icon: IconSun },
-];
-
-function ThemeGroup({ groupClass, headingClass, itemClass }) {
-    const theme = useTheme();
-    return (
-        <div className={groupClass}>
-            <h2 className={headingClass}>Theme</h2>
-            {THEME_CHOICES.map(({ id, label, Icon }) => (
-                <button
-                    key={id}
-                    type="button"
-                    className={itemClass}
-                    aria-pressed={theme === id}
-                    onClick={() => setTheme(id)}
-                >
-                    <Icon stroke={1.75} size={24} aria-hidden="true" />
-                    <span>{label}</span>
-                    {theme === id && <IconCheck className="NavBars-check" stroke={2} size={18} aria-hidden="true" />}
-                </button>
-            ))}
-        </div>
-    );
-}
-
 // ---- Computers: the side rail ----
-//   open: full labels in groups; otherwise just the main icons
-//   over: opened out over the page (narrower screens): a dimmed backdrop,
-//   and picking something, tapping outside or Escape calls onClose
+// Supabase-style: a slim column of icons down the left; hovering over it
+// (or tabbing into it) opens it out over the page with their names, so the
+// page never moves. The ☰ in the top bar opens it too (touch screens have
+// no hover): then picking something, tapping outside or Escape puts it
+// away. Lines between the groups (no headings): the main pages, the tools,
+// then the app.
+//   open / onClose: opened with the ☰
+//   onAddMonkey: admins only: Add New Monkey, on its own at the top
 //   onProfileBook, onOffline, onAbout: open those pop-ups; onMap: the
 //   Interactive Map pop-up
 //   onAddPhotos: staff (editors / admins): Add Photos
-export function SideRail({ open, over, onClose, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
+export function SideRail({ onAddMonkey, open = false, onClose = () => {}, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
     useEffect(() => {
-        if (!over) return;
+        if (!open) return;
         const handleKeyDown = (event) => event.key === "Escape" && onClose();
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [over]);
-    // Over the page: whatever's picked puts the rail away too
+    }, [open]);
+    // Opened with the ☰: whatever's picked puts it away too
     const andClose = (fn) => (event) => {
         fn?.(event);
-        if (over) onClose();
+        onClose();
     };
     const item = ({ onClick, ...props }, Icon, label) => (
         <a className="SideRail-item" {...props} onClick={andClose(onClick)}>
-            <Icon stroke={1.75} size={24} aria-hidden="true" />
-            <span>{label}</span>
+            <Icon stroke={1.75} size={22} aria-hidden="true" />
+            <span className="SideRail-label">{label}</span>
         </a>
     );
-    const button = (onClick, icon, label, { className = "SideRail-item", ...props } = {}) => (
-        <button type="button" className={className} onClick={andClose(onClick)} {...props}>
+    const button = (onClick, icon, label, props = {}) => (
+        <button type="button" className="SideRail-item" onClick={andClose(onClick)} {...props}>
             {icon}
-            <span>{label}</span>
+            <span className="SideRail-label">{label}</span>
         </button>
-    );
-    // The Interactive Map (the whole sanctuary map)
-    const map = button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, open ? "Interactive Map" : "Map", {
-        "aria-label": "Interactive Map",
-    });
-    // Staff: photos already taken, matched to their monkeys
-    const addPhotos =
-        onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos");
-    // Staff only (any role): Profile Books and the AM Plates List
-    const profileBook = onProfileBook && button(
-        onProfileBook,
-        <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
-        // (Profile Books, the AM Plates List, Introcage Signs…; the small
-        // rail: just "Creating…", which fits on one line)
-        isGeneratingPDF ? (open ? "Creating PDF…" : "Creating…") : "Documents",
-        { disabled: isGeneratingPDF }
     );
     return (
         <>
-        {over && <div className="SideRail-backdrop" onClick={onClose} />}
-        <aside
-            className={`SideRail${open ? " is-open" : ""}${over ? " is-over" : ""}`}
-            id="SideRail"
-            aria-label="Main menu"
-            inert={inert}
-        >
+        {/* (opened with the ☰: a tap outside puts it away) */}
+        {open && <div className="SideRail-backdrop" onClick={onClose} />}
+        <aside className={`SideRail${open ? " is-open" : ""}`} id="SideRail" aria-label="Main menu" inert={inert}>
+            {onAddMonkey && (
+                <div className="SideRail-group">
+                    {button(onAddMonkey, <IconPlus stroke={1.75} size={22} aria-hidden="true" />, "Add New Monkey")}
+                </div>
+            )}
             <div className="SideRail-group">
-                {/* (No heading: Monkeys stays exactly where it is in the
-                    small rail, so opening it out doesn't move it) */}
                 {item(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
                 {item(
                     { href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined },
                     EnclosuresNavIcon,
                     "Enclosures"
                 )}
-                {/* The small rail: the tools straight after (no headings) */}
-                {!open && addPhotos}
-                {!open && profileBook}
-                {!open && map}
-                {!open &&
-                    item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
             </div>
-            {open && (
-                <>
-                    <div className="SideRail-group">
-                        <h2 className="SideRail-heading">Tools</h2>
-                        {addPhotos}
-                        {profileBook}
-                        {map}
-                        {item(
-                            { href: "#game", "aria-current": page === "game" ? "page" : undefined },
-                            IconDeviceGamepad2,
-                            "Monkey Guesser"
-                        )}
-                    </div>
-                    <div className="SideRail-group">
-                        <h2 className="SideRail-heading">App</h2>
-                        {button(onOffline, <IconDeviceMobileDown stroke={1.75} size={24} aria-hidden="true" />, "Install & Use Offline")}
-                        {button(onAbout, <IconInfoCircle stroke={1.75} size={24} aria-hidden="true" />, "About")}
-                    </div>
-                    <p className="SideRail-footer">© {YEAR} Vervet Monkey Foundation</p>
-                </>
-            )}
+            <div className="SideRail-group">
+                {/* Staff: photos already taken, matched to their monkeys */}
+                {onAddPhotos &&
+                    button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={22} aria-hidden="true" />, "Add Photos")}
+                {/* Staff only (any role): Profile Books, the AM Plates List,
+                    Introcage Signs… */}
+                {onProfileBook &&
+                    button(
+                        onProfileBook,
+                        <ProfileBookIcon busy={isGeneratingPDF} size={22} />,
+                        isGeneratingPDF ? "Creating PDF…" : "Documents",
+                        { disabled: isGeneratingPDF }
+                    )}
+                {button(onMap, <IconMap2 stroke={1.75} size={22} aria-hidden="true" />, "Interactive Map")}
+                {item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
+            </div>
+            <div className="SideRail-group">
+                {button(onOffline, <IconDeviceMobileDown stroke={1.75} size={22} aria-hidden="true" />, "Install & Use Offline")}
+                {button(onAbout, <IconInfoCircle stroke={1.75} size={22} aria-hidden="true" />, "About")}
+            </div>
+            <p className="SideRail-footer">© {YEAR} Vervet Monkey Foundation</p>
         </aside>
         </>
     );
 }
 
 // ---- Phones: the bottom bar ----
-//   onAccount: opens the account pop-up; signedIn: the person shows green;
-//   avatarUrl: their photo in its place (still ringed in green)
-//   onMap: the Interactive Map, in the middle for everyone
-//   onAddPhotos: staff (editors / admins): Photos takes the Game's place,
-//   opening the photo picker straight away (the game's then in the ☰
-//   menu, with Documents)
-export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedIn, avatarUrl, inert }) {
+// Monkeys · Enclosures · Map (the green circle, in the middle), then:
+//   Photos (editors / admins: Add Photos, the photo picker straight away),
+//   else Scan QR Code; then Documents (staff), else Game. Quick access:
+//   everything's in ☰. (The account is in the top bar, top right, as on
+//   computers.)
+//   onAddPhotos: staff (editors / admins); onProfileBook: staff (any role)
+export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -202,6 +148,14 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
             </span>
             <span>{text}</span>
         </a>
+    );
+    const button = (onClick, icon, text, props = {}) => (
+        <button type="button" className="BottomBar-tab" onClick={onClick} {...props}>
+            <span className="BottomBar-icon" aria-hidden="true">
+                {icon}
+            </span>
+            <span aria-hidden="true">{text}</span>
+        </button>
     );
     return (
         <nav className="BottomBar" aria-label="Main" inert={inert}>
@@ -215,49 +169,52 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onAccount, signedI
                     <IconMap2 stroke={1.75} size={26} />
                 </span>
             </button>
-            {onAddPhotos ? (
-                // Staff: Add Photos, the quick way in
-                <button type="button" className="BottomBar-tab" onClick={onAddPhotos} aria-label="Add Photos">
-                    <span className="BottomBar-icon" aria-hidden="true">
-                        <IconPhotoPlus stroke={1.75} size={24} />
-                    </span>
-                    <span aria-hidden="true">Photos</span>
-                </button>
-            ) : (
-                tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")
-            )}
-            <button
-                type="button"
-                className={`BottomBar-tab${signedIn ? " is-signed-in" : ""}`}
-                onClick={onAccount}
-                aria-label={signedIn ? "You (signed in)" : "You (sign in)"}
-            >
-                <span className="BottomBar-icon" aria-hidden="true">
-                    <span className="BottomBar-avatar">
-                        <Avatar url={avatarUrl} size={16} />
-                    </span>
-                </span>
-                <span aria-hidden="true">You</span>
-            </button>
+            {onAddPhotos
+                ? // Editors / admins: Add Photos, the quick way in
+                  button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} />, "Photos", { "aria-label": "Add Photos" })
+                : // Everyone else: an Introcage Sign's QR code → its page
+                  button(onScan, <IconScan stroke={1.75} size={24} />, "Scan", { "aria-label": "Scan QR Code" })}
+            {onProfileBook
+                ? button(onProfileBook, <ProfileBookIcon busy={isGeneratingPDF} size={24} />, isGeneratingPDF ? "Creating…" : "Documents", {
+                      "aria-label": "Documents",
+                      disabled: isGeneratingPDF,
+                  })
+                : tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
         </nav>
     );
 }
 
-// ---- Phones: the drawer from the right ----
-// In groups, like the opened-out side rail (Tools only if there's any)
-//   onAddMonkey: admins only (Add New Monkey first)
-//   onProfileBook: staff (any role): Documents; isGeneratingPDF: while one's made
-//   showGame: staff with Photos in their bottom bar, in the game's place
-//   onScan: Scan QR Code (everyone: an Introcage Sign's code → its page)
-export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGeneratingPDF, showGame, onScan, page, onOffline, onAbout }) {
+// ---- Phones: the drawer from the left ----
+// (☰, top left) Everything, in groups with lines between (no headings), like
+// the computers' side rail: Add New Monkey (admins) on its own; the pages;
+// the tools; the app. (The bottom bar is just quick access to some of them.)
+//   onAddMonkey: admins only; onAddPhotos: editors / admins; onProfileBook:
+//   staff (any role): Documents; isGeneratingPDF: while one's made
+//   onMap: the Interactive Map; onScan: Scan QR Code (an Introcage Sign's
+//   code → its page)
+export function Drawer({
+    open, onClose, onAddMonkey, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, page, onOffline, onAbout,
+}) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
     if (!open) return null;
     // Each item closes the drawer, then does its thing
-    const then = (fn) => () => {
+    const then = (fn) => (event) => {
         onClose();
-        fn();
+        fn?.(event);
     };
+    const button = (onClick, icon, label, props = {}) => (
+        <button type="button" className="Drawer-item" onClick={then(onClick)} {...props}>
+            {icon}
+            {label}
+        </button>
+    );
+    const link = ({ onClick, ...props }, Icon, label) => (
+        <a className="Drawer-item" {...props} onClick={then(onClick)}>
+            <Icon stroke={1.75} size={24} aria-hidden="true" />
+            {label}
+        </a>
+    );
     return (
         <div className="Drawer" role="dialog" aria-modal="true" aria-label="Menu">
             <div className="Drawer-backdrop" onClick={onClose} />
@@ -268,58 +225,37 @@ export function Drawer({ open, onClose, onAddMonkey, onProfileBook, isGenerating
                     </span>
                     <CloseButton className="Drawer-close" onClick={onClose} ref={closeRef} label="Close menu" />
                 </div>
-                {(onAddMonkey || onProfileBook || onScan || showGame) && (
+                {onAddMonkey && (
                     <div className="Drawer-group">
-                        <h2 className="Drawer-heading">Tools</h2>
-                        {onAddMonkey && (
-                            <button type="button" className="Drawer-item" onClick={then(onAddMonkey)}>
-                                <IconPlus stroke={1.75} size={24} aria-hidden="true" />
-                                Add New Monkey
-                            </button>
-                        )}
-                        {onProfileBook && (
-                            // (Profile Books, the AM Plates List, Introcage Signs…)
-                            <button
-                                type="button"
-                                className="Drawer-item"
-                                onClick={then(onProfileBook)}
-                                disabled={isGeneratingPDF}
-                            >
-                                <ProfileBookIcon busy={isGeneratingPDF} size={24} />
-                                {isGeneratingPDF ? "Creating PDF…" : "Documents"}
-                            </button>
-                        )}
-                        {onScan && (
-                            <button type="button" className="Drawer-item" onClick={then(onScan)}>
-                                <IconScan stroke={1.75} size={24} aria-hidden="true" />
-                                Scan QR Code
-                            </button>
-                        )}
-                        {showGame && (
-                            <a
-                                className="Drawer-item"
-                                href="#game"
-                                onClick={onClose}
-                                aria-current={page === "game" ? "page" : undefined}
-                            >
-                                <IconDeviceGamepad2 stroke={1.75} size={24} aria-hidden="true" />
-                                Monkey Guesser
-                            </a>
-                        )}
+                        {button(onAddMonkey, <IconPlus stroke={1.75} size={24} aria-hidden="true" />, "Add New Monkey")}
                     </div>
                 )}
                 <div className="Drawer-group">
-                    <h2 className="Drawer-heading">App</h2>
-                    <button type="button" className="Drawer-item" onClick={then(onOffline)}>
-                        <IconDeviceMobileDown stroke={1.75} size={24} aria-hidden="true" />
-                        Install & Use Offline
-                    </button>
-                    <button type="button" className="Drawer-item" onClick={then(onAbout)}>
-                        <IconInfoCircle stroke={1.75} size={24} aria-hidden="true" />
-                        About
-                    </button>
+                    {link(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
+                    {link(
+                        { href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined },
+                        EnclosuresNavIcon,
+                        "Enclosures"
+                    )}
                 </div>
-                <ThemeGroup groupClass="Drawer-group" headingClass="Drawer-heading" itemClass="Drawer-item" />
+                <div className="Drawer-group">
+                    {onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos")}
+                    {/* (Profile Books, the AM Plates List, Introcage Signs…) */}
+                    {onProfileBook &&
+                        button(
+                            onProfileBook,
+                            <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
+                            isGeneratingPDF ? "Creating PDF…" : "Documents",
+                            { disabled: isGeneratingPDF }
+                        )}
+                    {button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, "Interactive Map")}
+                    {button(onScan, <IconScan stroke={1.75} size={24} aria-hidden="true" />, "Scan QR Code")}
+                    {link({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
+                </div>
+                <div className="Drawer-group">
+                    {button(onOffline, <IconDeviceMobileDown stroke={1.75} size={24} aria-hidden="true" />, "Install & Use Offline")}
+                    {button(onAbout, <IconInfoCircle stroke={1.75} size={24} aria-hidden="true" />, "About")}
+                </div>
                 <p className="Drawer-footer">© {YEAR} Vervet Monkey Foundation</p>
             </div>
         </div>

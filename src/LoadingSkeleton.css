@@ -73,12 +73,9 @@
     border-radius: 50%;
 }
 
-/* The ☰ for the side rail: computers only. The name after it starts where
-   the real top bar's does: the side rail's width from the left, like the
-   toolbar and cards (Nav.css .Nav-home; this ☰ is 36px wide) */
+/* The ☰ for the side rail: computers only, above the rail's icons */
 .LoadingSkeleton-railButton {
     display: none;
-    margin-right: calc(var(--rail-width) - 36px);
 }
 
 /* The side rail (computers): a column of icons down the left */
@@ -226,12 +223,13 @@
         margin: 0;
     }
 
-    .LoadingSkeleton-icons {
-        justify-self: end;
-    }
-
     .LoadingSkeleton-railButton {
         display: block;
+        margin-right: 10px;
+    }
+
+    .LoadingSkeleton-icons {
+        justify-self: end;
     }
 
     .LoadingSkeleton-title {
@@ -245,14 +243,17 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 30px;
+        gap: 18px;
+        box-sizing: border-box;
         width: var(--rail-small);
-        padding-top: 16px;
+        height: 100%;
+        padding-top: 15px;
+        border-right: 1px solid var(--line);
     }
 
     .LoadingSkeleton-rail .LoadingSkeleton-menu {
-        width: 28px;
-        height: 28px;
+        width: 22px;
+        height: 22px;
     }
 
     .LoadingSkeleton-bottomBar {

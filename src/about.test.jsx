@@ -43,12 +43,10 @@ test("dates read as words", () => {
     expect(releaseDate("2026-10-02")).toBe("2 October 2026");
 });
 
-// Computers: the side rail, opened out, has About
+// Computers: the side rail has About
 async function openAbout(user) {
-    await user.click(screen.getByRole("button", { name: "Open the side menu" }));
     await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "About" }));
 }
-afterEach(() => localStorage.removeItem("vervetdb-rail"));
 
 test("the side rail's About opens it: version, date and latest changes", async () => {
     const user = userEvent.setup();

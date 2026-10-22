@@ -260,13 +260,18 @@ test("birth year: chosen from this year back to 1997, or Unknown", async () => {
     expect(saved.updates[0].row.birth_year).toBeNull();
 });
 
+// Admins: Add New Monkey, at the top of the side rail (computers; the ☰
+// menu on phones)
+async function openAddNew(user) {
+    const rail = screen.getByRole("complementary", { name: "Main menu" });
+    await user.click(await within(rail).findByRole("button", { name: "Add New Monkey" }));
+}
+
 test("adding a monkey: it appears in the list and its pop-up opens", async () => {
     const { user } = setup();
-    const addButton = await screen.findByRole("button", { name: "Add New Monkey" });
-    // In the top bar with the other buttons, not the sort / filter row
-    expect(addButton.closest(".Nav-buttons")).not.toBeNull();
+    await openAddNew(user);
+    // (not in the top bar itself, nor the sort / filter row)
     expect(document.querySelector(".ShowPage-toolbar button[title='Add New Monkey']")).toBeNull();
-    await user.click(addButton);
     expect(form()).toHaveAccessibleName("Add New Monkey");
 
     await user.type(field("Name"), "Brand New");
@@ -358,7 +363,7 @@ test("location: the care units; Sickbay's one area is chosen by itself", async (
 
 test("adding a monkey: a new arrival goes into a care unit (moved to its home later, with Edit)", async () => {
     const { user } = setup({ enclosuresLive: true });
-    await user.click(await screen.findByRole("button", { name: "Add New Monkey" }));
+    await openAddNew(user);
     expect(within(form()).getByText(/New arrivals start in a care unit/)).toBeInTheDocument();
     // Only the care units: no troops, no Bachelor Block
     expect(within(field("Care Unit")).getAllByRole("option").map((o) => o.textContent))
@@ -520,15 +525,6 @@ test("closing with unsaved changes asks first", async () => {
     await user.keyboard("{Escape}");
     expect(confirm).toHaveBeenCalledWith("Discard your changes?");
     expect(form()).toBeInTheDocument();
-});
-
-test("phones: admins also find Add New Monkey in the ☰ drawer", async () => {
-    const { user } = setup();
-    // Signed in as an admin: wait for the computer's button, then use the drawer
-    await screen.findByRole("button", { name: "Add New Monkey" });
-    await user.click(screen.getByRole("button", { name: "Menu" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("button", { name: "Add New Monkey" }));
-    expect(form()).toHaveAccessibleName("Add New Monkey");
 });
 
 describe("feeding (introcage monkeys)", () => {

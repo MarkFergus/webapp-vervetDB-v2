@@ -4,10 +4,10 @@
 :root {
     /* The top bar's height (Nav.css: 40px search bar + 8px above and below) */
     --nav-height: 57px;
-    /* The side rail's width: small, or opened out (☰). The page moves over
-       to make room (.rail-open on <html>, set by Nav.jsx) */
-    --rail-small: 72px;
-    --rail-open: 228px;
+    /* The side rail (computers): a slim column of icons, which the page
+       sits beside; it opens out over the page (not moving it) on hover */
+    --rail-small: 56px;
+    --rail-open: 232px;
     --rail-width: 0px;
     /* The bottom bar's height on phones (plus the iPhone home bar) */
     --bottom-bar: calc(60px + env(safe-area-inset-bottom));
@@ -23,114 +23,106 @@
     :root {
         --rail-width: var(--rail-small);
     }
-}
 
-/* Wide screens: the rail opened out moves the page over */
-@media (min-width: 960px) {
-    :root.rail-open {
-        --rail-width: var(--rail-open);
-    }
-}
-
-@media (min-width: 690px) {
     .SideRail {
         position: fixed;
-        z-index: 1;
+        z-index: 3;
         top: var(--nav-height);
         bottom: 0;
         left: 0;
         display: flex;
         flex-direction: column;
-        box-sizing: border-box; /* the widths include the padding: the page moves over by just that much */
+        box-sizing: border-box;
         width: var(--rail-small);
-        padding: 4px 4px 12px;
-        overflow-y: auto;
+        padding: 6px 8px 12px;
+        overflow: hidden auto;
         font-family: var(--font-ui);
         background-color: var(--bg);
+        border-right: 1px solid var(--line);
+        transition: width 0.15s ease, box-shadow 0.15s ease;
     }
 
+    /* Hovered (or tabbed into): out over the page, names showing. A
+       moment's pause first, so passing over it on the way somewhere
+       doesn't flick it open */
+    .SideRail:hover,
+    .SideRail:focus-within {
+        width: var(--rail-open);
+        box-shadow: 8px 0 24px var(--shadow);
+        transition-delay: 0.12s;
+    }
+
+    /* Opened with the ☰: straight away */
     .SideRail.is-open {
         width: var(--rail-open);
-        padding: 8px 12px 16px;
-    }
-
-    /* Narrower screens: over the page, which dims behind it */
-    .SideRail.is-over {
-        z-index: 3;
         box-shadow: 8px 0 24px var(--shadow);
-        animation: SideRail-slide 0.18s ease-out;
+        transition-delay: 0s;
     }
 
+    /* (behind it: a tap here puts it away; see-through, so the page
+       doesn't flash darker) */
     .SideRail-backdrop {
         position: fixed;
-        z-index: 3;
+        z-index: 2;
         inset: var(--nav-height) 0 0 0;
-        background-color: var(--scrim-soft);
-    }
-}
-
-@keyframes SideRail-slide {
-    from {
-        width: var(--rail-small);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .SideRail.is-over {
-        animation: none;
+    .SideRail {
+        transition: none;
     }
 }
 
 .SideRail-group {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
-.SideRail.is-open .SideRail-group + .SideRail-group {
-    margin-top: 10px;
-    padding-top: 10px;
+/* The lines between the groups: there when it's small too */
+.SideRail-group + .SideRail-group {
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px solid var(--line);
 }
 
-.SideRail-heading {
-    margin: 4px 12px 6px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-2);
-}
-
-/* Small: an icon with a tiny label under it, like YouTube's */
+/* An icon, with its name beside it (hidden until it opens out). The icon
+   stays put as it opens: only the names appear */
 .SideRail-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 14px 0 12px;
+    gap: 14px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    padding: 0 9px;
     font-family: inherit;
-    font-size: 12px;
-    line-height: 1.2;
-    text-align: center;
-    color: var(--text);
+    font-size: 14px;
+    white-space: nowrap;
+    text-align: left;
+    color: var(--text-2);
     text-decoration: none;
     background: none;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
-}
-
-/* Opened out: icon and label side by side */
-.SideRail.is-open .SideRail-item {
-    flex-direction: row;
-    gap: 18px;
-    padding: 10px 12px;
-    font-size: 14px;
-    text-align: left;
 }
 
 .SideRail-item svg {
     flex-shrink: 0;
+}
+
+.SideRail-label {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.SideRail:hover .SideRail-label,
+.SideRail:focus-within .SideRail-label,
+.SideRail.is-open .SideRail-label {
+    opacity: 1;
+    transition-delay: 0.12s;
 }
 
 .SideRail-item:hover:not(:disabled) {
@@ -148,10 +140,11 @@
     outline-offset: -2px;
 }
 
-/* The page you're on */
+/* The page you're on: its icon and name bright, on a soft tint */
 .SideRail-item[aria-current="page"] {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-strong);
+    background-color: var(--wash);
 }
 
 /* The page you're on: its icon white (the bottom bar's too) */
@@ -160,15 +153,29 @@
     color: var(--text-strong);
 }
 
-.SideRail.is-open .SideRail-item[aria-current="page"] {
-    background-color: var(--wash);
-}
-
+/* © at the bottom: only once it's opened out */
 .SideRail-footer {
-    margin: auto 12px 0;
+    margin: auto 9px 0;
     padding-top: 16px;
     font-size: 12px;
-    color: var(--text-2);
+    white-space: nowrap;
+    color: var(--text-3);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.SideRail:hover .SideRail-footer,
+.SideRail:focus-within .SideRail-footer,
+.SideRail.is-open .SideRail-footer {
+    opacity: 1;
+    transition-delay: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .SideRail-label,
+    .SideRail-footer {
+        transition: none;
+    }
 }
 
 /* ---- Phones: the bottom bar ---- */
@@ -237,22 +244,6 @@
     height: 32px;
 }
 
-/* You: the person in a circle, green when signed in (like the top bar's) */
-.BottomBar-avatar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 24px;
-    height: 24px;
-    border: 1.5px solid currentColor;
-    border-radius: 50%;
-}
-
-.BottomBar-tab.is-signed-in .BottomBar-avatar {
-    color: var(--green);
-    background-color: var(--green-wash);
-}
-
 /* Map in the middle, the highlight: a bigger green circle with a white
    ring as thick as the icon's lines (about 2px), so it stands out */
 .BottomBar-mapCircle {
@@ -318,20 +309,22 @@
 .Drawer-panel {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     bottom: 0;
     display: flex;
     flex-direction: column;
     width: min(255px, 72vw);
     padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
+    /* (everything's here: short phones scroll it) */
+    overflow-y: auto;
     background-color: var(--bg);
-    box-shadow: -8px 0 24px var(--shadow);
+    box-shadow: 8px 0 24px var(--shadow);
     animation: Drawer-slide 0.22s ease-out;
 }
 
 @keyframes Drawer-slide {
     from {
-        transform: translateX(100%);
+        transform: translateX(-100%);
     }
 }
 
@@ -376,15 +369,6 @@
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid var(--line);
-}
-
-.Drawer-heading {
-    margin: 4px 12px 6px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-2);
 }
 
 .Drawer-item {
@@ -442,10 +426,4 @@ a.Drawer-item {
     margin: auto 12px 0;
     font-size: 12px;
     color: var(--text-2);
-}
-
-/* Theme (side rail and ☰ menu): the chosen one's tick, at the right */
-.NavBars-check {
-    margin-left: auto;
-    color: var(--accent);
 }

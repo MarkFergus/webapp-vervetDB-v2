@@ -94,16 +94,16 @@ test("no photo yet: the person icon; tapping it lets staff add one, cropped roun
     expect(stored.uploads).toEqual([{ path: expect.stringMatching(/^staff-1\/\d+\.webp$/), type: "image/webp" }]);
     expect(stored.upserts[0]).toMatchObject({ user_id: STAFF.id, url: PHOTOS + stored.uploads[0].path });
     expect(await within(dialog).findByText("Photo saved.")).toBeInTheDocument();
-    // Shown in the pop-up, the top bar and the bottom bar, still ringed green
+    // Shown in the pop-up and the top bar, still ringed green
     const photos = document.querySelectorAll(`img[src="${PHOTOS + stored.uploads[0].path}"]`);
-    expect(photos).toHaveLength(3);
+    expect(photos).toHaveLength(2);
     expect(document.querySelector(".Nav-account")).toHaveClass("is-signed-in");
     expect(within(dialog).getByRole("button", { name: "Change Photo" })).toBeInTheDocument();
 });
 
 test("a photo already: shown everywhere; changing it removes the old file", async () => {
     const { user, dialog } = await openAccount({ photo: OLD_PHOTO });
-    expect(document.querySelectorAll(`img[src="${OLD_PHOTO}"]`)).toHaveLength(3);
+    expect(document.querySelectorAll(`img[src="${OLD_PHOTO}"]`)).toHaveLength(2);
 
     await user.click(within(dialog).getByRole("button", { name: "Change Photo" }));
     await choosePhoto(user);

@@ -139,12 +139,10 @@ describe("the pop-up", () => {
         expect(within(dialog()).getByText(/isn't ready in this window yet/)).toBeInTheDocument();
     });
 
-    test("computers: the side rail (opened out) has it", async () => {
+    test("computers: the side rail has it", async () => {
         const user = userEvent.setup();
         render(<ShowPage monkeys={MONKEYS} />);
-        await user.click(screen.getByRole("button", { name: "Open the side menu" }));
         await user.click(within(screen.getByRole("complementary", { name: "Main menu" })).getByRole("button", { name: "Install & Use Offline" }));
-        localStorage.removeItem("vervetdb-rail");
         expect(await screen.findByRole("dialog", { name: "Install & Use Offline" })).toBeInTheDocument();
     });
 

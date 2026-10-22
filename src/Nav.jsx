@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconX, IconMenu2, IconPlus } from "@tabler/icons-react";
+import { IconX, IconMenu2 } from "@tabler/icons-react";
 import ModalPDF from "./ModalPDF";
 import AccountModal from "./AccountModal";
 import AboutModal from "./AboutModal";
@@ -13,26 +13,15 @@ import QrScanner from "./QrScanner";
 import "./Nav.css";
 
 // The top bar, and the ways around beside it (NavBars.jsx):
-//   Computers: the menu button (opens the side rail out or back) and the
-//   logo; search in the middle; + New (admins) and the account circle
-//   (signed in: the account menu, AccountMenu.jsx). The
-//   side rail down the left.
-//   Phones: the logo, search, and the menu button (the drawer from the
-//   right); the bottom bar: Monkeys, Enclosures, Map (Edit on a page that
-//   can be edited), Game, You.
-// The side rail: on wide screens, opening it out moves the page over (and
-// that's remembered on this device); on narrower ones it slides out over
-// the page instead, YouTube-style, until something's picked.
-const RAIL_KEY = "vervetdb-rail";
-const WIDE = "(min-width: 960px)";
-const isWide = () => window.matchMedia?.(WIDE).matches ?? true;
-function savedRailOpen() {
-    try {
-        return localStorage.getItem(RAIL_KEY) === "open";
-    } catch {
-        return false;
-    }
-}
+//   Computers: ☰ (opens the side rail out; it opens on hover too) and the
+//   logo, top left; search in the middle; the account circle (signed in:
+//   the account menu, AccountMenu.jsx). The side rail down the left (Add
+//   New Monkey at its top, for admins).
+//   Phones: the menu button (the drawer from the left), search, and the
+//   account circle (as on computers); the bottom bar: Monkeys, Enclosures,
+//   Map, then Scan and Game (staff: Photos and Documents).
+// Small phones: the search box just says "Search"
+const SMALL = "(max-width: 379px)";
 
 function Nav({
     searchValue,
@@ -72,7 +61,7 @@ function Nav({
     toggleAbout,
     isOfflineOpen,
     toggleOffline,
-    onAddMonkey, // admins only: "+ New" (computers), Add New Monkey (the drawer)
+    onAddMonkey, // admins only: Add New Monkey, at the top of the side rail / ☰ menu
     onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
@@ -81,40 +70,15 @@ function Nav({
     enclosures = [], // the Interactive Map: the places to tap
     monkeys = [], // … and who lives there
 }) {
-    const { user, avatarUrl, role } = useAuth();
+    const { role } = useAuth();
     // Documents (Profile Books, the AM Plates List, Introcage Signs…): staff only (any role)
     const onCreatePdf = role ? togglePDFModal : undefined;
     const searchInputRef = useRef(null);
 
-    // Computers: the side rail opened out (labels) or small (icons).
-    // Wide screens: pinned open (the page moves over; remembered). Narrower:
-    // over the page for a moment.
-    const [wide, setWide] = useState(isWide);
-    useEffect(() => {
-        const query = window.matchMedia?.(WIDE);
-        const update = () => setWide(query.matches);
-        query?.addEventListener?.("change", update);
-        return () => query?.removeEventListener?.("change", update);
-    }, []);
-    const [railPinned, setRailPinned] = useState(savedRailOpen);
-    const [railOver, setRailOver] = useState(false);
-    const railOpen = wide ? railPinned : railOver;
-    useEffect(() => {
-        // (NavBars.css only moves the page over on wide screens)
-        document.documentElement.classList.toggle("rail-open", railPinned);
-        try {
-            localStorage.setItem(RAIL_KEY, railPinned ? "open" : "small");
-        } catch {
-            // (not saved: fine)
-        }
-    }, [railPinned]);
-    function toggleRail() {
-        if (wide) setRailPinned((open) => !open);
-        else setRailOver((open) => !open);
-    }
-    // Over the page: a new page, or a pop-up opening, puts it away
-    const closeRailOver = () => setRailOver(false);
-    useEffect(closeRailOver, [page, wide]);
+    // Computers: the side rail opened out with the ☰ (until something's
+    // picked, a tap outside, or a new page)
+    const [railOpen, setRailOpen] = useState(false);
+    useEffect(() => setRailOpen(false), [page]);
     // The account pop-up opened from the account menu's Changelog: starts there
     const [accountStart, setAccountStart] = useState(null);
     // Phones: the drawer
@@ -124,6 +88,14 @@ function Nav({
     const scanned = useCallback((hash) => {
         setScanOpen(false);
         window.location.hash = hash;
+    }, []);
+    // Small phones (the search box's placeholder: "Search")
+    const [smallScreen, setSmallScreen] = useState(() => window.matchMedia?.(SMALL).matches ?? false);
+    useEffect(() => {
+        const query = window.matchMedia?.(SMALL);
+        const update = () => setSmallScreen(query.matches);
+        query?.addEventListener?.("change", update);
+        return () => query?.removeEventListener?.("change", update);
     }, []);
     // Map (the side rail, bottom bar or drawer): the Interactive Map pop-up
     const [mapOpen, setMapOpen] = useState(false);
@@ -158,12 +130,13 @@ function Nav({
             {/* inert: while a pop-up is open, the nav behind it can't be tabbed to */}
             <nav className={showSearch ? "Nav" : "Nav is-noSearch"} inert={anyPopUp}>
                 <div className="Nav-start">
-                    {/* Computers: opens the side rail out, or back to icons */}
+                    {/* Computers: opens the side rail out (over the page), or
+                        puts it away */}
                     <button
                         type="button"
                         className="Nav-railButton"
-                        onClick={toggleRail}
-                        aria-label={railOpen ? "Make the side menu smaller" : "Open the side menu"}
+                        onClick={() => setRailOpen((open) => !open)}
+                        aria-label={railOpen ? "Close the side menu" : "Open the side menu"}
                         aria-expanded={railOpen}
                         aria-controls="SideRail"
                     >
@@ -196,7 +169,8 @@ function Nav({
                     </div>
                     <input
                         type="text"
-                        placeholder="Name or chip number"
+                        // (small phones: just "Search", so it isn't cut off)
+                        placeholder={smallScreen ? "Search" : "Name or chip number"}
                         aria-label="Search by name or chip number"
                         name="search"
                         ref={searchInputRef}
@@ -219,14 +193,8 @@ function Nav({
                     <div className="Nav-spacer" />
                 )}
 
-                {/* Computers: + New (admins), then the account circle */}
+                {/* The account circle (phones too) */}
                 <div className="Nav-buttons">
-                    {onAddMonkey && (
-                        <button type="button" className="Nav-add" onClick={onAddMonkey} aria-label="Add New Monkey">
-                            <IconPlus stroke={2} size={20} aria-hidden="true" />
-                            New
-                        </button>
-                    )}
                     {/* Sign in, or (signed in) the account menu */}
                     <AccountMenu
                         onAccount={toggleAccount}
@@ -237,7 +205,8 @@ function Nav({
                     />
                 </div>
 
-                {/* Phones: opens the drawer from the right */}
+                {/* Phones: opens the drawer from the left (top left: CSS puts
+                    it first) */}
                 <button
                     type="button"
                     className="Nav-menuButton"
@@ -253,11 +222,11 @@ function Nav({
             {createPortal(
                 <>
                     <SideRail
+                        onAddMonkey={onAddMonkey}
                         open={railOpen}
+                        onClose={() => setRailOpen(false)}
                         onMap={showMap}
                         onAddPhotos={onAddPhotos}
-                        over={!wide && railOver}
-                        onClose={closeRailOver}
                         page={page}
                         onHome={onHome}
                         onProfileBook={onCreatePdf}
@@ -271,9 +240,9 @@ function Nav({
                         onHome={onHome}
                         onMap={showMap}
                         onAddPhotos={onAddPhotos}
-                        onAccount={toggleAccount}
-                        signedIn={Boolean(user)}
-                        avatarUrl={avatarUrl}
+                        onProfileBook={onCreatePdf}
+                        isGeneratingPDF={isGeneratingPDF}
+                        onScan={() => setScanOpen(true)}
                         inert={barsInert || anyPopUp}
                     />
                     {mapOpen && <WholeMap onClose={() => setMapOpen(false)} enclosures={enclosures} monkeys={monkeys} />}
@@ -281,10 +250,11 @@ function Nav({
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
+                        onHome={onHome}
+                        onMap={showMap}
+                        onAddPhotos={onAddPhotos}
                         onProfileBook={onCreatePdf}
                         isGeneratingPDF={isGeneratingPDF}
-                        // (staff with Photos in the bottom bar, in the game's place)
-                        showGame={Boolean(onAddPhotos)}
                         onScan={() => setScanOpen(true)}
                         page={page}
                         onOffline={toggleOffline}

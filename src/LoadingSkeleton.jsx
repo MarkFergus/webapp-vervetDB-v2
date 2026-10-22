@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import "./NavBars.css"; // (the side rail's and bottom bar's sizes)
 import "./LoadingSkeleton.css";
 
@@ -10,7 +9,6 @@ import "./LoadingSkeleton.css";
 const CARDS = 12;
 const ROWS = 14;
 const VIEW_KEY = "vervetdb-view"; // the same as ShowPage's
-const RAIL_KEY = "vervetdb-rail"; // the same as Nav's
 
 function savedView() {
     try {
@@ -22,14 +20,6 @@ function savedView() {
 
 function LoadingSkeleton() {
     const view = savedView();
-    // The side rail at the size it was left (as Nav does)
-    useEffect(() => {
-        try {
-            document.documentElement.classList.toggle("rail-open", localStorage.getItem(RAIL_KEY) === "open");
-        } catch {
-            // (small, then)
-        }
-    }, []);
     return (
         <div className="LoadingSkeleton" role="status">
             <span className="visually-hidden">Loading monkeys…</span>
