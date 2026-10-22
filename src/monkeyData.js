@@ -482,16 +482,18 @@ export async function saveEnclosure(enclosure, changes) {
 
 // A log entry, as the site uses it: { id, doneOn ("2026-10-05"), kind
 // ("routine" / "repair", or null: logged before there were kinds), details,
-// loggedBy (the name before the @), loggedAt }
+// loggedBy (their name), loggedById (their account id: who can change it),
+// loggedAt }
 const toAppEntry = (row) => ({
     id: row.id,
     doneOn: row.done_on,
     kind: row.kind ?? null,
     details: row.details,
     loggedBy: row.logged_by_name,
+    loggedById: row.logged_by,
     loggedAt: row.logged_at,
 });
-const OLD_ENTRY_COLUMNS = "id, done_on, details, logged_by_name, logged_at";
+const OLD_ENTRY_COLUMNS = "id, done_on, details, logged_by, logged_by_name, logged_at";
 // ...and Routine / Repair (once maintenance-kind.sql has run)
 const KIND_ENTRY_COLUMNS = `${OLD_ENTRY_COLUMNS}, kind`;
 // Whether the database has kinds: null until known
@@ -542,14 +544,27 @@ export async function addMaintenance(enclosureId, { doneOn, kind, details }) {
     return toAppEntry(data);
 }
 
-// Deletes an entry (admins only)
+// Changes an entry's date, Maintenance Type or details (admins, or whoever
+// wrote it in: maintenance-own.sql). Returns the saved entry.
+export async function saveMaintenance(id, { doneOn, kind, details }) {
+    const row = { done_on: doneOn, details };
+    if (maintenanceKindsAvailable() && kind) row.kind = kind;
+    const { data, error } = await supabase.from("maintenance").update(row).eq("id", id).select(entryColumns()).single();
+    if (error) {
+        console.error("Saving maintenance failed:", error);
+        throw saveProblem(error);
+    }
+    return toAppEntry(data);
+}
+
+// Deletes an entry (admins, or whoever wrote it in: maintenance-own.sql)
 export async function deleteMaintenance(id) {
     const { data, error } = await supabase.from("maintenance").delete().eq("id", id).select("id");
     if (error) {
         console.error("Deleting maintenance failed:", error);
         throw saveProblem(error);
     }
-    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete log entries.");
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it in, can delete it.");
 }
 
 // ---- Integration reports: staff reports on how a monkey's integration is going ----

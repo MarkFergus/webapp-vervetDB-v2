@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { IconPlus, IconTool, IconTrash } from "@tabler/icons-react";
-import { addMaintenance, deleteMaintenance, loadMaintenance, maintenanceKindsAvailable } from "./monkeyData";
+import { IconPencil, IconPlus, IconTool, IconTrash } from "@tabler/icons-react";
+import { addMaintenance, deleteMaintenance, loadMaintenance, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
 import "./MaintenanceLog.css";
 
 // An enclosure's maintenance log: dated entries, newest first, each with its
-// Maintenance Type (Routine or Repair) and who wrote it in. Editors can add
-// entries; admins can delete them.
+// Maintenance Type (Routine or Repair) and who wrote it in. Staff (any role:
+// maintenance staff too) add entries, and change or delete their own;
+// admins change or delete anyone's (maintenance-own.sql).
 //   live: the database has the log (false before enclosures.sql, or offline)
+//   canAdd: staff, with the database live; me: { userId, isAdmin }
 
 // Today, as "2026-10-07" (in the phone's own time zone)
 function today() {
@@ -23,13 +25,103 @@ function dayText(date) {
     return new Date(y, m - 1, d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
+// The date and (beside it) Routine or Repair, then what was done; Cancel
+// and the save button. Adding, and changing an entry.
+//   initial: { doneOn, kind, details }; onSave(values) async (throws a
+//   message to show); saveLabel / busyLabel: "Add Entry" / "Adding…"
+function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
+    const [draft, setDraft] = useState(initial);
+    const [busy, setBusy] = useState(false);
+    const [problem, setProblem] = useState(null);
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        const details = draft.details.trim();
+        // (once the database has them)
+        if (maintenanceKindsAvailable() && !draft.kind) {
+            setProblem("Please choose the Maintenance Type.");
+            return;
+        }
+        if (!details) {
+            setProblem("Please say what was done.");
+            return;
+        }
+        setBusy(true);
+        setProblem(null);
+        try {
+            await onSave({ doneOn: draft.doneOn, kind: draft.kind, details });
+        } catch (error) {
+            setProblem(error.message);
+            setBusy(false);
+        }
+    }
+
+    return (
+        <form className="MaintenanceLog-form" onSubmit={handleSubmit}>
+            {/* The date, and beside it Routine or Repair */}
+            <div className="MaintenanceLog-row">
+                <label className="MaintenanceLog-field is-date">
+                    <span>Date done</span>
+                    <input
+                        type="date"
+                        value={draft.doneOn}
+                        max={today()}
+                        required
+                        onChange={(e) => setDraft({ ...draft, doneOn: e.target.value })}
+                    />
+                </label>
+                {maintenanceKindsAvailable() && (
+                    <label className="MaintenanceLog-field is-kind">
+                        <span>Maintenance Type</span>
+                        <select value={draft.kind} onChange={(e) => setDraft({ ...draft, kind: e.target.value })}>
+                            <option value="">Choose…</option>
+                            {Object.entries(MAINTENANCE_TYPES).map(([value, label]) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
+            </div>
+            <label className="MaintenanceLog-field">
+                <span>What was done</span>
+                <textarea
+                    rows={3}
+                    value={draft.details}
+                    autoFocus
+                    placeholder="e.g. Replaced the shade cloth on the climbing frame"
+                    onChange={(e) => setDraft({ ...draft, details: e.target.value })}
+                />
+            </label>
+            {problem && (
+                <p className="MaintenanceLog-problem" role="alert">
+                    {problem}
+                </p>
+            )}
+            <div className="MaintenanceLog-buttons">
+                <button type="button" className="MaintenanceLog-button is-quiet" onClick={onCancel} disabled={busy}>
+                    Cancel
+                </button>
+                <button type="submit" className="MaintenanceLog-button is-save" disabled={busy}>
+                    {busy ? busyLabel : saveLabel}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+function MaintenanceLog({ enclosure, live, canAdd, me = {} }) {
     const [entries, setEntries] = useState(undefined); // undefined = loading
     const [problem, setProblem] = useState(null);
     const [adding, setAdding] = useState(false);
-    const [draft, setDraft] = useState({ doneOn: today(), kind: "", details: "" });
+    const [editing, setEditing] = useState(null); // the entry id being changed
     const [busy, setBusy] = useState(false);
     const [confirming, setConfirming] = useState(null); // the entry id to delete
+    // Their own entries (admins: anyone's)
+    const canChange = (entry) => canAdd && Boolean(me.isAdmin || (me.userId && entry.loggedById === me.userId));
+    // Newest first, by the day it was done
+    const inOrder = (list) => [...list].sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.id - a.id);
 
     useEffect(() => {
         if (!live) return;
@@ -50,34 +142,16 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
         );
     }
 
-    async function handleAdd(event) {
-        event.preventDefault();
-        const details = draft.details.trim();
-        // (once the database has them)
-        const withKind = maintenanceKindsAvailable();
-        if (withKind && !draft.kind) {
-            setProblem("Please choose the Maintenance Type.");
-            return;
-        }
-        if (!details) {
-            setProblem("Please say what was done.");
-            return;
-        }
-        setBusy(true);
-        setProblem(null);
-        try {
-            const saved = await addMaintenance(enclosure.id, { doneOn: draft.doneOn, kind: draft.kind, details });
-            // Newest first, by the day it was done
-            setEntries((list) =>
-                [saved, ...(list ?? [])].sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.id - a.id)
-            );
-            setDraft({ doneOn: today(), kind: "", details: "" });
-            setAdding(false);
-        } catch (error) {
-            setProblem(error.message);
-        } finally {
-            setBusy(false);
-        }
+    async function handleAdd(values) {
+        const saved = await addMaintenance(enclosure.id, values);
+        setEntries((list) => inOrder([saved, ...(list ?? [])]));
+        setAdding(false);
+    }
+
+    async function handleSave(id, values) {
+        const saved = await saveMaintenance(id, values);
+        setEntries((list) => inOrder(list.map((e) => (e.id === id ? saved : e))));
+        setEditing(null);
     }
 
     async function handleDelete(id) {
@@ -98,60 +172,13 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
         <div className="MaintenanceLog">
             {canAdd &&
                 (adding ? (
-                    <form className="MaintenanceLog-form" onSubmit={handleAdd}>
-                        {/* The date, and beside it Routine or Repair */}
-                        <div className="MaintenanceLog-row">
-                            <label className="MaintenanceLog-field is-date">
-                                <span>Date done</span>
-                                <input
-                                    type="date"
-                                    value={draft.doneOn}
-                                    max={today()}
-                                    required
-                                    onChange={(e) => setDraft({ ...draft, doneOn: e.target.value })}
-                                />
-                            </label>
-                            {maintenanceKindsAvailable() && (
-                                <label className="MaintenanceLog-field is-kind">
-                                    <span>Maintenance Type</span>
-                                    <select value={draft.kind} onChange={(e) => setDraft({ ...draft, kind: e.target.value })}>
-                                        <option value="">Choose…</option>
-                                        {Object.entries(MAINTENANCE_TYPES).map(([value, label]) => (
-                                            <option key={value} value={value}>
-                                                {label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-                            )}
-                        </div>
-                        <label className="MaintenanceLog-field">
-                            <span>What was done</span>
-                            <textarea
-                                rows={3}
-                                value={draft.details}
-                                autoFocus
-                                placeholder="e.g. Replaced the shade cloth on the climbing frame"
-                                onChange={(e) => setDraft({ ...draft, details: e.target.value })}
-                            />
-                        </label>
-                        <div className="MaintenanceLog-buttons">
-                            <button
-                                type="button"
-                                className="MaintenanceLog-button is-quiet"
-                                onClick={() => {
-                                    setAdding(false);
-                                    setProblem(null);
-                                }}
-                                disabled={busy}
-                            >
-                                Cancel
-                            </button>
-                            <button type="submit" className="MaintenanceLog-button is-save" disabled={busy}>
-                                {busy ? "Adding…" : "Add Entry"}
-                            </button>
-                        </div>
-                    </form>
+                    <EntryForm
+                        initial={{ doneOn: today(), kind: "", details: "" }}
+                        onSave={handleAdd}
+                        onCancel={() => setAdding(false)}
+                        saveLabel="Add Entry"
+                        busyLabel="Adding…"
+                    />
                 ) : (
                     <button type="button" className="MaintenanceLog-add" onClick={() => setAdding(true)}>
                         <IconPlus size={16} aria-hidden="true" />
@@ -169,7 +196,18 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
                 <p className="Enclosures-none">Loading the log…</p>
             ) : entries?.length ? (
                 <ol className="MaintenanceLog-list">
-                    {entries.map((entry) => (
+                    {entries.map((entry) =>
+                        editing === entry.id ? (
+                            <li key={entry.id} className="MaintenanceLog-editing">
+                                <EntryForm
+                                    initial={{ doneOn: entry.doneOn, kind: entry.kind ?? "", details: entry.details }}
+                                    onSave={(values) => handleSave(entry.id, values)}
+                                    onCancel={() => setEditing(null)}
+                                    saveLabel="Save"
+                                    busyLabel="Saving…"
+                                />
+                            </li>
+                        ) : (
                         <li key={entry.id} className="MaintenanceLog-entry">
                             {/* The date, with its Maintenance Type under it */}
                             <span className="MaintenanceLog-when">
@@ -182,7 +220,8 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
                             <span className="MaintenanceLog-who">
                                 {entry.loggedBy ? `Logged by ${entry.loggedBy}` : "Logged"}
                             </span>
-                            {canDelete &&
+                            {/* Edit / Delete: their own (admins: anyone's) */}
+                            {canChange(entry) &&
                                 (confirming === entry.id ? (
                                     <span className="MaintenanceLog-confirm">
                                         Delete this entry?
@@ -199,17 +238,30 @@ function MaintenanceLog({ enclosure, live, canAdd, canDelete }) {
                                         </button>
                                     </span>
                                 ) : (
-                                    <button
-                                        type="button"
-                                        className="MaintenanceLog-delete"
-                                        aria-label={`Delete the entry from ${dayText(entry.doneOn)}`}
-                                        onClick={() => setConfirming(entry.id)}
-                                    >
-                                        <IconTrash size={16} aria-hidden="true" />
-                                    </button>
+                                    <span className="MaintenanceLog-icons">
+                                        <button
+                                            type="button"
+                                            className="MaintenanceLog-icon is-edit"
+                                            aria-label={`Edit the entry from ${dayText(entry.doneOn)}`}
+                                            title="Edit"
+                                            onClick={() => setEditing(entry.id)}
+                                        >
+                                            <IconPencil size={16} aria-hidden="true" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="MaintenanceLog-icon is-delete"
+                                            aria-label={`Delete the entry from ${dayText(entry.doneOn)}`}
+                                            title="Delete"
+                                            onClick={() => setConfirming(entry.id)}
+                                        >
+                                            <IconTrash size={16} aria-hidden="true" />
+                                        </button>
+                                    </span>
                                 ))}
                         </li>
-                    ))}
+                        )
+                    )}
                 </ol>
             ) : entries ? (
                 <p className="Enclosures-none">Nothing logged yet.</p>

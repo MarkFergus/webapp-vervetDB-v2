@@ -18,8 +18,8 @@ function fakeSupabase({ signedIn = true, admin = true, role } = {}) {
     saved = { updates: [], inserts: [], deletes: [] };
     log = [
         // (an older entry, from before Maintenance Types: none)
-        { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", kind: null, details: "Cleared the drain", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
-        { id: 2, enclosure_id: ROBERT.id, done_on: "2026-10-01", kind: "repair", details: "Fixed the gate latch", logged_by_name: "mark", logged_at: "2026-10-01T09:00:00Z" },
+        { id: 1, enclosure_id: ROBERT.id, done_on: "2026-09-12", kind: null, details: "Cleared the drain", logged_by: "someone-else", logged_by_name: "sam", logged_at: "2026-09-12T10:00:00Z" },
+        { id: 2, enclosure_id: ROBERT.id, done_on: "2026-10-01", kind: "repair", details: "Fixed the gate latch", logged_by: EDITOR.id, logged_by_name: "mark", logged_at: "2026-10-01T09:00:00Z" },
     ];
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({
         data: { session: signedIn ? { user: EDITOR } : null },
@@ -63,10 +63,21 @@ function fakeSupabase({ signedIn = true, admin = true, role } = {}) {
                 select: () => ({
                     single: async () => {
                         saved.inserts.push(row);
-                        const entry = { id: 99, ...row, logged_by_name: "mark", logged_at: "2026-10-07T12:00:00Z" };
+                        const entry = { id: 99, ...row, logged_by: EDITOR.id, logged_by_name: "mark", logged_at: "2026-10-07T12:00:00Z" };
                         log.push(entry);
                         return { data: entry, error: null };
                     },
+                }),
+            }),
+            update: (row) => ({
+                eq: (_, id) => ({
+                    select: () => ({
+                        single: async () => {
+                            saved.updates.push({ id, row });
+                            const entry = { ...log.find((e) => e.id === id), ...row };
+                            return { data: entry, error: null };
+                        },
+                    }),
                 }),
             }),
             delete: () => ({
@@ -354,11 +365,29 @@ describe("the maintenance log", () => {
         expect(screen.queryByText("Cleared the drain")).toBeNull();
     });
 
-    test("editors who aren't admins have no delete buttons", async () => {
-        const { user } = setup({ admin: false });
+    test("maintenance staff (and editors) can edit and delete their own entries, not anyone else's", async () => {
+        const { user } = setup({ admin: false, role: "maintenance" });
         await openMaintenance(user);
         await screen.findByText("Fixed the gate latch");
-        expect(screen.queryByRole("button", { name: /^Delete the entry/ })).toBeNull();
+        // Theirs (1 Oct): Edit and Delete; someone else's (12 Sept): neither
+        expect(screen.getByRole("button", { name: "Edit the entry from 1 Oct 2026" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Delete the entry from 1 Oct 2026" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Edit the entry from 12 Sept 2026" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "Delete the entry from 12 Sept 2026" })).toBeNull();
+    });
+
+    test("editing an entry: the same form, filled in; Save changes it in the log", async () => {
+        const { user } = setup({ admin: false, role: "maintenance" });
+        await openMaintenance(user);
+        await user.click(await screen.findByRole("button", { name: "Edit the entry from 1 Oct 2026" }));
+        const box = screen.getByRole("textbox", { name: "What was done" });
+        expect(box).toHaveValue("Fixed the gate latch");
+        await user.clear(box);
+        await user.type(box, "Fixed the gate latch and its spring");
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0]).toEqual({ id: 2, row: { done_on: "2026-10-01", details: "Fixed the gate latch and its spring", kind: "repair" } });
+        expect(await screen.findByText("Fixed the gate latch and its spring")).toBeInTheDocument();
     });
 });
 

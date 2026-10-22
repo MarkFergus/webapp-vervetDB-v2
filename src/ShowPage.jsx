@@ -178,8 +178,11 @@ function ShowPage({
     // On the Enclosures pages (only once the database has enclosures)
     const enclosureEditing = {
         canEdit: canEdit && enclosuresLive,
-        // the maintenance log: any role, maintenance accounts too
+        // the maintenance log: any role, maintenance accounts too (their own
+        // entries to change or delete; admins: anyone's)
         canLog: editable && canLogMaintenance && enclosuresLive,
+        userId: user?.id ?? null,
+        isAdmin,
         // enclosure details: admins only, for now
         canEditDetails: canEdit && enclosuresLive && isAdmin,
         canDelete: canEdit && enclosuresLive && isAdmin,
@@ -222,9 +225,10 @@ function ShowPage({
         recentIds.current = [id, ...recentIds.current.filter((x) => x !== id)].slice(0, 10);
     }, [isModalOpen, selectedMonkey]);
     // Staff (any role, with the database live) see Injuries and a monkey's
-    // page's Records; Quick Actions (Sickbay, Released, New Injury, Healed?)
-    // and adding records are admins only, for now
-    const staff = role && editable ? { canSee: true, canAdd: canEdit && isAdmin, userId: user?.id, isAdmin } : null;
+    // page's Records; editors and admins add them (Quick Actions: Sickbay,
+    // Introcage, Released, New Injury, Healed?; Integration Reports) and
+    // change their own (admins: anyone's)
+    const staff = role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin } : null;
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -830,12 +834,12 @@ function ShowPage({
                     onOpenPage={role && !onMonkeyPage ? openPage : undefined}
                     // Released: new arrivals only (living in a care unit), once the database has a status
                     onRelease={
-                        canEdit && isAdmin && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
+                        canEdit && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
                             ? handleRelease
                             : undefined
                     }
                     // (only once the database has Sickbay)
-                    onWhereabouts={canEdit && isAdmin && selectedMonkey?.inSickbay !== undefined ? handleWhereabouts : undefined}
+                    onWhereabouts={canEdit && selectedMonkey?.inSickbay !== undefined ? handleWhereabouts : undefined}
                     // (only once the database has stays: introcage-stays.sql)
                     stayChoices={
                         selectedMonkey?.stay !== undefined ? stayChoices(selectedMonkey, enclosures) : undefined

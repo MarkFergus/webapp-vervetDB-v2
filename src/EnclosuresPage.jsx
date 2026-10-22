@@ -545,7 +545,8 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
 
 // One enclosure or introcage
 // editing: { canEdit (editors, with the database live), canLog (any role:
-//   adding to the maintenance log),
+//   adding to the maintenance log, and changing their own entries; userId,
+//   isAdmin: whose they are, admins any),
 //   canEditDetails (admins: About, Features, Size, Established), canDelete (admins),
 //   onSaved(enclosure) }
 //   steps: previous / next (stepsFrom), or null; onStep(direction)
@@ -827,7 +828,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                         enclosure={enclosure}
                         live={editing.live}
                         canAdd={editing.canLog}
-                        canDelete={editing.canDelete}
+                        me={{ userId: editing.userId, isAdmin: editing.isAdmin }}
                     />
                 </Fold>
             </article>

@@ -624,13 +624,13 @@ describe("feeding (introcage monkeys)", () => {
     });
 });
 
-test("Quick Actions (Sickbay, Released, New Injury) is for admins only, for now", async () => {
+test("Quick Actions (Sickbay, Introcage, Released, New Injury) are for editors too", async () => {
     const withSickbay = () => startingMonkeys().map((m) => ({ ...m, inSickbay: false, status: "sanctuary" }));
-    // An editor: the pop-up has Edit, but no Quick Actions
     const editor = setup({ enclosuresLive: true, admin: false, start: withSickbay });
     await editor.user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
     expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+    await editor.user.click(screen.getByRole("button", { name: "Quick Actions" }));
+    expect(screen.getByRole("button", { name: "Move to Sickbay" })).toBeInTheDocument();
 });
 
 test("...and an admin has it", async () => {

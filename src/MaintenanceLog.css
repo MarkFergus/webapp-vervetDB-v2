@@ -171,7 +171,13 @@
     display: grid;
     grid-template-columns: 110px minmax(0, 1fr);
     gap: 2px 16px;
-    padding: 12px 40px 12px 2px;
+    padding: 12px 64px 12px 2px;
+    border-bottom: 1px solid var(--surface-2);
+}
+
+/* Changing an entry: its form in its place in the log */
+.MaintenanceLog-editing {
+    padding: 12px 0;
     border-bottom: 1px solid var(--surface-2);
 }
 
@@ -218,10 +224,17 @@
     color: var(--text-3);
 }
 
-.MaintenanceLog-delete {
+/* Edit and Delete (their own entries; admins: anyone's), top right */
+.MaintenanceLog-icons {
     position: absolute;
     top: 10px;
     right: 0;
+    display: flex;
+    gap: 2px;
+}
+
+.MaintenanceLog-icon {
+    display: flex;
     padding: 4px;
     color: var(--text-3);
     background: none;
@@ -230,7 +243,12 @@
     cursor: pointer;
 }
 
-.MaintenanceLog-delete:hover {
+.MaintenanceLog-icon.is-edit:hover {
+    color: var(--accent);
+    background-color: var(--surface-2);
+}
+
+.MaintenanceLog-icon.is-delete:hover {
     color: var(--danger);
     background-color: var(--surface-2);
 }
