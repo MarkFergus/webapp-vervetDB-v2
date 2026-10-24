@@ -492,3 +492,11 @@
 .ShowPage-emptyClear:hover {
     background-color: var(--accent-2);
 }
+
+/* A page still loading its code (e.g. Statistics, opened the first time) */
+.ShowPage-loading {
+    margin: 48px 0;
+    text-align: center;
+    font-family: var(--font-ui);
+    color: var(--text-3);
+}

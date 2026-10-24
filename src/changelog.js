@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.15.0",
+        date: "2026-10-24",
+        changes: ["New Statistics page: figures and charts for the sanctuary, each enclosure and the Bandits"],
+    },
+    {
         version: "1.14.0",
         date: "2026-10-22",
         major: true,

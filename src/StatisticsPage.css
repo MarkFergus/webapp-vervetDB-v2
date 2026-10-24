@@ -1,0 +1,675 @@
+/* The Statistics page (StatisticsPage.jsx). Charts are plain HTML: thin
+   marks, 4px rounded ends, a 2px gap between touching parts, quiet text.
+   The chart colours, one meaning each (checked for colour-blind readers
+   on the cards' surface in both themes):
+     female / male / unknown (sex)   the site's pink (a touch softer), blue
+                 and green (dark: a
+                 shade deeper, as bars need)
+     count       the number of monkeys (age groups, space, where they
+                 live, AM plates): violet, so blue only ever means male
+     troop / introcages   two steps of the same violet
+     none        grey: not known (e.g. age) */
+.Stats {
+    --viz-count: #8f84e8;
+    --viz-troop: #8f84e8;
+    --viz-introcages: #c3bdf5;
+    --viz-female: #d9448f;
+    --viz-male: #2a8de0;
+    --viz-unknown: #27a870;
+    /* (no value known, e.g. age unknown: grey) */
+    --viz-none: #6b6b6b;
+
+    box-sizing: border-box;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 12px 64px;
+    font-family: var(--font-ui);
+    color: var(--text);
+}
+
+:root[data-theme="light"] .Stats {
+    --viz-count: #6250d6;
+    --viz-troop: #5545c9;
+    --viz-introcages: #a69cf0;
+    --viz-female: #b51f6f; /* (the site's pink, a touch softer) */
+    --viz-male: var(--accent);
+    --viz-unknown: var(--green);
+    --viz-none: #b8b8b8;
+}
+
+.Stats-title {
+    margin: 16px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--text-strong);
+}
+
+/* ---- Whose stats: one row above everything ---- */
+
+.Stats-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 16px;
+}
+
+.Stats-select select {
+    height: 36px;
+    min-width: 200px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Stats-select select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* All / Troop / Introcages: a segmented control, like the list's views */
+.Stats-segments {
+    display: inline-flex;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 999px;
+}
+
+.Stats-segments button {
+    height: 30px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Stats-segments button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text-strong);
+}
+
+.Stats-segments button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* ---- The number tiles ---- */
+
+.Stats-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.Stats-tiles div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Stats-tiles dt {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.Stats-tiles dd {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-strong);
+}
+
+.Stats-tileSub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+@media (max-width: 559px) {
+    .Stats-tiles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ---- The chart cards ---- */
+
+.Stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+@media (max-width: 689px) {
+    .Stats-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.Stats-card {
+    min-width: 0;
+    padding: 14px 16px 16px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Stats-card.is-wide {
+    grid-column: 1 / -1;
+}
+
+.Stats-cardHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.Stats-cardHead h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+/* High to Low / Low to High: beside Table, pushing it right */
+.Stats-sortToggle {
+    margin-left: auto;
+}
+
+.Stats-viewToggle {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+@media (max-width: 559px) {
+    .Stats-sortLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+/* Chart / Table: a quiet pill */
+.Stats-viewToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 28px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Stats-viewToggle:hover {
+    color: var(--text-strong);
+    background-color: var(--surface-3);
+}
+
+.Stats-viewToggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* The headline: the key figure in words */
+.Stats-headline {
+    margin: 4px 0 14px;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Stats-muted {
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+/* The colours, by meaning */
+.Stats .is-female {
+    --mark: var(--viz-female);
+}
+
+.Stats .is-male {
+    --mark: var(--viz-male);
+}
+
+.Stats .is-unknown {
+    --mark: var(--viz-unknown);
+}
+
+.Stats .is-troop {
+    --mark: var(--viz-troop);
+}
+
+.Stats .is-introcages {
+    --mark: var(--viz-introcages);
+}
+
+/* Two numbers side by side, in a card (AM plates: who feeds them) */
+.Stats-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.Stats-pair div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+    padding: 10px 12px;
+    background-color: var(--surface-2);
+    border-radius: 10px;
+}
+
+.Stats-pair dt {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.Stats-pair dd {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-strong);
+}
+
+/* A small heading inside a card, above a second chart */
+.Stats-subhead {
+    margin: 18px 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+/* ---- Part of a whole: one bar, split (2px gaps), a legend under it ---- */
+
+.Stats-parts {
+    display: flex;
+    gap: 2px;
+    height: 24px;
+}
+
+/* (a row's own split, in a list: thinner, the row's width) */
+.Stats-parts.is-small {
+    flex: 1;
+    height: 14px;
+}
+
+.Stats-part {
+    min-width: 4px;
+    background-color: var(--mark);
+    outline: none;
+    cursor: default;
+    transition: filter 0.12s;
+}
+
+.Stats-part:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.Stats-part:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.Stats-part:only-child {
+    border-radius: 4px;
+}
+
+/* Pointed at (or focused): it lifts */
+.Stats-part:hover,
+.Stats-part:focus-visible {
+    filter: brightness(1.15);
+}
+
+.Stats-part:focus-visible {
+    box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent);
+}
+
+.Stats-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+}
+
+.Stats-legend li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.Stats-swatch {
+    width: 10px;
+    height: 10px;
+    background-color: var(--mark);
+    border-radius: 3px;
+}
+
+.Stats-legendLabel {
+    color: var(--text-2);
+}
+
+.Stats-legendValue {
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* ---- Age groups: a column each, from one baseline ---- */
+
+.Stats-columns {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.Stats-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.Stats-columnValue {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* The bar grows up from the baseline (a hairline across the bottom) */
+.Stats-columnTrack {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 140px;
+    border-bottom: 1px solid var(--line);
+}
+
+.Stats-columnBar {
+    width: 24px;
+    background-color: var(--viz-count);
+    border-radius: 4px 4px 0 0;
+    outline: none;
+    transition: filter 0.12s;
+}
+
+/* (none: no bar at all) */
+.Stats-columnBar.is-empty {
+    display: none;
+}
+
+.Stats-columnBar.is-muted {
+    background-color: var(--viz-none);
+}
+
+.Stats-columnBar:hover,
+.Stats-columnBar:focus-visible {
+    filter: brightness(1.15);
+}
+
+.Stats-columnBar:focus-visible {
+    box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--accent);
+}
+
+.Stats-columnLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    text-align: center;
+    color: var(--text-2);
+}
+
+.Stats-columnLabel .Stats-muted {
+    font-size: 12px;
+}
+
+/* ---- Where they live: a row each, most first ---- */
+
+.Stats-ranked {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Stats-rankedRow {
+    display: grid;
+    grid-template-columns: minmax(110px, 180px) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 5px 6px;
+    font-family: inherit;
+    font-size: 14px;
+    text-align: left;
+    color: var(--text);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Stats-rankedRow.is-button:hover {
+    background-color: var(--wash-soft);
+}
+
+.Stats-rankedRow:not(.is-button) {
+    cursor: default;
+}
+
+.Stats-rankedRow:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.Stats-rankedName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-2);
+}
+
+.Stats-rankedTrack {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.Stats-rankedBar {
+    height: 14px;
+    min-width: 2px;
+    background-color: var(--viz-count);
+    border-radius: 0 4px 4px 0;
+}
+
+.Stats-rankedRow:hover .Stats-rankedBar,
+.Stats-rankedRow:focus-visible .Stats-rankedBar {
+    filter: brightness(1.15);
+}
+
+/* Phones: a narrower column of names, so the bars have room */
+@media (max-width: 559px) {
+    .Stats-rankedRow {
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 10px;
+    }
+}
+
+.Stats-rankedValue {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* A size not recorded: no bar, just that */
+.Stats-rankedMissing {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-3);
+}
+
+/* ---- One big figure (an enclosure's space per monkey) ---- */
+
+.Stats-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0 2px;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-strong);
+}
+
+.Stats-heroSub {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+/* ---- Species: plain rows ---- */
+
+.Stats-list {
+    margin: 0;
+}
+
+/* (under a chart: a line above) */
+.Stats-list.is-after {
+    margin-top: 10px;
+    border-top: 1px solid var(--line);
+}
+
+.Stats-list div {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 2px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.Stats-list div:last-child {
+    border-bottom: none;
+}
+
+.Stats-list dt {
+    color: var(--text-2);
+}
+
+.Stats-list dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* ---- Table view ---- */
+
+.Stats-table {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 14px;
+    border-collapse: collapse;
+}
+
+.Stats-table th,
+.Stats-table td {
+    padding: 7px 4px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+}
+
+.Stats-table thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+}
+
+.Stats-table tbody th {
+    font-weight: 400;
+    color: var(--text-2);
+}
+
+.Stats-table td {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- The tooltip: the value first, then what it is ---- */
+
+.Stats-tooltip {
+    position: fixed;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px var(--shadow);
+    transform: translate(-50%, calc(-100% - 10px));
+    pointer-events: none;
+}
+
+.Stats-tooltip strong {
+    font-size: 14px;
+    color: var(--text-strong);
+}
+
+.Stats-none,
+.Stats-note {
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.Stats-note {
+    margin: 16px 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Stats-part,
+    .Stats-columnBar {
+        transition: none;
+    }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     IconArrowBarToUp,
     IconAdjustmentsHorizontal,
@@ -36,6 +36,8 @@ import EnclosuresPage from "./EnclosuresPage";
 import MonkeyPage from "./MonkeyPage";
 import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
+// (only loaded when it's opened: the rest of the app stays as quick)
+const StatisticsPage = lazy(() => import("./StatisticsPage"));
 import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
@@ -64,14 +66,11 @@ const compareBy = {
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
-// Age categories: ages use the 1 October birthday, and no birth year
-// counts as an adult (as in the Profile Book)
-const AGE_TESTS = {
-    babies: (age) => age === 0,
-    juveniles: (age) => age !== null && age >= 1 && age <= 3,
-    adults: (age) => age === null || (age >= 4 && age <= 14),
-    elderly: (age) => age !== null && age >= 15,
-};
+// Age categories (AGE_GROUPS, ages.js): ages use the 1 October birthday,
+// and no birth year counts as an adult (as in the Profile Book)
+const AGE_TESTS = Object.fromEntries(
+    AGE_GROUPS.map((g) => [g.id, (age) => (age === null ? g.id === "adults" : g.test(age))])
+);
 // In any of the chosen categories ([] = every monkey)
 function inAgeGroups(monkey, groups) {
     if (groups.length === 0) return true;
@@ -312,6 +311,8 @@ function ShowPage({
     const onGame = route === "game";
     // The Updates page (#updates): every version, from About
     const onUpdates = route === "updates";
+    // The Statistics page (#statistics)
+    const onStats = route === "statistics";
     // A monkey's full page (#monkeys/<name>-<enclosure>)
     const onMonkeyPage = isMonkeyPageRoute(route);
     const pageMonkey = onMonkeyPage ? monkeyFromPageRoute(route, monkeys) : null;
@@ -324,11 +325,11 @@ function ShowPage({
         window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
     }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats;
     // The game starts at the top
     useEffect(() => {
-        if (onGame || onUpdates) window.scrollTo?.(0, 0);
-    }, [onGame, onUpdates]);
+        if (onGame || onUpdates || onStats) window.scrollTo?.(0, 0);
+    }, [onGame, onUpdates, onStats]);
     const [modalList, setModalList] = useState(null);
     const neighbours = modalList ?? visibleMonkeys;
     const selectedIndex = neighbours.indexOf(selectedMonkey);
@@ -901,7 +902,7 @@ function ShowPage({
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -912,6 +913,10 @@ function ShowPage({
                 </div>
             ) : onUpdates ? (
                 <UpdatesPage inert={isAnyModalOpen} />
+            ) : onStats ? (
+                <Suspense fallback={<p className="ShowPage-loading">Loading statistics…</p>}>
+                    <StatisticsPage monkeys={monkeys} enclosures={enclosures} sections={sections} inert={isAnyModalOpen} />
+                </Suspense>
             ) : onMonkeyPage ? (
                 // (nothing while checking who's signed in, or leaving)
                 pageLocked ? null : (

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import {
+    IconChartBar,
     IconDeviceGamepad2,
     IconDeviceMobileDown,
     IconFileTypePdf,
@@ -121,6 +122,7 @@ export function SideRail({ onAddMonkey, open = false, onClose = () => {}, page, 
                         { disabled: isGeneratingPDF }
                     )}
                 {button(onMap, <IconMap2 stroke={1.75} size={22} aria-hidden="true" />, "Interactive Map")}
+                {item({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                 {item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
             </div>
             <div className="SideRail-group">
@@ -249,6 +251,7 @@ export function Drawer({
                             { disabled: isGeneratingPDF }
                         )}
                     {button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, "Interactive Map")}
+                    {link({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                     {button(onScan, <IconScan stroke={1.75} size={24} aria-hidden="true" />, "Scan QR Code")}
                     {link({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
                 </div>
