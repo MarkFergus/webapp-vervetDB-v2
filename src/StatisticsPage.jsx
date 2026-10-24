@@ -641,6 +641,7 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
         onToggle: () => setHighFirst((h) => ({ ...h, [key]: !h[key] })),
     });
     const bandits = enclosureId === "bandits";
+    const babyCareUnit = enclosures.find((e) => isCareUnit(e) && e.name === BABY_CARE);
     const enclosure = enclosures.find((e) => String(e.id) === enclosureId) ?? null;
     // (only an enclosure with a troop and introcages has parts to choose)
     const hasParts =
@@ -694,12 +695,10 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
                     <span className="visually-hidden">Show statistics for</span>
                     <select value={enclosureId} onChange={(e) => choose(e.target.value)}>
                         <option value="">Whole Sanctuary</option>
-                        {/* (care units: just Baby Care, which has its own stats;
-                            Quarantine and Sickbay: later) */}
-                        {bySection(
-                            enclosures.filter((e) => !isCareUnit(e) || e.name === BABY_CARE),
-                            sections
-                        ).map(({ section, enclosures: list }) => (
+                        {/* Baby Care next, on its own (its own stats); the
+                            other care units, Quarantine and Sickbay: later */}
+                        {babyCareUnit && <option value={babyCareUnit.id}>{BABY_CARE}</option>}
+                        {bySection(enclosures.filter((e) => !isCareUnit(e)), sections).map(({ section, enclosures: list }) => (
                             <optgroup key={section} label={section}>
                                 {list.map((e) => (
                                     <option key={e.id} value={e.id}>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
     IconChevronLeft,
@@ -20,6 +20,7 @@ import {
     IconArrowBigRightLines,
     IconCube,
     IconUserCircle,
+    IconCpu,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -85,6 +86,48 @@ function Modal({
     // Firefox's home-screen app: the picture shown here to press and hold
     const [preview, setPreview] = useState(null);
     const closeButtonRef = useRef(null);
+    // The name, between the previous / next arrows: on one line, its type
+    // shrinking just enough to fit (28px down to 20px); a name too long even
+    // then (e.g. "Elizabeth Bennett" on a small phone) wraps between words
+    const titleRef = useRef(null);
+    // The pills under the photo: on one row, leaving out the least needed
+    // ones (data-drop: 1 first, then 2) if they don't all fit
+    const pillsRef = useRef(null);
+    useLayoutEffect(() => {
+        const row = pillsRef.current;
+        if (!row) return undefined;
+        function fit() {
+            const optional = [...row.querySelectorAll("[data-drop]")].sort((a, b) => a.dataset.drop - b.dataset.drop);
+            optional.forEach((pill) => (pill.hidden = false));
+            for (const pill of optional) {
+                if (row.scrollWidth <= row.clientWidth) break;
+                pill.hidden = true;
+            }
+        }
+        fit();
+        const watch = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+        watch?.observe(row);
+        return () => watch?.disconnect();
+    }, [monkey, isModalOpen]);
+    useLayoutEffect(() => {
+        const title = titleRef.current;
+        if (!title) return undefined;
+        function fit() {
+            title.style.whiteSpace = "nowrap";
+            let size = 28;
+            title.style.fontSize = `${size}px`;
+            while (title.scrollWidth > title.clientWidth && size > 20) {
+                size -= 1;
+                title.style.fontSize = `${size}px`;
+            }
+            if (title.scrollWidth > title.clientWidth) title.style.whiteSpace = "normal";
+        }
+        fit();
+        // (again when the pop-up's width changes: a phone turned round)
+        const watch = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+        watch?.observe(title.closest(".Modal-header") ?? title.parentElement);
+        return () => watch?.disconnect();
+    }, [monkey?.name, isModalOpen]);
     // The part that scrolls (photo and details): back to the top for each monkey
     const scrollRef = useRef(null);
     useEffect(() => {
@@ -627,7 +670,7 @@ function Modal({
                                         <IconChevronLeft size={22} stroke={2} aria-hidden="true" />
                                     </button>
                                     <div className="Modal-heading">
-                                        <h1 className="Modal-title" id="Modal-title">
+                                        <h1 className="Modal-title" id="Modal-title" ref={titleRef}>
                                             {monkey.name}
                                         </h1>
                                         {position && (
@@ -741,7 +784,7 @@ function Modal({
                                 {/* The facts as pills (like the cards and the saved
                                     picture), then the bio and features */}
                                 <div className="Modal-details">
-                                    <ul className="Modal-pills" aria-label="Details">
+                                    <ul className="Modal-pills" aria-label="Details" ref={pillsRef}>
                                         {/* Its troop (or introcage): tap for that
                                             enclosure's page */}
                                         {placeHref ? (
@@ -777,9 +820,20 @@ function Modal({
                                         ) : (
                                             <li>Sex unknown</li>
                                         )}
-                                        <li>{monkey.year ? `Born ${monkey.year}` : "Birth year unknown"}</li>
+                                        {/* (left out first if the row's too full: "Birth
+                                            year unknown", then "Born 2016", which the age
+                                            beside it nearly says, then the chip) */}
+                                        <li data-drop={monkey.year ? "2" : "1"}>
+                                            {monkey.year ? `Born ${monkey.year}` : "Birth year unknown"}
+                                        </li>
                                         {monkey.year && <li>{ageLabel(monkey.year)}</li>}
-                                        <li>{monkey.chip === null ? "Chip Unknown" : monkey.chip ? `Chip ${monkey.chip}` : "No Chip"}</li>
+                                        {/* (and last of all, the chip) */}
+                                        {/* The chip: its icon and number ("Chip" is read out) */}
+                                        <li data-drop="3" title="Microchip">
+                                            <IconCpu size={16} stroke={2} aria-hidden="true" />
+                                            <span className="visually-hidden">Chip</span>
+                                            {monkey.chip === null ? "Unknown" : monkey.chip ? monkey.chip : "None"}
+                                        </li>
                                     </ul>
                                     {/* (a new arrival's Arrival Info: on its page) */}
                                     <section className="Modal-section">
@@ -888,7 +942,8 @@ function Modal({
                                             }}
                                         >
                                             <IconPencil size={18} aria-hidden="true" />
-                                            Edit
+                                            {/* (small phones: just the icon) */}
+                                            <span className="Modal-editShort">Edit</span>
                                         </button>
                                     )}
                                     {onAddPhotos && (
@@ -899,7 +954,7 @@ function Modal({
                                             aria-label={`Add photos of ${monkey.name}`}
                                         >
                                             <IconPhotoPlus size={18} aria-hidden="true" />
-                                            {/* (the smallest phones: just the icon) */}
+                                            {/* (phones: just the icon, so Full Profile keeps its name) */}
                                             <span className="Modal-photosLabel">Photos</span>
                                         </button>
                                     )}
@@ -907,12 +962,14 @@ function Modal({
                                     {onOpenPage && (
                                         <button
                                             type="button"
-                                            className="Modal-edit is-quiet"
+                                            className="Modal-edit is-soft Modal-fullProfile"
                                             onClick={() => onOpenPage(monkey)}
                                             disabled={locked}
                                         >
                                             <IconUserCircle size={18} aria-hidden="true" />
-                                            <span className="Modal-editLabel">Full Profile</span>
+                                            {/* (keeps its name on phones: Photos and Edit
+                                                shrink to icons first) */}
+                                            Full Profile
                                         </button>
                                     )}
                                     <span className="Modal-footer-spacer" />

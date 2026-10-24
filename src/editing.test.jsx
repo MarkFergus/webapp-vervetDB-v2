@@ -204,7 +204,7 @@ test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chi
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row.chip).toBeNull();
     const details = await screen.findByRole("dialog", { name: "Aroha" });
-    expect(details).toHaveTextContent("Chip Unknown");
+    expect(details.querySelector(".Modal-pills li[title='Microchip']")).toHaveTextContent("ChipUnknown");
 });
 
 test("chip: \"Clear\" undoes Unknown, back to no chip", async () => {

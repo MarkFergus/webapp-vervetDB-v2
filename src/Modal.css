@@ -118,8 +118,8 @@
     }
 }
 
-/* The smallest phones: Photos is just its icon too */
-@media (max-width: 349px) {
+/* Phones: Photos is just its icon (Full Profile keeps its name) */
+@media (max-width: 459px) {
     .Modal-photosLabel {
         position: absolute;
         width: 1px;
@@ -127,6 +127,42 @@
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;
+    }
+
+    /* (a round icon button, like Share) */
+    .Modal-footer .Modal-edit.is-soft:has(.Modal-photosLabel) {
+        justify-content: center;
+        width: 36px;
+        padding: 0;
+    }
+}
+
+/* Small phones: Edit is just its icon too */
+@media (max-width: 379px) {
+    .Modal-editShort {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .Modal-footer .Modal-edit:has(.Modal-editShort) {
+        justify-content: center;
+        width: 36px;
+        padding: 0;
+    }
+}
+
+/* The smallest phones: Full Profile keeps its name, not its icon */
+@media (max-width: 349px) {
+    .Modal-footer {
+        gap: 4px;
+    }
+
+    .Modal-fullProfile svg {
+        display: none;
     }
 }
 
@@ -247,6 +283,20 @@
     text-align: center;
 }
 
+/* Phones: slimmer gaps and arrows, so names have more room */
+@media (max-width: 459px) {
+    .Modal-header {
+        gap: 8px;
+        margin-right: 44px;
+        margin-left: 44px;
+    }
+
+    .Modal-monkeyArrow {
+        width: 32px;
+        height: 32px;
+    }
+}
+
 /* The name: in the cards' display font, a size up */
 .Modal-title {
     margin: 0;
@@ -255,7 +305,10 @@
     font-weight: 700;
     line-height: 1.2;
     color: var(--text-strong);
-    overflow-wrap: anywhere;
+    /* (one line, shrinking to fit: Modal.jsx; wrapped, between words, or
+       only mid-word if one word is too long for the line) */
+    white-space: nowrap;
+    overflow-wrap: break-word;
 }
 
 /* e.g. "12 of 489": where this monkey is in the list */
@@ -474,6 +527,23 @@
     color: var(--text);
     background-color: var(--surface-2);
     border-radius: 8px;
+}
+
+/* Phones: a little tighter, so more of them fit */
+@media (max-width: 459px) {
+    .Modal-pills {
+        gap: 5px;
+    }
+
+    .Modal-pills li {
+        padding: 0 9px;
+        font-size: 14px;
+    }
+}
+
+/* (left out when the row's too full: Modal.jsx) */
+.Modal-pills li[hidden] {
+    display: none;
 }
 
 .Modal-pills li.is-troop {

@@ -257,11 +257,14 @@ describe("Baby Care", () => {
     };
     const tile = (label) => screen.getByText(label, { selector: "dt" }).closest("div");
 
-    test("the selector: Baby Care, but not Quarantine or Sickbay (for now)", async () => {
+    test("the selector: Baby Care second, but not Quarantine or Sickbay (for now)", async () => {
         const { select } = await open(undefined);
         const names = [...select.options].map((o) => o.textContent);
-        expect(names).toContain("Baby Care");
+        // (Baby Care second, under no section heading)
+        expect(names.slice(0, 2)).toEqual(["Whole Sanctuary", "Baby Care"]);
+        expect(select.options[1].parentElement).toBe(select);
         expect(names).not.toContain("Quarantine");
+        expect([...select.querySelectorAll("optgroup")].map((g) => g.label)).not.toContain("Care Units");
     });
 
     test("its own tiles, no sections, introcages or age groups; the charts wait for records", async () => {

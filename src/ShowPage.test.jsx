@@ -123,13 +123,12 @@ async function openCard(user, container, name) {
     );
 }
 
-test("modal shows 'No Chip' when a monkey has no chip number", async () => {
+test("modal shows the chip pill as None when a monkey has no chip number", async () => {
     const { user, container } = setup();
     await openCard(user, container, "Bloem");
 
-    expect(container.querySelector(".Modal-details")).toHaveTextContent(
-        "No Chip"
-    );
+    // (the chip icon, "Chip" read out, then None)
+    expect(container.querySelector(".Modal-pills li[title='Microchip']")).toHaveTextContent("ChipNone");
 });
 
 test("closing the modal by clicking outside resets the photo", async () => {
