@@ -43,7 +43,7 @@
 }
 
 .Game-title {
-    font-family: var(--font-logo);
+    font-family: var(--font-ui);
     font-weight: 800;
     text-align: center;
     font-size: 28px;
