@@ -940,3 +940,17 @@ export async function saveMonitoring(monkeyId, { conditionCheck, notes }) {
     if (error) throw saveProblem(error);
     return toAppMonitoring(data);
 }
+
+// ---- Baby Care: milk totals (supabase/milk-totals.sql) ----
+
+// Every baby's daily milk totals, oldest first: [{ monkeyId, date, ml,
+// notes }]. Throws if the database hasn't got them yet, or can't be reached.
+export async function loadMilkTotals() {
+    const { data, error } = await supabase
+        .from("milk_totals")
+        .select("monkey_id, milk_date, total_ml, notes")
+        .order("milk_date");
+    if (error) throw error;
+    return data.map((row) => ({ monkeyId: row.monkey_id, date: row.milk_date, ml: row.total_ml, notes: row.notes ?? null }));
+}
+

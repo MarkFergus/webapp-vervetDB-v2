@@ -1,19 +1,27 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { IconChartBar, IconSortAscending, IconSortDescending, IconTable } from "@tabler/icons-react";
-import { bySection, hasTroop, isInside, sizeText } from "./enclosures";
+import { bySection, hasTroop, isCareUnit, isInside, sizeText } from "./enclosures";
 import { fullName } from "./places";
 import { SPECIES } from "./species";
-import { AGE_GROUPS } from "./ages";
 import { hasFeeding } from "./feeding";
+import { loadMilkTotals } from "./monkeyData";
 import {
     BANDITS,
     PARTS,
+    STAT_AGE_GROUPS,
     amPlatesFor,
     banditMonkeys,
     countsByEnclosure,
+    countsBySection,
     monkeysIn,
     percent,
     ranked,
+    BABY_CARE,
+    babyAgeText,
+    milkPerDay,
+    sectionLabel,
+    weightPerWeek,
+    youngestOldest,
     sexByTroop,
     spaceByEnclosure,
     spacePerMonkey,
@@ -186,7 +194,14 @@ function Columns({ bars, total }) {
             <div className="Stats-columns">
                 {bars.map((b) => (
                     <div key={b.key} className="Stats-column">
-                        <span className="Stats-columnValue">{b.value}</span>
+                        {/* its number, and its share of them all */}
+                        <span className="Stats-columnValue">
+                            {b.value}
+                            {/* (a few, but under 1%: "<1%", not "0%") */}
+                            <span className="Stats-columnShare">
+                                {b.value > 0 && percent(b.value, total) === 0 ? "<1" : percent(b.value, total)}%
+                            </span>
+                        </span>
                         <span className="Stats-columnTrack">
                             <span
                                 className={`Stats-columnBar${b.muted ? " is-muted" : ""}${b.value ? "" : " is-empty"}`}
@@ -210,7 +225,8 @@ function Columns({ bars, total }) {
 // tip. Rows with onPick are buttons (e.g. an enclosure: tap for its stats);
 // a row with no value (null) has no bar, just why (missing).
 //   rows: [{ key, label, value, text (the number as shown), tip, onPick,
-//   pickLabel, missing }]
+//   pickLabel, missing, className (the bar's own colour), parts (the bar
+//   split: [{ key, value }], coloured by key) }]
 function BarList({ rows }) {
     const tooltip = useTooltip();
     const most = Math.max(1, ...rows.map((r) => r.value ?? 0));
@@ -225,7 +241,19 @@ function BarList({ rows }) {
                                 <span className="Stats-rankedMissing">{r.missing}</span>
                             ) : (
                                 <span className="Stats-rankedTrack">
-                                    {r.value > 0 && <span className="Stats-rankedBar" style={{ width: `${(r.value / most) * 100}%` }} />}
+                                    {r.value > 0 &&
+                                        (r.parts ? (
+                                            // (split into its parts: troop, introcages…)
+                                            <span className="Stats-rankedBar is-split" style={{ "--share": r.value / most }}>
+                                                {r.parts
+                                                    .filter((p) => p.value > 0)
+                                                    .map((p) => (
+                                                        <span key={p.key} className={`Stats-part is-${p.key}`} style={{ flexGrow: p.value }} />
+                                                    ))}
+                                            </span>
+                                        ) : (
+                                            <span className={`Stats-rankedBar ${r.className ?? ""}`} style={{ "--share": r.value / most }} />
+                                        ))}
                                     <span className="Stats-rankedValue">{r.text ?? r.value}</span>
                                 </span>
                             )}
@@ -303,16 +331,175 @@ function SexList({ rows, onPick }) {
     );
 }
 
+// "24 Oct"
+const shortDay = (date) => {
+    const [, m, d] = date.split("-").map(Number);
+    return `${d} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1]}`;
+};
+
+// A change: "+18 ml", "−5 ml", "±0 ml"
+const changeText = (n, unit) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString("en-GB")} ${unit}`;
+
+// Clean steps for an axis: 0 to a round number above the highest, in 4
+function niceTicks(most) {
+    const raw = Math.max(1, most) / 4;
+    const power = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].map((n) => n * power).find((n) => n >= raw);
+    return [0, 1, 2, 3, 4].map((i) => i * step);
+}
+
+// A line over time (one series): a 2px line with a faint wash under it, a
+// dot per point, the last value labelled at the end; a crosshair finds the
+// nearest point under the pointer (or arrow keys, once focused)
+//   points: [{ x: "2026-10-24", y }] oldest first; unit: "ml", "g"
+//   xLabel(x): how a point's date reads ("24 Oct", "Week of 19 Oct")
+function LineChart({ points, unit, xLabel = shortDay, label }) {
+    const boxRef = useRef(null);
+    const [width, setWidth] = useState(600);
+    const [active, setActive] = useState(null); // a point's index
+    useEffect(() => {
+        const box = boxRef.current;
+        if (!box || typeof ResizeObserver === "undefined") return undefined;
+        const watch = new ResizeObserver(([entry]) => setWidth(Math.max(240, entry.contentRect.width)));
+        watch.observe(box);
+        return () => watch.disconnect();
+    }, []);
+    const height = 200;
+    // Each point labelled with its value and the change since the one before
+    // (when they fit: up to 14, with room between them); otherwise just the
+    // latest, at the end of the line
+    const labelAll = points.length <= 14 && (width - 100) / Math.max(1, points.length - 1) >= 46;
+    const pad = { left: 44, right: labelAll ? 34 : 56, top: labelAll ? 40 : 14, bottom: 26 };
+    const ticks = niceTicks(Math.max(...points.map((p) => p.y)));
+    const top = ticks.at(-1);
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+    const xAt = (i) => pad.left + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+    const yAt = (y) => pad.top + plotH - (y / top) * plotH;
+    const line = points.map((p, i) => `${i ? "L" : "M"}${xAt(i)},${yAt(p.y)}`).join(" ");
+    const area = `${line} L${xAt(points.length - 1)},${yAt(0)} L${xAt(0)},${yAt(0)} Z`;
+    // The labelled dates: every one (while every point's labelled), or
+    // else the first, the last, and one between
+    const labelled = labelAll
+        ? points.map((_, i) => i)
+        : [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
+    const last = points.at(-1);
+    const showDots = points.length <= 40;
+
+    function nearest(event) {
+        const box = event.currentTarget.getBoundingClientRect();
+        const x = ((event.clientX - box.left) / box.width) * width;
+        let best = 0;
+        points.forEach((_, i) => {
+            if (Math.abs(xAt(i) - x) < Math.abs(xAt(best) - x)) best = i;
+        });
+        setActive(best);
+    }
+    function onKeyDown(event) {
+        const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+        if (!step) return;
+        event.preventDefault();
+        setActive((i) => Math.min(points.length - 1, Math.max(0, (i ?? points.length - 1) + step)));
+    }
+    const point = active === null ? null : points[active];
+
+    return (
+        <div className="Stats-line" ref={boxRef}>
+            <svg
+                width={width}
+                height={height}
+                viewBox={`0 0 ${width} ${height}`}
+                role="img"
+                aria-label={`${label}: ${points.length} ${points.length === 1 ? "point" : "points"}, the latest ${last.y.toLocaleString("en-GB")} ${unit} (${xLabel(last.x)}). Use the arrow keys to step through them.`}
+                tabIndex={0}
+                onPointerMove={nearest}
+                onPointerLeave={() => setActive(null)}
+                onFocus={() => setActive(points.length - 1)}
+                onBlur={() => setActive(null)}
+                onKeyDown={onKeyDown}
+            >
+                {/* The grid: hairlines at clean steps */}
+                {ticks.map((t) => (
+                    <g key={t}>
+                        <line className="Stats-gridline" x1={pad.left} x2={width - pad.right} y1={yAt(t)} y2={yAt(t)} />
+                        <text className="Stats-axis" x={pad.left - 8} y={yAt(t)} textAnchor="end" dominantBaseline="middle">
+                            {t >= 1000 ? `${t / 1000}k` : t}
+                        </text>
+                    </g>
+                ))}
+                {labelled.map((i) => (
+                    <text key={i} className="Stats-axis" x={xAt(i)} y={height - 6} textAnchor="middle">
+                        {xLabel(points[i].x)}
+                    </text>
+                ))}
+                <path className="Stats-lineArea" d={area} />
+                <path className="Stats-linePath" d={line} />
+                {showDots &&
+                    points.map((p, i) => <circle key={p.x} className="Stats-lineDot" cx={xAt(i)} cy={yAt(p.y)} r={4} />)}
+                {labelAll ? (
+                    // Every point: its value, and the change since the one before
+                    points.map((p, i) => (
+                        <g key={p.x}>
+                            {i > 0 && (
+                                <text className="Stats-lineChange" x={xAt(i)} y={yAt(p.y) - 26} textAnchor="middle">
+                                    {changeText(p.y - points[i - 1].y, unit)}
+                                </text>
+                            )}
+                            <text className="Stats-lineValue" x={xAt(i)} y={yAt(p.y) - 11} textAnchor="middle">
+                                {p.y.toLocaleString("en-GB")} {unit}
+                            </text>
+                        </g>
+                    ))
+                ) : (
+                    // The latest value, at the end of the line
+                    <text className="Stats-lineEnd" x={xAt(points.length - 1) + 10} y={yAt(last.y)} dominantBaseline="middle">
+                        {last.y.toLocaleString("en-GB")} {unit}
+                    </text>
+                )}
+                {/* The crosshair: where the pointer (or arrow keys) is */}
+                {point && (
+                    <g>
+                        <line className="Stats-crosshair" x1={xAt(active)} x2={xAt(active)} y1={pad.top} y2={yAt(0)} />
+                        <circle className="Stats-lineDot is-active" cx={xAt(active)} cy={yAt(point.y)} r={5} />
+                    </g>
+                )}
+            </svg>
+            {point && (
+                <div
+                    className="Stats-tooltip is-inChart"
+                    role="status"
+                    style={{ left: `${(xAt(active) / width) * 100}%`, top: yAt(point.y) }}
+                >
+                    <strong>
+                        {point.y.toLocaleString("en-GB")} {unit}
+                    </strong>
+                    <span>{xLabel(point.x)}</span>
+                    {active > 0 && (
+                        <span>{changeText(point.y - points[active - 1].y, unit)} since the one before</span>
+                    )}
+                    {/* (that day's notes) */}
+                    {point.notes?.map((note) => (
+                        <span key={note} className="Stats-tooltipNote">
+                            {note}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // The number tiles across the top
 function Tiles({ stats }) {
     const tiles = [
         { label: "Monkeys", value: stats.total },
-        { label: "Female", value: `${percent(stats.sex.female, stats.total)}%`, sub: monkeysWord(stats.sex.female) },
-        { label: "Male", value: `${percent(stats.sex.male, stats.total)}%`, sub: monkeysWord(stats.sex.male) },
+        // (female / male: the card below)
+        { label: "Babies", value: stats.ages.babies, sub: "under 1 year old" },
+        { label: "Golden Oldies", value: stats.ages.goldenOldies, sub: "20+ years old" },
         {
             label: "Average age",
             value: stats.averageAge === null ? "–" : stats.averageAge,
-            sub: stats.averageAge === null ? "no ages known" : "years",
+            sub: stats.averageAge === null ? "no ages known" : "years old",
         },
     ];
     return (
@@ -330,8 +517,118 @@ function Tiles({ stats }) {
     );
 }
 
+const NO_BABY_RECORDS = { feeds: [], weights: [] };
+
+// Baby Care's own stats (not sections, introcages or age groups): its
+// babies, female to male, the youngest and oldest; milk drunk per day and
+// weight per week, for all the babies or one
+//   babies: the monkeys in Baby Care
+//   records: { feeds: [{ monkeyId, date, ml }], weights: [{ monkeyId,
+//   date, grams }] } (empty until they're recorded)
+function BabyCareStats({ babies, records: given }) {
+    const [babyId, setBabyId] = useState("");
+    // The records: given (tests), or loaded from the database (milk totals,
+    // milk-totals.sql; weights: not recorded yet)
+    const [loaded, setLoaded] = useState(NO_BABY_RECORDS);
+    useEffect(() => {
+        if (given) return undefined;
+        let cancelled = false;
+        loadMilkTotals()
+            .then((feeds) => !cancelled && setLoaded({ ...NO_BABY_RECORDS, feeds }))
+            .catch(() => {
+                // (not there yet, or offline: the charts say so)
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [given]);
+    const records = given ?? loaded;
+    const chosen = babies.find((m) => String(m.id) === babyId) ?? null;
+    const { youngest, oldest } = youngestOldest(babies);
+    const sex = statsFor(babies).sex;
+    const baby = (m) =>
+        m
+            ? { value: m.name, sub: babyAgeText(m.birthDate) }
+            : { value: "–", sub: babies.length ? "birth dates not recorded" : "no babies" };
+    const tiles = [
+        { label: "Babies", value: babies.length },
+        {
+            label: "Female : male",
+            value: `${sex.female} : ${sex.male}`,
+            sub: sex.unknown ? `${sex.unknown} not known` : null,
+        },
+        { label: "Youngest baby", ...baby(youngest) },
+        { label: "Oldest baby", ...baby(oldest) },
+    ];
+    const id = chosen ? chosen.id : null;
+    const milk = milkPerDay(records.feeds, id);
+    const weights = weightPerWeek(records.weights, id);
+    const whose = chosen ? chosen.name : "All babies";
+    const weekLabel = (x) => `w/c ${shortDay(x)}`;
+    return (
+        <>
+            <dl className="Stats-tiles">
+                {tiles.map((t) => (
+                    <div key={t.label}>
+                        <dt>{t.label}</dt>
+                        <dd>
+                            {t.value}
+                            {t.sub && <span className="Stats-tileSub">{t.sub}</span>}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+
+            {/* Whose milk and weight: all the babies, or one */}
+            {babies.length > 0 && (
+                <div className="Stats-filters">
+                    <label className="Stats-select">
+                        <span className="visually-hidden">Show milk and weight for</span>
+                        <select value={babyId} onChange={(e) => setBabyId(e.target.value)}>
+                            <option value="">All babies</option>
+                            {babies.map((m) => (
+                                <option key={m.id ?? m.name} value={m.id}>
+                                    {m.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+            )}
+
+            <div className="Stats-grid">
+                <Card
+                    title="Milk intake per day"
+                    headline={chosen ? `${whose}'s milk, in ml a day` : "All the babies' milk together, in ml a day"}
+                    wide
+                    table={{ columns: ["Day", "Milk (ml)", "Notes"], rows: milk.map((p) => [shortDay(p.x), p.y, p.notes.join("; ")]) }}
+                >
+                    {milk.length ? (
+                        <LineChart points={milk} unit="ml" label="Milk intake per day" />
+                    ) : (
+                        <p className="Stats-none">No milk records yet. They'll show here once they're being recorded.</p>
+                    )}
+                </Card>
+                <Card
+                    title="Weight per week"
+                    headline={chosen ? `${whose}'s weight, in grams (the last weighing each week)` : "The babies' average weight, in grams (each one's last weighing that week)"}
+                    wide
+                    table={{ columns: ["Week", "Weight (g)"], rows: weights.map((p) => [weekLabel(p.x), p.y]) }}
+                >
+                    {weights.length ? (
+                        <LineChart points={weights} unit="g" xLabel={weekLabel} label="Weight per week" />
+                    ) : (
+                        <p className="Stats-none">No weights recorded yet. They'll show here once they're being recorded.</p>
+                    )}
+                </Card>
+            </div>
+        </>
+    );
+}
+
 // monkeys / enclosures / sections: the data (from ShowPage)
-function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
+//   babyRecords: Baby Care's milk and weights (see BabyCareStats)
+function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = false }) {
     // Whose stats: an enclosure's id, "" for the whole sanctuary, or
     // "bandits" (the wild troop, on their own); and which part of it
     const [enclosureId, setEnclosureId] = useState("");
@@ -351,6 +648,8 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
     const chosenPart = hasParts ? part : "all";
     const group = bandits ? banditMonkeys(monkeys) : monkeysIn(monkeys, enclosure, chosenPart);
     const stats = statsFor(group);
+    // (the whole sanctuary) its sections
+    const bySectionCounts = enclosure || bandits ? [] : countsBySection(monkeys, enclosures, sections);
     const places = enclosure || bandits ? [] : ranked(countsByEnclosure(monkeys, enclosures), (r) => r.count, highFirst.places);
     // Space per troop monkey: every troop enclosure (the whole sanctuary),
     // or this one's (a troop enclosure, its troop shown)
@@ -374,7 +673,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
         { key: "unknown", label: "Unknown", value: stats.sex.unknown },
     ];
     const ageBars = [
-        ...AGE_GROUPS.map((g) => ({ key: g.id, label: g.label, hint: g.hint, value: stats.ages[g.id] })),
+        ...STAT_AGE_GROUPS.map((g) => ({ key: g.id, label: g.label, hint: g.hint, value: stats.ages[g.id] })),
         { key: "unknown", label: "Unknown", hint: "age", value: stats.ages.unknown, muted: true },
     ];
     const homeParts = [
@@ -382,7 +681,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
         { key: "introcages", label: enclosure && !hasTroop(enclosure) ? "Introcages / areas" : "Introcages", value: stats.introcages },
     ];
     const speciesRows = Object.entries(stats.species).sort((a, b) => b[1] - a[1]);
-    const elderlyShare = percent(stats.ages.elderly, stats.total);
+    const oldiesShare = percent(stats.ages.goldenOldies, stats.total);
     const juvenilesShare = percent(stats.ages.juveniles, stats.total);
 
     return (
@@ -395,7 +694,12 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                     <span className="visually-hidden">Show statistics for</span>
                     <select value={enclosureId} onChange={(e) => choose(e.target.value)}>
                         <option value="">Whole Sanctuary</option>
-                        {bySection(enclosures, sections).map(({ section, enclosures: list }) => (
+                        {/* (care units: just Baby Care, which has its own stats;
+                            Quarantine and Sickbay: later) */}
+                        {bySection(
+                            enclosures.filter((e) => !isCareUnit(e) || e.name === BABY_CARE),
+                            sections
+                        ).map(({ section, enclosures: list }) => (
                             <optgroup key={section} label={section}>
                                 {list.map((e) => (
                                     <option key={e.id} value={e.id}>
@@ -423,7 +727,10 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                 )}
             </div>
 
-            {stats.total === 0 ? (
+            {enclosure?.name === BABY_CARE ? (
+                // Baby Care: its own stats
+                <BabyCareStats key={enclosure.id} babies={group} records={babyRecords} />
+            ) : stats.total === 0 ? (
                 <p className="Stats-none">No monkeys here at the moment.</p>
             ) : (
                 <>
@@ -455,7 +762,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
 
                         <Card
                             title="Age groups"
-                            headline={`${elderlyShare}% elderly (15+), ${juvenilesShare}% juveniles (1–3)`}
+                            headline={`${oldiesShare}% golden oldies (20+ years old), ${juvenilesShare}% juveniles (1–3 years old)`}
                             wide
                             table={{
                                 columns: ["Age group", "Ages", "Monkeys", "%"],
@@ -465,29 +772,57 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                             <Columns bars={ageBars} total={stats.total} />
                         </Card>
 
-                        {speciesRows.length > 1 && (
-                            <Card
-                                title="Species"
-                                table={{
-                                    columns: ["Species", "Monkeys", "%"],
-                                    rows: speciesRows.map(([key, n]) => [SPECIES[key] ?? key, n, `${percent(n, stats.total)}%`]),
-                                }}
-                            >
-                                <dl className="Stats-list">
-                                    {speciesRows.map(([key, n]) => (
-                                        <div key={key}>
-                                            <dt>{SPECIES[key] ?? key}</dt>
-                                            <dd>
-                                                {n} <span className="Stats-muted">({percent(n, stats.total)}%)</span>
-                                            </dd>
-                                        </div>
-                                    ))}
-                                </dl>
-                            </Card>
+                        {/* Species, and under it (the whole sanctuary) the
+                            monkeys per section: stacked in one column, beside
+                            the taller AM plates */}
+                        {(speciesRows.length > 1 || bySectionCounts.length > 0) && (
+                            <div className="Stats-stack">
+                                {speciesRows.length > 1 && (
+                                    <Card
+                                        title="Species"
+                                        table={{
+                                            columns: ["Species", "Monkeys", "%"],
+                                            rows: speciesRows.map(([key, n]) => [SPECIES[key] ?? key, n, `${percent(n, stats.total)}%`]),
+                                        }}
+                                    >
+                                        <dl className="Stats-list">
+                                            {speciesRows.map(([key, n]) => (
+                                                <div key={key}>
+                                                    <dt>{SPECIES[key] ?? key}</dt>
+                                                    <dd>
+                                                        {n} <span className="Stats-muted">({percent(n, stats.total)}%)</span>
+                                                    </dd>
+                                                </div>
+                                            ))}
+                                        </dl>
+                                    </Card>
+                                )}
+
+                                {bySectionCounts.length > 0 && (
+                                    <Card
+                                        title="Monkeys per section"
+                                        table={{
+                                            columns: ["Section", "Monkeys", "%"],
+                                            rows: bySectionCounts.map(({ section, count }) => [sectionLabel(section), count, `${percent(count, stats.total)}%`]),
+                                        }}
+                                    >
+                                        {/* (a colour each: see the CSS) */}
+                                        <BarList
+                                            rows={bySectionCounts.map(({ section, count }) => ({
+                                                key: section,
+                                                label: sectionLabel(section),
+                                                value: count,
+                                                tip: `${monkeysWord(count)} (${percent(count, stats.total)}%)`,
+                                                className: `is-section-${section.toLowerCase().replace(/\s+/g, "-")}`,
+                                            }))}
+                                        />
+                                    </Card>
+                                )}
+                            </div>
                         )}
 
-                        {/* Space: a troop enclosure's own, or every troop
-                            enclosure's (least space first) */}
+                        {/* Space: a troop enclosure's own (every troop
+                            enclosure's: its own card, further down) */}
                         {enclosure && hasTroop(enclosure) && chosenPart !== "introcages" && (
                             <Card
                                 title="Space per monkey"
@@ -502,7 +837,8 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                                     <p className="Stats-hero">
                                         {ownSpace.toLocaleString("en-GB")} m²
                                         <span className="Stats-heroSub">
-                                            each, for the {troopCount} troop {troopCount === 1 ? "monkey" : "monkeys"} in {sizeText(enclosure.size)}
+                                            each, for the {troopCount} troop {troopCount === 1 ? "monkey" : "monkeys"} in{" "}
+                                            <span className="Stats-nowrap">{sizeText(enclosure.size)}</span>
                                         </span>
                                     </p>
                                 )}
@@ -515,7 +851,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                                 table={{
                                     columns: ["AM plates", "Monkeys"],
                                     rows: [
-                                        ["Fed by the Local Team", am.localTeam],
+                                        ["Fed by Mainfeed", am.localTeam],
                                         ["Fed by Sickbay", am.sickbay],
                                         ["Normal", am.normal],
                                         ["Cut small", am.cutSmall],
@@ -528,7 +864,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                                 {/* Who feeds them: two numbers */}
                                 <dl className="Stats-pair">
                                     <div>
-                                        <dt>Fed by the Local Team</dt>
+                                        <dt>Fed by Mainfeed</dt>
                                         <dd>{am.localTeam}</dd>
                                     </div>
                                     <div>
@@ -536,8 +872,8 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                                         <dd>{am.sickbay}</dd>
                                     </div>
                                 </dl>
-                                {/* The Local Team's monkeys, by their plate */}
-                                <h3 className="Stats-subhead">The Local Team's, by plate</h3>
+                                {/* Mainfeed's monkeys (the Local Team's, elsewhere in
+                                    the app, for now), by their plate */}
                                 <BarList
                                     rows={[
                                         ["normal", "Normal", am.normal],
@@ -549,7 +885,7 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
                                         key,
                                         label,
                                         value: n,
-                                        tip: `${monkeysWord(n)} (${percent(n, am.localTeam)}% of the Local Team's)`,
+                                        tip: `${monkeysWord(n)} (${percent(n, am.localTeam)}% of Mainfeed's)`,
                                     }))}
                                 />
                             </Card>
@@ -588,8 +924,8 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
 
                         {troopSexes.length > 0 && (
                             <Card
-                                title="Female to male by troop"
-                                headline="Each troop's split (not its introcages), by % female. Tap one for its stats."
+                                title="Female-to-male by troop"
+                                headline="Percentage of females to males in each troop enclosure"
                                 wide
                                 sort={sortProps("sex")}
                                 table={{
@@ -615,25 +951,47 @@ function StatisticsPage({ monkeys, enclosures, sections, inert = false }) {
 
                         {places.length > 0 && (
                             <Card
-                                title="Where they live"
+                                title="Monkeys per enclosure"
                                 headline={`${places.length} enclosures and care units. Tap one for its stats.`}
                                 wide
                                 sort={sortProps("places")}
                                 table={{
-                                    columns: ["Enclosure", "Monkeys", "%"],
-                                    rows: places.map(({ enclosure: e, count }) => [fullName(e.name), count, `${percent(count, stats.total)}%`]),
+                                    columns: ["Enclosure", "Troop", "Introcages", "Monkeys", "%"],
+                                    rows: places.map(({ enclosure: e, count, troop, introcages }) => [
+                                        fullName(e.name),
+                                        troop,
+                                        introcages,
+                                        count,
+                                        `${percent(count, stats.total)}%`,
+                                    ]),
                                 }}
                             >
                                 <BarList
-                                    rows={places.map(({ enclosure: e, count }) => ({
+                                    rows={places.map(({ enclosure: e, count, troop, introcages }) => ({
                                         key: e.id,
                                         label: fullName(e.name),
                                         value: count,
-                                        tip: `${monkeysWord(count)} (${percent(count, stats.total)}%)`,
+                                        // (troop, then introcages / areas)
+                                        parts: [
+                                            { key: "troop", value: troop },
+                                            { key: "introcages", value: introcages },
+                                        ],
+                                        tip: `${monkeysWord(count)}: ${troop} troop, ${introcages} ${hasTroop(e) ? "introcage" : "introcage / area"}`,
                                         onPick: () => choose(String(e.id)),
-                                        pickLabel: `${fullName(e.name)}: ${monkeysWord(count)}. Show its stats`,
+                                        pickLabel: `${fullName(e.name)}: ${monkeysWord(count)}, ${troop} in the troop and ${introcages} in introcages. Show its stats`,
                                     }))}
                                 />
+                                <ul className="Stats-legend">
+                                    {[
+                                        ["troop", "Troop"],
+                                        ["introcages", "Introcages / areas"],
+                                    ].map(([key, label]) => (
+                                        <li key={key}>
+                                            <span className={`Stats-swatch is-${key}`} aria-hidden="true" />
+                                            <span className="Stats-legendLabel">{label}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </Card>
                         )}
                     </div>

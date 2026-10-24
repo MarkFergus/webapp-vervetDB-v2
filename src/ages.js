@@ -43,9 +43,9 @@ export function ageText(year, today = new Date()) {
 }
 
 // The age categories, by age on the 1 October birthday: the Filters
-// panel's and the Statistics page's (so they always agree)
+// panel's (the Statistics page has its own, finer ones: stats.js)
 //   test(age): for a known age (unknown ages: the filters count them as
-//   adults; Statistics shows them on their own)
+//   adults)
 export const AGE_GROUPS = [
     { id: "babies", label: "Babies", hint: "<1", test: (age) => age === 0 },
     { id: "juveniles", label: "Juveniles", hint: "1–3", test: (age) => age >= 1 && age <= 3 },

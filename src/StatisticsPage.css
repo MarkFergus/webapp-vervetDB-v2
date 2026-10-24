@@ -18,6 +18,13 @@
     --viz-unknown: #27a870;
     /* (no value known, e.g. age unknown: grey) */
     --viz-none: #6b6b6b;
+    /* The sections: Top green, Middle blue, Bottom red, Sickbay yellow,
+       Care Units purple (validated: each bar has its name beside it) */
+    --viz-top: #27a870;
+    --viz-middle: #2a8de0;
+    --viz-bottom: #e34948;
+    --viz-sickbay: #c98500;
+    --viz-careunits: #9085e9;
 
     box-sizing: border-box;
     max-width: 940px;
@@ -35,6 +42,11 @@
     --viz-male: var(--accent);
     --viz-unknown: var(--green);
     --viz-none: #b8b8b8;
+    --viz-top: #0c7f4b;
+    --viz-middle: #065fd4;
+    --viz-bottom: #d03a39;
+    --viz-sickbay: #b89000;
+    --viz-careunits: #6250d6;
 }
 
 .Stats-title {
@@ -181,6 +193,19 @@
     grid-column: 1 / -1;
 }
 
+/* Two cards stacked in one column (Species, then Monkeys per section),
+   beside a taller one; the last stretches to the bottom */
+.Stats-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.Stats-stack > .Stats-card:last-child {
+    flex: 1;
+}
+
 .Stats-cardHead {
     display: flex;
     align-items: center;
@@ -280,7 +305,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin: 0;
+    margin: 12px 0 14px;
 }
 
 .Stats-pair div {
@@ -393,7 +418,7 @@
 
 .Stats-columns {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 8px;
 }
 
@@ -406,9 +431,19 @@
 }
 
 .Stats-columnValue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     font-size: 14px;
     font-weight: 700;
+    line-height: 1.2;
     color: var(--text);
+}
+
+.Stats-columnShare {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-3);
 }
 
 /* The bar grows up from the baseline (a hairline across the bottom) */
@@ -512,10 +547,32 @@
     min-width: 0;
 }
 
+/* Its length: its share of the biggest, of the track less the room kept
+   for the number at its tip (so the number never squashes the bar: every
+   bar keeps its true length) */
 .Stats-rankedBar {
+    flex-shrink: 0;
+    width: calc((100% - 72px) * var(--share));
     height: 14px;
     min-width: 2px;
     background-color: var(--viz-count);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Split into its parts (troop, introcages): the parts' own colours, a 2px
+   gap between, rounded at the far end only */
+.Stats-rankedBar.is-split {
+    display: flex;
+    gap: 2px;
+    background: none;
+    border-radius: 0;
+}
+
+.Stats-rankedBar.is-split .Stats-part {
+    border-radius: 0;
+}
+
+.Stats-rankedBar.is-split .Stats-part:last-child {
     border-radius: 0 4px 4px 0;
 }
 
@@ -536,6 +593,27 @@
     flex-shrink: 0;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+}
+
+/* The sections' own colours */
+.Stats-rankedBar.is-section-top {
+    background-color: var(--viz-top);
+}
+
+.Stats-rankedBar.is-section-middle {
+    background-color: var(--viz-middle);
+}
+
+.Stats-rankedBar.is-section-bottom {
+    background-color: var(--viz-bottom);
+}
+
+.Stats-rankedBar.is-section-sickbay {
+    background-color: var(--viz-sickbay);
+}
+
+.Stats-rankedBar.is-section-care-units {
+    background-color: var(--viz-careunits);
 }
 
 /* A size not recorded: no bar, just that */
@@ -580,13 +658,8 @@
 .Stats-list div {
     display: flex;
     justify-content: space-between;
-    padding: 8px 2px;
+    padding: 6px 2px;
     font-size: 14px;
-    border-bottom: 1px solid var(--line);
-}
-
-.Stats-list div:last-child {
-    border-bottom: none;
 }
 
 .Stats-list dt {
@@ -672,4 +745,111 @@
     .Stats-columnBar {
         transition: none;
     }
+}
+
+/* (a number and its unit, kept together: "5,772 m²") */
+.Stats-nowrap {
+    white-space: nowrap;
+}
+
+/* ---- A line over time (Baby Care's milk and weight) ---- */
+
+.Stats-line {
+    position: relative;
+    width: 100%;
+}
+
+.Stats-line svg {
+    display: block;
+    max-width: 100%;
+    overflow: visible;
+    touch-action: pan-y;
+}
+
+.Stats-line svg:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+}
+
+.Stats-gridline {
+    stroke: var(--line);
+    stroke-width: 1;
+}
+
+.Stats-axis {
+    font-size: 12px;
+    fill: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.Stats-linePath {
+    fill: none;
+    stroke: var(--viz-count);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+/* (a faint wash under the line) */
+.Stats-lineArea {
+    fill: var(--viz-count);
+    opacity: 0.1;
+}
+
+/* Each point: a dot with a ring of the card's colour */
+.Stats-lineDot {
+    fill: var(--viz-count);
+    stroke: var(--surface-1);
+    stroke-width: 2;
+}
+
+.Stats-lineDot.is-active {
+    r: 6;
+}
+
+.Stats-lineEnd {
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--text);
+}
+
+/* Each point's value, and its change since the one before (quieter);
+   a thin outline of the card's colour, so gridlines don't run through them */
+.Stats-lineValue,
+.Stats-lineChange {
+    paint-order: stroke;
+    stroke: var(--surface-1);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.Stats-lineValue {
+    font-size: 12px;
+    font-weight: 700;
+    fill: var(--text);
+}
+
+.Stats-lineChange {
+    font-size: 11px;
+    fill: var(--text-3);
+}
+
+.Stats-crosshair {
+    stroke: var(--text-3);
+    stroke-width: 1;
+}
+
+/* The line's tooltip: placed over its point (not following the pointer) */
+.Stats-tooltip.is-inChart {
+    position: absolute;
+}
+
+/* A note in the line's tooltip (e.g. "Skipped the 2am feed"): wraps */
+.Stats-tooltipNote {
+    max-width: 220px;
+    margin-top: 3px;
+    font-size: 12px;
+    white-space: normal;
+    color: var(--text-2);
 }

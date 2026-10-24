@@ -1,13 +1,23 @@
 // The Statistics page's figures (StatisticsPage.jsx), worked out from the
 // monkeys. Sanctuary monkeys only: not the Bandits (the wild troop), who
-// can be chosen on their own. Age groups: the Filters panel's (ages.js),
-// with unknown ages counted on their own.
+// can be chosen on their own. Age groups: the page's own (finer than the
+// Filters panel's), with unknown ages counted on their own.
 // Everything goes by where a monkey lives (its home): a monkey in Sickbay
 // or staying in an introcage for now still counts with its troop.
-import { AGE_GROUPS, ageInYears } from "./ages";
+import { ageInYears } from "./ages";
 import { homeName, inIntrocage } from "./places";
 import { hasTroop, isEnclosure } from "./enclosures";
 import { amPlate, fedBy, hasFeeding } from "./feeding";
+
+// The page's age groups, by age on the 1 October birthday (finer than the
+// Filters panel's, ages.js)
+export const STAT_AGE_GROUPS = [
+    { id: "babies", label: "Babies", hint: "<1", test: (age) => age === 0 },
+    { id: "juveniles", label: "Juveniles", hint: "1–3", test: (age) => age >= 1 && age <= 3 },
+    { id: "youngAdults", label: "Young Adults", hint: "4–10", test: (age) => age >= 4 && age <= 10 },
+    { id: "seniorAdults", label: "Senior Adults", hint: "11–19", test: (age) => age >= 11 && age <= 19 },
+    { id: "goldenOldies", label: "Golden Oldies", hint: "20+", test: (age) => age >= 20 },
+];
 
 // The Bandits (the wild troop): not in the sanctuary's figures, but there
 // to choose on their own
@@ -40,11 +50,11 @@ export const percent = (count, total) => (total ? Math.round((count / total) * 1
 
 // The figures for a group of monkeys
 //   → { total, sex: { female, male, unknown }, ages: { babies, juveniles,
-//      adults, elderly, unknown }, averageAge (null: no known ages),
+//      youngAdults, seniorAdults, goldenOldies, unknown }, averageAge (null: no known ages),
 //      troop, introcages, species: { vervet: n, … } }
 export function statsFor(monkeys) {
     const sex = { female: 0, male: 0, unknown: 0 };
-    const ages = { ...Object.fromEntries(AGE_GROUPS.map((g) => [g.id, 0])), unknown: 0 };
+    const ages = { ...Object.fromEntries(STAT_AGE_GROUPS.map((g) => [g.id, 0])), unknown: 0 };
     const species = {};
     let ageTotal = 0;
     let aged = 0;
@@ -55,7 +65,7 @@ export function statsFor(monkeys) {
         if (age === null) {
             ages.unknown += 1;
         } else {
-            ages[AGE_GROUPS.find((g) => g.test(age)).id] += 1;
+            ages[STAT_AGE_GROUPS.find((g) => g.test(age)).id] += 1;
             ageTotal += age;
             aged += 1;
         }
@@ -75,15 +85,34 @@ export function statsFor(monkeys) {
 
 // How many sanctuary monkeys live in each enclosure (its troop and its
 // introcages or areas), most first; empty ones left out
-//   → [{ enclosure, count }]
+//   → [{ enclosure, count, troop, introcages }]
 export function countsByEnclosure(monkeys, enclosures) {
     const all = sanctuaryMonkeys(monkeys);
     return enclosures
         .filter(isEnclosure)
-        .map((enclosure) => ({ enclosure, count: all.filter((m) => homeName(m) === enclosure.name).length }))
+        .map((enclosure) => {
+            const here = all.filter((m) => homeName(m) === enclosure.name);
+            const introcages = here.filter(inIntrocage).length;
+            return { enclosure, count: here.length, troop: here.length - introcages, introcages };
+        })
         .filter((row) => row.count > 0)
         .sort((a, b) => b.count - a.count || a.enclosure.name.localeCompare(b.enclosure.name));
 }
+
+// How many sanctuary monkeys live in each section (by their home
+// enclosure's section), in the sections' order
+//   → [{ section, count }]
+export function countsBySection(monkeys, enclosures, sections) {
+    const sectionOf = Object.fromEntries(enclosures.filter(isEnclosure).map((e) => [e.name, e.section]));
+    const all = sanctuaryMonkeys(monkeys);
+    return sections.map((section) => ({
+        section,
+        count: all.filter((m) => sectionOf[homeName(m)] === section).length,
+    }));
+}
+
+// A section's name in full: "Top Section", but "Care Units"
+export const sectionLabel = (section) => (section === "Care Units" ? section : `${section} Section`);
 
 // Space: each troop monkey's share of its troop enclosure (its recorded
 // size ÷ the monkeys in the troop), in m²; null if the size isn't recorded
@@ -154,4 +183,80 @@ export function amPlatesFor(monkeys, today = new Date()) {
         fruit: count((p) => !p.cutSmall && p.fruit),
         metal: count((p) => p.metal),
     };
+}
+
+// ---- Baby Care ----
+
+export const BABY_CARE = "Baby Care";
+
+// The days between two dates ("2026-10-01", "2026-10-24")
+const DAY = 24 * 60 * 60 * 1000;
+const daysBetween = (from, to) => Math.round((new Date(`${to}T00:00:00`) - new Date(`${from}T00:00:00`)) / DAY);
+const todayText = (today = new Date()) =>
+    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+// A baby's age from its birth date: "5 days old", "3 weeks old", "4 months
+// old"; null without a birth date
+export function babyAgeText(birthDate, today = new Date()) {
+    if (!birthDate) return null;
+    const days = Math.max(0, daysBetween(birthDate, todayText(today)));
+    const say = (n, word) => `${n} ${word}${n === 1 ? "" : "s"} old`;
+    if (days < 14) return say(days, "day");
+    if (days < 63) return say(Math.floor(days / 7), "week");
+    return say(Math.floor(days / 30.44), "month");
+}
+
+// Baby Care's youngest and oldest (by birth date; babies without one can't
+// be placed)
+//   → { youngest, oldest } (monkeys, or null)
+export function youngestOldest(babies) {
+    const dated = babies.filter((m) => m.birthDate).sort((a, b) => a.birthDate.localeCompare(b.birthDate));
+    return { youngest: dated.at(-1) ?? null, oldest: dated[0] ?? null };
+}
+
+// The Monday a date's week starts on ("2026-10-22" → "2026-10-19")
+export function weekStart(date) {
+    const d = new Date(`${date}T00:00:00`);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return todayText(d);
+}
+
+// Milk drunk per day, in ml: one baby's (babyId), or all of them together
+// (null)
+//   feeds: [{ monkeyId, date ("2026-10-24"), ml, notes }] (a day's total
+//   each: milk-totals.sql)
+//   → [{ x: date, y: ml, notes: [that day's notes] }], oldest first
+export function milkPerDay(feeds, babyId = null) {
+    const byDay = new Map();
+    for (const f of feeds) {
+        if (babyId !== null && f.monkeyId !== babyId) continue;
+        const day = byDay.get(f.date) ?? { y: 0, notes: [] };
+        day.y += f.ml;
+        if (f.notes) day.notes.push(f.notes);
+        byDay.set(f.date, day);
+    }
+    return [...byDay].sort(([a], [b]) => a.localeCompare(b)).map(([x, day]) => ({ x, ...day }));
+}
+
+// Weight per week, in grams (by the week's Monday): one baby's (its last
+// weighing that week), or all of them (the average of each baby's last
+// weighing that week)
+//   weights: [{ monkeyId, date, grams }]
+//   → [{ x: week's Monday, y: grams }], oldest first
+export function weightPerWeek(weights, babyId = null) {
+    const last = new Map(); // "week|baby" → { date, grams }
+    for (const w of weights) {
+        if (babyId !== null && w.monkeyId !== babyId) continue;
+        const key = `${weekStart(w.date)}|${w.monkeyId}`;
+        const seen = last.get(key);
+        if (!seen || w.date >= seen.date) last.set(key, w);
+    }
+    const byWeek = new Map();
+    for (const [key, w] of last) {
+        const week = key.split("|")[0];
+        byWeek.set(week, [...(byWeek.get(week) ?? []), w.grams]);
+    }
+    return [...byWeek]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([x, all]) => ({ x, y: Math.round(all.reduce((n, g) => n + g, 0) / all.length) }));
 }
