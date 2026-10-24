@@ -931,65 +931,68 @@ function Modal({
                                     {shareStatus === "imageFailed" &&
                                         "Sorry, the picture couldn't be made. Please try again."}
                                 </p>
+                                {/* Edit and Photos (editors) as icons on the left; Full
+                                    Profile (staff), blue, in the middle; Share and Save
+                                    image as icons on the right (every button's name is
+                                    its tooltip and what's read out) */}
                                 <div className="Modal-footer">
-                                    {onEdit && (
-                                        <button
-                                            type="button"
-                                            className="Modal-edit"
-                                            onClick={() => {
-                                                setCurrentIndex(0);
-                                                onEdit(monkey);
-                                            }}
-                                        >
-                                            <IconPencil size={18} aria-hidden="true" />
-                                            {/* (small phones: just the icon) */}
-                                            <span className="Modal-editShort">Edit</span>
-                                        </button>
-                                    )}
-                                    {onAddPhotos && (
-                                        <button
-                                            type="button"
-                                            className="Modal-edit is-soft"
-                                            onClick={() => onAddPhotos(monkey)}
-                                            aria-label={`Add photos of ${monkey.name}`}
-                                        >
-                                            <IconPhotoPlus size={18} aria-hidden="true" />
-                                            {/* (phones: just the icon, so Full Profile keeps its name) */}
-                                            <span className="Modal-photosLabel">Photos</span>
-                                        </button>
-                                    )}
+                                    <div className="Modal-footerSide">
+                                        {onEdit && (
+                                            <button
+                                                type="button"
+                                                className="Modal-edit is-icon"
+                                                onClick={() => {
+                                                    setCurrentIndex(0);
+                                                    onEdit(monkey);
+                                                }}
+                                                title="Edit"
+                                            >
+                                                <IconPencil size={18} aria-hidden="true" />
+                                                <span className="Modal-editLabel">Edit</span>
+                                            </button>
+                                        )}
+                                        {onAddPhotos && (
+                                            <button
+                                                type="button"
+                                                className="Modal-edit is-soft is-icon"
+                                                onClick={() => onAddPhotos(monkey)}
+                                                aria-label={`Add photos of ${monkey.name}`}
+                                                title="Add Photos"
+                                            >
+                                                <IconPhotoPlus size={18} aria-hidden="true" />
+                                            </button>
+                                        )}
+                                    </div>
                                     {/* Its full page (MonkeyPage), with all its records */}
-                                    {onOpenPage && (
+                                    {onOpenPage ? (
                                         <button
                                             type="button"
-                                            className="Modal-edit is-soft Modal-fullProfile"
+                                            className="Modal-edit Modal-fullProfile"
                                             onClick={() => onOpenPage(monkey)}
                                             disabled={locked}
                                         >
                                             <IconUserCircle size={18} aria-hidden="true" />
-                                            {/* (keeps its name on phones: Photos and Edit
-                                                shrink to icons first) */}
                                             Full Profile
                                         </button>
+                                    ) : (
+                                        <span />
                                     )}
-                                    <span className="Modal-footer-spacer" />
-                                    {/* Share and Save image: just their (well-known)
-                                        icons, so the buttons fit one row (their names
-                                        are the tooltip and what's read out) */}
-                                    <button type="button" className="Modal-edit is-quiet is-icon" onClick={shareMonkey} title="Share">
-                                        <IconShare size={18} aria-hidden="true" />
-                                        <span className="Modal-editLabel">{shareStatus === "copied" ? "Link copied!" : "Share"}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="Modal-edit is-quiet is-icon"
-                                        onClick={saveImage}
-                                        disabled={shareStatus === "saving"}
-                                        title="Save image"
-                                    >
-                                        <IconDownload size={18} aria-hidden="true" />
-                                        <span className="Modal-editLabel">{shareStatus === "saving" ? "Saving…" : "Save image"}</span>
-                                    </button>
+                                    <div className="Modal-footerSide is-end">
+                                        <button type="button" className="Modal-edit is-quiet is-icon" onClick={shareMonkey} title="Share">
+                                            <IconShare size={18} aria-hidden="true" />
+                                            <span className="Modal-editLabel">{shareStatus === "copied" ? "Link copied!" : "Share"}</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="Modal-edit is-quiet is-icon"
+                                            onClick={saveImage}
+                                            disabled={shareStatus === "saving"}
+                                            title="Save image"
+                                        >
+                                            <IconDownload size={18} aria-hidden="true" />
+                                            <span className="Modal-editLabel">{shareStatus === "saving" ? "Saving…" : "Save image"}</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 </div>
                                 <ImagePreview image={preview} onClose={() => setPreview(null)} />

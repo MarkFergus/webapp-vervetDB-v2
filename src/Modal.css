@@ -95,74 +95,43 @@
 }
 
 /* Editors only: Edit, bottom-left under the details */
+/* The buttons along the bottom: icons either side, Full Profile in the
+   middle (three columns, the outer two equal, so it's truly centred) */
 .Modal-footer {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
     gap: 8px;
     margin: 0 12px;
 }
 
-.Modal-footer-spacer {
-    flex: 1;
+.Modal-footerSide {
+    display: flex;
+    gap: 8px;
 }
 
-/* Small phones: a little closer together, so Edit, Photos and the three
-   icons still fit one row */
-@media (max-width: 399px) {
-    .Modal-footer {
-        gap: 6px;
-    }
-
-    .Modal-footer .Modal-edit:not(.is-quiet) {
-        padding: 0 11px;
-    }
+.Modal-footerSide.is-end {
+    justify-content: flex-end;
 }
 
-/* Phones: Photos is just its icon (Full Profile keeps its name) */
-@media (max-width: 459px) {
-    .Modal-photosLabel {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-
-    /* (a round icon button, like Share) */
-    .Modal-footer .Modal-edit.is-soft:has(.Modal-photosLabel) {
-        justify-content: center;
-        width: 36px;
-        padding: 0;
-    }
+/* Full Profile: outlined in the blue, the way to a monkey's full page
+   (the outline drawn inside, so it's the same size as the others) */
+.Modal-edit.Modal-fullProfile {
+    color: var(--accent);
+    font-weight: 600;
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
-/* Small phones: Edit is just its icon too */
-@media (max-width: 379px) {
-    .Modal-editShort {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-
-    .Modal-footer .Modal-edit:has(.Modal-editShort) {
-        justify-content: center;
-        width: 36px;
-        padding: 0;
-    }
+.Modal-edit.Modal-fullProfile:hover:not(:disabled) {
+    background-color: var(--wash-soft);
 }
 
-/* The smallest phones: Full Profile keeps its name, not its icon */
+/* The smallest phones: a little closer together */
 @media (max-width: 349px) {
-    .Modal-footer {
-        gap: 4px;
-    }
-
-    .Modal-fullProfile svg {
-        display: none;
+    .Modal-footer,
+    .Modal-footerSide {
+        gap: 5px;
     }
 }
 
