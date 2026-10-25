@@ -42,11 +42,12 @@
         transition: width 0.15s ease, box-shadow 0.15s ease;
     }
 
-    /* Hovered (or tabbed into): out over the page, names showing. A
-       moment's pause first, so passing over it on the way somewhere
-       doesn't flick it open */
+    /* Hovered (or tabbed into with the keyboard: not after a click, so it
+       closes as soon as the pointer leaves): out over the page, names
+       showing. A moment's pause first, so passing over it on the way
+       somewhere doesn't flick it open */
     .SideRail:hover,
-    .SideRail:focus-within {
+    .SideRail:has(:focus-visible) {
         width: var(--rail-open);
         box-shadow: 8px 0 24px var(--shadow);
         transition-delay: 0.12s;
@@ -119,7 +120,7 @@
 }
 
 .SideRail:hover .SideRail-label,
-.SideRail:focus-within .SideRail-label,
+.SideRail:has(:focus-visible) .SideRail-label,
 .SideRail.is-open .SideRail-label {
     opacity: 1;
     transition-delay: 0.12s;
@@ -165,7 +166,7 @@
 }
 
 .SideRail:hover .SideRail-footer,
-.SideRail:focus-within .SideRail-footer,
+.SideRail:has(:focus-visible) .SideRail-footer,
 .SideRail.is-open .SideRail-footer {
     opacity: 1;
     transition-delay: 0.12s;
