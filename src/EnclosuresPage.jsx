@@ -679,10 +679,10 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                     <div className="Enclosures-titleRow">
                         <h1 className="Enclosures-recordTitle"><PlaceName name={enclosure.name} /></h1>
                         {editing.canEditDetails && (
-                            // The same Edit button as a monkey's pop-up
-                            <button type="button" className="Modal-edit Enclosures-edit" onClick={() => setIsEditing(true)}>
+                            // The same Edit icon as a monkey's pop-up
+                            <button type="button" className="Modal-edit is-icon Enclosures-edit" onClick={() => setIsEditing(true)} title="Edit">
                                 <IconPencil size={18} aria-hidden="true" />
-                                Edit
+                                <span className="Modal-editLabel">Edit</span>
                             </button>
                         )}
                     </div>

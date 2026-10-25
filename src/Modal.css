@@ -95,12 +95,12 @@
 }
 
 /* Editors only: Edit, bottom-left under the details */
-/* The buttons along the bottom: icons either side, Full Profile in the
-   middle (three columns, the outer two equal, so it's truly centred) */
+/* The buttons along the bottom: Full Profile on the left, the icons
+   together on the right */
 .Modal-footer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     margin: 0 12px;
 }
@@ -121,17 +121,23 @@
     font-weight: 600;
     background: none;
     box-shadow: inset 0 0 0 1.5px var(--accent);
+    white-space: nowrap;
 }
 
 .Modal-edit.Modal-fullProfile:hover:not(:disabled) {
     background-color: var(--wash-soft);
 }
 
-/* The smallest phones: a little closer together */
+/* The smallest phones: a little closer together, and Full Profile without
+   its icon (so it stays on one line) */
 @media (max-width: 349px) {
     .Modal-footer,
     .Modal-footerSide {
         gap: 5px;
+    }
+
+    .Modal-fullProfile svg {
+        display: none;
     }
 }
 

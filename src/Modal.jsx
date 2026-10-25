@@ -931,12 +931,25 @@ function Modal({
                                     {shareStatus === "imageFailed" &&
                                         "Sorry, the picture couldn't be made. Please try again."}
                                 </p>
-                                {/* Edit and Photos (editors) as icons on the left; Full
-                                    Profile (staff), blue, in the middle; Share and Save
-                                    image as icons on the right (every button's name is
+                                {/* Full Profile (staff), outlined blue, on the left; then
+                                    Edit and Photos (editors), Share and Save image, as
+                                    icons together on the right (every button's name is
                                     its tooltip and what's read out) */}
                                 <div className="Modal-footer">
-                                    <div className="Modal-footerSide">
+                                    {onOpenPage ? (
+                                        <button
+                                            type="button"
+                                            className="Modal-edit Modal-fullProfile"
+                                            onClick={() => onOpenPage(monkey)}
+                                            disabled={locked}
+                                        >
+                                            <IconUserCircle size={18} aria-hidden="true" />
+                                            Full Profile
+                                        </button>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    <div className="Modal-footerSide is-end">
                                         {onEdit && (
                                             <button
                                                 type="button"
@@ -962,22 +975,6 @@ function Modal({
                                                 <IconPhotoPlus size={18} aria-hidden="true" />
                                             </button>
                                         )}
-                                    </div>
-                                    {/* Its full page (MonkeyPage), with all its records */}
-                                    {onOpenPage ? (
-                                        <button
-                                            type="button"
-                                            className="Modal-edit Modal-fullProfile"
-                                            onClick={() => onOpenPage(monkey)}
-                                            disabled={locked}
-                                        >
-                                            <IconUserCircle size={18} aria-hidden="true" />
-                                            Full Profile
-                                        </button>
-                                    ) : (
-                                        <span />
-                                    )}
-                                    <div className="Modal-footerSide is-end">
                                         <button type="button" className="Modal-edit is-quiet is-icon" onClick={shareMonkey} title="Share">
                                             <IconShare size={18} aria-hidden="true" />
                                             <span className="Modal-editLabel">{shareStatus === "copied" ? "Link copied!" : "Share"}</span>

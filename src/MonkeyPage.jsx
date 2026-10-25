@@ -228,18 +228,18 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
                 <div className="Enclosures-heading">
                     <div className="Enclosures-titleRow">
                         <h1 className="Enclosures-recordTitle">{monkey.name}</h1>
-                        {/* View Card (its pop-up), and Edit (editors) */}
+                        {/* View Card (its pop-up), and Edit (editors), as icons */}
                         <div className="MonkeyPage-actions">
                             {onOpenCard && (
-                                <button type="button" className="Modal-edit is-soft Enclosures-edit" onClick={() => onOpenCard(monkey)}>
+                                <button type="button" className="Modal-edit is-soft is-icon Enclosures-edit" onClick={() => onOpenCard(monkey)} title="View Card">
                                     <IconId size={18} aria-hidden="true" />
-                                    View Card
+                                    <span className="Modal-editLabel">View Card</span>
                                 </button>
                             )}
                             {onEdit && (
-                                <button type="button" className="Modal-edit Enclosures-edit" onClick={() => onEdit(monkey)}>
+                                <button type="button" className="Modal-edit is-icon Enclosures-edit" onClick={() => onEdit(monkey)} title="Edit">
                                     <IconPencil size={18} aria-hidden="true" />
-                                    Edit
+                                    <span className="Modal-editLabel">Edit</span>
                                 </button>
                             )}
                         </div>
