@@ -1,0 +1,629 @@
+/* The Records page (RecordsPage.jsx): the same page look as Statistics and
+   the Admin Dashboard */
+
+.RecordsPage {
+    box-sizing: border-box;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 12px 64px;
+    font-family: var(--font-ui);
+    color: var(--text);
+}
+
+.RecordsPage-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.RecordsPage-crumbs span {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--text-3);
+}
+
+.RecordsPage-crumbs a {
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.RecordsPage-crumbs a:hover {
+    text-decoration: underline;
+}
+
+.RecordsPage-title {
+    margin: 16px 0 0;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--text-strong);
+}
+
+.RecordsPage-crumbs + .RecordsPage-title {
+    margin-top: 4px;
+}
+
+.RecordsPage-intro,
+.RecordsPage-hint {
+    margin: 6px 0 16px;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+.RecordsPage-none {
+    margin: 8px 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.RecordsPage-problem,
+.RecordsPage-error {
+    color: var(--danger);
+}
+
+/* ---- The team, and what to record: a list of big rows ---- */
+
+.RecordsPage-choices,
+.RecordsPage-rows,
+.RecordsPage-cards,
+.RecordsPage-clashes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.RecordsPage-choices {
+    display: grid;
+    gap: 10px;
+}
+
+.RecordsPage-choice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    color: inherit;
+    text-decoration: none;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.RecordsPage-choice:hover {
+    border-color: var(--line-strong);
+}
+
+.RecordsPage-choice:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.RecordsPage-choiceIcon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--accent);
+    background-color: var(--surface-2);
+    border-radius: 999px;
+}
+
+.RecordsPage-choiceText {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.RecordsPage-choiceTitle {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.RecordsPage-choiceSub {
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.RecordsPage-choiceArrow {
+    flex-shrink: 0;
+    color: var(--text-3);
+}
+
+/* ---- Enter / View (the Statistics part picker's look) ---- */
+
+.RecordsPage-tabs {
+    display: inline-flex;
+    margin: 14px 0 6px;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 999px;
+}
+
+.RecordsPage-tabs button {
+    height: 32px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.RecordsPage-tabs button.is-on {
+    color: var(--bg);
+    background-color: var(--text);
+}
+
+.RecordsPage-tabs button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* ---- Enter: the date, then a row for each baby ---- */
+
+.RecordsPage-form .RecordsPage-hint {
+    margin-bottom: 12px;
+}
+
+.RecordsPage-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.RecordsPage input {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.RecordsPage input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+.RecordsPage-date input {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .RecordsPage-date input {
+    color-scheme: light;
+}
+
+.RecordsPage-rows {
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.RecordsPage-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.RecordsPage-row:last-child {
+    border-bottom: none;
+}
+
+.RecordsPage-photo {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: 999px;
+}
+
+.RecordsPage-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.RecordsPage-baby {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.RecordsPage-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.RecordsPage-place,
+.RecordsPage-saved {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.RecordsPage-saved {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+/* (computers: the baby takes the first 40% of the row, then the value, then
+   the note across the rest) */
+.RecordsPage-row .RecordsPage-baby {
+    flex: 0 0 calc(40% - 80px);
+}
+
+.RecordsPage-inputs {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.RecordsPage-value {
+    position: relative;
+    display: inline-flex;
+}
+
+.RecordsPage-value input {
+    width: 112px;
+    padding-right: 36px;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.RecordsPage-unit {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    font-size: 14px;
+    color: var(--text-3);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.RecordsPage-note {
+    flex: 1;
+    min-width: 0;
+}
+
+.RecordsPage-row.has-error .RecordsPage-value input {
+    border-color: var(--danger);
+}
+
+.RecordsPage-error {
+    flex-basis: 100%;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.RecordsPage-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.RecordsPage-actions .Modal-edit {
+    height: 40px;
+    padding: 0 22px;
+}
+
+.RecordsPage-done,
+.RecordsPage-problem {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.RecordsPage-done {
+    color: var(--green);
+}
+
+/* Phones: the boxes under the name, side by side */
+@media (max-width: 599px) {
+    .RecordsPage-row {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+    }
+
+    .RecordsPage-row .RecordsPage-baby {
+        flex: 1;
+    }
+
+    .RecordsPage-inputs {
+        flex-basis: 100%;
+    }
+
+    .RecordsPage-value input {
+        width: 104px;
+    }
+}
+
+/* ---- Already Saved: a pop-up in the middle ---- */
+
+.RecordsPage-scrim {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    background-color: var(--scrim);
+}
+
+.RecordsPage-dialog {
+    position: fixed;
+    z-index: 21;
+    top: var(--popup-top);
+    left: 50%;
+    box-sizing: border-box;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100svh - var(--popup-top) - 24px);
+    overflow-y: auto;
+    padding: 18px 18px 16px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px var(--shadow-strong);
+    transform: translateX(-50%);
+}
+
+.RecordsPage-dialog h2 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.RecordsPage-dialog p {
+    margin: 8px 0;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+.RecordsPage-clashes li {
+    padding: 6px 0;
+    font-size: 15px;
+    border-bottom: 1px solid var(--line);
+}
+
+.RecordsPage-clashes li:last-child {
+    border-bottom: none;
+}
+
+.RecordsPage-by {
+    color: var(--text-3);
+}
+
+.RecordsPage-dialogButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.RecordsPage-dialogButtons .Modal-edit {
+    justify-content: center;
+}
+
+/* ---- View: a card for each baby ---- */
+
+.RecordsPage-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.RecordsPage-card {
+    min-width: 0;
+    padding: 12px 14px 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.RecordsPage-cardHead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.RecordsPage-latest {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+.RecordsPage-latestValue {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+}
+
+.RecordsPage-latestDate {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.RecordsPage-change {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.RecordsPage-delta {
+    font-weight: 700;
+    color: var(--text);
+}
+
+.RecordsPage-delta.is-up {
+    color: var(--green);
+}
+
+.RecordsPage-delta.is-down {
+    color: var(--amber-text);
+}
+
+.RecordsPage-noteText {
+    margin: 4px 0 0;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text-2);
+}
+
+.RecordsPage-historyToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 4px 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.RecordsPage-historyToggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.RecordsPage-history {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 14px;
+    border-collapse: collapse;
+}
+
+.RecordsPage-history th,
+.RecordsPage-history td {
+    padding: 6px 4px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+}
+
+.RecordsPage-history tbody tr:last-child th,
+.RecordsPage-history tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.RecordsPage-history thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+}
+
+.RecordsPage-history tbody th {
+    font-weight: 600;
+}
+
+.RecordsPage-history td {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.RecordsPage-historyNote {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+.RecordsPage-subhead {
+    margin: 22px 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+/* ---- The weekly weights report (to copy into WhatsApp) ---- */
+
+/* Create Report: outlined in green (like the cards' blue Full Profile) */
+.Modal-edit.RecordsPage-reportButton {
+    margin: 8px 0 4px;
+    color: var(--green);
+    font-weight: 600;
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--green);
+}
+
+.Modal-edit.RecordsPage-reportButton:hover {
+    background-color: var(--green-wash);
+}
+
+.RecordsPage-report {
+    margin: 8px 0 4px;
+    padding: 14px 16px 16px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+}
+
+.RecordsPage-report h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.RecordsPage-report .RecordsPage-hint {
+    margin: 4px 0 12px;
+    font-size: 14px;
+}
+
+.RecordsPage-report .RecordsPage-date {
+    margin-bottom: 4px;
+}
+
+.RecordsPage-reportWeek {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.RecordsPage-reportText {
+    margin: 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    white-space: pre-wrap;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+    user-select: all;
+}

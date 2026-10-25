@@ -78,8 +78,8 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         await waitFor(() => expect(screen.getAllByRole("button", { name: "Add New Monkey" }).length).toBeGreaterThan(0));
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
-            "Add New Monkey", "Admin Dashboard", "Monkeys", "Enclosures", "Add Photos", "Documents", "Interactive Map", "Statistics",
-            "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About",
+            "Add New Monkey", "Admin Dashboard", "Monkeys", "Enclosures", "Add Photos", "Documents", "Records", "Interactive Map",
+            "Statistics", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(drawer().querySelector(".Drawer-group").textContent).toBe("Add New MonkeyAdmin Dashboard");
         expect(within(drawer()).getByRole("link", { name: "Admin Dashboard" })).toHaveAttribute("href", "#admin");
@@ -93,8 +93,8 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         await screen.findByRole("button", { name: "Account (signed in)" });
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
-            "Monkeys", "Enclosures", "Add Photos", "Documents", "Interactive Map", "Statistics", "Scan QR Code", "Monkey Guesser",
-            "Install & Use Offline", "About",
+            "Monkeys", "Enclosures", "Add Photos", "Documents", "Records", "Interactive Map", "Statistics", "Scan QR Code",
+            "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(within(drawer()).queryByRole("button", { name: "Add New Monkey" })).toBeNull();
         const game = within(drawer()).getByRole("link", { name: "Monkey Guesser" });

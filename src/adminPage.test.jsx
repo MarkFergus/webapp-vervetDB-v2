@@ -169,3 +169,28 @@ describe("#admin", () => {
         expect(screen.queryByRole("heading", { name: "Admin Dashboard" })).toBeNull();
     });
 });
+
+describe("#records", () => {
+    test("not signed in: sent home", async () => {
+        vi.spyOn(supabase.auth, "getSession").mockResolvedValue({ data: { session: null } });
+        vi.spyOn(supabase.auth, "onAuthStateChange").mockReturnValue({ data: { subscription: { unsubscribe: () => {} } } });
+        window.location.hash = "#records";
+        render(
+            <AuthProvider>
+                <ShowPage route="records" editable />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(window.location.hash).toBe(""));
+        expect(screen.queryByRole("heading", { name: "Records" })).toBeNull();
+    });
+
+    test("staff get the Records page", async () => {
+        fakeSupabase({ admin: false });
+        render(
+            <AuthProvider>
+                <ShowPage route="records" editable />
+            </AuthProvider>
+        );
+        expect(await screen.findByRole("heading", { level: 1, name: "Records" })).toBeInTheDocument();
+    });
+});

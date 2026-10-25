@@ -4,7 +4,7 @@ import { bySection, hasTroop, isCareUnit, isInside, sizeText } from "./enclosure
 import { fullName } from "./places";
 import { SPECIES } from "./species";
 import { hasFeeding } from "./feeding";
-import { loadMilkTotals } from "./monkeyData";
+import { loadMilkTotals, loadWeights } from "./monkeyData";
 import {
     BANDITS,
     PARTS,
@@ -21,6 +21,7 @@ import {
     milkPerDay,
     sectionLabel,
     weightPerWeek,
+    weightsByDate,
     youngestOldest,
     sexByTroop,
     spaceByEnclosure,
@@ -36,7 +37,7 @@ import "./StatisticsPage.css";
 // plates, where the monkeys live). Current figures only, for now. Every chart has a Table view with the same numbers, and a hover /
 // focus tooltip on each mark.
 // (Colours: StatisticsPage.css, checked for colour-blind readers in both
-// themes. Baby Care's weights and milk come later, once they're recorded.)
+// themes. Baby Care's milk and weights: entered on the Records page.)
 
 // "62%", "1 monkey", "12 monkeys"
 const monkeysWord = (n) => `${n} ${n === 1 ? "monkey" : "monkeys"}`;
@@ -527,17 +528,20 @@ const NO_BABY_RECORDS = { feeds: [], weights: [] };
 //   date, grams }] } (empty until they're recorded)
 function BabyCareStats({ babies, records: given }) {
     const [babyId, setBabyId] = useState("");
-    // The records: given (tests), or loaded from the database (milk totals,
-    // milk-totals.sql; weights: not recorded yet)
+    // The records: given (tests), or loaded from the database (milk totals
+    // and weights, entered on the Records page: baby-care-records.sql)
     const [loaded, setLoaded] = useState(NO_BABY_RECORDS);
     useEffect(() => {
         if (given) return undefined;
         let cancelled = false;
-        loadMilkTotals()
-            .then((feeds) => !cancelled && setLoaded({ ...NO_BABY_RECORDS, feeds }))
-            .catch(() => {
-                // (not there yet, or offline: the charts say so)
+        // (either not there yet, or offline: its chart says so)
+        Promise.allSettled([loadMilkTotals(), loadWeights()]).then(([feeds, weights]) => {
+            if (cancelled) return;
+            setLoaded({
+                feeds: feeds.status === "fulfilled" ? feeds.value : [],
+                weights: weights.status === "fulfilled" ? weights.value : [],
             });
+        });
         return () => {
             cancelled = true;
         };
@@ -562,7 +566,9 @@ function BabyCareStats({ babies, records: given }) {
     ];
     const id = chosen ? chosen.id : null;
     const milk = milkPerDay(records.feeds, id);
-    const weights = weightPerWeek(records.weights, id);
+    // (one baby: every weighing, on its day; all of them: the average each
+    // week)
+    const weights = chosen ? weightsByDate(records.weights, id) : weightPerWeek(records.weights, id);
     const whose = chosen ? chosen.name : "All babies";
     const weekLabel = (x) => `w/c ${shortDay(x)}`;
     return (
@@ -610,13 +616,22 @@ function BabyCareStats({ babies, records: given }) {
                     )}
                 </Card>
                 <Card
-                    title="Weight per week"
-                    headline={chosen ? `${whose}'s weight, in grams (the last weighing each week)` : "The babies' average weight, in grams (each one's last weighing that week)"}
+                    title={chosen ? "Weight" : "Weight per week"}
+                    headline={chosen ? `${whose}'s weight, in grams (every weighing)` : "The babies' average weight, in grams (each one's last weighing that week)"}
                     wide
-                    table={{ columns: ["Week", "Weight (g)"], rows: weights.map((p) => [weekLabel(p.x), p.y]) }}
+                    table={
+                        chosen
+                            ? { columns: ["Day", "Weight (g)"], rows: weights.map((p) => [shortDay(p.x), p.y]) }
+                            : { columns: ["Week", "Weight (g)"], rows: weights.map((p) => [weekLabel(p.x), p.y]) }
+                    }
                 >
                     {weights.length ? (
-                        <LineChart points={weights} unit="g" xLabel={weekLabel} label="Weight per week" />
+                        <LineChart
+                            points={weights}
+                            unit="g"
+                            xLabel={chosen ? shortDay : weekLabel}
+                            label={chosen ? "Weight" : "Weight per week"}
+                        />
                     ) : (
                         <p className="Stats-none">No weights recorded yet. They'll show here once they're being recorded.</p>
                     )}

@@ -39,6 +39,8 @@ import UpdatesPage from "./UpdatesPage";
 // (only loaded when it's opened: the rest of the app stays as quick)
 const StatisticsPage = lazy(() => import("./StatisticsPage"));
 const AdminPage = lazy(() => import("./AdminPage"));
+const RecordsPage = lazy(() => import("./RecordsPage"));
+import { isRecordsRoute } from "./babyRecords";
 import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
@@ -322,6 +324,13 @@ function ShowPage({
     useEffect(() => {
         if (adminLocked && ready) window.location.replace("#");
     }, [adminLocked, ready]);
+    // The Records page (#records…): staff only (any role); entering them:
+    // editors and admins
+    const onRecords = isRecordsRoute(route);
+    const recordsLocked = onRecords && !role;
+    useEffect(() => {
+        if (recordsLocked && ready) window.location.replace("#");
+    }, [recordsLocked, ready]);
     // A monkey's full page (#monkeys/<name>-<enclosure>)
     const onMonkeyPage = isMonkeyPageRoute(route);
     const pageMonkey = onMonkeyPage ? monkeyFromPageRoute(route, monkeys) : null;
@@ -334,7 +343,7 @@ function ShowPage({
         window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
     }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onAdmin;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onAdmin || onRecords;
     // The game starts at the top
     useEffect(() => {
         if (onGame || onUpdates || onStats) window.scrollTo?.(0, 0);
@@ -909,10 +918,11 @@ function ShowPage({
                     toggleOffline={() => setIsOfflineOpen((open) => !open)}
                     onAddMonkey={canAdd ? startAdd : undefined}
                     showAdmin={isAdmin}
+                    showRecords={Boolean(role)}
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onAdmin ? "admin" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -927,6 +937,13 @@ function ShowPage({
                 <Suspense fallback={<p className="ShowPage-loading">Loading statistics…</p>}>
                     <StatisticsPage monkeys={monkeys} enclosures={enclosures} sections={sections} inert={isAnyModalOpen} />
                 </Suspense>
+            ) : onRecords ? (
+                // (nothing while checking who's signed in, or leaving)
+                recordsLocked ? null : (
+                    <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
+                        <RecordsPage route={route} monkeys={monkeys} enclosures={enclosures} canEnter={canEdit} inert={isAnyModalOpen} />
+                    </Suspense>
+                )
             ) : onAdmin ? (
                 // (nothing while checking who's signed in, or leaving)
                 adminLocked ? null : (
