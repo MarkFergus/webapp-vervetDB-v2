@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
     IconChartBar,
+    IconClipboardList,
     IconDeviceGamepad2,
     IconDeviceMobileDown,
     IconFileTypePdf,
@@ -65,10 +66,11 @@ function ProfileBookIcon({ busy, size }) {
 //   open / onClose: opened with the ☰
 //   onAddMonkey: admins only: Add New Monkey, on its own at the top
 //   showAdmin: admins only: the Admin Dashboard, under it
+//   showRecords: staff (any role): the Records page (milk totals, weights…)
 //   onProfileBook, onOffline, onAbout: open those pop-ups; onMap: the
 //   Interactive Map pop-up
 //   onAddPhotos: staff (editors / admins): Add Photos
-export function SideRail({ onAddMonkey, showAdmin = false, open = false, onClose = () => {}, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
+export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, open = false, onClose = () => {}, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
     useEffect(() => {
         if (!open) return;
         const handleKeyDown = (event) => event.key === "Escape" && onClose();
@@ -126,6 +128,8 @@ export function SideRail({ onAddMonkey, showAdmin = false, open = false, onClose
                         isGeneratingPDF ? "Creating PDF…" : "Documents",
                         { disabled: isGeneratingPDF }
                     )}
+                {showRecords &&
+                    item({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
                 {button(onMap, <IconMap2 stroke={1.75} size={22} aria-hidden="true" />, "Interactive Map")}
                 {item({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                 {item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
@@ -195,12 +199,13 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
 // (☰, top left) Everything, in groups with lines between (no headings), like
 // the computers' side rail: Add New Monkey (admins) on its own; the pages;
 // the tools; the app. (The bottom bar is just quick access to some of them.)
-//   onAddMonkey, showAdmin (the Admin Dashboard): admins only; onAddPhotos: editors / admins; onProfileBook:
+//   onAddMonkey, showAdmin (the Admin Dashboard): admins only; showRecords
+//   (the Records page): staff (any role); onAddPhotos: editors / admins; onProfileBook:
 //   staff (any role): Documents; isGeneratingPDF: while one's made
 //   onMap: the Interactive Map; onScan: Scan QR Code (an Introcage Sign's
 //   code → its page)
 export function Drawer({
-    open, onClose, onAddMonkey, showAdmin = false, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, page, onOffline, onAbout,
+    open, onClose, onAddMonkey, showAdmin = false, showRecords = false, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, page, onOffline, onAbout,
 }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
@@ -258,6 +263,8 @@ export function Drawer({
                             isGeneratingPDF ? "Creating PDF…" : "Documents",
                             { disabled: isGeneratingPDF }
                         )}
+                    {showRecords &&
+                        link({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
                     {button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, "Interactive Map")}
                     {link({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                     {button(onScan, <IconScan stroke={1.75} size={24} aria-hidden="true" />, "Scan QR Code")}

@@ -974,3 +974,53 @@ export async function saveStaffRole(userId, role) {
         throw saveProblem(error);
     }
 }
+
+// ---- Records: Baby Care's milk totals and weights
+// (supabase/baby-care-records.sql) ----
+
+const BABY_TABLES = {
+    milk: { table: "milk_totals", date: "milk_date", value: "total_ml", save: "save_milk_totals" },
+    weights: { table: "weights", date: "weigh_date", value: "grams", save: "save_weights" },
+};
+
+// Every baby's milk totals or weights ("milk" / "weights"), oldest first:
+// [{ monkeyId, date, value, notes, loggedByName }]. Throws if the database
+// hasn't got them yet, or can't be reached.
+export async function loadBabyRecords(kindId) {
+    const t = BABY_TABLES[kindId];
+    const { data, error } = await supabase
+        .from(t.table)
+        .select(`monkey_id, ${t.date}, ${t.value}, notes, logged_by_name`)
+        .order(t.date);
+    if (error) throw error;
+    return data.map((row) => ({
+        monkeyId: row.monkey_id,
+        date: row[t.date],
+        value: row[t.value],
+        notes: row.notes ?? null,
+        loggedByName: row.logged_by_name ?? null,
+    }));
+}
+
+// Every baby's weights, oldest first, for Statistics: [{ monkeyId, date,
+// grams }]
+export async function loadWeights() {
+    return (await loadBabyRecords("weights")).map((r) => ({ monkeyId: r.monkeyId, date: r.date, grams: r.value }));
+}
+
+// Save All: a batch of milk totals or weights ([{ monkeyId, date, value,
+// notes }]); a baby that already has one that day is replaced (replace
+// true) or left as it was. → how many were saved
+export async function saveBabyRecords(kindId, entries, replace) {
+    const { data, error } = await supabase.rpc(BABY_TABLES[kindId].save, {
+        entries: entries.map((e) => ({ monkey_id: e.monkeyId, date: e.date, value: e.value, notes: e.notes })),
+        replace,
+    });
+    if (error) {
+        console.error("Saving records failed:", error);
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an editor?");
+        if (error.code === "23514") throw new Error("The database refused one of the values or the date. Please check them.");
+        throw saveProblem(error);
+    }
+    return data;
+}

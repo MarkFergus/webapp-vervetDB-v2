@@ -63,6 +63,7 @@ function Nav({
     toggleOffline,
     onAddMonkey, // admins only: Add New Monkey, at the top of the side rail / ☰ menu
     showAdmin = false, // admins only: the Admin Dashboard, under Add New Monkey
+    showRecords = false, // staff (any role): the Records page
     onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures", "game", "statistics", "admin"…
@@ -225,6 +226,7 @@ function Nav({
                     <SideRail
                         onAddMonkey={onAddMonkey}
                         showAdmin={showAdmin}
+                        showRecords={showRecords}
                         open={railOpen}
                         onClose={() => setRailOpen(false)}
                         onMap={showMap}
@@ -253,6 +255,7 @@ function Nav({
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
                         showAdmin={showAdmin}
+                        showRecords={showRecords}
                         onHome={onHome}
                         onMap={showMap}
                         onAddPhotos={onAddPhotos}

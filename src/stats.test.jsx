@@ -1,7 +1,7 @@
 // The Statistics page: its figures (stats.js) and the page itself
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { STAT_AGE_GROUPS, babyAgeText, milkPerDay, weekStart, weightPerWeek, youngestOldest, amPlatesFor, countsBySection, sectionLabel, banditMonkeys, countsByEnclosure, monkeysIn, percent, ranked, sexByTroop, spaceByEnclosure, statsFor } from "./stats";
+import { STAT_AGE_GROUPS, babyAgeText, milkPerDay, weekStart, weightPerWeek, weightsByDate, youngestOldest, amPlatesFor, countsBySection, sectionLabel, banditMonkeys, countsByEnclosure, monkeysIn, percent, ranked, sexByTroop, spaceByEnclosure, statsFor } from "./stats";
 import { currentBabySeason } from "./ages";
 import StatisticsPage from "./StatisticsPage";
 import ShowPage from "./ShowPage";
@@ -292,6 +292,18 @@ describe("Baby Care", () => {
         expect(screen.getByRole("status")).toHaveTextContent("250 ml20 Oct");
         await user.selectOptions(screen.getByRole("combobox", { name: "Show milk and weight for" }), "22");
         expect(screen.getByRole("img", { name: /^Milk intake per day: 1 point, the latest 150 ml/ })).toBeInTheDocument();
-        expect(screen.getByRole("img", { name: /^Weight per week: 1 point, the latest 650 g \(w\/c 19 Oct\)/ })).toBeInTheDocument();
+        // (one baby: every weighing, on its day)
+        expect(screen.getByRole("img", { name: /^Weight: 1 point, the latest 650 g \(21 Oct\)/ })).toBeInTheDocument();
+        await user.selectOptions(screen.getByRole("combobox", { name: "Show milk and weight for" }), "21");
+        expect(screen.getByRole("img", { name: /^Weight: 3 points, the latest 450 g \(22 Oct\)/ })).toBeInTheDocument();
+    });
+
+    test("one baby's weighings: every one, on its day, oldest first", () => {
+        expect(weightsByDate(WEIGHTS, 21)).toEqual([
+            { x: "2026-10-13", y: 400 },
+            { x: "2026-10-20", y: 430 },
+            { x: "2026-10-22", y: 450 },
+        ]);
+        expect(weightsByDate(WEIGHTS, 99)).toEqual([]);
     });
 });

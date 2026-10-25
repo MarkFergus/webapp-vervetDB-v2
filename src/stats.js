@@ -238,6 +238,17 @@ export function milkPerDay(feeds, babyId = null) {
     return [...byDay].sort(([a], [b]) => a.localeCompare(b)).map(([x, day]) => ({ x, ...day }));
 }
 
+// One baby's every weighing, in grams, on its day (a weighing can be late,
+// or more than one a week), oldest first
+//   weights: [{ monkeyId, date, grams }]
+//   → [{ x: date, y: grams }]
+export function weightsByDate(weights, babyId) {
+    return weights
+        .filter((w) => w.monkeyId === babyId)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map((w) => ({ x: w.date, y: w.grams }));
+}
+
 // Weight per week, in grams (by the week's Monday): one baby's (its last
 // weighing that week), or all of them (the average of each baby's last
 // weighing that week)
