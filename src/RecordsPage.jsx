@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconBabyCarriage, IconBottle, IconChevronDown, IconChevronRight, IconCopy, IconScale } from "@tabler/icons-react";
+import { IconBabyCarriage, IconBottle, IconChevronDown, IconChevronRight, IconCopy, IconMinus, IconPlus, IconScale } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -96,6 +96,20 @@ function EnterForm({ kind, babies, records, reload }) {
     const [status, setStatus] = useState(null);
     // the ones already saved, waiting for Replace / Keep / Cancel
     const [clashes, setClashes] = useState(null);
+    // (phones) the babies whose note box is open: notes are rare, so each
+    // opens with its + button
+    const [notesOpen, setNotesOpen] = useState(() => new Set());
+    const toggleNote = (monkeyId) => {
+        const opening = !notesOpen.has(monkeyId);
+        setNotesOpen((open) => {
+            const next = new Set(open);
+            if (opening) next.add(monkeyId);
+            else next.delete(monkeyId);
+            return next;
+        });
+        // (straight into it)
+        if (opening) requestAnimationFrame(() => document.getElementById(`RecordsPage-note-${kind.id}-${monkeyId}`)?.focus());
+    };
     const today = dayText(new Date());
     const byId = (id) => babies.find((m) => m.id === id);
     const savedOn = (monkeyId) => records.find((r) => r.monkeyId === monkeyId && r.date === date) ?? null;
@@ -113,6 +127,7 @@ function EnterForm({ kind, babies, records, reload }) {
             const kept = entries.length - saved;
             const things = (n) => `${n} ${n === 1 ? kind.what : kind.whats}`;
             setTyped({});
+            setNotesOpen(new Set());
             setClashes(null);
             setStatus({
                 done: `Saved ${things(saved)} for ${dayLabel(date)}.${kept ? ` Kept ${kept === 1 ? "the old value" : `${kept} old values`}.` : ""}`,
@@ -162,7 +177,7 @@ function EnterForm({ kind, babies, records, reload }) {
     const busy = status === "saving";
     return (
         <form className="RecordsPage-form" onSubmit={saveAll} noValidate>
-            <p className="RecordsPage-hint">{kind.hint} Leave a baby empty to skip it.</p>
+            <p className="RecordsPage-hint">{kind.hint}</p>
             <label className="RecordsPage-date">
                 <span>Date</span>
                 <input
@@ -184,8 +199,14 @@ function EnterForm({ kind, babies, records, reload }) {
                         const saved = savedOn(monkey.id);
                         const error = errors[monkey.id];
                         const inputId = `RecordsPage-${kind.id}-${monkey.id}`;
+                        const noteId = `RecordsPage-note-${kind.id}-${monkey.id}`;
+                        const noteOpen = notesOpen.has(monkey.id);
+                        const hasNote = Boolean(typed[monkey.id]?.notes?.trim());
                         return (
-                            <li key={monkey.id} className={`RecordsPage-row${error ? " has-error" : ""}`}>
+                            <li
+                                key={monkey.id}
+                                className={`RecordsPage-row${error ? " has-error" : ""}${noteOpen ? " is-noteOpen" : ""}`}
+                            >
                                 <BabyPhoto monkey={monkey} />
                                 <div className="RecordsPage-baby">
                                     <label className="RecordsPage-name" htmlFor={inputId}>
@@ -215,21 +236,34 @@ function EnterForm({ kind, babies, records, reload }) {
                                             {kind.unit}
                                         </span>
                                     </span>
-                                    <input
-                                        className="RecordsPage-note"
-                                        type="text"
-                                        placeholder="Note (optional)"
-                                        maxLength={500}
-                                        value={typed[monkey.id]?.notes ?? ""}
-                                        onChange={(e) => type(monkey.id, "notes", e.target.value)}
+                                    {/* (phones only: the note box opens below) */}
+                                    <button
+                                        type="button"
+                                        className={`RecordsPage-noteToggle${hasNote ? " has-note" : ""}`}
+                                        onClick={() => toggleNote(monkey.id)}
+                                        aria-expanded={noteOpen}
+                                        aria-controls={noteId}
                                         aria-label={`Note for ${monkey.name}`}
-                                    />
+                                        title={noteOpen ? "Hide the note" : "Add a note"}
+                                    >
+                                        {noteOpen ? <IconMinus size={18} aria-hidden="true" /> : <IconPlus size={18} aria-hidden="true" />}
+                                    </button>
                                     {error && (
                                         <span className="RecordsPage-error" id={`${inputId}-error`}>
                                             {error}
                                         </span>
                                     )}
                                 </div>
+                                <input
+                                    className="RecordsPage-note"
+                                    id={noteId}
+                                    type="text"
+                                    placeholder="Note (optional)"
+                                    maxLength={500}
+                                    value={typed[monkey.id]?.notes ?? ""}
+                                    onChange={(e) => type(monkey.id, "notes", e.target.value)}
+                                    aria-label={`Note for ${monkey.name}`}
+                                />
                             </li>
                         );
                     })}

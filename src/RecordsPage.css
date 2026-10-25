@@ -278,11 +278,10 @@
 
 .RecordsPage-inputs {
     display: flex;
-    flex: 1;
+    flex: 0 0 auto;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    min-width: 0;
 }
 
 .RecordsPage-value {
@@ -311,6 +310,33 @@
 .RecordsPage-note {
     flex: 1;
     min-width: 0;
+}
+
+/* The note's + (phones only: computers always show the note box) */
+.RecordsPage-noteToggle {
+    display: none;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* (a note typed in, even with its box closed: blue) */
+.RecordsPage-noteToggle.has-note {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.RecordsPage-noteToggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
 }
 
 .RecordsPage-row.has-error .RecordsPage-value input {
@@ -348,9 +374,20 @@
 }
 
 /* Phones: the boxes under the name, side by side */
+/* Phones: each baby on one line (photo, name, value, the note's +); the
+   note box, when it's opened, on a line of its own below. The hint on one
+   line. */
 @media (max-width: 599px) {
+    .RecordsPage-form .RecordsPage-hint {
+        font-size: min(15px, 3.4vw);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .RecordsPage-row {
         flex-wrap: wrap;
+        gap: 10px;
         padding: 10px 12px;
     }
 
@@ -359,11 +396,36 @@
     }
 
     .RecordsPage-inputs {
-        flex-basis: 100%;
+        flex-wrap: nowrap;
+        gap: 6px;
     }
 
     .RecordsPage-value input {
-        width: 104px;
+        width: 96px;
+    }
+
+    .RecordsPage-noteToggle {
+        display: flex;
+    }
+
+    .RecordsPage-note {
+        display: none;
+        flex-basis: 100%;
+    }
+
+    .RecordsPage-row.is-noteOpen .RecordsPage-note {
+        display: block;
+    }
+
+    /* (a problem: under the row) */
+    .RecordsPage-row.has-error .RecordsPage-inputs {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        max-width: 142px;
+    }
+
+    .RecordsPage-row.has-error .RecordsPage-error {
+        text-align: right;
     }
 }
 
@@ -588,7 +650,8 @@
     margin: 8px 0 4px;
     padding: 14px 16px 16px;
     background-color: var(--surface-1);
-    border: 1px solid var(--accent);
+    /* (green, like its Create Report button) */
+    border: 1.5px solid var(--green);
     border-radius: 12px;
 }
 

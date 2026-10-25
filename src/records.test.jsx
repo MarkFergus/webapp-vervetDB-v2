@@ -266,6 +266,23 @@ test("each baby's first photo beside its name (none: an empty circle)", async ()
     expect(screen.getByRole("textbox", { name: "Pip" }).closest("li").querySelector("img")).toBeNull();
 });
 
+test("each note opens with its + (phones), and a typed note's + stays blue", async () => {
+    const user = userEvent.setup();
+    render(<RecordsPage route="records/baby-care/milk" monkeys={MONKEYS} enclosures={[BABY_CARE, DREAMLAND]} canEnter />);
+    const plus = await screen.findByRole("button", { name: "Note for Muse" });
+    expect(plus).toHaveAttribute("aria-expanded", "false");
+    await user.click(plus);
+    expect(plus).toHaveAttribute("aria-expanded", "true");
+    expect(plus.closest("li")).toHaveClass("is-noteOpen");
+    const note = screen.getByRole("textbox", { name: "Note for Muse" });
+    await waitFor(() => expect(note).toHaveFocus());
+    await user.type(note, "Skipped the 2am feed");
+    await user.click(plus);
+    expect(plus.closest("li")).not.toHaveClass("is-noteOpen");
+    expect(plus).toHaveClass("has-note");
+    expect(note).toHaveValue("Skipped the 2am feed");
+});
+
 describe("viewing", () => {
     const WEIGHED = [record(21, "2026-10-18", 474), record(21, "2026-10-25", 512, { notes: "A day late" }), record(30, "2026-09-01", 2400)];
 
