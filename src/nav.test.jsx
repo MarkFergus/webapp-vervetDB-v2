@@ -126,12 +126,14 @@ describe("phones: the bottom bar", () => {
         expect(screen.queryByRole("button", { name: "Documents" })).toBeNull();
     });
 
-    test("editors: Monkeys, Enclosures, Map, Photos and Documents (opening the PDF pop-up)", async () => {
+    test("editors: Monkeys, Enclosures, Records (the circle), Photos and Map (Documents: in ☰)", async () => {
         const { user } = setup({ signedIn: true });
         await waitFor(() => expect(bar().getByRole("button", { name: "Add Photos" })).toBeInTheDocument());
-        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Interactive Map", "Photos", "Documents"]);
-        await user.click(bar().getByRole("button", { name: "Documents" }));
-        expect(await screen.findByRole("dialog", { name: "Documents" })).toBeInTheDocument();
+        expect(barItems()).toEqual(["Monkeys", "Enclosures", "Records", "Photos", "Map"]);
+        expect(bar().getByRole("link", { name: "Records" })).toHaveAttribute("href", "#records");
+        expect(bar().queryByRole("button", { name: "Documents" })).toBeNull();
+        await user.click(bar().getByRole("button", { name: "Interactive Map" }));
+        expect(screen.getByRole("dialog", { name: "Sanctuary Map" })).toBeInTheDocument();
     });
 
     test("Map opens the Interactive Map; Escape closes it, back to the button", async () => {

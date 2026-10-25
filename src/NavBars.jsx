@@ -145,12 +145,14 @@ export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, 
 }
 
 // ---- Phones: the bottom bar ----
-// Monkeys · Enclosures · Map (the green circle, in the middle), then:
-//   Photos (editors / admins: Add Photos, the photo picker straight away),
-//   else Scan QR Code; then Documents (staff), else Game. Quick access:
-//   everything's in ☰. (The account is in the top bar, top right, as on
-//   computers.)
-//   onAddPhotos: staff (editors / admins); onProfileBook: staff (any role)
+// Monkeys · Enclosures · the green circle in the middle · two more. Quick
+// access: everything's in ☰. (The account is in the top bar, top right, as
+// on computers.)
+//   editors / admins:  Records in the circle, then Photos (Add Photos, the
+//                      photo picker straight away) and Map
+//   everyone else:     Map in the circle, then Scan QR Code, then Documents
+//                      (staff) or Game
+//   onAddPhotos: editors / admins; onProfileBook: staff (any role)
 export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
@@ -172,25 +174,42 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
         <nav className="BottomBar" aria-label="Main" inert={inert}>
             {tab(monkeysLinkProps(page, onHome), MonkeysNavIcon, "Monkeys")}
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosuresNavIcon, "Enclosures")}
-            {/* The Interactive Map (the whole sanctuary map), the highlight:
-                a bigger green circle that stands out (no label: its name is
-                read out) */}
-            <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
-                <span className="BottomBar-mapCircle" aria-hidden="true">
-                    <IconMap2 stroke={1.75} size={26} />
-                </span>
-            </button>
+            {/* The highlight in the middle: a bigger green circle that stands
+                out (no label: its name is read out). Editors / admins: the
+                Records page; everyone else: the Interactive Map (the whole
+                sanctuary map) */}
+            {onAddPhotos ? (
+                <a
+                    className="BottomBar-map"
+                    href="#records"
+                    aria-label="Records"
+                    aria-current={page === "records" ? "page" : undefined}
+                >
+                    <span className="BottomBar-mapCircle" aria-hidden="true">
+                        <IconClipboardList stroke={1.75} size={26} />
+                    </span>
+                </a>
+            ) : (
+                <button type="button" className="BottomBar-map" onClick={onMap} aria-label="Interactive Map">
+                    <span className="BottomBar-mapCircle" aria-hidden="true">
+                        <IconMap2 stroke={1.75} size={26} />
+                    </span>
+                </button>
+            )}
             {onAddPhotos
                 ? // Editors / admins: Add Photos, the quick way in
                   button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} />, "Photos", { "aria-label": "Add Photos" })
                 : // Everyone else: an Introcage Sign's QR code → its page
                   button(onScan, <IconScan stroke={1.75} size={24} />, "Scan", { "aria-label": "Scan QR Code" })}
-            {onProfileBook
-                ? button(onProfileBook, <ProfileBookIcon busy={isGeneratingPDF} size={24} />, isGeneratingPDF ? "Creating…" : "Documents", {
-                      "aria-label": "Documents",
-                      disabled: isGeneratingPDF,
-                  })
-                : tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
+            {onAddPhotos
+                ? // Editors / admins: the Interactive Map (Documents: in ☰)
+                  button(onMap, <IconMap2 stroke={1.75} size={24} />, "Map", { "aria-label": "Interactive Map" })
+                : onProfileBook
+                  ? button(onProfileBook, <ProfileBookIcon busy={isGeneratingPDF} size={24} />, isGeneratingPDF ? "Creating…" : "Documents", {
+                        "aria-label": "Documents",
+                        disabled: isGeneratingPDF,
+                    })
+                  : tab({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Game")}
         </nav>
     );
 }
