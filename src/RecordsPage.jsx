@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconBabyCarriage, IconBottle, IconChevronDown, IconChevronRight, IconCopy, IconMinus, IconPlus, IconScale } from "@tabler/icons-react";
+import {
+    IconBabyCarriage,
+    IconBottle,
+    IconChartLine,
+    IconChevronDown,
+    IconChevronRight,
+    IconCopy,
+    IconMinus,
+    IconPlus,
+    IconScale,
+} from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -301,8 +311,55 @@ function EnterForm({ kind, babies, records, reload }) {
     );
 }
 
-// ---- View: each baby's latest, the change since the one before, and its
-// history ----
+// ---- View: each baby's latest, the change since the one before, a quick
+// line of them all, and its history ----
+
+// A small line of a baby's values, for a quick impression (no labels: the
+// latest value and the history table have the numbers). Spaced by date, so
+// a late weighing sits where it fell; the latest marked with a dot. Two or
+// more to draw.
+//   history: newest first (historyFor)
+function Sparkline({ kind, monkey, history }) {
+    const boxRef = useRef(null);
+    const [width, setWidth] = useState(300);
+    useEffect(() => {
+        const box = boxRef.current;
+        if (!box || typeof ResizeObserver === "undefined") return undefined;
+        const watch = new ResizeObserver(([entry]) => setWidth(Math.max(120, entry.contentRect.width)));
+        watch.observe(box);
+        return () => watch.disconnect();
+    }, []);
+    if (history.length < 2) return null;
+    const points = [...history].reverse();
+    const height = 64;
+    const pad = 6;
+    const time = (date) => new Date(`${date}T00:00:00`).getTime();
+    const [t0, t1] = [time(points[0].date), time(points.at(-1).date)];
+    const values = points.map((p) => p.value);
+    const [lo, hi] = [Math.min(...values), Math.max(...values)];
+    const x = (date) => pad + ((time(date) - t0) / (t1 - t0 || 1)) * (width - pad * 2);
+    // (all the same: a flat line across the middle)
+    const y = (v) => (hi === lo ? height / 2 : pad + (1 - (v - lo) / (hi - lo)) * (height - pad * 2));
+    const xy = points.map((p) => [x(p.date), y(p.value)]);
+    const line = xy.map(([px, py], i) => `${i ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`).join(" ");
+    const area = `${line} L${xy.at(-1)[0].toFixed(1)},${height} L${xy[0][0].toFixed(1)},${height} Z`;
+    const [ex, ey] = xy.at(-1);
+    const amount = (n) => `${n.toLocaleString("en-GB")} ${kind.unit}`;
+    return (
+        <div className="RecordsPage-spark" ref={boxRef}>
+            <svg
+                width={width}
+                height={height}
+                role="img"
+                aria-label={`${monkey.name}'s ${kind.whats}: ${points.length}, from ${amount(points[0].value)} (${dayLabel(points[0].date)}) to ${amount(points.at(-1).value)} (${dayLabel(points.at(-1).date)})`}
+            >
+                <path className="RecordsPage-sparkArea" d={area} />
+                <path className="RecordsPage-sparkLine" d={line} />
+                <circle className="RecordsPage-sparkDot" cx={ex} cy={ey} r={4} />
+            </svg>
+        </div>
+    );
+}
 
 function BabyHistory({ kind, monkey, records }) {
     const [open, setOpen] = useState(false);
@@ -312,36 +369,50 @@ function BabyHistory({ kind, monkey, records }) {
     // (weights: a gain green, a loss amber)
     const tone = (change) => (kind.id !== "weights" || !change ? "" : change > 0 ? " is-up" : " is-down");
     const listId = `RecordsPage-history-${kind.id}-${monkey.id}`;
-    return (
-        <li className="RecordsPage-card">
-            <div className="RecordsPage-cardHead">
-                <BabyPhoto monkey={monkey} />
-                <div className="RecordsPage-baby">
-                    <span className="RecordsPage-name">{monkey.name}</span>
-                    <span className="RecordsPage-place">{placeName(monkey)}</span>
-                </div>
-                {latest && (
-                    <div className="RecordsPage-latest">
-                        <span className="RecordsPage-latestValue">{value(latest.value)}</span>
-                        <span className="RecordsPage-latestDate">{dayLabel(latest.date)}</span>
-                    </div>
-                )}
-            </div>
-            {!latest ? (
-                <p className="RecordsPage-none">No {kind.whats} yet.</p>
+    const change = latest && (
+        <p className="RecordsPage-change">
+            {latest.change === null ? (
+                `The first ${kind.what}.`
             ) : (
                 <>
-                    <p className="RecordsPage-change">
-                        {latest.change === null ? (
-                            `The first ${kind.what}.`
-                        ) : (
-                            <>
-                                <strong className={`RecordsPage-delta${tone(latest.change)}`}>{changeText(latest.change, kind.unit)}</strong> since{" "}
-                                {dayLabel(latest.previous.date)} ({value(latest.previous.value)})
-                            </>
+                    <strong className={`RecordsPage-delta${tone(latest.change)}`}>{changeText(latest.change, kind.unit)}</strong> since{" "}
+                    {dayLabel(latest.previous.date)} ({value(latest.previous.value)})
+                </>
+            )}
+        </p>
+    );
+    return (
+        <li className="RecordsPage-card">
+            {/* The details on the left, the quick line on the right
+                (phones: under them); the history across the bottom */}
+            <div className="RecordsPage-cardBody">
+                <div className="RecordsPage-cardMain">
+                    <div className="RecordsPage-cardHead">
+                        <BabyPhoto monkey={monkey} />
+                        <div className="RecordsPage-baby">
+                            <span className="RecordsPage-name">{monkey.name}</span>
+                            <span className="RecordsPage-place">{placeName(monkey)}</span>
+                        </div>
+                        {latest && (
+                            <div className="RecordsPage-latest">
+                                <span className="RecordsPage-latestValue">{value(latest.value)}</span>
+                                <span className="RecordsPage-latestDate">{dayLabel(latest.date)}</span>
+                            </div>
                         )}
-                    </p>
-                    {latest.notes && <p className="RecordsPage-noteText">{latest.notes}</p>}
+                    </div>
+                    {!latest ? (
+                        <p className="RecordsPage-none">No {kind.whats} yet.</p>
+                    ) : (
+                        <>
+                            {change}
+                            {latest.notes && <p className="RecordsPage-noteText">{latest.notes}</p>}
+                        </>
+                    )}
+                </div>
+                <Sparkline kind={kind} monkey={monkey} history={history} />
+            </div>
+            {latest && (
+                <>
                     <button
                         type="button"
                         className="RecordsPage-historyToggle"
@@ -357,7 +428,7 @@ function BabyHistory({ kind, monkey, records }) {
                             <thead>
                                 <tr>
                                     <th scope="col">Date</th>
-                                    <th scope="col">{kind.id === "milk" ? "Milk" : "Weight"}</th>
+                                    <th scope="col">{kind.id === "milk" ? "Total" : "Weight"}</th>
                                     <th scope="col">Change</th>
                                 </tr>
                             </thead>
@@ -373,7 +444,7 @@ function BabyHistory({ kind, monkey, records }) {
                                                 </span>
                                             )}
                                         </th>
-                                        <td>{value(r.value)}</td>
+                                        <td className="RecordsPage-historyValue">{value(r.value)}</td>
                                         <td className={`RecordsPage-delta${tone(r.change)}`}>{r.change === null ? "–" : changeText(r.change, kind.unit)}</td>
                                     </tr>
                                 ))}
@@ -494,8 +565,28 @@ function ViewList({ kind, babies, monkeys, records }) {
 
 // ---- One kind of record: Enter and View ----
 
+// (phones) whether View shows the quick lines: remembered on this device
+const CHARTS_KEY = "vervetdb-records-charts";
+const chartsAtFirst = () => {
+    try {
+        return localStorage.getItem(CHARTS_KEY) !== "hidden";
+    } catch {
+        return true;
+    }
+};
+
 function KindPage({ kind, monkeys, enclosures, canEnter }) {
     const [tab, setTab] = useState(canEnter ? "enter" : "view");
+    const [charts, setCharts] = useState(chartsAtFirst);
+    const toggleCharts = () =>
+        setCharts((shown) => {
+            try {
+                localStorage.setItem(CHARTS_KEY, shown ? "hidden" : "shown");
+            } catch {
+                // (not saved on this device: it still works for now)
+            }
+            return !shown;
+        });
     // null: loading; "failed": couldn't load
     const [records, setRecords] = useState(null);
     const reload = useCallback(async () => {
@@ -514,6 +605,7 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
     const shownTab = canEnter ? tab : "view";
     return (
         <>
+            <div className="RecordsPage-tabRow">
             {canEnter && (
                 <div className="RecordsPage-tabs" role="tablist" aria-label={kind.title}>
                     {[
@@ -533,6 +625,20 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
                     ))}
                 </div>
             )}
+            {/* (phones, on View: the quick lines on or off, top right) */}
+            {shownTab === "view" && Array.isArray(records) && records.length > 0 && (
+                <button
+                    type="button"
+                    className={`RecordsPage-chartsToggle${charts ? " is-on" : ""}`}
+                    onClick={toggleCharts}
+                    aria-pressed={charts}
+                    title={charts ? "Hide the charts" : "Show the charts"}
+                >
+                    <IconChartLine size={18} aria-hidden="true" />
+                    Charts
+                </button>
+            )}
+            </div>
             {records === null ? (
                 <p className="RecordsPage-none">Loading…</p>
             ) : records === "failed" ? (
@@ -540,7 +646,9 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
             ) : shownTab === "enter" ? (
                 <EnterForm kind={kind} babies={babies} records={records} reload={reload} />
             ) : (
-                <ViewList kind={kind} babies={babies} monkeys={monkeys} records={records} />
+                <div className={charts ? "" : "RecordsPage-noCharts"}>
+                    <ViewList kind={kind} babies={babies} monkeys={monkeys} records={records} />
+                </div>
             )}
         </>
     );

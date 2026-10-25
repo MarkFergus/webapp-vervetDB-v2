@@ -140,12 +140,52 @@
 
 /* ---- Enter / View (the Statistics part picker's look) ---- */
 
+/* Enter / View, and (phones, on View) Charts on the right */
+.RecordsPage-tabRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 14px 0 6px;
+}
+
+.RecordsPage-tabRow:empty {
+    display: none;
+}
+
+.RecordsPage-chartsToggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    margin-left: auto;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* (charts showing: filled in) */
+.RecordsPage-chartsToggle.is-on {
+    color: var(--text);
+    background-color: var(--surface-2);
+}
+
+.RecordsPage-chartsToggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
 .RecordsPage-tabs {
     display: inline-flex;
-    margin: 14px 0 6px;
     padding: 3px;
     background-color: var(--surface-2);
-    border-radius: 999px;
+    border-radius: 8px;
 }
 
 .RecordsPage-tabs button {
@@ -157,7 +197,7 @@
     color: var(--text-2);
     background: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
@@ -495,11 +535,73 @@
 
 /* ---- View: a card for each baby ---- */
 
+/* One card a row: its details on the left half, the quick line on the
+   right (phones: under them) */
 .RecordsPage-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
     gap: 10px;
     margin-top: 8px;
+}
+
+.RecordsPage-cardBody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+}
+
+.RecordsPage-cardMain {
+    min-width: 0;
+}
+
+/* The quick line: one series, no labels (the colour: Statistics' line
+   charts' violet, checked for both themes) */
+.RecordsPage-spark {
+    --spark: #8f84e8;
+    min-width: 0;
+}
+
+:root[data-theme="light"] .RecordsPage-spark {
+    --spark: #6250d6;
+}
+
+.RecordsPage-spark svg {
+    display: block;
+    overflow: visible;
+}
+
+.RecordsPage-sparkLine {
+    fill: none;
+    stroke: var(--spark);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.RecordsPage-sparkArea {
+    fill: var(--spark);
+    opacity: 0.1;
+}
+
+.RecordsPage-sparkDot {
+    fill: var(--spark);
+    stroke: var(--surface-1);
+    stroke-width: 2;
+}
+
+@media (max-width: 699px) {
+    .RecordsPage-cardBody {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .RecordsPage-chartsToggle {
+        display: inline-flex;
+    }
+
+    .RecordsPage-noCharts .RecordsPage-spark {
+        display: none;
+    }
 }
 
 .RecordsPage-card {
@@ -615,6 +717,18 @@
 .RecordsPage-history td {
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+}
+
+/* The totals / weights stand out; the changes beside them are quieter
+   (weights' gains and losses keep their green and amber) */
+.RecordsPage-history .RecordsPage-historyValue {
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.RecordsPage-history td.RecordsPage-delta:not(.is-up):not(.is-down) {
+    font-weight: 500;
+    color: var(--text-3);
 }
 
 .RecordsPage-historyNote {

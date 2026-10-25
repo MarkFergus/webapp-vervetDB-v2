@@ -330,6 +330,20 @@ describe("viewing", () => {
         expect(screen.queryByLabelText("The report")).toBeNull();
     });
 
+    test("(phones) Charts hides the quick lines, and it's remembered", async () => {
+        localStorage.removeItem("vervetdb-records-charts");
+        loadBabyRecords.mockResolvedValue(WEIGHED);
+        const { user } = open("records/baby-care/weights", { canEnter: false });
+        const toggle = await screen.findByRole("button", { name: "Charts" });
+        expect(toggle).toHaveAttribute("aria-pressed", "true");
+        expect(screen.getByRole("img", { name: /^Muse's weights: 2/ }).closest(".RecordsPage-noCharts")).toBeNull();
+        await user.click(toggle);
+        expect(toggle).toHaveAttribute("aria-pressed", "false");
+        expect(screen.getByRole("img", { name: /^Muse's weights: 2/ }).closest(".RecordsPage-noCharts")).not.toBeNull();
+        expect(localStorage.getItem("vervetdb-records-charts")).toBe("hidden");
+        localStorage.removeItem("vervetdb-records-charts");
+    });
+
     test("the records not loading says so", async () => {
         loadBabyRecords.mockRejectedValue(new Error("gone"));
         vi.spyOn(console, "error").mockImplementation(() => {});
