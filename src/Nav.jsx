@@ -62,9 +62,10 @@ function Nav({
     isOfflineOpen,
     toggleOffline,
     onAddMonkey, // admins only: Add New Monkey, at the top of the side rail / ☰ menu
+    showAdmin = false, // admins only: the Admin Dashboard, under Add New Monkey
     onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
     onHome, // the logo: back to the top, search and filters cleared
-    page = "monkeys", // the page showing: "monkeys", "enclosures" or "game"
+    page = "monkeys", // the page showing: "monkeys", "enclosures", "game", "statistics", "admin"…
     showSearch = true, // false: no search box (the game)
     barsInert = false, // a pop-up is open: the side rail and bottom bar wait
     enclosures = [], // the Interactive Map: the places to tap
@@ -223,6 +224,7 @@ function Nav({
                 <>
                     <SideRail
                         onAddMonkey={onAddMonkey}
+                        showAdmin={showAdmin}
                         open={railOpen}
                         onClose={() => setRailOpen(false)}
                         onMap={showMap}
@@ -250,6 +252,7 @@ function Nav({
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}
                         onAddMonkey={onAddMonkey}
+                        showAdmin={showAdmin}
                         onHome={onHome}
                         onMap={showMap}
                         onAddPhotos={onAddPhotos}

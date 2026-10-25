@@ -17,6 +17,7 @@ function fakeSupabase({
     editors = [EDITOR.id],
     admins = [],
     maintenance = [],
+    limited = [],
     noRoleColumn = false,
     names = {},
     resetError = null,
@@ -64,7 +65,13 @@ function fakeSupabase({
                               user_id: id,
                               is_admin: admins.includes(id),
                               ...(!noRoleColumn && {
-                                  role: admins.includes(id) ? "admin" : maintenance.includes(id) ? "maintenance" : "editor",
+                                  role: admins.includes(id)
+                                      ? "admin"
+                                      : maintenance.includes(id)
+                                        ? "maintenance"
+                                        : limited.includes(id)
+                                          ? "limited"
+                                          : "editor",
                               }),
                           }
                         : null,
@@ -168,6 +175,17 @@ test("a maintenance account: an amber MAINTENANCE badge, and that it can log mai
     expect(
         within(dialog()).getByText(
             "You can log maintenance on enclosures and introcages, and download all photos for offline use."
+        )
+    ).toBeInTheDocument();
+});
+
+test("a limited account: a grey LIMITED badge, and that it can see but not change", async () => {
+    const { user, dialog } = setup({ limited: [EDITOR.id] });
+    await signIn(user, EDITOR.email, PASSWORD);
+    await waitFor(() => expect(within(dialog()).getByText("Limited")).toHaveClass("is-limited"));
+    expect(
+        within(dialog()).getByText(
+            "You can see everything staff see, and download all photos for offline use, but can't change anything."
         )
     ).toBeInTheDocument();
 });

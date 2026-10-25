@@ -954,3 +954,23 @@ export async function loadMilkTotals() {
     return data.map((row) => ({ monkeyId: row.monkey_id, date: row.milk_date, ml: row.total_ml, notes: row.notes ?? null }));
 }
 
+
+// ---- The Admin Dashboard (supabase/admin-dashboard.sql, admins only) ----
+
+// Every account: [{ userId, name (null: not set), email, role ("admin",
+// "editor", "maintenance", or null: no access yet) }]
+export async function loadStaff() {
+    const { data, error } = await supabase.rpc("staff_list");
+    if (error) throw error;
+    return data.map((row) => ({ userId: row.user_id, name: row.full_name ?? null, email: row.email, role: row.role ?? null }));
+}
+
+// Gives an account a user type (not your own: the database refuses)
+export async function saveStaffRole(userId, role) {
+    const { error } = await supabase.rpc("set_staff_role", { target: userId, new_role: role });
+    if (error) {
+        console.error("Changing a user type failed:", error);
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an admin?");
+        throw saveProblem(error);
+    }
+}

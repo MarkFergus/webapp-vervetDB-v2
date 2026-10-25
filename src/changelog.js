@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.16.0",
+        date: "2026-10-25",
+        changes: [
+            "New Admin Dashboard (admins only): access rights and staff user types",
+            "Added the Limited user type: see everything staff see, without changing anything",
+            "Improved buttons on monkey cards, Full Profiles and enclosure pages: now icons",
+            "Fixed the side menu staying open after picking a page",
+        ],
+    },
+    {
         version: "1.15.1",
         date: "2026-10-24",
         changes: ["New Baby Care statistics page"],

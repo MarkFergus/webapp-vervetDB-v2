@@ -97,6 +97,20 @@ test("maintenance staff see injuries, but can't add them or mark them healed", a
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
 });
 
+test("limited accounts see injuries, but can't change even their own (staff who wrote one can)", async () => {
+    const mine = [injury(1, { loggedBy: "u-lim", updates: [] })];
+    const WRITER = { canSee: true, canAdd: false, userId: "u-lim", isAdmin: false };
+    loadInjuries.mockResolvedValue(mine);
+    const { unmount } = open(WRITER);
+    expect(await screen.findByText("Cut 1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    unmount();
+    open({ ...WRITER, readOnly: true });
+    expect(await screen.findByText("Cut 1")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+});
+
 test("visitors (not staff) never load injuries", () => {
     open(null);
     expect(loadInjuries).not.toHaveBeenCalled();

@@ -4,12 +4,15 @@ import { loadAvatar } from "./accountPhoto";
 
 // Who's signed in, shared with every page through <AuthProvider>.
 //   user:          the signed-in account (null when signed out)
-//   role:          "admin", "editor", "maintenance", or null (signed out, or
-//                  an account without a role: view only). See supabase/roles.sql.
+//   role:          "admin", "editor", "maintenance", "limited" (sees what
+//                  staff see, changes nothing), or null (signed out, or an
+//                  account without a role: view only). See supabase/roles.sql
+//                  and admin-dashboard.sql.
 //   isEditor:      whether that account may change monkeys (admins and editors)
 //   isAdmin:       whether it may also add and delete them, and change
 //                  enclosure details
-//   canLogMaintenance: whether it may add to the maintenance log (any role)
+//   canLogMaintenance: whether it may add to the maintenance log (any role
+//                  but limited)
 //   name:          the account's full name (set by admins), or null
 //   avatarUrl:     the account's photo (staff add their own), or null;
 //                  setAvatarUrl(url) after changing it
@@ -88,7 +91,7 @@ async function checkRole(user) {
         role,
         isEditor: role === "admin" || role === "editor",
         isAdmin: role === "admin",
-        canLogMaintenance: true,
+        canLogMaintenance: role !== "limited",
     };
 }
 

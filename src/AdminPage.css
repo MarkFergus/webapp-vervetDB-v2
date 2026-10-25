@@ -1,0 +1,247 @@
+/* The Admin Dashboard (AdminPage.jsx): the same page and card look as
+   Statistics (StatisticsPage.css) */
+
+.Admin {
+    box-sizing: border-box;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 12px 64px;
+    font-family: var(--font-ui);
+    color: var(--text);
+}
+
+.Admin-title {
+    margin: 16px 0 0;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--text-strong);
+}
+
+.Admin-intro {
+    margin: 6px 0 16px;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+.Admin-card {
+    margin-bottom: 12px;
+    padding: 14px 16px 16px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Admin-card h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Admin-note {
+    margin: 4px 0 8px;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Admin-note.is-error,
+.Admin-error {
+    color: var(--danger);
+}
+
+.Admin-visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ---- Access: a tick (green) or a dash (grey) for each user type ---- */
+
+.Admin-access {
+    width: 100%;
+    font-size: 14px;
+    border-collapse: collapse;
+}
+
+.Admin-access th,
+.Admin-access td {
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.Admin-access tbody tr:last-child th,
+.Admin-access tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.Admin-access thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+}
+
+.Admin-access tbody th {
+    font-weight: 400;
+    text-align: left;
+    color: var(--text);
+}
+
+/* (the user types' columns: equal, centred) */
+.Admin-access thead th:not(:first-child),
+.Admin-access td {
+    width: 12%;
+    text-align: center;
+}
+
+.Admin-access td svg {
+    vertical-align: middle;
+}
+
+.Admin-yes {
+    color: var(--green);
+}
+
+.Admin-no {
+    color: var(--text-3);
+}
+
+.Admin-access abbr {
+    text-decoration: none;
+}
+
+/* Phones: shorter column names ("Maint.", "Ltd.") and smaller headings */
+.Admin-short {
+    display: none;
+}
+
+@media (max-width: 559px) {
+    .Admin-card {
+        padding: 12px 12px 14px;
+    }
+
+    .Admin-access thead th {
+        font-size: 10px;
+        letter-spacing: 0;
+    }
+
+    .Admin-access th,
+    .Admin-access td {
+        padding: 8px 2px;
+    }
+
+    .Admin-access thead th:not(:first-child),
+    .Admin-access td {
+        width: 13%;
+    }
+
+    .Admin-short {
+        display: inline;
+    }
+
+    .Admin-long {
+        display: none;
+    }
+}
+
+/* ---- Staff: name and email, their user type on the right ---- */
+
+.Admin-count {
+    margin: 2px 0 4px;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Admin-staff {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Admin-person {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.Admin-person:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.Admin-who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.Admin-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.Admin-you {
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+.Admin-email {
+    overflow: hidden;
+    font-size: 13px;
+    color: var(--text-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.Admin-error {
+    margin-top: 2px;
+    font-size: 13px;
+}
+
+/* (the Statistics selector's look) */
+.Admin-role {
+    flex-shrink: 0;
+    height: 36px;
+    min-width: 136px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.Admin-role:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.Admin-role:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+/* "Upgrading to admin is disabled…": above the user type (ConfirmBubble.css),
+   wrapping onto lines */
+.Admin-roleWrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.Admin-bubble {
+    width: 240px;
+    white-space: normal;
+}

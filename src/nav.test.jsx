@@ -72,16 +72,17 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         expect(menuButton()).toHaveFocus();
     });
 
-    test("admins: Add New Monkey on its own at the top, opening the new monkey form", async () => {
+    test("admins: Add New Monkey and Admin Dashboard on their own at the top, Add New Monkey opening the new monkey form", async () => {
         const { user, menuButton } = setup({ signedIn: true, admin: true });
         await screen.findByRole("button", { name: "Account (signed in)" });
         await waitFor(() => expect(screen.getAllByRole("button", { name: "Add New Monkey" }).length).toBeGreaterThan(0));
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
-            "Add New Monkey", "Monkeys", "Enclosures", "Add Photos", "Documents", "Interactive Map", "Statistics", "Scan QR Code",
-            "Monkey Guesser", "Install & Use Offline", "About",
+            "Add New Monkey", "Admin Dashboard", "Monkeys", "Enclosures", "Add Photos", "Documents", "Interactive Map", "Statistics",
+            "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
-        expect(drawer().querySelector(".Drawer-group").textContent).toBe("Add New Monkey");
+        expect(drawer().querySelector(".Drawer-group").textContent).toBe("Add New MonkeyAdmin Dashboard");
+        expect(within(drawer()).getByRole("link", { name: "Admin Dashboard" })).toHaveAttribute("href", "#admin");
         await user.click(within(drawer()).getByRole("button", { name: "Add New Monkey" }));
         expect(drawer()).toBeNull();
         expect(screen.getByRole("dialog", { name: "Add New Monkey" })).toBeInTheDocument();
@@ -192,10 +193,11 @@ describe("computers: the side rail", () => {
         expect(await screen.findByRole("dialog", { name: "Documents" })).toBeInTheDocument();
     });
 
-    test("admins: Add New Monkey on its own at the top (not in the top bar or the account menu)", async () => {
+    test("admins: Add New Monkey and Admin Dashboard on their own at the top (not in the top bar or the account menu)", async () => {
         const { user } = setup({ signedIn: true, admin: true });
         await within(rail()).findByRole("button", { name: "Add New Monkey" });
-        expect(rail().querySelector(".SideRail-group").textContent).toBe("Add New Monkey");
+        expect(rail().querySelector(".SideRail-group").textContent).toBe("Add New MonkeyAdmin Dashboard");
+        expect(within(rail()).getByRole("link", { name: "Admin Dashboard" })).toHaveAttribute("href", "#admin");
         expect(document.querySelector(".Nav-buttons").textContent).not.toMatch(/New/);
         await user.click(screen.getByRole("button", { name: "Account (signed in)" }));
         expect(within(screen.getByRole("menu", { name: "Account" })).queryByRole("menuitem", { name: "Add New Monkey" })).toBeNull();

@@ -6,6 +6,7 @@ import {
     IconFileTypePdf,
     IconHourglassLow,
     IconInfoCircle,
+    IconLayoutDashboard,
     IconMap2,
     IconPhotoPlus,
     IconPlus,
@@ -63,10 +64,11 @@ function ProfileBookIcon({ busy, size }) {
 // then the app.
 //   open / onClose: opened with the ☰
 //   onAddMonkey: admins only: Add New Monkey, on its own at the top
+//   showAdmin: admins only: the Admin Dashboard, under it
 //   onProfileBook, onOffline, onAbout: open those pop-ups; onMap: the
 //   Interactive Map pop-up
 //   onAddPhotos: staff (editors / admins): Add Photos
-export function SideRail({ onAddMonkey, open = false, onClose = () => {}, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
+export function SideRail({ onAddMonkey, showAdmin = false, open = false, onClose = () => {}, page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onOffline, onAbout, inert }) {
     useEffect(() => {
         if (!open) return;
         const handleKeyDown = (event) => event.key === "Escape" && onClose();
@@ -95,9 +97,12 @@ export function SideRail({ onAddMonkey, open = false, onClose = () => {}, page, 
         {/* (opened with the ☰: a tap outside puts it away) */}
         {open && <div className="SideRail-backdrop" onClick={onClose} />}
         <aside className={`SideRail${open ? " is-open" : ""}`} id="SideRail" aria-label="Main menu" inert={inert}>
-            {onAddMonkey && (
+            {/* Admins only */}
+            {(onAddMonkey || showAdmin) && (
                 <div className="SideRail-group">
-                    {button(onAddMonkey, <IconPlus stroke={1.75} size={22} aria-hidden="true" />, "Add New Monkey")}
+                    {onAddMonkey && button(onAddMonkey, <IconPlus stroke={1.75} size={22} aria-hidden="true" />, "Add New Monkey")}
+                    {showAdmin &&
+                        item({ href: "#admin", "aria-current": page === "admin" ? "page" : undefined }, IconLayoutDashboard, "Admin Dashboard")}
                 </div>
             )}
             <div className="SideRail-group">
@@ -190,12 +195,12 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
 // (☰, top left) Everything, in groups with lines between (no headings), like
 // the computers' side rail: Add New Monkey (admins) on its own; the pages;
 // the tools; the app. (The bottom bar is just quick access to some of them.)
-//   onAddMonkey: admins only; onAddPhotos: editors / admins; onProfileBook:
+//   onAddMonkey, showAdmin (the Admin Dashboard): admins only; onAddPhotos: editors / admins; onProfileBook:
 //   staff (any role): Documents; isGeneratingPDF: while one's made
 //   onMap: the Interactive Map; onScan: Scan QR Code (an Introcage Sign's
 //   code → its page)
 export function Drawer({
-    open, onClose, onAddMonkey, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, page, onOffline, onAbout,
+    open, onClose, onAddMonkey, showAdmin = false, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, page, onOffline, onAbout,
 }) {
     const closeRef = useRef(null);
     useDialog(open, closeRef, { onClose });
@@ -227,9 +232,12 @@ export function Drawer({
                     </span>
                     <CloseButton className="Drawer-close" onClick={onClose} ref={closeRef} label="Close menu" />
                 </div>
-                {onAddMonkey && (
+                {/* Admins only */}
+                {(onAddMonkey || showAdmin) && (
                     <div className="Drawer-group">
-                        {button(onAddMonkey, <IconPlus stroke={1.75} size={24} aria-hidden="true" />, "Add New Monkey")}
+                        {onAddMonkey && button(onAddMonkey, <IconPlus stroke={1.75} size={24} aria-hidden="true" />, "Add New Monkey")}
+                        {showAdmin &&
+                            link({ href: "#admin", "aria-current": page === "admin" ? "page" : undefined }, IconLayoutDashboard, "Admin Dashboard")}
                     </div>
                 )}
                 <div className="Drawer-group">

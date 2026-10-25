@@ -38,6 +38,7 @@ import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
 // (only loaded when it's opened: the rest of the app stays as quick)
 const StatisticsPage = lazy(() => import("./StatisticsPage"));
+const AdminPage = lazy(() => import("./AdminPage"));
 import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
 import { amSummary, summaryDate } from "./feeding";
@@ -227,7 +228,8 @@ function ShowPage({
     // page's Records; editors and admins add them (Quick Actions: Sickbay,
     // Introcage, Released, New Injury, Healed?; Integration Reports) and
     // change their own (admins: anyone's)
-    const staff = role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin } : null;
+    // (limited accounts: see it all, change nothing, not even their own)
+    const staff = role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin, readOnly: role === "limited" } : null;
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -313,6 +315,13 @@ function ShowPage({
     const onUpdates = route === "updates";
     // The Statistics page (#statistics)
     const onStats = route === "statistics";
+    // The Admin Dashboard (#admin): admins only; anyone else is sent home
+    // (once we know who's signed in)
+    const onAdmin = route === "admin";
+    const adminLocked = onAdmin && !isAdmin;
+    useEffect(() => {
+        if (adminLocked && ready) window.location.replace("#");
+    }, [adminLocked, ready]);
     // A monkey's full page (#monkeys/<name>-<enclosure>)
     const onMonkeyPage = isMonkeyPageRoute(route);
     const pageMonkey = onMonkeyPage ? monkeyFromPageRoute(route, monkeys) : null;
@@ -325,7 +334,7 @@ function ShowPage({
         window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
     }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onAdmin;
     // The game starts at the top
     useEffect(() => {
         if (onGame || onUpdates || onStats) window.scrollTo?.(0, 0);
@@ -899,10 +908,11 @@ function ShowPage({
                     isOfflineOpen={isOfflineOpen}
                     toggleOffline={() => setIsOfflineOpen((open) => !open)}
                     onAddMonkey={canAdd ? startAdd : undefined}
+                    showAdmin={isAdmin}
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onAdmin ? "admin" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -917,6 +927,13 @@ function ShowPage({
                 <Suspense fallback={<p className="ShowPage-loading">Loading statistics…</p>}>
                     <StatisticsPage monkeys={monkeys} enclosures={enclosures} sections={sections} inert={isAnyModalOpen} />
                 </Suspense>
+            ) : onAdmin ? (
+                // (nothing while checking who's signed in, or leaving)
+                adminLocked ? null : (
+                    <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
+                        <AdminPage inert={isAnyModalOpen} />
+                    </Suspense>
+                )
             ) : onMonkeyPage ? (
                 // (nothing while checking who's signed in, or leaving)
                 pageLocked ? null : (

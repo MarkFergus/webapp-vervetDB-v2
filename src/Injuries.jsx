@@ -31,7 +31,7 @@ const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
 // The injuries of one monkey, loaded when staff open it. available: the
 // database has them (false before injuries.sql, or offline), and this is staff.
-//   staff: { canSee, canAdd, userId, isAdmin } or null
+//   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
 export function useInjuries(monkeyId, staff) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
@@ -73,7 +73,8 @@ export function useInjuries(monkeyId, staff) {
         // Updates: once the database has them (monitoring.sql)
         canAddUpdate: canAdd && injuryUpdatesAvailable(),
         // Admins, or whoever added it (an injury or an update)
-        canChange: (entry) => state.available && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+        canChange: (entry) =>
+            state.available && !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
         async addUpdate(injuryId, values) {
             const saved = await addInjuryUpdate(injuryId, values);
             changeUpdates(injuryId, (list) => [...list, saved]);

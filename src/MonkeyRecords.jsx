@@ -51,12 +51,13 @@ const todayText = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const isWriterOrAdmin = (staff, entry) => Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId));
+const isWriterOrAdmin = (staff, entry) =>
+    !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId));
 
 // One monkey's records, loaded when staff open its page. available: the
 // database has them (false before monkey-records.sql, or offline), and
 // this is staff.
-//   staff: { canSee, canAdd, userId, isAdmin } or null
+//   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
 export function useRecords(monkeyId, staff) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });

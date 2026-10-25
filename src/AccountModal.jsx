@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IconArrowLeft, IconCamera, IconEye, IconHistory, IconKey, IconLogout, IconPencil, IconShieldCheck, IconTool } from "@tabler/icons-react";
+import { IconArrowLeft, IconCamera, IconEye, IconHistory, IconKey, IconLock, IconLogout, IconPencil, IconShieldCheck, IconTool } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
 import { useAuth, MIN_PASSWORD_LENGTH } from "./auth";
@@ -18,9 +18,10 @@ const ROLE_TEXT = {
     admin: "You can add, edit and delete monkeys, upload photos, edit enclosures, log maintenance, and download all photos for offline use.",
     editor: "You can edit monkeys, upload photos, log maintenance, and download all photos for offline use.",
     maintenance: "You can log maintenance on enclosures and introcages, and download all photos for offline use.",
+    limited: "You can see everything staff see, and download all photos for offline use, but can't change anything.",
     viewer: "This account can download all photos for offline use, but can't edit monkeys.",
 };
-const ROLE_NAMES = { admin: "Admin", editor: "Editor", maintenance: "Maintenance", viewer: "Viewer" };
+const ROLE_NAMES = { admin: "Admin", editor: "Editor", maintenance: "Maintenance", limited: "Limited", viewer: "Viewer" };
 
 // The account pop-up. Only accounts created in Supabase exist; there's no
 // public sign-up. What it shows:
@@ -321,7 +322,8 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     {name && <p className="AccountModal-name">{name}</p>}
                     <p className="AccountModal-email">{user.email}</p>
                     {/* What this account can do: Admin (pink), Editor (green),
-                        Maintenance (amber) or Viewer (grey) */}
+                        Maintenance (amber), Limited (grey, a lock) or Viewer
+                        (grey) */}
                     <span className={`AccountModal-badge is-${role}`}>
                         {role === "admin" ? (
                             <IconShieldCheck stroke={2} aria-hidden="true" />
@@ -329,6 +331,8 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                             <IconPencil stroke={2} aria-hidden="true" />
                         ) : role === "maintenance" ? (
                             <IconTool stroke={2} aria-hidden="true" />
+                        ) : role === "limited" ? (
+                            <IconLock stroke={2} aria-hidden="true" />
                         ) : (
                             <IconEye stroke={2} aria-hidden="true" />
                         )}
