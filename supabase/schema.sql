@@ -133,13 +133,14 @@ create policy "Anyone can read monkeys"
     to anon, authenticated
     using (true);
 
--- Only editors can add or change; only admins can delete
-create policy "Editors can add troops"
+-- Troops: admins only (add, change, delete). Monkeys: admins add and
+-- delete, editors change
+create policy "Admins can add troops"
     on public.troops for insert to authenticated
-    with check ((select public.is_editor()));
-create policy "Editors can change troops"
+    with check ((select public.is_admin()));
+create policy "Admins can change troops"
     on public.troops for update to authenticated
-    using ((select public.is_editor())) with check ((select public.is_editor()));
+    using ((select public.is_admin())) with check ((select public.is_admin()));
 create policy "Admins can delete troops"
     on public.troops for delete to authenticated
     using ((select public.is_admin()));
