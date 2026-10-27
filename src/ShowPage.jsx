@@ -9,7 +9,8 @@ import {
     IconSearchOff,
     IconX,
 } from "@tabler/icons-react";
-import { BUILT_IN_DATA, loadCurrentInjuries, loadMonitoringFor, saveRelease, saveWhereabouts, troopHome } from "./monkeyData";
+import { BUILT_IN_DATA, loadCurrentInjuries, loadMonitoringFor, saveRelease, saveStatus, saveWhereabouts, troopHome } from "./monkeyData";
+import { archivePageHash } from "./monkeyStatus";
 import { monitoringNotes } from "./monitoringNotes";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
@@ -317,9 +318,10 @@ function ShowPage({
     const onUpdates = route === "updates";
     // The Statistics page (#statistics)
     const onStats = route === "statistics";
-    // The Admin Dashboard (#admin): admins only; anyone else is sent home
-    // (once we know who's signed in)
-    const onAdmin = route === "admin";
+    // The Admin Dashboard (#admin, and its parts: #admin/staff,
+    // #admin/archive…): admins only; anyone else is sent home (once we know
+    // who's signed in)
+    const onAdmin = route === "admin" || route.startsWith("admin/");
     const adminLocked = onAdmin && !isAdmin;
     useEffect(() => {
         if (adminLocked && ready) window.location.replace("#");
@@ -557,6 +559,21 @@ function ShowPage({
         setIsModalOpen(false);
         leaveAddress();
         setSelectedMonkey(null);
+    }
+    // Status Update (admins): gone from the current records too, so the
+    // pop-up closes. From its page (View Card): on to its archived page.
+    async function handleStatusUpdate(monkey, details) {
+        await saveStatus(monkey.id, details);
+        onMonkeyDeleted(monkey.id);
+        setIsModalOpen(false);
+        setSelectedMonkey(null);
+        if (onMonkeyPage) window.location.replace(archivePageHash(monkey));
+        else leaveAddress();
+    }
+    // Restored from the Monkey Archive: back in the list, and on to its page
+    function handleRestored(monkey) {
+        onMonkeySaved(monkey);
+        window.location.replace(monkeyPageHash(monkey));
     }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
@@ -860,6 +877,10 @@ function ShowPage({
                             ? handleRelease
                             : undefined
                     }
+                    // Status Update: admins, once the database has a status
+                    onStatusUpdate={
+                        canEdit && isAdmin && selectedMonkey?.status !== undefined ? handleStatusUpdate : undefined
+                    }
                     // (only once the database has Sickbay)
                     onWhereabouts={canEdit && selectedMonkey?.inSickbay !== undefined ? handleWhereabouts : undefined}
                     // (only once the database has stays: introcage-stays.sql)
@@ -951,7 +972,7 @@ function ShowPage({
                 // (nothing while checking who's signed in, or leaving)
                 adminLocked ? null : (
                     <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
-                        <AdminPage inert={isAnyModalOpen} />
+                        <AdminPage route={route} staff={staff} onRestored={handleRestored} inert={isAnyModalOpen} />
                     </Suspense>
                 )
             ) : onMonkeyPage ? (

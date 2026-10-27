@@ -25,7 +25,8 @@ const FEEDING_MONKEY_COLUMNS =
 // ...and whether it's in Sickbay (once sickbay.sql has run)
 const SICKBAY_MONKEY_COLUMNS = `${FEEDING_MONKEY_COLUMNS}, in_sickbay, sickbay_since, sickbay_note`;
 // ...and its status (once released-status.sql has run): "sanctuary", or
-// "released" (kept on file, but not loaded)
+// no longer at the sanctuary (kept on file, but only loaded for the Monkey
+// Archive: monkeyStatus.js)
 const STATUS_MONKEY_COLUMNS = `${SICKBAY_MONKEY_COLUMNS}, status`;
 // ...and a stay in an introcage (once introcage-stays.sql has run)
 const STAY_MONKEY_COLUMNS = `${STATUS_MONKEY_COLUMNS}, stay_introcage_id, stay_since, stay_note`;
@@ -109,6 +110,12 @@ export function toAppMonkey(row) {
     }
     // Once the database has a status (see released-status.sql)
     if ("status" in row) monkey.status = row.status;
+    // ...and its latest status change (archived monkeys: monkey-archive.sql;
+    // a release from before it: released_on and release_details)
+    if ("status_on" in row) {
+        monkey.statusOn = row.status_on ?? row.released_on ?? null;
+        monkey.statusDetails = row.status_details ?? row.release_details ?? null;
+    }
     // ...and a species: "vervet", "samango" or "bush_baby" (species.sql)
     if ("species" in row) monkey.species = row.species;
     // ...and a birth date: "2026-11-12" or null (unknown), and whether it's
@@ -222,9 +229,10 @@ async function loadMonkeys() {
     let result;
     for (const columns of COLUMN_SETS) {
         const query = supabase.from("monkeys").select(columns).order("id");
-        // Released monkeys stay on file but don't appear in the app
+        // Monkeys no longer at the sanctuary stay on file but don't appear
+        // in the app (admins can read them: the Monkey Archive)
         const hasStatus = COLUMN_SETS.indexOf(columns) <= COLUMN_SETS.indexOf(STATUS_MONKEY_COLUMNS);
-        result = await (hasStatus ? query.neq("status", "released") : query);
+        result = await (hasStatus ? query.eq("status", "sanctuary") : query);
         if (result.error?.code !== "42703") return { result, columns };
     }
     return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
@@ -389,15 +397,72 @@ export async function saveWhereabouts(id, { at, introcageId = null, since = null
     return toAppMonkey(data);
 }
 
-// Marks a new arrival as released (with the date and a few details): its
-// record stays on file but it no longer appears in the app. Editors.
-export async function saveRelease(id, { date, details = "" }) {
+// A new status, with its date and details (monkey-archive.sql; the
+// database adds its Status record). Leaving the sanctuary: its record stays
+// on file but it no longer appears in the app. Admins; editors only
+// Release to Wild. Back to the sanctuary: returns the monkey (site shape),
+// else null.
+export async function saveStatus(id, { status, date, details = "" }) {
+    const { error } = await supabase.rpc("set_monkey_status", {
+        monkey_id: id,
+        new_status: status,
+        status_on: date,
+        details: details.trim(),
+    });
+    if (error) {
+        // (before monkey-archive.sql: a release as before)
+        if (error.code === "PGRST202" && status === "released") return saveOldRelease(id, { date, details });
+        console.error("Saving the status failed:", error);
+        throw saveProblem(error);
+    }
+    if (status !== "sanctuary") return null;
+    const { data, error: loadError } = await supabase.from("monkeys").select(monkeyColumns).eq("id", id).single();
+    if (loadError) throw saveProblem(loadError);
+    return toAppMonkey(data);
+}
+
+async function saveOldRelease(id, { date, details }) {
     const row = { status: "released", released_on: date, release_details: details.trim() || null };
     const { error } = await supabase.from("monkeys").update(row).eq("id", id);
     if (error) {
         console.error("Saving the release failed:", error);
         throw saveProblem(error);
     }
+    return null;
+}
+
+// Marks a new arrival as released (with the date and a few details).
+// Editors.
+export const saveRelease = (id, { date, details = "" }) => saveStatus(id, { status: "released", date, details });
+
+// The Monkey Archive (admins): every monkey no longer at the sanctuary,
+// each with its status changes (its Status records, newest first: { id,
+// date, details, by }). Throws if the database hasn't got it yet
+// (monkey-archive.sql: error.code "42703"), or this isn't an admin.
+export async function loadArchive() {
+    const { data, error } = await supabase
+        .from("monkeys")
+        .select(`${monkeyColumns}, status_on, status_details, released_on, release_details`)
+        .neq("status", "sanctuary")
+        .order("id");
+    if (error) throw error;
+    const ids = data.map((row) => row.id);
+    const changes = ids.length
+        ? await supabase
+              .from("monkey_records")
+              .select("id, monkey_id, record_date, details, logged_by_name")
+              .eq("category", "status")
+              .in("monkey_id", ids)
+              .order("record_date", { ascending: false })
+              .order("id", { ascending: false })
+        : { data: [] };
+    if (changes.error) throw changes.error;
+    return data.map((row) => ({
+        ...toAppMonkey(row),
+        statusChanges: changes.data
+            .filter((c) => c.monkey_id === row.id)
+            .map((c) => ({ id: c.id, date: c.record_date, details: c.details, by: c.logged_by_name })),
+    }));
 }
 
 // ---- Arrival Info: a new arrival's arrival details (staff only) ----

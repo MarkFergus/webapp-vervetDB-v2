@@ -38,6 +38,8 @@ test("a database row becomes the same shape as the old monkeysArr entries", () =
     expect(toAppMonkey({ ...row, birth_year: 2019 }).year).toBe(2019);
 });
 
+// The filters each query was given: [table, column, value]
+const filters = [];
 // A pretend database: `from(table).select(columns).order(...)` resolves to
 // `results[table]`, or `results[table](columns)` if that's a function
 function fakeDatabase(results) {
@@ -45,8 +47,13 @@ function fakeDatabase(results) {
         select: (columns) => ({
             order: () => {
                 const answer = typeof results[table] === "function" ? results[table](columns) : results[table];
-                // (can be filtered further: .neq)
-                return Object.assign(Promise.resolve(answer), { neq: () => answer });
+                // (can be filtered further: .eq, the monkeys at the sanctuary)
+                return Object.assign(Promise.resolve(answer), {
+                    eq: (...filter) => {
+                        filters.push([table, ...filter]);
+                        return answer;
+                    },
+                });
             },
         }),
     }));
@@ -84,6 +91,9 @@ test("loads troops (All Troops first), monkeys, sections and enclosures", async 
     ]);
     const [bobo, inC1] = data.monkeys;
     expect(bobo).toMatchObject({ troop: "H&B", introcage: null, introcageId: null, enclosure: "H&B" });
+    // Only the monkeys at the sanctuary (admins can read the archived ones
+    // too: they're only for the Monkey Archive)
+    expect(filters).toContainEqual(["monkeys", "status", "sanctuary"]);
     // In an introcage: no troop, beside the H&B enclosure
     expect(inC1).toMatchObject({ name: "Aroha", troop: null, introcage: "H&B C1", introcageId: 41, enclosure: "H&B" });
 });

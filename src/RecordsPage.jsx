@@ -4,7 +4,6 @@ import {
     IconBottle,
     IconChartLine,
     IconChevronDown,
-    IconChevronRight,
     IconCopy,
     IconMinus,
     IconPlus,
@@ -29,6 +28,7 @@ import {
     startDay,
     weightReport,
 } from "./babyRecords";
+import { Choice, Crumbs } from "./PagePicker";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
@@ -656,23 +656,6 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
 
 // ---- The page: the team, what to record, then Enter / View ----
 
-function Choice({ href, Icon, title, sub }) {
-    return (
-        <li>
-            <a className="RecordsPage-choice" href={href}>
-                <span className="RecordsPage-choiceIcon">
-                    <Icon size={24} stroke={1.75} aria-hidden="true" />
-                </span>
-                <span className="RecordsPage-choiceText">
-                    <span className="RecordsPage-choiceTitle">{title}</span>
-                    {sub && <span className="RecordsPage-choiceSub">{sub}</span>}
-                </span>
-                <IconChevronRight size={20} aria-hidden="true" className="RecordsPage-choiceArrow" />
-            </a>
-        </li>
-    );
-}
-
 function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnter = false, inert = false }) {
     const { team, kind } = parseRecordsRoute(route);
     const crumbs = [
@@ -683,16 +666,7 @@ function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnte
     const title = crumbs.at(-1).label;
     return (
         <div className="RecordsPage" inert={inert}>
-            {crumbs.length > 1 && (
-                <nav className="RecordsPage-crumbs" aria-label="Breadcrumb">
-                    {crumbs.slice(0, -1).map((c) => (
-                        <span key={c.href}>
-                            <a href={c.href}>{c.label}</a>
-                            <IconChevronRight size={14} aria-hidden="true" />
-                        </span>
-                    ))}
-                </nav>
-            )}
+            <Crumbs crumbs={crumbs} />
             <h1 className="RecordsPage-title">{title}</h1>
             {!team ? (
                 <>

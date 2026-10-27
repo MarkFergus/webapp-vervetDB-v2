@@ -19,6 +19,11 @@
     color: var(--text-strong);
 }
 
+/* (under the way back: Admin Dashboard ›) */
+.RecordsPage-crumbs + .Admin-title {
+    margin-top: 4px;
+}
+
 .Admin-intro {
     margin: 6px 0 16px;
     font-size: 15px;

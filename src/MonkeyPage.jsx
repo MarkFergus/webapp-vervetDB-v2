@@ -13,6 +13,7 @@ import {
     IconCurrentLocation,
     IconPencil,
     IconRosetteDiscountCheck,
+    IconArchive,
     IconReportMedical,
     IconFriends,
     IconUserCircle,
@@ -24,11 +25,13 @@ import { useInjuries } from "./Injuries";
 import { IntegrationRecords, RecordList, otherRows, useRecords } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
 import { ageInYears } from "./ages";
-import { homeName, staying } from "./places";
+import { fullName, homeName, staying } from "./places";
 import PlaceName from "./PlaceName";
 import BenchTreeIcon from "./BenchTreeIcon";
 import { SPECIES } from "./species";
 import { summaryDate } from "./feeding";
+import { STATUS_WORDS, isArchived } from "./monkeyStatus";
+import StatusUpdate from "./StatusUpdate";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
 
@@ -56,7 +59,6 @@ function ageWords(year) {
 }
 
 const SEX_WORDS = { male: "Male", female: "Female" };
-const STATUS_WORDS = { sanctuary: "Sanctuary", released: "Released" };
 
 // Its home, in full: "Gismo Troop" or "Holt & Barrington C1" (a long name
 // wraps after the "&", never part-way through: PlaceName)
@@ -111,7 +113,11 @@ function Tabs({ tab, onTab }) {
 //   live), or null: Rehabilitation and Medical are staff only
 // onEdit(monkey): editors only (the Edit button)
 // onOpenCard(monkey): View Card, its pop-up
-function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert }) {
+// An archived monkey (the Monkey Archive, admins: AdminPage.jsx): back to
+// the archive (back: { href, label }), a banner with its status, and
+// Status Update (onStatusUpdate(monkey, { status, date, details }), async;
+// statusChoices: the statuses it can change to)
+function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices }) {
     // (a new page starts at the top)
     useEffect(() => {
         window.scrollTo?.(0, 0);
@@ -120,15 +126,45 @@ function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert }) {
     if (!monkey) {
         return (
             <div className="Enclosures MonkeyPage" inert={inert}>
-                <BackLink href="#" label="Monkeys" />
-                <p className="Enclosures-missing">That monkey couldn't be found. It may have been renamed or removed.</p>
+                <BackLink href={back?.href ?? "#"} label={back?.label ?? "Monkeys"} />
+                <p className="Enclosures-missing">That monkey couldn't be found. It may have been renamed, or is no longer in the current records.</p>
             </div>
         );
     }
-    return <MonkeyRecord key={monkey.id ?? monkey.name} monkey={monkey} staff={staff} onEdit={onEdit} onOpenCard={onOpenCard} inert={inert} />;
+    return (
+        <MonkeyRecord
+            key={monkey.id ?? monkey.name}
+            monkey={monkey}
+            staff={staff}
+            onEdit={onEdit}
+            onOpenCard={onOpenCard}
+            inert={inert}
+            back={back}
+            onStatusUpdate={onStatusUpdate}
+            statusChoices={statusChoices}
+        />
+    );
 }
 
-function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
+// An archived monkey's status, at the top: "Deceased · 3rd Oct 2026", and
+// what happened
+function StatusBanner({ monkey }) {
+    return (
+        <div className={`MonkeyPage-status is-${monkey.status}`} role="note">
+            <IconArchive size={20} stroke={1.75} aria-hidden="true" />
+            <div>
+                <p className="MonkeyPage-statusLine">
+                    <strong>{STATUS_WORDS[monkey.status] ?? monkey.status}</strong>
+                    {monkey.statusOn && ` · ${dayText(monkey.statusOn)}`}
+                    <span className="MonkeyPage-statusWhere"> · In the Monkey Archive</span>
+                </p>
+                {monkey.statusDetails && <p className="MonkeyPage-statusDetails">{monkey.statusDetails}</p>}
+            </div>
+        </div>
+    );
+}
+
+function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [] }) {
     const isStaff = Boolean(staff?.canSee);
     const integration = useIntegration(monkey.id, staff);
     const injuries = useInjuries(monkey.id, staff);
@@ -137,6 +173,9 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
     const records = useRecords(monkey.id, staff);
     // The Records tab showing
     const [tab, setTab] = useState("rehabilitation");
+    // Status Update's form open (archived monkeys, admins)
+    const [statusOpen, setStatusOpen] = useState(false);
+    const archived = isArchived(monkey);
     // Which folding parts are open: both to start with
     const [open, setOpen] = useState({ arrival: true, records: true });
     const foldProps = (key) => ({
@@ -226,7 +265,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
         <div className="Enclosures MonkeyPage" inert={inert}>
             <article className="Enclosures-record">
                 <div className="Enclosures-topRow">
-                    <BackLink href="#" label="Monkeys" />
+                    <BackLink href={back?.href ?? "#"} label={back?.label ?? "Monkeys"} />
                 </div>
                 <div className="Enclosures-heading">
                     <div className="Enclosures-titleRow">
@@ -245,8 +284,35 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
                                     <span className="Modal-editLabel">Edit</span>
                                 </button>
                             )}
+                            {onStatusUpdate && statusChoices.length > 0 && (
+                                <button
+                                    type="button"
+                                    className="Modal-edit is-soft is-icon Enclosures-edit"
+                                    onClick={() => setStatusOpen((o) => !o)}
+                                    aria-expanded={statusOpen}
+                                    title="Status Update"
+                                >
+                                    <IconRosetteDiscountCheck size={18} aria-hidden="true" />
+                                    <span className="Modal-editLabel">Status Update</span>
+                                </button>
+                            )}
                         </div>
                     </div>
+                    {archived && <StatusBanner monkey={monkey} />}
+                    {statusOpen && (
+                        <div className="MonkeyPage-statusPanel">
+                            <StatusUpdate
+                                name={monkey.name}
+                                choices={statusChoices}
+                                home={monkey.introcage ? fullName(monkey.introcage) : monkey.troop ? `${fullName(monkey.troop)} Troop` : null}
+                                onSave={async (values) => {
+                                    await onStatusUpdate(monkey, values);
+                                    setStatusOpen(false);
+                                }}
+                                onCancel={() => setStatusOpen(false)}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <SectionNav jumps={jumps} onJump={jump} refresh={tab} />

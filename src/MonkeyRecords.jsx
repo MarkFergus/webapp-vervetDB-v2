@@ -43,6 +43,13 @@ export const SECTIONS = {
     },
 };
 
+// Records only the database adds, never in the drop-down: a Status record
+// for each status change (monkey-archive.sql)
+const ADDED_BY_DATABASE = { status: "Status" };
+// ...which, like Movement records, are never changed, and only admins
+// delete one
+const isLog = (entry) => entry.category === "movement" || entry.category === "status";
+
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
 // Today as the date box wants it ("2026-10-21")
@@ -81,12 +88,11 @@ export function useRecords(monkeyId, staff) {
         available: state.available,
         entries: state.entries,
         canAdd: NEW_RECORDS_OPEN && state.available && Boolean(staff?.canAdd),
-        // Admins, or whoever wrote it. A Movement record is a log of what
-        // happened: never changed, and only admins delete one
-        // (movement-records.sql)
-        canEdit: (entry) => state.available && entry.category !== "movement" && isWriterOrAdmin(staff, entry),
-        canDelete: (entry) =>
-            state.available && Boolean(staff?.isAdmin || (entry.category !== "movement" && isWriterOrAdmin(staff, entry))),
+        // Admins, or whoever wrote it. A Movement or Status record is a log
+        // of what happened: never changed, and only admins delete one
+        // (movement-records.sql, monkey-archive.sql)
+        canEdit: (entry) => state.available && !isLog(entry) && isWriterOrAdmin(staff, entry),
+        canDelete: (entry) => state.available && Boolean(staff?.isAdmin || (!isLog(entry) && isWriterOrAdmin(staff, entry))),
         async add(values) {
             const saved = await addRecord(monkeyId, values);
             change((list) => [...list, saved]);
@@ -306,7 +312,7 @@ export function RecordList({ section, records, others }) {
                                     {dayText(row.date)}
                                 </span>
                                 <span role="cell">
-                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? row.category}</span>
+                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? ADDED_BY_DATABASE[row.category] ?? row.category}</span>
                                 </span>
                                 <span className="Records-details" role="cell">
                                     <span className="Records-text">{row.details}</span>

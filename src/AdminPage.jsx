@@ -1,15 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconCheck, IconMinus } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconMinus, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
-import { loadStaff, saveStaffRole } from "./monkeyData";
+import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
+import { Choice, Crumbs } from "./PagePicker";
+import { ArchiveList, useArchive } from "./MonkeyArchive";
+import MonkeyPage from "./MonkeyPage";
+import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
 import "./AdminPage.css";
 
 // The Admin Dashboard (#admin, admins only: from the side rail / ☰ menu,
-// under Add New Monkey). For now: who can do what (each user type), and
-// every staff account, with its user type to change. Nobody can be made an
-// admin here (Mark does that). (The database checks both too:
-// supabase/admin-dashboard.sql.)
+// under Add New Monkey): a choice of parts, like the Records page.
+//   Staff Access (#admin/staff)     who can do what (each user type), and
+//                                   every staff account, with its user type
+//                                   to change. Nobody can be made an admin
+//                                   here (Mark does that). (The database
+//                                   checks both too: admin-dashboard.sql.)
+//   Monkey Archive (#admin/archive) the monkeys no longer at the sanctuary
+//                                   (MonkeyArchive.jsx); each one's Full
+//                                   Profile (#admin/archive/<name>-<id>),
+//                                   with Status Update to change its status
+//                                   or restore it (monkey-archive.sql)
 
 // The user types, in the table's order (visitors: not signed in)
 export const USER_TYPES = [
@@ -42,6 +53,7 @@ export const ACCESS = [
     { what: "Add and delete monkeys", who: ["admin"] },
     { what: "Enclosure details and troops", who: ["admin"] },
     { what: "Change or delete anyone's records", who: ["admin"] },
+    { what: "Status Update and the Monkey Archive", who: ["admin"] },
     { what: "Admin Dashboard: user types", who: ["admin"] },
 ];
 
@@ -204,11 +216,21 @@ function StaffList() {
     );
 }
 
-function AdminPage({ inert = false }) {
+const PARTS = [
+    { id: "staff", title: "Staff Access", sub: "What each user type can do, and every account's user type", Icon: IconUsers },
+    { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
+];
+
+// "admin" → no part (the choices); "admin/staff"; "admin/archive" and an
+// archived monkey's page ("admin/archive/poppy-12": its id)
+function parseAdminRoute(route) {
+    const [, partId] = route.split("/");
+    return { part: PARTS.find((p) => p.id === partId) ?? null, archiveId: archiveIdFromRoute(route) };
+}
+
+function StaffAccess() {
     return (
-        <div className="Admin" inert={inert}>
-            <h1 className="Admin-title">Admin Dashboard</h1>
-            <p className="Admin-intro">For admins only.</p>
+        <>
             <section className="Admin-card" aria-labelledby="Admin-accessTitle">
                 <h2 id="Admin-accessTitle">Access</h2>
                 <p className="Admin-note">
@@ -221,6 +243,72 @@ function AdminPage({ inert = false }) {
                 <h2 id="Admin-staffTitle">Staff</h2>
                 <StaffList />
             </section>
+        </>
+    );
+}
+
+// An archived monkey's Full Profile, with Status Update: any other status,
+// or back to the sanctuary (then it's in the list again: onRestored)
+function ArchivedMonkey({ archive, id, staff, onRestored, inert }) {
+    const back = { href: `#${ARCHIVE_ROUTE}`, label: "Monkey Archive" };
+    if (archive.list === null) return <p className="Admin-note">Loading…</p>;
+    const monkey = Array.isArray(archive.list) ? (archive.list.find((m) => m.id === id) ?? null) : null;
+    const choices = monkey ? Object.keys(STATUS_WORDS).filter((s) => s !== monkey.status) : [];
+    return (
+        <MonkeyPage
+            // (a new status: its page again, with its new Status record)
+            key={monkey ? `${monkey.id}-${monkey.status}-${monkey.statusChanges?.length ?? 0}` : "none"}
+            monkey={monkey}
+            staff={staff}
+            back={back}
+            inert={inert}
+            statusChoices={choices}
+            onStatusUpdate={async (m, values) => {
+                const restored = await saveStatus(m.id, values);
+                await archive.reload();
+                if (restored) onRestored?.(restored);
+            }}
+        />
+    );
+}
+
+// route: "admin", "admin/staff", "admin/archive"…
+// staff: as MonkeyPage's (for an archived monkey's records)
+// onRestored(monkey): one restored to the sanctuary
+function AdminPage({ route = "admin", staff = null, onRestored, inert = false }) {
+    const { part, archiveId } = parseAdminRoute(route);
+    const archive = useArchive(part?.id === "archive");
+    // An archived monkey's page: its Full Profile, as for any monkey
+    if (archiveId !== null) {
+        return <ArchivedMonkey archive={archive} id={archiveId} staff={staff} onRestored={onRestored} inert={inert} />;
+    }
+    const crumbs = [{ href: "#admin", label: "Admin Dashboard" }, ...(part ? [{ label: part.title }] : [])];
+    return (
+        <div className="Admin" inert={inert}>
+            <Crumbs crumbs={crumbs} />
+            <h1 className="Admin-title">{crumbs.at(-1).label}</h1>
+            {!part ? (
+                <>
+                    <p className="Admin-intro">For admins only.</p>
+                    <ul className="RecordsPage-choices">
+                        {PARTS.map((p) => (
+                            <Choice key={p.id} href={`#admin/${p.id}`} Icon={p.Icon} title={p.title} sub={p.sub} />
+                        ))}
+                    </ul>
+                </>
+            ) : part.id === "staff" ? (
+                <>
+                    <p className="Admin-intro">For admins only.</p>
+                    <StaffAccess />
+                </>
+            ) : (
+                <>
+                    <p className="Admin-intro">Monkeys no longer at the sanctuary. Their records stay on file.</p>
+                    <section className="Admin-card" aria-label="Monkey Archive">
+                        <ArchiveList list={archive.list} />
+                    </section>
+                </>
+            )}
         </div>
     );
 }

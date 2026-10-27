@@ -2,7 +2,8 @@
 -- Team", to match "Sickbay": both are the areas responsible for feeding.
 -- Only the words change (the history, My Changes, the summary email): the
 -- saved value is still 'local_team'. Old history rows show the new words too.
--- (The same function as in introcage-stays.sql, with that one word changed.)
+-- (The same function as in introcage-stays.sql, with that one word changed,
+-- and the status words for monkey-archive.sql: either file can run first.)
 --
 -- Run once in Supabase: SQL Editor → New query → paste all of this → Run.
 -- (If asked about RLS, choose the option that runs WITHOUT adding RLS.)
@@ -30,11 +31,12 @@ as $$
             when r ->> 'chip' = '' then 'No Chip'
             else r ->> 'chip'
         end
-        -- Status: only once released-status.sql has run (older history rows don't have it)
+        -- Status: only once released-status.sql has run (older history rows
+        -- don't have it). Sanctuary, Released, and (monkey-archive.sql)
+        -- Deceased, Escaped, Missing
         when field = 'status' then case
             when r is null or not (r ? 'status') then null
-            when r ->> 'status' = 'released' then 'Released'
-            else 'Sanctuary'
+            else initcap(r ->> 'status')
         end
         -- In Sickbay: only once sickbay.sql has run (older history rows don't have it)
         when field = 'in_sickbay' then case

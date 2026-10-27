@@ -1,5 +1,6 @@
-// The Admin Dashboard (#admin): who can do what, and every staff account
-// with its user type to change (admins only)
+// The Admin Dashboard (#admin): its parts; Staff Access (#admin/staff): who
+// can do what, and every staff account with its user type to change
+// (admins only). The Monkey Archive: archive.test.jsx
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { supabase } from "./supabase";
@@ -38,9 +39,34 @@ afterEach(() => {
 const renderPage = () =>
     render(
         <AuthProvider>
-            <AdminPage />
+            <AdminPage route="admin/staff" />
         </AuthProvider>
     );
+
+describe("the dashboard's parts", () => {
+    test("Staff Access first, then the Monkey Archive, each its own page", () => {
+        fakeSupabase();
+        render(
+            <AuthProvider>
+                <AdminPage route="admin" />
+            </AuthProvider>
+        );
+        expect(screen.getByRole("heading", { level: 1, name: "Admin Dashboard" })).toBeInTheDocument();
+        const links = screen.getAllByRole("link");
+        expect(links.map((a) => a.getAttribute("href"))).toEqual(["#admin/staff", "#admin/archive"]);
+        expect(links[0]).toHaveTextContent("Staff Access");
+        expect(links[1]).toHaveTextContent("Monkey Archive");
+        // (the staff list isn't loaded until its page)
+        expect(screen.queryByRole("table")).toBeNull();
+    });
+
+    test("Staff Access: the way back to the dashboard", () => {
+        fakeSupabase();
+        renderPage();
+        expect(screen.getByRole("heading", { level: 1, name: "Staff Access" })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Admin Dashboard" })).toHaveAttribute("href", "#admin");
+    });
+});
 
 describe("Access", () => {
     test("a tick or a dash for each user type, in order", () => {
@@ -167,6 +193,17 @@ describe("#admin", () => {
         );
         await waitFor(() => expect(window.location.hash).toBe(""));
         expect(screen.queryByRole("heading", { name: "Admin Dashboard" })).toBeNull();
+    });
+
+    test("its parts too: an archived monkey's page", async () => {
+        fakeSupabase({ admin: false });
+        window.location.hash = "#admin/archive/poppy-12";
+        render(
+            <AuthProvider>
+                <ShowPage route="admin/archive/poppy-12" editable />
+            </AuthProvider>
+        );
+        await waitFor(() => expect(window.location.hash).toBe(""));
     });
 });
 

@@ -255,3 +255,80 @@
         white-space: normal;
     }
 }
+
+/* ---- An archived monkey (the Monkey Archive, admins) ---- */
+
+/* Its status at the top: "Deceased · 3rd Oct 2026", then what happened.
+   The status's colour on the icon and a thin outline (as the archive
+   list's pills) */
+.MonkeyPage-status {
+    --status: var(--text-3);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid color-mix(in srgb, var(--status) 45%, var(--line));
+    border-radius: 8px;
+}
+
+.MonkeyPage-status > svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--status);
+}
+
+.MonkeyPage-status.is-escaped {
+    --status: var(--orange-text);
+}
+
+.MonkeyPage-status.is-missing {
+    --status: var(--amber-text);
+}
+
+.MonkeyPage-status.is-released {
+    --status: var(--green);
+}
+
+.MonkeyPage-statusLine {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.MonkeyPage-statusLine strong {
+    color: var(--text-strong);
+}
+
+.MonkeyPage-statusWhere {
+    color: var(--text-3);
+}
+
+.MonkeyPage-statusDetails {
+    margin: 4px 0 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-2);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* Status Update's form, under the heading (the Quick Actions forms' look:
+   the app's blue border) */
+.MonkeyPage-statusPanel {
+    box-sizing: border-box;
+    max-width: 420px;
+    margin: 12px 0 0 auto;
+    padding: 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px var(--shadow);
+}
+
+.MonkeyPage-statusPanel .Modal-sickbayForm input,
+.MonkeyPage-statusPanel .Modal-sickbayForm select,
+.MonkeyPage-statusPanel .Modal-sickbayForm textarea {
+    max-width: none;
+}
