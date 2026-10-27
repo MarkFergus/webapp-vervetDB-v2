@@ -65,7 +65,9 @@ const isWriterOrAdmin = (staff, entry) =>
 // database has them (false before monkey-records.sql, or offline), and
 // this is staff.
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
-export function useRecords(monkeyId, staff) {
+//   newOpen: "+ New … Record" on (an archived monkey's, for admins: details
+//   added afterwards), else as NEW_RECORDS_OPEN
+export function useRecords(monkeyId, staff, newOpen = NEW_RECORDS_OPEN) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
     useEffect(() => {
@@ -87,7 +89,7 @@ export function useRecords(monkeyId, staff) {
     return {
         available: state.available,
         entries: state.entries,
-        canAdd: NEW_RECORDS_OPEN && state.available && Boolean(staff?.canAdd),
+        canAdd: newOpen && state.available && Boolean(staff?.canAdd),
         // Admins, or whoever wrote it. A Movement or Status record is a log
         // of what happened: never changed, and only admins delete one
         // (movement-records.sql, monkey-archive.sql)

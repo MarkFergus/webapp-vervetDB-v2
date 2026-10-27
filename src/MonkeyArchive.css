@@ -140,17 +140,16 @@
     line-height: 1.3;
 }
 
-/* The name, in the display font as on the cards; its link covers the whole
-   row (the + sits above it) */
+/* The name, in the display font as on the cards, all of it (a long one
+   wraps); its link covers the whole row (the + sits above it) */
 .Archive-link {
-    overflow: hidden;
     font-family: var(--font-display);
     font-size: 15px;
     font-weight: 700;
+    line-height: 1.25;
     color: var(--text-strong);
     text-decoration: none;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .Archive-link::after {
@@ -360,8 +359,9 @@
    keep the phones' rows) */
 @media (min-width: 920px) {
     .Archive-row {
-        grid-template-columns: 56px minmax(110px, 1.4fr) minmax(90px, 1.2fr) 80px 80px minmax(80px, 1fr) 112px 88px 32px;
-        gap: 12px;
+        /* the name the most room; Sex just its symbol, Born the year */
+        grid-template-columns: 56px minmax(150px, 2.2fr) minmax(90px, 1fr) 32px 44px minmax(70px, 0.8fr) 104px 84px 32px;
+        gap: 10px;
         padding: 6px 8px;
         color: var(--text);
     }
@@ -399,5 +399,13 @@
     .Archive-chip {
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .Archive-sex {
+        justify-content: center;
+    }
+
+    .Archive-header .Archive-sex {
+        text-align: center;
     }
 }

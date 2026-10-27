@@ -31,6 +31,7 @@ import BenchTreeIcon from "./BenchTreeIcon";
 import { SPECIES } from "./species";
 import { summaryDate } from "./feeding";
 import { STATUS_WORDS, isArchived } from "./monkeyStatus";
+import { ARRIVAL_REASONS } from "./arrival";
 import StatusUpdate from "./StatusUpdate";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
@@ -170,12 +171,14 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const injuries = useInjuries(monkey.id, staff);
     // Its Arrival Details (staff; written in Add New Monkey or Edit)
     const arrival = useArrivalInfo(monkey.id, isStaff);
-    const records = useRecords(monkey.id, staff);
+    const archived = isArchived(monkey);
+    // (an archived monkey: admins can add records too, e.g. what's found
+    // out afterwards; editing and deleting are as for any monkey)
+    const records = useRecords(monkey.id, staff, archived ? Boolean(staff?.isAdmin) : undefined);
     // The Records tab showing
     const [tab, setTab] = useState("rehabilitation");
     // Status Update's form open (archived monkeys, admins)
     const [statusOpen, setStatusOpen] = useState(false);
-    const archived = isArchived(monkey);
     // Which folding parts are open: both to start with
     const [open, setOpen] = useState({ arrival: true, records: true });
     const foldProps = (key) => ({
@@ -254,10 +257,11 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
             wide: true,
         },
     ]);
-    // Arrival: not recorded yet (Orphaned, Injured, Confiscated, Handover)
+    // Arrival: its date and reason (new arrivals, once the database has
+    // them: arrival-details.sql); Area of Origin not recorded yet
     const detailRows = inPairs([
-        { icon: IconCalendar, label: "Arrival Date", value: null },
-        { icon: IconFlag, label: "Arrival Reason", value: null },
+        { icon: IconCalendar, label: "Arrival Date", value: monkey.arrivalDate ? dayText(monkey.arrivalDate) : null },
+        { icon: IconFlag, label: "Arrival Reason", value: ARRIVAL_REASONS[monkey.arrivalReason] ?? null },
         { icon: IconWorldPin, label: "Area of Origin", value: null, wide: true },
     ]);
 

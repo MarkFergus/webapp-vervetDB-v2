@@ -259,8 +259,8 @@
 /* ---- An archived monkey (the Monkey Archive, admins) ---- */
 
 /* Its status at the top: "Deceased · 3rd Oct 2026", then what happened.
-   The status's colour on the icon and a thin outline (as the archive
-   list's pills) */
+   A pink border, so it stands out (the user's choice); the status's colour
+   on the icon (as the archive list's pills) */
 .MonkeyPage-status {
     --status: var(--text-3);
     display: flex;
@@ -269,7 +269,7 @@
     margin-top: 12px;
     padding: 10px 14px;
     background-color: var(--surface-1);
-    border: 1px solid color-mix(in srgb, var(--status) 45%, var(--line));
+    border: 1px solid var(--pink);
     border-radius: 8px;
 }
 

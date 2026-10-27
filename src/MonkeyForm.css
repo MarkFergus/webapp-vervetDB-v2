@@ -643,6 +643,12 @@
         flex-wrap: wrap;
         row-gap: 4px;
     }
+
+    /* Arrival Date and Arrival Reason: a label on two lines ("Arrival
+       Reason (required)") takes the room above, so the boxes still line up */
+    .MonkeyForm-row.is-lined .MonkeyForm-field > span:first-child {
+        flex-grow: 1;
+    }
 }
 
 /* Adding: New Arrival | Other, a segmented bar (one joined pill, so it reads

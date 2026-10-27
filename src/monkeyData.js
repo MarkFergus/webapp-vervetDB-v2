@@ -34,10 +34,12 @@ const STAY_MONKEY_COLUMNS = `${STATUS_MONKEY_COLUMNS}, stay_introcage_id, stay_s
 const SPECIES_MONKEY_COLUMNS = `${STAY_MONKEY_COLUMNS}, species`;
 // ...and its birth date (once birth-date.sql has run)
 const BIRTH_MONKEY_COLUMNS = `${SPECIES_MONKEY_COLUMNS}, birth_date, birth_date_approx`;
+// ...and its arrival date and reason (once arrival-details.sql has run)
+const ARRIVAL_MONKEY_COLUMNS = `${BIRTH_MONKEY_COLUMNS}, arrival_date, arrival_reason`;
 // Newest first: each set has all the ones after it (loadMonkeys tries them
 // in turn)
 const COLUMN_SETS = [
-    BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
+    ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
     FEEDING_MONKEY_COLUMNS,
 ];
 // Whether the database's set includes `columns` (the newer ones do)
@@ -48,6 +50,8 @@ let monkeyColumns = NEW_MONKEY_COLUMNS;
 export const speciesAvailable = () => has(SPECIES_MONKEY_COLUMNS);
 // ...and a birth date (birth-date.sql has run)
 export const birthDateAvailable = () => has(BIRTH_MONKEY_COLUMNS);
+// ...and an arrival date and reason (arrival-details.sql has run)
+export const arrivalDetailsAvailable = () => has(ARRIVAL_MONKEY_COLUMNS);
 
 // Looking up places while turning rows into monkeys: enclosures by id, and
 // each troop's home enclosure. Set by loadMonkeyData (built-in until then).
@@ -124,6 +128,12 @@ export function toAppMonkey(row) {
         monkey.birthDate = row.birth_date;
         monkey.birthDateApprox = row.birth_date_approx;
     }
+    // ...and an arrival date ("2026-10-27") and reason ("orphaned"), or null
+    // (not recorded): arrival-details.sql
+    if ("arrival_date" in row) {
+        monkey.arrivalDate = row.arrival_date;
+        monkey.arrivalReason = row.arrival_reason;
+    }
     // Once the database has stays (see introcage-stays.sql): the introcage
     // it's staying in for now, or null (at home)
     if ("stay_introcage_id" in row) {
@@ -162,6 +172,11 @@ export function toDatabaseRow(monkey, troopIds) {
     if (monkey.birthDate !== undefined) {
         row.birth_date = monkey.birthDate || null;
         row.birth_date_approx = Boolean(monkey.birthDate && monkey.birthDateApprox);
+    }
+    // (a new arrival's arrival date and reason: asked only when adding one)
+    if (monkey.arrivalDate !== undefined) {
+        row.arrival_date = monkey.arrivalDate || null;
+        row.arrival_reason = monkey.arrivalReason || null;
     }
     // (a stay ends once its introcage becomes home: a move made in Edit)
     if (monkey.stay && monkey.stay.id === monkey.introcageId) {

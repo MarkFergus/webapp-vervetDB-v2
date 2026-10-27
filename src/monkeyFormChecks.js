@@ -36,6 +36,11 @@ export function formFromMonkey(monkey, choices = []) {
         feeding: monkey.feeding && { ...monkey.feeding },
         // undefined: the database has no species yet (so it isn't saved)
         species: monkey.species,
+        // ...or arrival dates and reasons: "" = not recorded
+        ...(monkey.arrivalDate !== undefined && {
+            arrivalDate: monkey.arrivalDate ?? "",
+            arrivalReason: monkey.arrivalReason ?? "",
+        }),
         // ...or birth dates: "" = unknown
         ...(monkey.birthDate !== undefined && {
             birthDate: monkey.birthDate ?? "",
@@ -127,6 +132,21 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
         }
     }
 
+    // Its arrival date (not in the future) and reason, once the database has
+    // them: both needed for a new arrival (arrivalRequired); in Edit, either
+    // can be left blank (older monkeys: not recorded)
+    if (form.arrivalDate !== undefined) {
+        const today = new Date();
+        const todayText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const given = Boolean(form.arrivalDate);
+        if ((given || form.arrivalRequired) && (!/^\d{4}-\d{2}-\d{2}$/.test(form.arrivalDate) || form.arrivalDate > todayText)) {
+            errors.arrivalDate = form.arrivalRequired
+                ? "Please enter the arrival date (not in the future)."
+                : "Arrival date should be a real date, not in the future, or left blank if not recorded.";
+        }
+        if (form.arrivalRequired && !form.arrivalReason) errors.arrivalReason = "Please choose the arrival reason.";
+    }
+
     // Unknown chip: saved as null, whatever's in the box
     const chipResult = form.chipUnknown ? { chip: null } : tidyChip(form.chip);
     if (chipResult.error) errors.chip = chipResult.error;
@@ -155,6 +175,7 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
             // something in an introcage), so a move back finds it again
             ...(form.feeding && { feeding: form.feeding }),
             ...(form.species !== undefined && { species: form.species }),
+            ...(form.arrivalDate !== undefined && { arrivalDate: form.arrivalDate, arrivalReason: form.arrivalReason }),
             ...(form.birthDate !== undefined && {
                 birthDate: birthDate || null,
                 birthDateApprox: Boolean(birthDate && form.birthDateApprox),

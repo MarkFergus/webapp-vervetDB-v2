@@ -1,8 +1,8 @@
 // "Version 1.5.0 is now live!": Update switches to it, Later hides the card.
 import { useState } from "react";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import UpdatePrompt from "./UpdatePrompt";
+import UpdatePrompt, { UPDATE_GIVE_UP_MS } from "./UpdatePrompt";
 
 const updateServiceWorker = vi.fn();
 let updateWaiting = false;
@@ -42,6 +42,39 @@ test("says which version is live; Update switches to it", async () => {
     expect(fetch.mock.calls[0][0]).toMatch(/^\/version\.json\?t=\d+$/);
     await user.click(screen.getByRole("button", { name: "Update" }));
     expect(updateServiceWorker).toHaveBeenCalledWith(true);
+});
+
+test("while it switches: says so, with a spinner, and no Later", async () => {
+    updateWaiting = true;
+    serverHas("1.5.0");
+    const user = userEvent.setup();
+    render(<UpdatePrompt />);
+    await user.click(await screen.findByRole("button", { name: "Update" }));
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Updating to version 1.5.0…");
+    expect(status).toHaveAttribute("aria-busy", "true");
+    const button = screen.getByRole("button", { name: "Updating…" });
+    expect(button).toBeDisabled();
+    expect(button.querySelector(".UpdatePrompt-spinner")).not.toBeNull();
+    expect(screen.queryByRole("button", { name: "Later" })).toBeNull();
+});
+
+test("the switch taking too long: the page reloads anyway", async () => {
+    updateWaiting = true;
+    serverHas("1.5.0");
+    const reload = vi.fn();
+    render(<UpdatePrompt reload={reload} />);
+    const update = await screen.findByRole("button", { name: "Update" });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+        act(() => update.click());
+        act(() => vi.advanceTimersByTime(UPDATE_GIVE_UP_MS - 1));
+        expect(reload).not.toHaveBeenCalled();
+        act(() => vi.advanceTimersByTime(1));
+        expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+        vi.useRealTimers();
+    }
 });
 
 test("the number can't be found (offline): it says a new version is live", async () => {

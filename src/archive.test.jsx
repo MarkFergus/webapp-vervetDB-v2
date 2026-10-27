@@ -238,6 +238,14 @@ describe("an archived monkey's Full Profile", () => {
         expect(choices).toEqual(["Choose…", "Sanctuary (Restore)", "Released", "Escaped", "Missing"]);
     });
 
+    test("admins can add records afterwards (e.g. what's found out later)", async () => {
+        loadArchive.mockResolvedValue([POPPY]);
+        render(<AdminPage route="admin/archive/poppy-12" staff={ADMIN} />);
+        expect(await screen.findByRole("button", { name: /New Rehabilitation Record/ })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("tab", { name: /Medical/ }));
+        expect(screen.getByRole("button", { name: /New Medical Record/ })).toBeInTheDocument();
+    });
+
     test("a new status: saved, and the archive loaded again", async () => {
         loadArchive.mockResolvedValue([POPPY]);
         saveStatus.mockResolvedValue(null);

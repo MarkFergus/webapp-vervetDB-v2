@@ -5,13 +5,16 @@ import userEvent from "@testing-library/user-event";
 import MonkeyForm from "./MonkeyForm";
 import Modal from "./Modal";
 import MonkeyPage from "./MonkeyPage";
-import { BUILT_IN_DATA, loadArrivalInfo, saveArrivalInfo, saveMonkey } from "./monkeyData";
+import { BUILT_IN_DATA, arrivalDetailsAvailable, loadArrivalInfo, saveArrivalInfo, saveMonkey } from "./monkeyData";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     saveMonkey: vi.fn(),
     loadArrivalInfo: vi.fn(),
     saveArrivalInfo: vi.fn(),
+    // (the database has Arrival Date and Reason: arrival-details.sql; off
+    // unless a test says)
+    arrivalDetailsAvailable: vi.fn(),
 }));
 
 const TROOPS = ["Goliath", "Bandits"];
@@ -36,6 +39,7 @@ beforeEach(() => {
     loadArrivalInfo.mockResolvedValue("");
     saveMonkey.mockImplementation(async (values) => ({ ...values, id: 500, img: values.img }));
     saveArrivalInfo.mockResolvedValue();
+    arrivalDetailsAvailable.mockReturnValue(false);
 });
 
 describe("New Arrival (the first choice)", () => {
@@ -77,6 +81,89 @@ describe("New Arrival (the first choice)", () => {
         await waitFor(() => expect(loadArrivalInfo).toHaveBeenCalled());
         expect(screen.getByLabelText("Bio")).toBeInTheDocument();
         expect(screen.queryByLabelText(/Arrival Info/)).not.toBeInTheDocument();
+    });
+});
+
+describe("a new arrival's Arrival Date and Arrival Reason", () => {
+    const today = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    beforeEach(() => arrivalDetailsAvailable.mockReturnValue(true));
+
+    test("the hint, then the date (today to start with) and the reasons", () => {
+        add();
+        expect(screen.getByText("New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.")).toBeInTheDocument();
+        expect(field("Arrival Date")).toHaveValue(today());
+        expect(within(field("Arrival Reason")).getAllByRole("option").map((o) => o.textContent))
+            .toEqual(["Choose…", "Orphaned", "Injured", "Confiscated", "Surrendered"]);
+    });
+
+    test("both needed; then saved with the monkey", async () => {
+        const user = userEvent.setup();
+        add();
+        await user.type(field("Name"), "Rescue Two");
+        await user.selectOptions(field("Care Unit"), `enclosure:${QUARANTINE.id}`);
+        await user.clear(field("Arrival Date"));
+        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        expect(screen.getByText("Please enter the arrival date (not in the future).")).toBeInTheDocument();
+        expect(screen.getByText("Please choose the arrival reason.")).toBeInTheDocument();
+        expect(saveMonkey).not.toHaveBeenCalled();
+        await user.type(field("Arrival Date"), "2026-10-20");
+        await user.selectOptions(field("Arrival Reason"), "orphaned");
+        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalDate: "2026-10-20", arrivalReason: "orphaned" });
+    });
+
+    test("not for Other (nor back again: today once more)", async () => {
+        const user = userEvent.setup();
+        add();
+        await user.click(kind("Other"));
+        expect(screen.queryByLabelText(/Arrival Date/)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/Arrival Reason/)).not.toBeInTheDocument();
+        await user.click(kind("New Arrival"));
+        expect(field("Arrival Date")).toHaveValue(today());
+    });
+
+    const editMonkey = (extra) =>
+        render(
+            <MonkeyForm
+                monkey={{ id: 7, name: "Old Timer", sex: "female", chip: "", troop: "Goliath", introcage: null, year: 2010,
+                    img: [], bio: "", desc: "", ...extra }}
+                troops={TROOPS} troopIds={TROOP_IDS} enclosures={BUILT_IN_DATA.enclosures}
+                enclosuresLive onClose={() => {}} onSaved={onSaved} onDeleted={() => {}}
+            />
+        );
+
+    test("in Edit: any monkey, and either can stay blank (not recorded)", async () => {
+        const user = userEvent.setup();
+        editMonkey({ arrivalDate: null, arrivalReason: null });
+        expect(field("Arrival Date")).toHaveValue("");
+        expect(field("Arrival Reason")).toHaveValue("");
+        expect(within(field("Arrival Reason")).getAllByRole("option")[0]).toHaveTextContent("Not recorded");
+        expect(field("Arrival Date").closest("label")).not.toHaveTextContent("(required)");
+        expect(field("Arrival Reason").closest("label")).not.toHaveTextContent("(required)");
+        await user.selectOptions(field("Arrival Reason"), "injured");
+        await user.click(screen.getByRole("button", { name: /Save/ }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalDate: "", arrivalReason: "injured" });
+    });
+
+    test("in Edit: its saved date and reason, to change", async () => {
+        const user = userEvent.setup();
+        editMonkey({ arrivalDate: "2019-03-02", arrivalReason: "orphaned" });
+        expect(field("Arrival Date")).toHaveValue("2019-03-02");
+        expect(field("Arrival Reason")).toHaveValue("orphaned");
+        await user.selectOptions(field("Arrival Reason"), "surrendered");
+        await user.click(screen.getByRole("button", { name: /Save/ }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalDate: "2019-03-02", arrivalReason: "surrendered" });
+    });
+
+    test("in Edit, before the database has them: not there", () => {
+        editMonkey({});
+        expect(screen.queryByLabelText(/Arrival Date/)).not.toBeInTheDocument();
     });
 });
 
@@ -192,6 +279,17 @@ describe("the pop-up", () => {
         expect(screen.queryByText("Arrival Info")).not.toBeInTheDocument();
         expect(loadArrivalInfo).not.toHaveBeenCalled();
     });
+});
+
+test("the monkey's page: its Arrival Date and Reason (or Not recorded)", () => {
+    const rescue = BUILT_IN_DATA.monkeys[0];
+    const { unmount } = render(<MonkeyPage monkey={{ ...rescue, arrivalDate: "2026-10-20", arrivalReason: "confiscated" }} staff={null} />);
+    expect(screen.getByText("Arrival Date").closest("div")).toHaveTextContent("20th Oct 2026");
+    expect(screen.getByText("Arrival Reason").closest("div")).toHaveTextContent("Confiscated");
+    unmount();
+    render(<MonkeyPage monkey={{ ...rescue, arrivalDate: null, arrivalReason: null }} staff={null} />);
+    expect(screen.getByText("Arrival Date").closest("div")).toHaveTextContent("Not recorded");
+    expect(screen.getByText("Arrival Reason").closest("div")).toHaveTextContent("Not recorded");
 });
 
 describe("the monkey's page", () => {

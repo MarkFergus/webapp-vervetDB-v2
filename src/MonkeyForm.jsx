@@ -4,7 +4,17 @@ import { motion } from "motion/react";
 import { IconAlertCircle } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
-import { deleteMonkey, saveArrivalInfo, saveMonitoring, saveMonkey, birthDateAvailable, speciesAvailable, troopHome } from "./monkeyData";
+import {
+    arrivalDetailsAvailable,
+    birthDateAvailable,
+    deleteMonkey,
+    saveArrivalInfo,
+    saveMonitoring,
+    saveMonkey,
+    speciesAvailable,
+    troopHome,
+} from "./monkeyData";
+import { ARRIVAL_REASONS } from "./arrival";
 import { SPECIES } from "./species";
 import { seasonOf } from "./ages";
 import useArrivalInfo from "./useArrivalInfo";
@@ -68,6 +78,8 @@ function MonkeyForm({
                   ...(speciesAvailable() && { species: "vervet" }),
                   // (birth date unknown to start with, once it has them)
                   ...(birthDateAvailable() && { birthDate: "", birthDateApprox: false }),
+                  // (a new arrival: arrived today to start with, once it has them)
+                  ...(careUnitsOnly && arrivalDetailsAvailable() && { arrivalDate: todayText(), arrivalReason: "", arrivalRequired: true }),
               }
             : formFromMonkey(monkey, careChoices)
     );
@@ -159,7 +171,16 @@ function MonkeyForm({
         if (next === kind) return;
         setKind(next);
         setErrors({});
-        setForm({ ...form, troop: "", location: "", chip: "", chipUnknown: false });
+        const { arrivalDate, arrivalReason, arrivalRequired, ...rest } = form;
+        setForm({
+            ...rest,
+            troop: "",
+            location: "",
+            chip: "",
+            chipUnknown: false,
+            // (Other: no arrival date or reason; back to New Arrival: today again)
+            ...(next === "rescue" && arrivalDetailsAvailable() && { arrivalDate: todayText(), arrivalReason: "", arrivalRequired: true }),
+        });
     }
     // Feeding: for a monkey in an introcage (not a troop, or a care unit's
     // area), or staying in one for now, once the database has it
@@ -346,8 +367,45 @@ function MonkeyForm({
                     </div>
                     {rescue && (
                         <p className="MonkeyForm-hint">
-                            New arrivals start in a care unit. Once they have a long-term home, move them there with Edit.
+                            New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.
                         </p>
+                    )}
+
+                    {/* When it arrived and why (once the database has
+                        them): needed for a new arrival; in Edit, any monkey,
+                        and either can be left blank */}
+                    {form.arrivalDate !== undefined && (
+                        <div className="MonkeyForm-row is-pair is-lined">
+                            <label className="MonkeyForm-field">
+                                <span>Arrival Date {form.arrivalRequired && <em>(required)</em>}</span>
+                                <input
+                                    type="date"
+                                    value={form.arrivalDate}
+                                    max={todayText()}
+                                    onChange={set("arrivalDate")}
+                                    aria-invalid={Boolean(errors.arrivalDate)}
+                                    aria-describedby={describedBy("arrivalDate")}
+                                />
+                                {errorFor("arrivalDate")}
+                            </label>
+                            <label className="MonkeyForm-field">
+                                <span>Arrival Reason {form.arrivalRequired && <em>(required)</em>}</span>
+                                <select
+                                    value={form.arrivalReason}
+                                    onChange={set("arrivalReason")}
+                                    aria-invalid={Boolean(errors.arrivalReason)}
+                                    aria-describedby={describedBy("arrivalReason")}
+                                >
+                                    <option value="">{form.arrivalRequired ? "Choose…" : "Not recorded"}</option>
+                                    {Object.entries(ARRIVAL_REASONS).map(([key, label]) => (
+                                        <option key={key} value={key}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errorFor("arrivalReason")}
+                            </label>
+                        </div>
                     )}
 
                     {/* Species (once the database has species) and Sex */}

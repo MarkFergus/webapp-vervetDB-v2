@@ -81,9 +81,34 @@
     border: 1px solid var(--pink);
 }
 
-.UpdatePrompt-refresh:hover {
+.UpdatePrompt-refresh:hover:not(:disabled) {
     background-color: var(--pink-2);
     border-color: var(--pink-2);
+}
+
+/* Updating: the spinner beside "Updating…" (the button stays pink) */
+.UpdatePrompt-refresh:disabled {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: progress;
+}
+
+.UpdatePrompt-spinner {
+    animation: UpdatePrompt-spin 0.8s linear infinite;
+}
+
+@keyframes UpdatePrompt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* (still turning, slowly: it's the sign it hasn't frozen) */
+@media (prefers-reduced-motion: reduce) {
+    .UpdatePrompt-spinner {
+        animation-duration: 2.4s;
+    }
 }
 
 /* Wider screens: room for the message and both buttons on one line */

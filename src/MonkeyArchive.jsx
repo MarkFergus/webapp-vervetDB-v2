@@ -79,9 +79,9 @@ function ArchiveRow({ monkey, open, onToggle }) {
                     </span>
                 </span>
                 <span className="Archive-wide">{placeName(monkey) || "None"}</span>
-                <span className="Archive-wide">
-                    {SexIcon && <SexIcon size={14} stroke={2} aria-hidden="true" />}
-                    {sexWord}
+                {/* (just the symbol: more room for the name) */}
+                <span className="Archive-wide Archive-sex" title={sexWord}>
+                    {SexIcon ? <SexIcon size={16} stroke={2} aria-label={sexWord} /> : <span aria-label={sexWord}>–</span>}
                 </span>
                 <span className="Archive-wide">{monkey.year || "–"}</span>
                 <span className="Archive-wide Archive-chip">{chipText(monkey.chip)}</span>
@@ -199,8 +199,8 @@ export function ArchiveList({ list }) {
                         <span />
                         <span>Name</span>
                         <span className="Archive-wide">Home</span>
-                        <span className="Archive-wide">Sex</span>
-                        <span className="Archive-wide">Birth Year</span>
+                        <span className="Archive-wide Archive-sex">Sex</span>
+                        <span className="Archive-wide">Born</span>
                         <span className="Archive-wide">Chip</span>
                         <span className="Archive-wide">Date</span>
                         <span className="Archive-wide">Status</span>
