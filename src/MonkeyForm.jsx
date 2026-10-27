@@ -532,7 +532,8 @@ function MonkeyForm({
                     </label>
 
                     {/* Feeding (introcage monkeys), at the bottom: who feeds it, and its AM
-                        plates and PM bowls if it's the Local Team */}
+                        plates and PM bowls if it's fed by Mainfeed (the areas that feed: Mainfeed
+                        or Sickbay) */}
                     {showFeeding && (
                         <fieldset className="MonkeyForm-feeding">
                             <legend>Feeding</legend>
@@ -540,7 +541,7 @@ function MonkeyForm({
                                 <label className="MonkeyForm-field">
                                     <span>Fed By</span>
                                     <select value={form.feeding.fedBy} onChange={(e) => setFeeding("fedBy", e.target.value)}>
-                                        <option value="localTeam">Local Team</option>
+                                        <option value="localTeam">Mainfeed</option>
                                         <option value="sickbay">Sickbay</option>
                                     </select>
                                 </label>

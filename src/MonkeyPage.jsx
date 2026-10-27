@@ -24,7 +24,8 @@ import { useInjuries } from "./Injuries";
 import { IntegrationRecords, RecordList, otherRows, useRecords } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
 import { ageInYears } from "./ages";
-import { fullName, homeName, staying } from "./places";
+import { homeName, staying } from "./places";
+import PlaceName from "./PlaceName";
 import BenchTreeIcon from "./BenchTreeIcon";
 import { SPECIES } from "./species";
 import { summaryDate } from "./feeding";
@@ -57,8 +58,10 @@ function ageWords(year) {
 const SEX_WORDS = { male: "Male", female: "Female" };
 const STATUS_WORDS = { sanctuary: "Sanctuary", released: "Released" };
 
-// Its home, in full: "Gismo Troop" or "Holt & Barrington C1"
-const homeText = (monkey) => (monkey.introcage ? fullName(monkey.introcage) : `${fullName(monkey.troop)} Troop`);
+// Its home, in full: "Gismo Troop" or "Holt & Barrington C1" (a long name
+// wraps after the "&", never part-way through: PlaceName)
+const homeText = (monkey) =>
+    monkey.introcage ? <PlaceName name={monkey.introcage} /> : <PlaceName name={monkey.troop} suffix=" Troop" />;
 
 // (keys: the sections in MonkeyRecords.jsx, and its Integration reports)
 const TABS = [
@@ -167,14 +170,14 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
     // (the Bandits: none. The built-in copy has no enclosures: its troop's)
     const enclosureName = "enclosure" in monkey ? monkey.enclosure : homeName(monkey);
     const profileRows = inPairs([
-        { icon: BenchTreeIcon, label: "Enclosure", value: enclosureName ? fullName(enclosureName) : "None" },
+        { icon: BenchTreeIcon, label: "Enclosure", value: enclosureName ? <PlaceName name={enclosureName} /> : "None" },
         { icon: IconHome, label: "Home Location", value: homeText(monkey) },
         // Where it is now: Sickbay or the introcage it's staying in (Quick
         // Actions), else home
         {
             icon: IconCurrentLocation,
             label: "Current Location",
-            value: monkey.inSickbay ? "Sickbay" : staying(monkey) ? fullName(staying(monkey)) : homeText(monkey),
+            value: monkey.inSickbay ? "Sickbay" : staying(monkey) ? <PlaceName name={staying(monkey)} /> : homeText(monkey),
         },
         { icon: IconCalendarEvent, label: "Age", value: ageWords(monkey.year) },
         // (Birth Date and Birth Year next to each other: side by side on
@@ -246,7 +249,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert }) {
                     </div>
                 </div>
 
-                <SectionNav jumps={jumps} onJump={jump} />
+                <SectionNav jumps={jumps} onJump={jump} refresh={tab} />
 
                 {/* Profile: the photos beside the main facts (phones: the
                     photos first), then the bio and description */}

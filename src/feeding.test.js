@@ -6,7 +6,7 @@ const TODAY = new Date(2026, 8, 10); // 10 Sep 2026: babies are the 2025 season
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
 const parentOf = (e) => enclosuresArr.find((p) => p.id === e.parentId);
 
-// A monkey in an introcage, Local Team, 1 plate, adult, unless given
+// A monkey in an introcage, fed by Mainfeed, 1 plate, adult, unless given
 let nextId = 1;
 const monkey = (name, introcage, feeding = {}, extra = {}) => ({
     id: nextId++, name, troop: null, introcage, introcageType: "introcage", year: 2015,
@@ -179,7 +179,7 @@ describe("the AM Plates List", () => {
         expect(top.rows).toEqual(["Nita"]);
         expect(top.sickbay).toBe("Rocio & Seuntjie");
         expect(fedBy(monkeys[0])).toBe("sickbay");
-        // Back home: its stored Fed By (Local Team) applies again
+        // Back home: its stored Fed By (Mainfeed) applies again
         const back = group([{ ...monkeys[0], inSickbay: false }, monkeys[1]], "Top Section");
         expect(back.rows).toEqual(["Nita/Seuntjie x2"]);
         expect(back.sickbay).toBe("");

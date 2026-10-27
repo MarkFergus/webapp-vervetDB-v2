@@ -247,3 +247,11 @@
         transition: none;
     }
 }
+
+/* Phones: a long place ("Holt & Barrington C1") wraps onto a second line
+   (after the "&": PlaceName) rather than running off the edge */
+@media (max-width: 759px) {
+    .MonkeyPage .Enclosures-details dd {
+        white-space: normal;
+    }
+}

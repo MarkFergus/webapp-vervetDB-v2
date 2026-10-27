@@ -91,7 +91,7 @@ test("each troop's female / male split (troop monkeys only), most female first",
     ]);
 });
 
-test("AM plates, by monkey: Local Team or Sickbay, then the Local Team's by plate (and metal plates)", () => {
+test("AM plates, by monkey: Mainfeed or Sickbay, then Mainfeed's by plate (and metal plates)", () => {
     const feeding = (extra) => ({ fedBy: "localTeam", amPlates: 1, amCutSmall: false, amFruit: false, amMetalPlate: false, pmBowls: 1, pmCutSmall: false, ...extra });
     const inA = (name, f, extra) => monkey(name, { troop: null, introcage: "Goliath A", introcageType: "introcage", feeding: feeding(f), ...extra });
     const fed = [

@@ -157,8 +157,12 @@ describe("choosing the troop", () => {
         const season = currentBabySeason();
         const babies = monkeysArr.filter((m) => m.year && Number(m.year) >= season);
         if (babies.length === 0) {
-            // nothing to make yet this season
-            expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent("No monkeys in this troop yet.");
+            // nothing to make yet this season: a warning, and no PDF
+            expect(document.querySelector(".ModalPDF-warning")).toHaveTextContent(
+                `No babies yet this season (${season}), so there's no Profile Book to create.`
+            );
+            expect(document.querySelector(".ModalPDF-subdetails")).toBeNull();
+            expect(within(screen.getByRole("dialog")).getByRole("button", { name: "Create PDF" })).toBeDisabled();
             return;
         }
         expect(document.querySelector(".ModalPDF-subdetails")).toHaveTextContent(

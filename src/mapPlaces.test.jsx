@@ -94,7 +94,9 @@ describe("tapping the map", () => {
         const user = userEvent.setup();
         const onClose = vi.fn();
         render(<WholeMap onClose={onClose} enclosures={enclosuresArr} monkeys={MONKEYS} />);
-        await screen.findByRole("img", { name: "The whole sanctuary map" });
+        // (the drawing loads first: on a busy machine running every test at
+        // once that can take longer than the usual second)
+        await screen.findByRole("img", { name: "The whole sanctuary map" }, { timeout: 5000 });
         return { user, onClose };
     }
 
@@ -128,7 +130,7 @@ describe("tapping the map", () => {
 
     // (it slides back out to the left first; a slow machine running every
     // test at once can take a while)
-    const cardGone = () => waitFor(() => expect(screen.queryByRole("region")).toBeNull(), { timeout: 3000 });
+    const cardGone = () => waitFor(() => expect(screen.queryByRole("region")).toBeNull(), { timeout: 5000 });
 
     test("a closing card slides out first, still picked out until it's gone", async () => {
         const { user } = await setup();

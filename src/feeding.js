@@ -139,7 +139,7 @@ function rowText(introcage, monkeys, plates, babyGroup = false) {
 
 // The summary, group by group:
 // [{ title, note, plates, cutSmall (how many of them, with or without
-//    fruit), monkeys (the Local Team's: the plates are for),
+//    fruit), monkeys (Mainfeed's: the plates are for),
 //    counts: ["6 cut small", "5 on metal plates"], rows: ["Ace/Clare x2", …],
 //    babyRows: ["Gismo A babies x3 (cut small + fruit)", …] (a cage with
 //    babies: one plate for all its babies and one for each adult, all cut

@@ -247,6 +247,15 @@ function Modal({
         setSickbayForm(null);
         setSickbayProblem(null);
     }
+    // However it closes (the ✕, or the phone's Back button: the address
+    // changes, so handleClose never runs), Quick Actions and its forms close
+    // too, so the next pop-up starts fresh
+    useEffect(() => {
+        if (isModalOpen) return;
+        resetSickbay();
+        setCurrentIndex(0);
+        setShareStatus(null);
+    }, [isModalOpen]);
 
     // Phones open their share menu (e.g. WhatsApp) with a link to this
     // monkey; computers copy the link
@@ -605,8 +614,8 @@ function Modal({
                                                     </label>
                                                     {/* A troop monkey going into an introcage
                                                         (not already fed in one): who feeds it
-                                                        there (Sickbay to start with); fed by the
-                                                        Local Team, it's on the AM Plates List */}
+                                                        there (Sickbay to start with); fed by
+                                                        Mainfeed, it's on the AM Plates List */}
                                                     {asksFedBy(sickbayForm) && (
                                                         <>
                                                             <label>
@@ -616,7 +625,7 @@ function Modal({
                                                                     onChange={(e) => setSickbayForm({ ...sickbayForm, fedBy: e.target.value })}
                                                                 >
                                                                     <option value="sickbay">Sickbay</option>
-                                                                    <option value="localTeam">Local Team</option>
+                                                                    <option value="localTeam">Mainfeed</option>
                                                                 </select>
                                                             </label>
                                                             {sickbayForm.fedBy === "localTeam" && (

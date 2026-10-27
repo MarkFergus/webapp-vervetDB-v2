@@ -111,6 +111,21 @@ test("limited accounts see injuries, but can't change even their own (staff who 
     expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
 });
 
+test("closing another way (the phone's Back button) closes New Injury too: the next pop-up starts fresh", async () => {
+    const props = { monkey: MONKEY, onClose: () => {}, handlePrevNext: () => {}, staff: ADMIN };
+    const { rerender } = render(<Modal isModalOpen {...props} />);
+    await screen.findByRole("button", { name: "Quick Actions" });
+    await quickActions();
+    await userEvent.click(screen.getByRole("button", { name: "New Injury" }));
+    expect(screen.getByLabelText("Description")).toBeInTheDocument();
+    // (Back: ShowPage closes it, without its ✕)
+    rerender(<Modal isModalOpen={false} {...props} />);
+    rerender(<Modal isModalOpen {...props} />);
+    await screen.findByRole("button", { name: "Quick Actions" });
+    expect(screen.queryByLabelText("Description")).toBeNull();
+    expect(screen.queryByRole("button", { name: "New Injury" })).toBeNull();
+});
+
 test("visitors (not staff) never load injuries", () => {
     open(null);
     expect(loadInjuries).not.toHaveBeenCalled();

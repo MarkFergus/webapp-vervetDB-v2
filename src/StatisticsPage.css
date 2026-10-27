@@ -78,7 +78,7 @@
     color: var(--text);
     background-color: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
@@ -92,7 +92,7 @@
     display: inline-flex;
     padding: 3px;
     background-color: var(--surface-2);
-    border-radius: 999px;
+    border-radius: 8px;
 }
 
 .Stats-segments button {
@@ -104,7 +104,7 @@
     color: var(--text-2);
     background: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
@@ -253,7 +253,7 @@
     color: var(--text-2);
     background-color: var(--surface-2);
     border: none;
-    border-radius: 999px;
+    border-radius: 8px;
     cursor: pointer;
 }
 

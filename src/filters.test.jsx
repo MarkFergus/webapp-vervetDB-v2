@@ -358,6 +358,20 @@ describe("Location", () => {
         expectShowing(monkeysArr.filter((m) => SICKBAY.includes(m.troop)).length);
     });
 
+    test("choosing an enclosure turns the Quick Filters off (just that troop)", async () => {
+        const { user } = setup();
+        await user.click(filtersButton());
+        await user.click(quickPill("Bottom Section"));
+        await user.click(quickPill("Baby Care"));
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Skrow");
+        expect(quickPill("Bottom Section")).toHaveAttribute("aria-pressed", "false");
+        expect(quickPill("Baby Care")).toHaveAttribute("aria-pressed", "false");
+        expectShowing(monkeysArr.filter((m) => m.troop === "Skrow" || (m.introcage && m.enclosure === "Skrow")).length);
+        // (back to all of them: the Quick Filters stay off)
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "All Troops");
+        expect(quickPill("Bottom Section")).toHaveAttribute("aria-pressed", "false");
+    });
+
     test("Bandits: the wild troop (not in the Enclosures box)", async () => {
         const user = userEvent.setup();
         const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };

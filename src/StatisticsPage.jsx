@@ -886,8 +886,7 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
                                         <dd>{am.sickbay}</dd>
                                     </div>
                                 </dl>
-                                {/* Mainfeed's monkeys (the Local Team's, elsewhere in
-                                    the app, for now), by their plate */}
+                                {/* Mainfeed's monkeys, by their plate */}
                                 <BarList
                                     rows={[
                                         ["normal", "Normal", am.normal],

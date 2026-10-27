@@ -547,7 +547,7 @@ describe("feeding (introcage monkeys)", () => {
         expect(within(feeding()).queryByLabelText("AM Plates")).toBeNull();
         // (Aroha's a male: "his")
         expect(within(feeding()).getByText(/Sickbay delivers his plates/)).toBeInTheDocument();
-        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
+        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Mainfeed");
         await user.selectOptions(within(feeding()).getByLabelText("AM Plates"), "2 Plates");
         await user.click(within(feeding()).getByRole("checkbox", { name: "Metal Plate" }));
         await user.click(within(within(feeding()).getByRole("group", { name: "PM bowl extras" })).getByRole("checkbox", { name: "Cut Small" }));
@@ -564,7 +564,7 @@ describe("feeding (introcage monkeys)", () => {
     });
 
     test("a troop monkey moved into an introcage: fed by Sickbay to start with (changeable)", async () => {
-        // Aroha in the H&B troop, with the database's feeding (Local Team)
+        // Aroha in the H&B troop, with the database's feeding (Mainfeed)
         const inTroop = () =>
             startingMonkeys().map((m) =>
                 m.name === "Aroha" ? { ...m, troop: "H&B", introcage: null, introcageId: null, enclosure: "H&B", feeding: { ...DEFAULT_FEEDING } } : m
@@ -574,7 +574,7 @@ describe("feeding (introcage monkeys)", () => {
         expect(feeding()).toBeNull();
         await user.selectOptions(field("Location"), String(HB_C1.id));
         expect(within(feeding()).getByLabelText("Fed By")).toHaveValue("sickbay");
-        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Local Team");
+        await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Mainfeed");
         await user.click(within(form()).getByRole("button", { name: "Save" }));
         await user.click(within(form()).getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));

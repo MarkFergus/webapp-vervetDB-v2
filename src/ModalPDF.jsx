@@ -60,6 +60,7 @@ function ModalPDF({
 }) {
     const isAmPlates = report === "amPlates";
     const isProfileBook = report === "profileBook";
+    const noBabies = isProfileBook && book === BABIES_BOOK && monkeyCount === 0;
     const isMonitoring = report === "monitoring";
     const isSigns = report === "introcageSign";
     // (Troop Monitoring: just the Sheet, unless the Notes can be had)
@@ -255,6 +256,13 @@ function ModalPDF({
                                                     ))}
                                                 </div>
                                             )}
+                                            {/* The babies' book with no babies this season yet: a
+                                                warning instead (Create PDF stays off: no empty PDF) */}
+                                            {noBabies ? (
+                                                <p className="ModalPDF-warning" role="status">
+                                                    No babies yet this season ({currentBabySeason()}), so there's no Profile Book to create.
+                                                </p>
+                                            ) : (
                                             <p className="ModalPDF-subdetails">
                                                 {isMonitoring && noParts ? (
                                                     "Choose the Monitoring Sheet, the Monitoring Notes, or both."
@@ -283,6 +291,7 @@ function ModalPDF({
                                                     </>
                                                 )}
                                             </p>
+                                            )}
                                             {isProfileBook && monkeyCount > LARGE_PDF_THRESHOLD && (
                                                 <p className="ModalPDF-warning">
                                                     Large PDFs can take several minutes

@@ -11,9 +11,11 @@ import { textWidth } from "./pdfTextWidth";
 //   title: e.g. "Gismo Monitoring Sheet"; groups: monitoringGroups()
 
 const LINE = "0.6pt solid #000";
-// A4 portrait, less the margins and the title
+// A4 portrait, less the margins and the title. Top and bottom: 36pt
+// (about 13mm), so a printer's own unprintable edge never cuts off the
+// last rows of a full page (a big troop, like Goliath)
 const PAGE_HEIGHT = 841.89;
-const MARGIN = 24;
+const MARGIN = 36;
 const TITLE_HEIGHT = 35;
 
 const styles = StyleSheet.create({

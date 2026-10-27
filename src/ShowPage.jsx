@@ -265,10 +265,10 @@ function ShowPage({
     // Which PDF: null (not chosen yet), "profileBook", or "amPlates" (the
     // AM Plates List). Chosen afresh each time the pop-up opens.
     const [pdfReport, setPdfReport] = useState(null);
-    // The AM Plates List's groups, and its Local Team plates
+    // The AM Plates List's groups, and its Mainfeed plates
     const amGroups = useMemo(() => amSummary(monkeys, enclosures), [monkeys, enclosures]);
     const pdfPlateCount = amGroups.reduce((n, g) => n + g.plates, 0);
-    // (one row per introcage with Local Team plates)
+    // (one row per introcage with Mainfeed plates)
     const pdfPlateIntrocages = amGroups.reduce((n, g) => n + g.rows.length + g.babyRows.length, 0);
     const pdfPlateMonkeys = amGroups.reduce((n, g) => n + g.monkeys, 0);
     // The troops that are monitored (not the Bandits), and the Troop
@@ -372,6 +372,9 @@ function ShowPage({
             const next = { ...f, [field]: value };
             // A troop outside the newly chosen sections: back to all troops
             if (field === "quick" && !inSection(next.troop, quickSections(value))) next.troop = NO_FILTERS.troop;
+            // A troop chosen (the Enclosures box): just that troop, so the
+            // Quick Filters go off
+            if (field === "troop" && value !== NO_FILTERS.troop) next.quick = NO_FILTERS.quick;
             // A birth year or an age category, not both (a year already
             // decides the category): choosing one clears the other
             if (field === "year" && value !== NO_FILTERS.year) next.age = NO_FILTERS.age;

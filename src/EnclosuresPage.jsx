@@ -302,13 +302,15 @@ function Ranking({ label, rank, unknown = "Not known" }) {
 // folded away), and the part being read is lit up. Icons only on phones,
 // so the row always fits; their names beside them on computers.
 //   jumps: [{ key, label, icon }]; onJump(key)
-export function SectionNav({ jumps, onJump }) {
+//   refresh: anything that changes which parts are on the page (a monkey's
+//   Records tab: its part takes the tab's name), to look again
+export function SectionNav({ jumps, onJump, refresh }) {
     const ref = useRef(null);
     const [active, setActive] = useState(null);
     const keys = jumps.map((j) => j.key).join(" ");
 
     // The part being read: the last one whose top has gone up under the bar
-    // (at the very bottom of the page: the last part)
+    // (at the very bottom of the page: the last part that's there)
     useEffect(() => {
         const list = keys.split(" ");
         let frame = 0;
@@ -320,7 +322,9 @@ export function SectionNav({ jumps, onJump }) {
                 if (top !== undefined && top <= line) current = key;
             }
             const root = document.documentElement;
-            if (current && window.innerHeight + window.scrollY >= root.scrollHeight - 2) current = list.at(-1);
+            if (current && window.innerHeight + window.scrollY >= root.scrollHeight - 2) {
+                current = list.filter((key) => document.getElementById(jumpId(key))).at(-1) ?? current;
+            }
             setActive(current);
         }
         const onScroll = () => {
@@ -335,7 +339,7 @@ export function SectionNav({ jumps, onJump }) {
             window.removeEventListener("scroll", onScroll);
             window.removeEventListener("resize", onScroll);
         };
-    }, [keys]);
+    }, [keys, refresh]);
 
     return (
         <nav ref={ref} className="Enclosures-sectionNav" aria-label="On this page">

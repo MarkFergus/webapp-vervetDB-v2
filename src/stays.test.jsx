@@ -141,12 +141,12 @@ describe("the pop-up", () => {
         });
     });
 
-    test("fed by the Local Team instead: a reminder it's on the AM Plates List", async () => {
+    test("fed by Mainfeed instead: a reminder it's on the AM Plates List", async () => {
         const saved = open({ ...ziggy, stay: null });
         await quickActions();
         await userEvent.click(screen.getByRole("button", { name: "Move to Introcage" }));
         await userEvent.selectOptions(screen.getByLabelText("Introcage"), "Gismo A");
-        await userEvent.selectOptions(screen.getByLabelText("Fed By"), "Local Team");
+        await userEvent.selectOptions(screen.getByLabelText("Fed By"), "Mainfeed");
         expect(screen.getByText(/will be on the AM Plates List while in an introcage/)).toBeInTheDocument();
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() => expect(saved.mock.calls[0][1]).toMatchObject({ fedBy: "localTeam" }));

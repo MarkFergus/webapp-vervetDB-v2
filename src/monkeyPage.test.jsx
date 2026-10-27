@@ -85,6 +85,24 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
 });
 
+test("the icon bar lights up the Records tab showing, not always Integration (the last)", async () => {
+    const user = userEvent.setup();
+    const staff = { canSee: true, canAdd: false, userId: "staff-1", isAdmin: false };
+    render(<MonkeyPage monkey={aroha} staff={staff} />);
+    const bar = screen.getByRole("navigation", { name: "On this page" });
+    const lit = () => within(bar).getAllByRole("button").filter((b) => b.getAttribute("aria-current") === "true").map((b) => b.title);
+    // (the test page is all on one screen: the bottom of the page, so the
+    // last part that's there)
+    await waitFor(() => expect(lit()).toEqual(["Rehabilitation"]));
+    await user.click(within(bar).getByRole("button", { name: "Integration" }));
+    await waitFor(() => expect(lit()).toEqual(["Integration"]));
+    // (a tab picked below, without scrolling: the bar follows it)
+    await user.click(screen.getByRole("tab", { name: "Medical" }));
+    await waitFor(() => expect(lit()).toEqual(["Medical"]));
+    await user.click(within(bar).getByRole("button", { name: "Rehabilitation" }));
+    await waitFor(() => expect(lit()).toEqual(["Rehabilitation"]));
+});
+
 // A records list's data, without the database
 function fakeRecords(entries = [], { canAdd = true } = {}) {
     return {
