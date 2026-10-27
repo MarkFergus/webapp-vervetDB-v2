@@ -1,5 +1,5 @@
 // Add New Monkey: a New Arrival or Other, and a new arrival's Arrival Info
-// (staff only, shown on the monkey's page), with the Bio as for any monkey
+// (staff only, shown on the monkey's page; it takes the Bio's place when adding one), with the Bio for any other monkey
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import MonkeyForm from "./MonkeyForm";
@@ -43,7 +43,7 @@ beforeEach(() => {
 });
 
 describe("New Arrival (the first choice)", () => {
-    test("Care Unit and Location, Sex and Birth year; no Chip; the Bio and the Arrival Info", async () => {
+    test("Care Unit and Location, Sex and Birth year; no Chip; the Arrival Info, no Bio", async () => {
         add();
         expect(kind("New Arrival")).toHaveAttribute("aria-pressed", "true");
         expect(field("Care Unit")).toBeInTheDocument();
@@ -52,7 +52,8 @@ describe("New Arrival (the first choice)", () => {
         expect(field("Birth year")).toBeInTheDocument();
         expect(screen.queryByLabelText("Chip")).not.toBeInTheDocument();
         expect(await screen.findByLabelText(/Arrival Info/)).toBeInTheDocument();
-        expect(screen.getByLabelText("Bio")).toBeInTheDocument();
+        // (the Arrival Info is all that's needed: the Bio comes later, in Edit)
+        expect(screen.queryByLabelText("Bio")).not.toBeInTheDocument();
         // Features stay: any identification marks matter if it escapes
         expect(field("Distinctive features")).toBeInTheDocument();
         // The Care Unit list has just the care units (the rest are under Other)

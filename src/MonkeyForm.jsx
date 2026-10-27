@@ -569,12 +569,16 @@ function MonkeyForm({
                         full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
                     />
 
-                    {/* (every monkey, new arrivals too: their Arrival Info is
-                        below, shown on the monkey's page) */}
-                    <label className="MonkeyForm-field">
-                        <span>Bio</span>
-                        <textarea rows={4} value={form.bio} onChange={set("bio")} />
-                    </label>
+                    {/* Bio: every monkey, except a new arrival being added
+                        (its Arrival Info is all that's needed: the Bio comes
+                        later, with Edit). Without Arrival Info (not staff,
+                        or the database hasn't got it): the Bio, as before */}
+                    {!(isNew && rescue && showArrival) && (
+                        <label className="MonkeyForm-field">
+                            <span>Bio</span>
+                            <textarea rows={4} value={form.bio} onChange={set("bio")} />
+                        </label>
+                    )}
 
                     {/* A new arrival's arrival details: staff only, up to 2000 characters */}
                     {showArrival && (
