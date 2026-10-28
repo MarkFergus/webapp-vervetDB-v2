@@ -49,11 +49,15 @@ export const RECORD_KINDS = {
     },
 };
 
-// The teams, and what each records (more teams later: the sections'
-// monitoring, deworming…)
+// The teams, and what each records. page: its own page, no kinds to
+// choose (Maintenance: MaintenanceRecordsPage.jsx); soon: shown as
+// "Coming soon…", not open yet
 export const TEAMS = [
     { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] },
-    { id: "integration", name: "Integration", kinds: ["reports", "current"] },
+    { id: "integration", name: "Integration", kinds: ["current", "reports"] },
+    { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
+    { id: "sections", name: "Sections", kinds: [], soon: true },
+    { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
 ];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"

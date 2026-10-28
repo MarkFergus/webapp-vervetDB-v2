@@ -24,7 +24,23 @@ export function Crumbs({ crumbs }) {
 }
 
 // One of the big rows: an icon, the title and a line under it
+// (no href: not open yet, e.g. a team coming soon)
 export function Choice({ href, Icon, title, sub }) {
+    if (!href) {
+        return (
+            <li>
+                <div className="RecordsPage-choice is-soon" aria-disabled="true">
+                    <span className="RecordsPage-choiceIcon">
+                        <Icon size={24} stroke={1.75} aria-hidden="true" />
+                    </span>
+                    <span className="RecordsPage-choiceText">
+                        <span className="RecordsPage-choiceTitle">{title}</span>
+                        {sub && <span className="RecordsPage-choiceSub">{sub}</span>}
+                    </span>
+                </div>
+            </li>
+        );
+    }
     return (
         <li>
             <a className="RecordsPage-choice" href={href}>

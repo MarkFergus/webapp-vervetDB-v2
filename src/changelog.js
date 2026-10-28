@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.19.1",
+        date: "2026-10-28",
+        changes: ["Added Maintenance to Records page"],
+    },
+    {
         version: "1.19.0",
         date: "2026-10-28",
         changes: ["New Integration section added to Records"],

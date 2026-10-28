@@ -80,11 +80,11 @@ describe("the workings", () => {
     });
 });
 
-test("Records: the Integration team, with Reports and Current Integrations", () => {
+test("Records: the Integration team, with Current Integrations and Reports", () => {
     open("records");
     const team = screen.getByRole("link", { name: /Integration/ });
     expect(team).toHaveAttribute("href", "#records/integration");
-    expect(team).toHaveTextContent("Reports · Current Integrations");
+    expect(team).toHaveTextContent("Current Integrations · Reports");
 });
 
 describe("Current Integrations", () => {

@@ -217,7 +217,7 @@ function MonkeyForm({
         setProblem(null);
         if (Object.keys(found).length) {
             // (the quick Edit: a problem with a field it doesn't show)
-            if (quick) setProblem("Some of its other details need fixing first: please use Edit on the Full Profile.");
+            if (quick && Object.keys(found).some((field) => field !== "photos")) setProblem("Some of its other details need fixing first: please use Edit on the Full Profile.");
             return;
         }
         // A new home: first its date and reason
@@ -309,7 +309,7 @@ function MonkeyForm({
                         rest is in the Full Profile's Edit */}
                     {quick ? (
                         <p className="MonkeyForm-hint MonkeyForm-quickHint">
-                            For the name, home, dates, chip, photos and arrival details, use Edit on the Full Profile.
+                            For the name, home, dates, chip and arrival details, use Edit on the Full Profile.
                         </p>
                     ) : (
                     <>
@@ -564,28 +564,30 @@ function MonkeyForm({
                             </div>
                         </div>
                         )}
-
-                        <PhotosField
-                            ref={photosRef}
-                            photos={form.photos}
-                            onChange={(update) => setForm((f) => ({ ...f, photos: update(f.photos) }))}
-                            // Saved in the folder of its troop or introcage
-                            uploadTo={() => ({ troop: chosenIntrocage(form, choices)?.name ?? form.troop, name: form.name })}
-                            uploadedHere={uploadedHere}
-                            uploading={uploading}
-                            onUploadingChange={setUploading}
-                            error={errors.photos}
-                            hint={
-                                <>
-                                    The primary photo (★) is shown on the card and in the
-                                    Profile Book; use ⋮ to change it or delete a photo.
-                                    {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
-                                </>
-                            }
-                            full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
-                        />
                     </>
                     )}
+
+                    {/* Photos: both Edits (the quick one too: adding photos
+                        and choosing the primary one) */}
+                    <PhotosField
+                        ref={photosRef}
+                        photos={form.photos}
+                        onChange={(update) => setForm((f) => ({ ...f, photos: update(f.photos) }))}
+                        // Saved in the folder of its troop or introcage
+                        uploadTo={() => ({ troop: chosenIntrocage(form, choices)?.name ?? form.troop, name: form.name })}
+                        uploadedHere={uploadedHere}
+                        uploading={uploading}
+                        onUploadingChange={setUploading}
+                        error={errors.photos}
+                        hint={
+                            <>
+                                The primary photo (★) is shown on the card and in the
+                                Profile Book; use ⋮ to change it or delete a photo.
+                                {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
+                            </>
+                        }
+                        full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
+                    />
 
                     {/* Bio: every monkey, except a new arrival being added
                         (its Arrival Info is all that's needed: the Bio comes

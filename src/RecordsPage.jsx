@@ -6,11 +6,14 @@ import {
     IconChevronDown,
     IconCopy,
     IconFileText,
+    IconFirstAidKit,
     IconFriends,
     IconHeartHandshake,
     IconMinus,
     IconPlus,
     IconScale,
+    IconTool,
+    IconTrees,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
@@ -32,6 +35,7 @@ import {
 } from "./babyRecords";
 import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
 import IntegrationRecordsPage from "./IntegrationRecordsPage";
+import MaintenanceRecordsPage from "./MaintenanceRecordsPage";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
@@ -40,10 +44,18 @@ import "./RecordsPage.css";
 // View (each baby's latest, the change since the one before, and its
 // history). Integration: Reports or Current Integrations (their own page:
 // IntegrationRecordsPage.jsx). Entering: editors and admins (canEnter);
-// anyone else on the staff can view.
+// anyone else on the staff can view. Maintenance: its own page (Enter /
+// View, MaintenanceRecordsPage.jsx; entering: anyone with a role, canLog).
+// Sections and Meds & Sickbay: coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
-const TEAM_ICONS = { "baby-care": IconBabyCarriage, integration: IconFriends };
+const TEAM_ICONS = {
+    "baby-care": IconBabyCarriage,
+    integration: IconFriends,
+    maintenance: IconTool,
+    sections: IconTrees,
+    "meds-sickbay": IconFirstAidKit,
+};
 const KIND_ICONS = { milk: IconBottle, weights: IconScale, reports: IconFileText, current: IconHeartHandshake };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
@@ -659,7 +671,8 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
 
 // ---- The page: the team, what to record, then Enter / View ----
 
-function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnter = false, inert = false }) {
+// maintenance: { live, canLog, me } for Maintenance (MaintenanceRecordsPage)
+function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnter = false, maintenance = {}, inert = false }) {
     const { team, kind } = parseRecordsRoute(route);
     const crumbs = [
         { href: "#records", label: "Records" },
@@ -678,14 +691,23 @@ function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnte
                         {TEAMS.map((t) => (
                             <Choice
                                 key={t.id}
-                                href={`#records/${t.id}`}
+                                href={t.soon ? null : `#records/${t.id}`}
                                 Icon={TEAM_ICONS[t.id]}
                                 title={t.name}
-                                sub={t.kinds.map((k) => RECORD_KINDS[k].title).join(" · ")}
+                                sub={t.soon ? "Coming soon…" : (t.sub ?? t.kinds.map((k) => RECORD_KINDS[k].title).join(" · "))}
                             />
                         ))}
                     </ul>
                 </>
+            ) : team.soon ? (
+                <p className="RecordsPage-intro">Coming soon…</p>
+            ) : team.page ? (
+                <MaintenanceRecordsPage
+                    enclosures={enclosures}
+                    live={Boolean(maintenance.live)}
+                    canLog={Boolean(maintenance.canLog)}
+                    me={maintenance.me}
+                />
             ) : !kind ? (
                 <>
                     <p className="RecordsPage-intro">What would you like to record or see?</p>

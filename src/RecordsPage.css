@@ -133,6 +133,17 @@
     color: var(--text-2);
 }
 
+/* A team that's coming soon: not a link, quieter */
+
+.RecordsPage-choice.is-soon {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.RecordsPage-choice.is-soon:hover {
+    border-color: var(--line);
+}
+
 .RecordsPage-choiceArrow {
     flex-shrink: 0;
     color: var(--text-3);

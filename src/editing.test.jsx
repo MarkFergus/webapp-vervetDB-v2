@@ -138,7 +138,7 @@ async function openQuickEditFor(user, name) {
 }
 
 describe("the pop-up's Edit: just what the pop-up shows", () => {
-    test("Bio, Distinctive features, Feeding and Monitoring; nothing else", async () => {
+    test("Photos, Bio, Distinctive features, Feeding and Monitoring; nothing else", async () => {
         const { user } = setup();
         await openQuickEditFor(user, "Aroha");
         expect(form()).toHaveAccessibleName("Edit Aroha");
@@ -147,7 +147,7 @@ describe("the pop-up's Edit: just what the pop-up shows", () => {
         for (const label of ["Name", "Enclosure", "Location", "Birth year", "Chip", "Sex"]) {
             expect(within(form()).queryByLabelText(label, { exact: false })).toBeNull();
         }
-        expect(within(form()).queryByText(/Upload new photo/)).toBeNull();
+        expect(within(form()).getByText(/Upload new photo/)).toBeInTheDocument();
         expect(within(form()).queryByLabelText(/Arrival Info/)).toBeNull();
         // (no Delete either)
         expect(within(form()).queryByRole("button", { name: "Delete" })).toBeNull();
@@ -163,6 +163,17 @@ describe("the pop-up's Edit: just what the pop-up shows", () => {
         await waitFor(() => expect(saved.updates).toHaveLength(1));
         expect(saved.updates[0].row).toMatchObject({ name: "Aroha", bio: "Loves grapes.", chip: "19806", birth_year: 2016 });
         expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("Loves grapes.");
+    });
+
+    test("photos: ⋮ → Make primary photo, saved", async () => {
+        const { user } = setup();
+        await openQuickEditFor(user, "Darby");
+        expect(formPhotos()).toEqual([DARBY_1, DARBY_2]);
+        await user.click(within(form()).getByRole("button", { name: /^Photo 2 options/ }));
+        await user.click(within(form()).getByRole("menuitem", { name: "Make primary photo" }));
+        await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row.photos).toEqual([DARBY_2, DARBY_1]);
     });
 });
 

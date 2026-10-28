@@ -1,0 +1,219 @@
+/* Records → Maintenance (MaintenanceRecordsPage.jsx). The search, dates
+   and report box are Integration's (IntegrationRecordsPage.css); the
+   Routine / Repair pills and Edit / Delete are the maintenance log's
+   (MaintenanceLog.css). */
+
+/* ---- Enter ---- */
+
+.MaintenancePage-enter {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 640px;
+}
+
+.MaintenancePage-enter .RecordsPage-actions {
+    margin-top: 0;
+}
+
+.MaintenancePage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.MaintenancePage-label,
+.IntegrationPage-dates .MaintenancePage-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+/* An enclosure's round icon, where a monkey would have its photo */
+.MaintenancePage-placeIcon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--accent);
+    background-color: var(--surface-2);
+    border-radius: 999px;
+}
+
+/* Filtering: the picked place's name, then Clear beside it: the monkey
+   list's clear filter button (ShowPage-clearChips), in pink */
+.IntegrationPage-chosen.is-filter .RecordsPage-baby {
+    flex: 0 1 auto;
+}
+
+.MaintenancePage-clear {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--pink);
+    background: none;
+    border: 1px solid var(--pink);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.MaintenancePage-clear:hover {
+    background-color: var(--surface-2);
+}
+
+.MaintenancePage-clear:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Routine | Repair (View: All | Routine | Repair), the tabs' look */
+.MaintenancePage-types {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.MaintenancePage-types button {
+    height: 34px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.MaintenancePage-types button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text);
+}
+
+.MaintenancePage-types button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* ---- View ---- */
+
+.MaintenancePage-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* The place: a search with its list, or the one picked */
+.MaintenancePage-filters > .IntegrationPage-find,
+.MaintenancePage-filters > .IntegrationPage-chosen {
+    flex: 1 1 300px;
+}
+
+.MaintenancePage-count {
+    margin: 12px 0 8px;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+.MaintenancePage-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Its date, type and details; on the right, Edit / Delete over who
+   logged it */
+.MaintenancePage-report {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.MaintenancePage-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.MaintenancePage-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+}
+
+/* The date and its type */
+.MaintenancePage-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.MaintenancePage-side .MaintenanceLog-icons {
+    position: static;
+}
+
+/* The place in bold, then the details: computers, two columns (the
+   details all start the same distance in); phones, the details follow the
+   place on the same line and wrap under it */
+.MaintenancePage-details {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 16px;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--text);
+}
+
+.MaintenancePage-details p {
+    margin: 0;
+    white-space: pre-line;
+}
+
+@media (max-width: 699px) {
+    .MaintenancePage-details {
+        display: block;
+    }
+
+    .MaintenancePage-details p {
+        display: inline;
+    }
+}
+
+.MaintenancePage-place {
+    align-self: start;
+    margin-right: 8px;
+    font-weight: 700;
+    color: var(--text-strong);
+    text-decoration: none;
+}
+
+a.MaintenancePage-place:hover {
+    text-decoration: underline;
+}
+
+.MaintenancePage-more {
+    margin: 14px auto 0;
+}

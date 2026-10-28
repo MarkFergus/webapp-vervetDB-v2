@@ -966,7 +966,18 @@ function ShowPage({
                 // (nothing while checking who's signed in, or leaving)
                 recordsLocked ? null : (
                     <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
-                        <RecordsPage route={route} monkeys={monkeys} enclosures={enclosures} canEnter={canEdit} inert={isAnyModalOpen} />
+                        <RecordsPage
+                            route={route}
+                            monkeys={monkeys}
+                            enclosures={enclosures}
+                            canEnter={canEdit}
+                            maintenance={{
+                                live: enclosureEditing.live,
+                                canLog: enclosureEditing.canLog,
+                                me: { userId: enclosureEditing.userId, isAdmin },
+                            }}
+                            inert={isAnyModalOpen}
+                        />
                     </Suspense>
                 )
             ) : onAdmin ? (

@@ -29,7 +29,8 @@ function dayText(date) {
 // and the save button. Adding, and changing an entry.
 //   initial: { doneOn, kind, details }; onSave(values) async (throws a
 //   message to show); saveLabel / busyLabel: "Add Entry" / "Adding…"
-function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
+// (Records → Maintenance uses it too, to change a report)
+export function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
     const [draft, setDraft] = useState(initial);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);

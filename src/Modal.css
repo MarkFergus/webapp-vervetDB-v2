@@ -194,9 +194,10 @@
 }
 
 /* Phones: Full Profile is a round icon button too, so they all fit on one
-   row with Edit and Photos (its name is still read out) */
+   row with Edit and Photos (its name is still read out). Only the icon
+   buttons (with a label to hide): a plain Cancel keeps its size. */
 @media (max-width: 459px) {
-    .Modal-edit.is-quiet {
+    .Modal-edit.is-quiet:has(.Modal-editLabel) {
         justify-content: center;
         width: 36px;
         height: 36px;
