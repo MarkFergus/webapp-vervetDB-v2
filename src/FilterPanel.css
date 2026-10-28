@@ -179,6 +179,24 @@
     opacity: 0.8;
 }
 
+/* Phones: the age range under the name ("Senior Adults" / "11–19"), so the
+   longer names keep it in their pill */
+@media (max-width: 459px) {
+    .FilterPanel-pills button small {
+        display: block;
+        margin-left: 0;
+        line-height: 1.2;
+    }
+}
+
+/* The narrowest phones: a long name wraps too ("Senior" / "Adults") */
+@media (max-width: 359px) {
+    .FilterPanel-pills button {
+        white-space: normal;
+        line-height: 1.2;
+    }
+}
+
 .FilterPanel-pills button.is-all {
     background: none;
     border: 1px dashed var(--line-strong);

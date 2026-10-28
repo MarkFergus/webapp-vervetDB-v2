@@ -1,4 +1,6 @@
 import { IconChevronRight } from "@tabler/icons-react";
+import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
+import { fallbackTo } from "./photoFallback";
 import "./RecordsPage.css";
 
 // A page of choices, like the Records page's (pick a team, then a task) and
@@ -36,5 +38,18 @@ export function Choice({ href, Icon, title, sub }) {
                 <IconChevronRight size={20} aria-hidden="true" className="RecordsPage-choiceArrow" />
             </a>
         </li>
+    );
+}
+
+// A row's small photo: its first one, as in the list view (none yet: an
+// empty circle)
+export function BabyPhoto({ monkey }) {
+    const photo = Array.isArray(monkey.img) ? monkey.img[0] : monkey.img;
+    return (
+        <span className="RecordsPage-photo">
+            {typeof photo === "string" && photo && !isPlaceholderPhoto(photo) && (
+                <img src={thumbUrl(photo)} alt="" loading="lazy" onError={fallbackTo(photo)} />
+            )}
+        </span>
     );
 }

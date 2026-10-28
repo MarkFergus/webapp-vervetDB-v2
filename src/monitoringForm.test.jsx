@@ -65,10 +65,9 @@ test("nothing changed: not saved again", async () => {
     expect(saveMonitoring).not.toHaveBeenCalled();
 });
 
-test("editors (not admins, for now) don't see it", async () => {
+test("editors see it too (monitoring-editors.sql)", async () => {
     useAuth.mockReturnValue(EDITOR);
     edit();
-    await screen.findByRole("textbox", { name: "Name (required)" });
-    expect(screen.queryByRole("group", { name: "Monitoring" })).toBeNull();
-    expect(loadMonitoring).not.toHaveBeenCalled();
+    expect(await screen.findByRole("group", { name: "Monitoring" })).toBeInTheDocument();
+    expect(loadMonitoring).toHaveBeenCalledWith(NITA.id);
 });

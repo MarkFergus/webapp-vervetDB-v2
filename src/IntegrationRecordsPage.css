@@ -1,0 +1,382 @@
+/* Records → Integration (IntegrationRecordsPage.jsx), inside the Records
+   page (RecordsPage.css: its photos, names, buttons and dialog) */
+
+.IntegrationPage-reports {
+    min-width: 0;
+}
+
+/* ---- Reports: a card per monkey ---- */
+
+.IntegrationPage-cards {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.IntegrationPage-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.IntegrationPage-card.has-error {
+    border-color: var(--danger);
+}
+
+.IntegrationPage-who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.IntegrationPage-last {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: right;
+}
+
+/* From | To (and New Integration's Date Started | Type), side by side */
+.IntegrationPage-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 220px));
+    gap: 10px;
+}
+
+.IntegrationPage-dates label,
+.IntegrationPage-choose {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.IntegrationPage-dates input {
+    width: 100%;
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .IntegrationPage-dates input {
+    color-scheme: light;
+}
+
+.IntegrationPage-dates select,
+.IntegrationPage-choose select,
+.IntegrationPage-choose input,
+.IntegrationPage-report {
+    box-sizing: border-box;
+    width: 100%;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.IntegrationPage-dates select,
+.IntegrationPage-choose select,
+.IntegrationPage-choose input {
+    height: 40px;
+    padding: 0 10px;
+}
+
+.IntegrationPage-report {
+    min-height: 96px;
+    padding: 10px 12px;
+    line-height: 1.45;
+    resize: vertical;
+}
+
+.IntegrationPage-dates select:focus-visible,
+.IntegrationPage-choose select:focus-visible,
+.IntegrationPage-choose input:focus-visible,
+.IntegrationPage-report:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+/* Under the report: a problem on the left, "234 / 500" on the right */
+.IntegrationPage-under {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: -4px;
+    font-size: 13px;
+}
+
+.IntegrationPage-count {
+    flex-shrink: 0;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Phones: the last report's date under the name */
+@media (max-width: 459px) {
+    .IntegrationPage-who {
+        flex-wrap: wrap;
+    }
+
+    .IntegrationPage-last {
+        flex-basis: 100%;
+        text-align: left;
+    }
+
+    .IntegrationPage-dates {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+}
+
+/* ---- Current Integrations ---- */
+
+.IntegrationPage-add {
+    margin-bottom: 12px;
+}
+
+/* New Integration: a panel with the app's blue border (like Quick
+   Actions' forms) */
+.IntegrationPage-new {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+}
+
+.IntegrationPage-new .RecordsPage-subhead {
+    margin: 0;
+}
+
+.IntegrationPage-new .RecordsPage-actions {
+    margin-top: 0;
+}
+
+.IntegrationPage-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 452px;
+    padding: 0 0 0 10px;
+    color: var(--text-3);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.IntegrationPage-search:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+}
+
+.IntegrationPage-search input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+}
+
+.IntegrationPage-search input:focus-visible {
+    outline: none;
+}
+
+/* The monkeys found: tap one to choose it */
+.IntegrationPage-found {
+    max-width: 452px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.IntegrationPage-found button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 8px;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.IntegrationPage-found button:hover {
+    background-color: var(--surface-2);
+}
+
+.IntegrationPage-found button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.IntegrationPage-found .RecordsPage-photo {
+    width: 36px;
+    height: 36px;
+}
+
+.IntegrationPage-found .RecordsPage-name {
+    font-size: 15px;
+}
+
+.IntegrationPage-chosen {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 452px;
+}
+
+/* The list: Monkey | Location | Started | Type | Status (phones: the
+   monkey, then the rest under it) */
+.IntegrationPage-table {
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.IntegrationPage-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 1.4fr) minmax(110px, 1fr) 130px 100px 200px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+}
+
+.IntegrationPage-row:last-child {
+    border-bottom: none;
+}
+
+.IntegrationPage-head {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.IntegrationPage-monkey {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.IntegrationPage-monkey .RecordsPage-photo {
+    width: 36px;
+    height: 36px;
+}
+
+.IntegrationPage-monkey .RecordsPage-name {
+    font-size: 15px;
+}
+
+/* ACTIVE: green */
+.IntegrationPage-status {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--green);
+    border: 1px solid var(--green);
+    border-radius: 6px;
+}
+
+/* ON HOLD: amber */
+.IntegrationPage-status.is-on_hold {
+    color: var(--amber);
+    border-color: var(--amber);
+}
+
+.IntegrationPage-status.is-completed,
+.IntegrationPage-status.is-cancelled {
+    color: var(--text-3);
+    border-color: var(--line-strong);
+}
+
+.IntegrationPage-statusCell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Update (its Status Update): a small grey button at the row's end */
+.IntegrationPage-update.Modal-edit {
+    height: 30px;
+    margin-left: auto;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.IntegrationPage-update:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+}
+
+.IntegrationPage-choose {
+    margin-top: 10px;
+}
+
+@media (max-width: 699px) {
+    .IntegrationPage-head {
+        display: none;
+    }
+
+    .IntegrationPage-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "monkey status"
+            "place place"
+            "started kind";
+        row-gap: 4px;
+    }
+
+    .IntegrationPage-monkey {
+        grid-area: monkey;
+    }
+
+    .IntegrationPage-row > [role="cell"]:last-child {
+        grid-area: status;
+    }
+
+    .IntegrationPage-place {
+        grid-area: place;
+        padding-left: 46px;
+        color: var(--text-2);
+    }
+
+    .IntegrationPage-started {
+        grid-area: started;
+        padding-left: 46px;
+        color: var(--text-3);
+    }
+
+    .IntegrationPage-kind {
+        grid-area: kind;
+        color: var(--text-3);
+        text-align: right;
+    }
+}

@@ -5,14 +5,15 @@ import {
     IconChartLine,
     IconChevronDown,
     IconCopy,
+    IconFileText,
+    IconFriends,
+    IconHeartHandshake,
     IconMinus,
     IconPlus,
     IconScale,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
-import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
-import { fallbackTo } from "./photoFallback";
 import { placeName } from "./places";
 import {
     RECORD_KINDS,
@@ -24,36 +25,26 @@ import {
     dayLabel,
     dayText,
     historyFor,
+    recentHistory,
     parseRecordsRoute,
     startDay,
     weightReport,
 } from "./babyRecords";
-import { Choice, Crumbs } from "./PagePicker";
+import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
+import IntegrationRecordsPage from "./IntegrationRecordsPage";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
-// First the team (Baby Care, for now), then what to record (Milk Totals,
-// Weights), then Enter (a whole batch at once: the date, then each baby's
-// value) or View (each baby's latest, the change since the one before, and
-// its history). Entering: editors and admins (canEnter); anyone else on the
-// staff can view.
+// First the team, then what to record. Baby Care: Milk Totals or Weights,
+// then Enter (a whole batch at once: the date, then each baby's value) or
+// View (each baby's latest, the change since the one before, and its
+// history). Integration: Reports or Current Integrations (their own page:
+// IntegrationRecordsPage.jsx). Entering: editors and admins (canEnter);
+// anyone else on the staff can view.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
-const TEAM_ICONS = { "baby-care": IconBabyCarriage };
-const KIND_ICONS = { milk: IconBottle, weights: IconScale };
-
-// A row's small photo: its first one, as in the list view (none yet: an
-// empty circle)
-function BabyPhoto({ monkey }) {
-    const photo = Array.isArray(monkey.img) ? monkey.img[0] : monkey.img;
-    return (
-        <span className="RecordsPage-photo">
-            {typeof photo === "string" && photo && !isPlaceholderPhoto(photo) && (
-                <img src={thumbUrl(photo)} alt="" loading="lazy" onError={fallbackTo(photo)} />
-            )}
-        </span>
-    );
-}
+const TEAM_ICONS = { "baby-care": IconBabyCarriage, integration: IconFriends };
+const KIND_ICONS = { milk: IconBottle, weights: IconScale, reports: IconFileText, current: IconHeartHandshake };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
 
@@ -363,7 +354,11 @@ function Sparkline({ kind, monkey, history }) {
 
 function BabyHistory({ kind, monkey, records }) {
     const [open, setOpen] = useState(false);
+    // The latest 7 days (milk) or 7 weeks (weights) to start with
+    const [all, setAll] = useState(false);
     const history = historyFor(records, monkey.id);
+    const recent = recentHistory(history, kind.historyDays);
+    const shown = all ? history : recent;
     const latest = history[0] ?? null;
     const value = (n) => `${n.toLocaleString("en-GB")} ${kind.unit}`;
     // (weights: a gain green, a loss amber)
@@ -424,6 +419,7 @@ function BabyHistory({ kind, monkey, records }) {
                         <IconChevronDown size={16} aria-hidden="true" />
                     </button>
                     {open && (
+                        <>
                         <table className="RecordsPage-history" id={listId}>
                             <thead>
                                 <tr>
@@ -433,7 +429,7 @@ function BabyHistory({ kind, monkey, records }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {history.map((r) => (
+                                {shown.map((r) => (
                                     <tr key={r.date}>
                                         <th scope="row">
                                             {dayLabel(r.date)}
@@ -450,6 +446,13 @@ function BabyHistory({ kind, monkey, records }) {
                                 ))}
                             </tbody>
                         </table>
+                        {/* (older ones: See More; See Less to go back) */}
+                        {recent.length < history.length && (
+                            <button type="button" className="RecordsPage-seeMore" onClick={() => setAll((a) => !a)}>
+                                {all ? "See Less" : `See More (${history.length - recent.length} older)`}
+                            </button>
+                        )}
+                        </>
                     )}
                 </>
             )}
@@ -699,7 +702,12 @@ function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnte
                     </ul>
                 </>
             ) : (
-                <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} />
+                // (Integration's: its own page)
+                team.id === "integration" ? (
+                    <IntegrationRecordsPage key={kind.id} kind={kind} monkeys={monkeys} canEnter={canEnter} />
+                ) : (
+                    <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} />
+                )
             )}
         </div>
     );

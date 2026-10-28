@@ -300,18 +300,59 @@ describe("the monkey's page", () => {
     };
     const STAFF = { canSee: true, canAdd: false, userId: "u1", isAdmin: false };
 
-    test("staff see the Arrival Details in Arrival Info (any monkey, not just new arrivals)", async () => {
+    // (its text box's heading: "Arrival Info", as in the form, inside the
+    // Arrival Info part)
+    const textHeading = () => document.querySelector(".MonkeyPage-arrivalText h3");
+
+    test("staff see the Arrival Info text (any monkey, not just new arrivals)", async () => {
         loadArrivalInfo.mockResolvedValue("Found by Sam Smith\nBrought in on the 3rd");
         render(<MonkeyPage monkey={MONKEY} staff={STAFF} />);
         expect(await screen.findByText(/Found by Sam Smith/)).toBeInTheDocument();
-        expect(screen.getByText("Arrival Details")).toBeInTheDocument();
+        expect(textHeading()).toHaveTextContent("Arrival Info");
         expect(loadArrivalInfo).toHaveBeenCalledWith(12);
     });
 
-    test("visitors: no Arrival Details, and nothing is loaded for them", () => {
+    test("none yet: says so", async () => {
+        loadArrivalInfo.mockResolvedValue("");
+        render(<MonkeyPage monkey={MONKEY} staff={STAFF} />);
+        expect(await screen.findByText("No arrival info yet.")).toBeInTheDocument();
+    });
+
+    test("saved in Edit (a new monkey object): loaded again, so the new text shows", async () => {
+        loadArrivalInfo.mockResolvedValue("Found by Sam");
+        const { rerender } = render(<MonkeyPage monkey={MONKEY} staff={STAFF} />);
+        await screen.findByText("Found by Sam");
+        loadArrivalInfo.mockResolvedValue("Found by Sam near the river");
+        rerender(<MonkeyPage monkey={{ ...MONKEY }} staff={STAFF} />);
+        expect(await screen.findByText("Found by Sam near the river")).toBeInTheDocument();
+        expect(loadArrivalInfo).toHaveBeenCalledTimes(2);
+    });
+
+    test("visitors: no Arrival Info text, and nothing is loaded for them", () => {
         render(<MonkeyPage monkey={MONKEY} staff={null} />);
         expect(screen.getByRole("heading", { name: "Arrival Info" })).toBeInTheDocument();
-        expect(screen.queryByText("Arrival Details")).not.toBeInTheDocument();
+        expect(textHeading()).toBeNull();
         expect(loadArrivalInfo).not.toHaveBeenCalled();
     });
+});
+
+test("the monkey's page: its age, as precise as its birth date allows", () => {
+    const base = BUILT_IN_DATA.monkeys[0];
+    const ago = (days) => {
+        const d = new Date();
+        d.setDate(d.getDate() - days);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    const ageOf = (monkey) => {
+        const { unmount } = render(<MonkeyPage monkey={monkey} staff={null} />);
+        const text = screen.getByText("Age").closest("div").textContent;
+        unmount();
+        return text;
+    };
+    expect(ageOf({ ...base, birthDate: ago(3) })).toContain("3 days old");
+    expect(ageOf({ ...base, birthDate: ago(21) })).toContain("3 weeks old");
+    // Only a birth year: years, and "<1 year old" for this season's babies
+    const season = new Date().getMonth() >= 9 ? new Date().getFullYear() : new Date().getFullYear() - 1;
+    expect(ageOf({ ...base, birthDate: null, year: season })).toContain("<1 year old");
+    expect(ageOf({ ...base, birthDate: null, year: season - 5 })).toContain("5 years old");
 });

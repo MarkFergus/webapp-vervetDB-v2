@@ -690,6 +690,100 @@ export async function addIntegration(monkeyId, { from, to, report }) {
     return toAppReport(data);
 }
 
+// Records → Integration → Reports: several monkeys' reports at once
+// ([{ monkeyId, from, to, report }]); who and when are filled in by the
+// database. → how many were saved
+export async function addIntegrationReports(entries) {
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .insert(entries.map((e) => ({ monkey_id: e.monkeyId, from_date: e.from, to_date: e.to, report: e.report })))
+        .select("id");
+    if (error) {
+        console.error("Adding integration reports failed:", error);
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an editor?");
+        throw saveProblem(error);
+    }
+    return data.length;
+}
+
+// Each monkey's latest report period end ({ monkeyId: "2026-10-27" }), for
+// the next report's From
+export async function loadLatestReportDates(monkeyIds) {
+    if (!monkeyIds.length) return {};
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .select("monkey_id, to_date")
+        .in("monkey_id", monkeyIds)
+        .order("to_date", { ascending: false });
+    if (error) throw error;
+    const latest = {};
+    for (const row of data) latest[row.monkey_id] ??= row.to_date;
+    return latest;
+}
+
+// ---- Current Integrations (supabase/integrations.sql) ----
+
+const toAppIntegration = (row) => ({
+    id: row.id,
+    monkeyId: row.monkey_id,
+    startedOn: row.started_on,
+    kind: row.kind,
+    status: row.status,
+    statusOn: row.status_on ?? null,
+    loggedByName: row.logged_by_name ?? null,
+});
+
+// The integrations going on now (Active or On Hold), earliest first. Throws if the database
+// hasn't got them yet (error.code "42P01" / "PGRST205"), or can't be reached.
+export async function loadIntegrations() {
+    const { data, error } = await supabase
+        .from("integrations")
+        .select("id, monkey_id, started_on, kind, status, logged_by_name")
+        .in("status", ["active", "on_hold"])
+        .order("started_on")
+        .order("id");
+    if (error) throw error;
+    return data.map(toAppIntegration);
+}
+
+// Starts one ({ startedOn, kind }), in the starter's name. Returns it.
+export async function startIntegration(monkeyId, { startedOn, kind }) {
+    const { data, error } = await supabase
+        .from("integrations")
+        .insert({ monkey_id: monkeyId, started_on: startedOn, kind })
+        .select("id, monkey_id, started_on, kind, status, logged_by_name")
+        .single();
+    if (error) {
+        console.error("Starting an integration failed:", error);
+        if (error.code === "23505") throw new Error("This monkey already has an integration going on.");
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an editor?");
+        throw saveProblem(error);
+    }
+    return toAppIntegration(data);
+}
+
+// Status Update: a new status (INTEGRATION_STATUSES) and the day it
+// changed. Completed and Cancelled end it that day; Active and On Hold clear
+// the end. Returns it.
+export async function updateIntegrationStatus(id, { status, date }) {
+    const ending = status === "completed" || status === "cancelled";
+    const { data, error } = await supabase
+        .from("integrations")
+        .update({ status, status_on: date, ended_on: ending ? date : null })
+        .eq("id", id)
+        .select("id, monkey_id, started_on, kind, status, status_on, logged_by_name")
+        .maybeSingle();
+    if (error) {
+        console.error("Updating an integration's status failed:", error);
+        if (error.code === "23505") throw new Error("This monkey already has another integration going on.");
+        if (error.code === "23514" && /ended/.test(error.message)) throw new Error("The date can't be before the integration started.");
+        if (["23514", "42703", "PGRST204"].includes(error.code)) throw new Error("Please run supabase/integration-statuses.sql first.");
+        throw saveProblem(error);
+    }
+    if (!data) throw new Error("The database didn't allow this. Are you still signed in as an editor?");
+    return toAppIntegration(data);
+}
+
 // Changes an entry's period or report (admins, or whoever wrote it)
 export async function saveIntegration(id, { from, to, report }) {
     const { data, error } = await supabase
@@ -1077,6 +1171,24 @@ export async function loadBabyRecords(kindId) {
         monkeyId: row.monkey_id,
         date: row[t.date],
         value: row[t.value],
+        notes: row.notes ?? null,
+        loggedByName: row.logged_by_name ?? null,
+    }));
+}
+
+// One monkey's weights (the Records page's), oldest first, for its Medical
+// records: [{ monkeyId, date, value, notes, loggedByName }]
+export async function loadMonkeyWeights(monkeyId) {
+    const { data, error } = await supabase
+        .from("weights")
+        .select("monkey_id, weigh_date, grams, notes, logged_by_name")
+        .eq("monkey_id", monkeyId)
+        .order("weigh_date");
+    if (error) throw error;
+    return data.map((row) => ({
+        monkeyId: row.monkey_id,
+        date: row.weigh_date,
+        value: row.grams,
         notes: row.notes ?? null,
         loggedByName: row.logged_by_name ?? null,
     }));

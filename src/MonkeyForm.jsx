@@ -53,11 +53,14 @@ function birthYears(current) {
     return Array.from({ length: thisYear - oldest + 1 }, (_, i) => String(thisYear - i));
 }
 
+// quick: the pop-up's Edit, just what the pop-up shows (Bio, Distinctive
+// features, Feeding, Monitoring); otherwise everything (the Full Profile's
+// Edit, and Add New Monkey)
 function MonkeyForm({
-    monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted,
+    monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted, quick = false,
 }) {
     const isNew = !monkey;
-    const { isAdmin } = useAuth();
+    const { isAdmin, isEditor } = useAuth();
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
@@ -112,10 +115,11 @@ function MonkeyForm({
         }
     }, [isNew, arrivalInfo.available, arrivalInfo.info]);
     const showArrival = arrivalInfo.available && (isNew ? rescue : true);
-    // Monitoring (admins, once the database has it): Condition Check and
+    // Monitoring (editors and admins, once the database has it: editors since
+    // monitoring-editors.sql): Condition Check and
     // Notes for Monitoring, for the Troop Monitoring Notes. Kept apart
     // (staff only), like the Arrival Info.
-    const monitoringInfo = useMonitoring(monkey?.id ?? null, !isNew && isAdmin);
+    const monitoringInfo = useMonitoring(monkey?.id ?? null, !isNew && isEditor);
     const [monitoring, setMonitoring] = useState({ conditionCheck: false, notes: "" });
     const [monitoringSaved, setMonitoringSaved] = useState({ conditionCheck: false, notes: "" });
     useEffect(() => {
@@ -211,7 +215,11 @@ function MonkeyForm({
         const { errors: found, values } = checkForm(form, choices);
         setErrors(found);
         setProblem(null);
-        if (Object.keys(found).length) return;
+        if (Object.keys(found).length) {
+            // (the quick Edit: a problem with a field it doesn't show)
+            if (quick) setProblem("Some of its other details need fixing first: please use Edit on the Full Profile.");
+            return;
+        }
         // A new home: first its date and reason
         const newHome =
             (values.troop ?? null) !== (monkey?.troop ?? null) || (values.introcage ?? null) !== (monkey?.introcage ?? null);
@@ -297,277 +305,287 @@ function MonkeyForm({
                 </div>
 
                 <div className="MonkeyForm-body">
-                    {/* Adding: a New Arrival or Other */}
-                    {careUnitsOnly && (
-                        <div className="MonkeyForm-kind" role="group" aria-label="Type">
-                            {[["rescue", "New Arrival"], ["other", "Other"]].map(([id, label]) => (
-                                <button
-                                    key={id}
-                                    type="button"
-                                    aria-pressed={kind === id}
-                                    onClick={() => chooseKind(id)}
-                                >
-                                    {label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                    <label className="MonkeyForm-field">
-                        <span>Name <em>(required)</em></span>
-                        <input
-                            ref={nameRef}
-                            value={form.name}
-                            onChange={set("name")}
-                            aria-invalid={Boolean(errors.name)}
-                            aria-describedby={describedBy("name")}
-                        />
-                        {errorFor("name")}
-                    </label>
-
-                    {/* Where it lives: its enclosure, then with the troop
-                        or in one of that enclosure's introcages */}
-                    <div className="MonkeyForm-row">
-                        <label className="MonkeyForm-field">
-                            <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
-                            <select
-                                value={form.troop}
-                                onChange={chooseEnclosure}
-                                aria-invalid={Boolean(errors.troop)}
-                                aria-describedby={describedBy("troop")}
-                            >
-                                <option value="">Choose…</option>
-                                {choices.map((c) => (
-                                    <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
-                                ))}
-                            </select>
-                            {errorFor("troop")}
-                        </label>
-                        <label className="MonkeyForm-field">
-                            <span>Home Location <em>(required)</em></span>
-                            <select
-                                value={form.location}
-                                onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
-                                disabled={!choice}
-                                aria-invalid={Boolean(errors.location)}
-                                aria-describedby={describedBy("location")}
-                            >
-                                {!choice && <option value="">Choose an enclosure first</option>}
-                                {choice && form.location === "" && <option value="">Choose…</option>}
-                                {choice && (
-                                    <>
-                                        {!choice.noTroop && <option value="troop">{fullName(choice.troop)} Troop</option>}
-                                        {choice.introcages.map((i) => (
-                                            <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
-                                        ))}
-                                    </>
-                                )}
-                            </select>
-                            {errorFor("location")}
-                        </label>
-                    </div>
-                    {rescue && (
-                        <p className="MonkeyForm-hint">
-                            New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.
+                    {/* Quick (the pop-up's Edit): just what the pop-up shows; the
+                        rest is in the Full Profile's Edit */}
+                    {quick ? (
+                        <p className="MonkeyForm-hint MonkeyForm-quickHint">
+                            For the name, home, dates, chip, photos and arrival details, use Edit on the Full Profile.
                         </p>
-                    )}
-
-                    {/* When it arrived and why (once the database has
-                        them): needed for a new arrival; in Edit, any monkey,
-                        and either can be left blank */}
-                    {form.arrivalDate !== undefined && (
-                        <div className="MonkeyForm-row is-pair is-lined">
-                            <label className="MonkeyForm-field">
-                                <span>Arrival Date {form.arrivalRequired && <em>(required)</em>}</span>
-                                <input
-                                    type="date"
-                                    value={form.arrivalDate}
-                                    max={todayText()}
-                                    onChange={set("arrivalDate")}
-                                    aria-invalid={Boolean(errors.arrivalDate)}
-                                    aria-describedby={describedBy("arrivalDate")}
-                                />
-                                {errorFor("arrivalDate")}
-                            </label>
-                            <label className="MonkeyForm-field">
-                                <span>Arrival Reason {form.arrivalRequired && <em>(required)</em>}</span>
-                                <select
-                                    value={form.arrivalReason}
-                                    onChange={set("arrivalReason")}
-                                    aria-invalid={Boolean(errors.arrivalReason)}
-                                    aria-describedby={describedBy("arrivalReason")}
-                                >
-                                    <option value="">{form.arrivalRequired ? "Choose…" : "Not recorded"}</option>
-                                    {Object.entries(ARRIVAL_REASONS).map(([key, label]) => (
-                                        <option key={key} value={key}>
-                                            {label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errorFor("arrivalReason")}
-                            </label>
-                        </div>
-                    )}
-
-                    {/* Species (once the database has species) and Sex */}
-                    <div className="MonkeyForm-row">
-                        {form.species !== undefined && (
-                            <label className="MonkeyForm-field">
-                                <span>Species</span>
-                                <select value={form.species} onChange={set("species")}>
-                                    {Object.entries(SPECIES).map(([key, label]) => (
-                                        <option key={key} value={key}>
-                                            {label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                        )}
-                        <label className="MonkeyForm-field">
-                            <span>Sex</span>
-                            <select value={form.sex} onChange={set("sex")}>
-                                <option value="female">Female</option>
-                                <option value="male">Male</option>
-                                <option value="">Unknown</option>
-                            </select>
-                        </label>
-                    </div>
-
-                    {/* Birth Date (once the database has them; blank:
-                        unknown, Approx?: a guess) and Birth Year, side by
-                        side. With a date, the year is its season (from 1
-                        July), filled in and fixed */}
-                    <div className="MonkeyForm-row is-pair">
-                        {/* (Approx? can be ticked first: it only counts
-                            once there's a date) */}
-                        {form.birthDate !== undefined && (
-                            <div className="MonkeyForm-field">
-                                <span className="MonkeyForm-labelRow">
-                                    <label htmlFor="MonkeyForm-birthDate">Birth Date</label>
-                                    <label className="MonkeyForm-approx">
-                                        <input
-                                            type="checkbox"
-                                            checked={Boolean(form.birthDateApprox)}
-                                            onChange={(e) => setForm({ ...form, birthDateApprox: e.target.checked })}
-                                        />
-                                        Approx?
-                                    </label>
-                                </span>
-                                <input
-                                    id="MonkeyForm-birthDate"
-                                    type="date"
-                                    value={form.birthDate}
-                                    max={todayText()}
-                                    onChange={(e) => {
-                                        const date = e.target.value;
-                                        setForm({
-                                            ...form,
-                                            birthDate: date,
-                                            year: date ? String(seasonOf(date)) : form.year,
-                                        });
-                                    }}
-                                    aria-invalid={Boolean(errors.birthDate)}
-                                    aria-describedby={describedBy("birthDate")}
-                                />
-                                {errorFor("birthDate")}
+                    ) : (
+                    <>
+                        {/* Adding: a New Arrival or Other */}
+                        {careUnitsOnly && (
+                            <div className="MonkeyForm-kind" role="group" aria-label="Type">
+                                {[["rescue", "New Arrival"], ["other", "Other"]].map(([id, label]) => (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        aria-pressed={kind === id}
+                                        onClick={() => chooseKind(id)}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
                             </div>
                         )}
                         <label className="MonkeyForm-field">
-                            <span>Birth year</span>
-                            {/* This year back to 1997 (or further, if this
-                                monkey's recorded year is older) */}
-                            <select
-                                value={form.year}
-                                onChange={set("year")}
-                                disabled={Boolean(form.birthDate)}
-                                aria-invalid={Boolean(errors.year)}
-                                aria-describedby={describedBy("year")}
-                            >
-                                <option value="">Unknown</option>
-                                {birthYears(form.year).map((y) => (
-                                    <option key={y} value={y}>
-                                        {y}
-                                    </option>
-                                ))}
-                            </select>
-                            {errorFor("year")}
-                        </label>
-                    </div>
-
-                    {/* (a new arrival has no chip yet: saved as No Chip, added later with Edit) */}
-                    {!rescue && (
-                    <div className="MonkeyForm-row">
-                        {/* While the box (or the button) has focus, the name
-                            has "Unknown?" beside it, or "Clear" once chosen
-                            (back to blank: no chip) */}
-                        <div
-                            className="MonkeyForm-field"
-                            onFocus={() => setChipFocused(true)}
-                            onBlur={(event) => {
-                                if (!event.currentTarget.contains(event.relatedTarget)) {
-                                    setChipFocused(false);
-                                }
-                            }}
-                        >
-                            <span className="MonkeyForm-labelRow">
-                                <label htmlFor="MonkeyForm-chip">Chip</label>
-                                {chipFocused && (
-                                    <button
-                                        type="button"
-                                        className="MonkeyForm-unknown"
-                                        // Keeps focus in the box, so a tap
-                                        // doesn't hide the button first
-                                        onPointerDown={(event) => event.preventDefault()}
-                                        onClick={form.chipUnknown ? clearChipUnknown : chooseChipUnknown}
-                                    >
-                                        {form.chipUnknown ? "Clear" : "Unknown?"}
-                                    </button>
-                                )}
-                            </span>
+                            <span>Name <em>(required)</em></span>
                             <input
-                                id="MonkeyForm-chip"
-                                ref={chipRef}
-                                // Digits plus , or . to separate two chips
-                                inputMode="decimal"
-                                placeholder={form.chipUnknown ? "Unknown" : "No Chip"}
-                                value={form.chip}
-                                onChange={(event) =>
-                                    setForm({ ...form, chip: event.target.value, chipUnknown: false })
-                                }
-                                aria-invalid={Boolean(errors.chip)}
-                                aria-describedby={
-                                    describedBy("chip") ?? (chipFocused ? "MonkeyForm-chip-hint" : undefined)
-                                }
+                                ref={nameRef}
+                                value={form.name}
+                                onChange={set("name")}
+                                aria-invalid={Boolean(errors.name)}
+                                aria-describedby={describedBy("name")}
                             />
-                            {/* Hints only while typing; a problem always shows */}
-                            {errorFor("chip") || (chipFocused && (
-                                <ul className="MonkeyForm-hint MonkeyForm-hintList" id="MonkeyForm-chip-hint">
-                                    <li>{form.chipUnknown ? "Press Clear if no chip" : "Leave blank if no chip"}</li>
-                                    <li>Two chips? e.g. 1011,1604</li>
-                                </ul>
-                            ))}
-                        </div>
-                    </div>
-                    )}
+                            {errorFor("name")}
+                        </label>
 
-                    <PhotosField
-                        ref={photosRef}
-                        photos={form.photos}
-                        onChange={(update) => setForm((f) => ({ ...f, photos: update(f.photos) }))}
-                        // Saved in the folder of its troop or introcage
-                        uploadTo={() => ({ troop: chosenIntrocage(form, choices)?.name ?? form.troop, name: form.name })}
-                        uploadedHere={uploadedHere}
-                        uploading={uploading}
-                        onUploadingChange={setUploading}
-                        error={errors.photos}
-                        hint={
-                            <>
-                                The primary photo (★) is shown on the card and in the
-                                Profile Book; use ⋮ to change it or delete a photo.
-                                {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
-                            </>
-                        }
-                        full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
-                    />
+                        {/* Where it lives: its enclosure, then with the troop
+                            or in one of that enclosure's introcages */}
+                        <div className="MonkeyForm-row">
+                            <label className="MonkeyForm-field">
+                                <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
+                                <select
+                                    value={form.troop}
+                                    onChange={chooseEnclosure}
+                                    aria-invalid={Boolean(errors.troop)}
+                                    aria-describedby={describedBy("troop")}
+                                >
+                                    <option value="">Choose…</option>
+                                    {choices.map((c) => (
+                                        <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
+                                    ))}
+                                </select>
+                                {errorFor("troop")}
+                            </label>
+                            <label className="MonkeyForm-field">
+                                <span>Home Location <em>(required)</em></span>
+                                <select
+                                    value={form.location}
+                                    onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
+                                    disabled={!choice}
+                                    aria-invalid={Boolean(errors.location)}
+                                    aria-describedby={describedBy("location")}
+                                >
+                                    {!choice && <option value="">Choose an enclosure first</option>}
+                                    {choice && form.location === "" && <option value="">Choose…</option>}
+                                    {choice && (
+                                        <>
+                                            {!choice.noTroop && <option value="troop">{fullName(choice.troop)} Troop</option>}
+                                            {choice.introcages.map((i) => (
+                                                <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
+                                            ))}
+                                        </>
+                                    )}
+                                </select>
+                                {errorFor("location")}
+                            </label>
+                        </div>
+                        {rescue && (
+                            <p className="MonkeyForm-hint">
+                                New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.
+                            </p>
+                        )}
+
+                        {/* When it arrived and why (once the database has
+                            them): needed for a new arrival; in Edit, any monkey,
+                            and either can be left blank */}
+                        {form.arrivalDate !== undefined && (
+                            <div className="MonkeyForm-row is-pair is-lined">
+                                <label className="MonkeyForm-field">
+                                    <span>Arrival Date {form.arrivalRequired && <em>(required)</em>}</span>
+                                    <input
+                                        type="date"
+                                        value={form.arrivalDate}
+                                        max={todayText()}
+                                        onChange={set("arrivalDate")}
+                                        aria-invalid={Boolean(errors.arrivalDate)}
+                                        aria-describedby={describedBy("arrivalDate")}
+                                    />
+                                    {errorFor("arrivalDate")}
+                                </label>
+                                <label className="MonkeyForm-field">
+                                    <span>Arrival Reason {form.arrivalRequired && <em>(required)</em>}</span>
+                                    <select
+                                        value={form.arrivalReason}
+                                        onChange={set("arrivalReason")}
+                                        aria-invalid={Boolean(errors.arrivalReason)}
+                                        aria-describedby={describedBy("arrivalReason")}
+                                    >
+                                        <option value="">{form.arrivalRequired ? "Choose…" : "Not recorded"}</option>
+                                        {Object.entries(ARRIVAL_REASONS).map(([key, label]) => (
+                                            <option key={key} value={key}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errorFor("arrivalReason")}
+                                </label>
+                            </div>
+                        )}
+
+                        {/* Species (once the database has species) and Sex */}
+                        <div className="MonkeyForm-row">
+                            {form.species !== undefined && (
+                                <label className="MonkeyForm-field">
+                                    <span>Species</span>
+                                    <select value={form.species} onChange={set("species")}>
+                                        {Object.entries(SPECIES).map(([key, label]) => (
+                                            <option key={key} value={key}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
+                            <label className="MonkeyForm-field">
+                                <span>Sex</span>
+                                <select value={form.sex} onChange={set("sex")}>
+                                    <option value="female">Female</option>
+                                    <option value="male">Male</option>
+                                    <option value="">Unknown</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        {/* Birth Date (once the database has them; blank:
+                            unknown, Approx?: a guess) and Birth Year, side by
+                            side. With a date, the year is its season (from 1
+                            July), filled in and fixed */}
+                        <div className="MonkeyForm-row is-pair">
+                            {/* (Approx? can be ticked first: it only counts
+                                once there's a date) */}
+                            {form.birthDate !== undefined && (
+                                <div className="MonkeyForm-field">
+                                    <span className="MonkeyForm-labelRow">
+                                        <label htmlFor="MonkeyForm-birthDate">Birth Date</label>
+                                        <label className="MonkeyForm-approx">
+                                            <input
+                                                type="checkbox"
+                                                checked={Boolean(form.birthDateApprox)}
+                                                onChange={(e) => setForm({ ...form, birthDateApprox: e.target.checked })}
+                                            />
+                                            Approx?
+                                        </label>
+                                    </span>
+                                    <input
+                                        id="MonkeyForm-birthDate"
+                                        type="date"
+                                        value={form.birthDate}
+                                        max={todayText()}
+                                        onChange={(e) => {
+                                            const date = e.target.value;
+                                            setForm({
+                                                ...form,
+                                                birthDate: date,
+                                                year: date ? String(seasonOf(date)) : form.year,
+                                            });
+                                        }}
+                                        aria-invalid={Boolean(errors.birthDate)}
+                                        aria-describedby={describedBy("birthDate")}
+                                    />
+                                    {errorFor("birthDate")}
+                                </div>
+                            )}
+                            <label className="MonkeyForm-field">
+                                <span>Birth year</span>
+                                {/* This year back to 1997 (or further, if this
+                                    monkey's recorded year is older) */}
+                                <select
+                                    value={form.year}
+                                    onChange={set("year")}
+                                    disabled={Boolean(form.birthDate)}
+                                    aria-invalid={Boolean(errors.year)}
+                                    aria-describedby={describedBy("year")}
+                                >
+                                    <option value="">Unknown</option>
+                                    {birthYears(form.year).map((y) => (
+                                        <option key={y} value={y}>
+                                            {y}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errorFor("year")}
+                            </label>
+                        </div>
+
+                        {/* (a new arrival has no chip yet: saved as No Chip, added later with Edit) */}
+                        {!rescue && (
+                        <div className="MonkeyForm-row">
+                            {/* While the box (or the button) has focus, the name
+                                has "Unknown?" beside it, or "Clear" once chosen
+                                (back to blank: no chip) */}
+                            <div
+                                className="MonkeyForm-field"
+                                onFocus={() => setChipFocused(true)}
+                                onBlur={(event) => {
+                                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                                        setChipFocused(false);
+                                    }
+                                }}
+                            >
+                                <span className="MonkeyForm-labelRow">
+                                    <label htmlFor="MonkeyForm-chip">Chip</label>
+                                    {chipFocused && (
+                                        <button
+                                            type="button"
+                                            className="MonkeyForm-unknown"
+                                            // Keeps focus in the box, so a tap
+                                            // doesn't hide the button first
+                                            onPointerDown={(event) => event.preventDefault()}
+                                            onClick={form.chipUnknown ? clearChipUnknown : chooseChipUnknown}
+                                        >
+                                            {form.chipUnknown ? "Clear" : "Unknown?"}
+                                        </button>
+                                    )}
+                                </span>
+                                <input
+                                    id="MonkeyForm-chip"
+                                    ref={chipRef}
+                                    // Digits plus , or . to separate two chips
+                                    inputMode="decimal"
+                                    placeholder={form.chipUnknown ? "Unknown" : "No Chip"}
+                                    value={form.chip}
+                                    onChange={(event) =>
+                                        setForm({ ...form, chip: event.target.value, chipUnknown: false })
+                                    }
+                                    aria-invalid={Boolean(errors.chip)}
+                                    aria-describedby={
+                                        describedBy("chip") ?? (chipFocused ? "MonkeyForm-chip-hint" : undefined)
+                                    }
+                                />
+                                {/* Hints only while typing; a problem always shows */}
+                                {errorFor("chip") || (chipFocused && (
+                                    <ul className="MonkeyForm-hint MonkeyForm-hintList" id="MonkeyForm-chip-hint">
+                                        <li>{form.chipUnknown ? "Press Clear if no chip" : "Leave blank if no chip"}</li>
+                                        <li>Two chips? e.g. 1011,1604</li>
+                                    </ul>
+                                ))}
+                            </div>
+                        </div>
+                        )}
+
+                        <PhotosField
+                            ref={photosRef}
+                            photos={form.photos}
+                            onChange={(update) => setForm((f) => ({ ...f, photos: update(f.photos) }))}
+                            // Saved in the folder of its troop or introcage
+                            uploadTo={() => ({ troop: chosenIntrocage(form, choices)?.name ?? form.troop, name: form.name })}
+                            uploadedHere={uploadedHere}
+                            uploading={uploading}
+                            onUploadingChange={setUploading}
+                            error={errors.photos}
+                            hint={
+                                <>
+                                    The primary photo (★) is shown on the card and in the
+                                    Profile Book; use ⋮ to change it or delete a photo.
+                                    {form.photos.length === 0 && " None yet: the placeholder photo will be used."}
+                                </>
+                            }
+                            full={`${MAX_PHOTOS} photos is the most a monkey can have. Delete one (⋮ → Delete photo) to add another.`}
+                        />
+                    </>
+                    )}
 
                     {/* Bio: every monkey, except a new arrival being added
                         (its Arrival Info is all that's needed: the Bio comes
@@ -580,8 +598,9 @@ function MonkeyForm({
                         </label>
                     )}
 
-                    {/* A new arrival's arrival details: staff only, up to 2000 characters */}
-                    {showArrival && (
+                    {/* A new arrival's arrival details: staff only, up to 2000
+                        characters (not in the quick Edit: the Bio's enough there) */}
+                    {showArrival && !quick && (
                         <label className="MonkeyForm-field">
                             <span>Arrival Info <em>(staff only)</em></span>
                             <textarea rows={5} value={arrival} maxLength={2000} onChange={(e) => setArrival(e.target.value)} />
@@ -691,7 +710,7 @@ function MonkeyForm({
                         </fieldset>
                     )}
 
-                    {/* Monitoring (admins), at the very bottom: for the Troop Monitoring Notes */}
+                    {/* Monitoring (editors and admins), at the very bottom: for the Troop Monitoring Notes */}
                     {monitoringInfo.available && (
                         <fieldset className="MonkeyForm-feeding MonkeyForm-monitoring">
                             <legend>Monitoring</legend>
@@ -807,8 +826,9 @@ function MonkeyForm({
                         </>
                     ) : (
                         <>
-                            {/* Only admins can delete (the database enforces it too) */}
-                            {!isNew && isAdmin && (
+                            {/* Only admins can delete (the database enforces it
+                                too); not in the quick Edit */}
+                            {!isNew && isAdmin && !quick && (
                                 <button
                                     type="button"
                                     className="MonkeyForm-button is-danger is-outline"

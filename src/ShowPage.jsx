@@ -70,11 +70,9 @@ const compareBy = {
     sex: (a, b) => SEX_ORDER[a.sex] - SEX_ORDER[b.sex] || byName(a, b),
 };
 
-// Age categories (AGE_GROUPS, ages.js): ages use the 1 October birthday,
-// and no birth year counts as an adult (as in the Profile Book)
-const AGE_TESTS = Object.fromEntries(
-    AGE_GROUPS.map((g) => [g.id, (age) => (age === null ? g.id === "adults" : g.test(age))])
-);
+// Age categories (AGE_GROUPS, ages.js, the same as Statistics): ages use
+// the 1 October birthday; no birth year is in none of them
+const AGE_TESTS = Object.fromEntries(AGE_GROUPS.map((g) => [g.id, (age) => age !== null && g.test(age)]));
 // In any of the chosen categories ([] = every monkey)
 function inAgeGroups(monkey, groups) {
     if (groups.length === 0) return true;
@@ -497,10 +495,12 @@ function ShowPage({
             window.location.hash = hash;
         }
     }
-    function startEdit(monkey) {
+    // quick: the pop-up's Edit (just what the pop-up shows); the Full
+    // Profile's Edit has everything
+    function startEdit(monkey, quick = false) {
         setIsModalOpen(false);
         leaveAddress();
-        setEditing({ monkey });
+        setEditing({ monkey, quick });
     }
     function startAdd() {
         setEditing({ monkey: null });
@@ -865,7 +865,8 @@ function ShowPage({
                             ? null
                             : { number: selectedIndex + 1, total: neighbours.length }
                     }
-                    onEdit={canEdit ? startEdit : undefined}
+                    // (the quick Edit: just what the pop-up shows)
+                    onEdit={canEdit ? (m) => startEdit(m, true) : undefined}
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
                     // (see staff above)
                     staff={staff}
@@ -981,7 +982,9 @@ function ShowPage({
                     <MonkeyPage
                         monkey={pageMonkey}
                         staff={staff}
-                        onEdit={canEdit ? startEdit : undefined}
+                        // (the Full Profile's Edit, everything: admins only.
+                        // Editors use the pop-up's quick Edit, and Records)
+                        onEdit={canEdit && isAdmin ? startEdit : undefined}
                         // View Card: its pop-up, on its own (no previous / next)
                         onOpenCard={(m) => openModal(m, [m])}
                         inert={isAnyModalOpen}
@@ -1255,6 +1258,7 @@ function ShowPage({
                     onClose={() => setEditing(null)}
                     onSaved={handleSaved}
                     onDeleted={handleDeleted}
+                    quick={Boolean(editing.quick)}
                 />
             )}
         </div>

@@ -75,16 +75,20 @@ describe("Access", () => {
         const table = screen.getByRole("table");
         const heads = within(table).getAllByRole("columnheader").slice(1).map((th) => th.querySelector(".Admin-long").textContent);
         expect(heads).toEqual(["Visitors", "Limited", "Maintenance", "Editors", "Admins"]);
-        const row = within(table).getByRole("row", { name: /Edit Monitoring Notes/ });
+        const row = within(table).getByRole("row", { name: /Edit Full Profiles/ });
         expect(within(row).getAllByLabelText(/Yes|No/).map((icon) => icon.getAttribute("aria-label"))).toEqual(["No", "No", "No", "No", "Yes"]);
         const cards = within(table).getByRole("row", { name: /Monkey cards/ });
         expect(within(cards).getAllByLabelText("Yes")).toHaveLength(5);
         // Limited: sees what staff see, changes nothing
         const limited = (what) => within(within(table).getByRole("row", { name: what })).getAllByLabelText(/Yes|No/)[1].getAttribute("aria-label");
-        expect(limited(/Full Profile/)).toBe("Yes");
+        expect(limited(/^Full Profile/)).toBe("Yes");
+        expect(limited(/Edit Full Profiles/)).toBe("No");
         expect(limited(/Documents/)).toBe("Yes");
         expect(limited(/Log maintenance/)).toBe("No");
-        expect(limited(/Edit monkeys/)).toBe("No");
+        expect(limited(/Edit monkey cards/)).toBe("No");
+        // Editors: the monkey cards (with Monitoring), not the Full Profile
+        const editors = (what) => within(within(table).getByRole("row", { name: what })).getAllByLabelText(/Yes|No/)[3].getAttribute("aria-label");
+        expect(editors(/Edit monkey cards/)).toBe("Yes");
     });
 
     test("admins can do everything", () => {

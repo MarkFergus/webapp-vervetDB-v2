@@ -7,6 +7,7 @@ import { supabase } from "./supabase";
 import { AuthProvider } from "./auth";
 import { BUILT_IN_DATA } from "./monkeyData";
 import ShowPage from "./ShowPage";
+import useHashRoute from "./useHashRoute";
 import { DEFAULT_FEEDING } from "./feeding";
 import { currentBabySeason } from "./ages";
 
@@ -71,9 +72,12 @@ function fakeSupabase({ signedIn = true, refuse = false, admin = true, role } = 
 // ShowPage with its own list, like App gives it
 function Harness({ editable = true, enclosuresLive = false, start = startingMonkeys }) {
     const [monkeys, setMonkeys] = useState(start);
+    // (the address, as the app has it: for the Full Profile's page)
+    const route = useHashRoute();
     return (
         <AuthProvider>
             <ShowPage
+                route={route}
                 monkeys={monkeys}
                 troops={BUILT_IN_DATA.troops}
                 troopIds={TROOP_IDS}
@@ -105,18 +109,73 @@ function setup(options = {}) {
     return { user };
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+    vi.restoreAllMocks();
+    window.location.hash = "";
+});
 
 const card = (name) => screen.getByRole("button", { name: new RegExp(`^${name},`) });
 const form = () => screen.getByRole("dialog", { name: /^(Edit|Add)/ });
 const field = (label) => within(form()).getByLabelText(label, { exact: false });
+// Its Full Profile (where the full Edit is), once it's showing
+const profile = async (name) => (await screen.findByRole("heading", { level: 1, name })).closest(".MonkeyPage");
+const profileRow = (page, label) => within(page).getByText(label, { selector: "dt, dt *" }).closest("div");
 
+// Everything: its Full Profile's Edit (the pop-up's Edit is the quick one:
+// openQuickEditFor)
 async function openEditFor(user, name) {
     // Search first, in case the monkey isn't on the first page of cards
     await user.type(await screen.findByLabelText("Search by name or chip number"), name);
     await user.click(await screen.findByRole("button", { name: new RegExp(`^${name},`) }));
+    await user.click(await screen.findByRole("button", { name: /Full Profile/ }));
     await user.click(await screen.findByRole("button", { name: "Edit" }));
 }
+
+async function openQuickEditFor(user, name) {
+    await user.type(await screen.findByLabelText("Search by name or chip number"), name);
+    await user.click(await screen.findByRole("button", { name: new RegExp(`^${name},`) }));
+    await user.click(await screen.findByRole("button", { name: "Edit" }));
+}
+
+describe("the pop-up's Edit: just what the pop-up shows", () => {
+    test("Bio, Distinctive features, Feeding and Monitoring; nothing else", async () => {
+        const { user } = setup();
+        await openQuickEditFor(user, "Aroha");
+        expect(form()).toHaveAccessibleName("Edit Aroha");
+        expect(field("Bio")).toBeInTheDocument();
+        expect(field("Distinctive features")).toBeInTheDocument();
+        for (const label of ["Name", "Enclosure", "Location", "Birth year", "Chip", "Sex"]) {
+            expect(within(form()).queryByLabelText(label, { exact: false })).toBeNull();
+        }
+        expect(within(form()).queryByText(/Upload new photo/)).toBeNull();
+        expect(within(form()).queryByLabelText(/Arrival Info/)).toBeNull();
+        // (no Delete either)
+        expect(within(form()).queryByRole("button", { name: "Delete" })).toBeNull();
+        expect(within(form()).getByText(/use Edit on the Full Profile/)).toBeInTheDocument();
+    });
+
+    test("saves the bio (the rest as it was), and its pop-up shows it", async () => {
+        const { user } = setup();
+        await openQuickEditFor(user, "Aroha");
+        await user.clear(field("Bio"));
+        await user.type(field("Bio"), "Loves grapes.");
+        await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).toMatchObject({ name: "Aroha", bio: "Loves grapes.", chip: "19806", birth_year: 2016 });
+        expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("Loves grapes.");
+    });
+});
+
+test("editors: the pop-up's Edit, but not the Full Profile's (admins only)", async () => {
+    const { user } = setup({ admin: false });
+    await waitFor(() => expect(supabase.from).toHaveBeenCalledWith("editors"));
+    await user.type(await screen.findByLabelText("Search by name or chip number"), "Aroha");
+    await user.click(await screen.findByRole("button", { name: /^Aroha,/ }));
+    expect(await screen.findByRole("button", { name: "Edit" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Full Profile/ }));
+    await screen.findByRole("heading", { level: 1, name: "Aroha" });
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+});
 
 test("visitors see no Edit or Add buttons", async () => {
     const { user } = setup({ signedIn: false });
@@ -161,7 +220,7 @@ test("editing: the form is filled in, and saving shows the new details", async (
     await user.type(field("Chip"), "19806 1234");
     await user.click(within(form()).getByRole("button", { name: "Save" }));
 
-    // Saved (tidied), and the monkey's pop-up shows the new details
+    // Saved (tidied), and its Full Profile shows the new details
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row).toMatchObject({
         name: "Aroha",
@@ -170,9 +229,9 @@ test("editing: the form is filled in, and saving shows the new details", async (
         troop_id: TROOP_IDS["H&B"],
         birth_year: 2016,
     });
-    const details = await screen.findByRole("dialog", { name: "Aroha" });
-    expect(details).toHaveTextContent("Loves grapes.");
-    expect(details).toHaveTextContent("19806 & 1234");
+    const page = await profile("Aroha");
+    await waitFor(() => expect(page).toHaveTextContent("Loves grapes."));
+    expect(page).toHaveTextContent("19806 & 1234");
 });
 
 test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chip", async () => {
@@ -203,8 +262,9 @@ test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chi
     await user.click(within(form()).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(saved.updates).toHaveLength(1));
     expect(saved.updates[0].row.chip).toBeNull();
-    const details = await screen.findByRole("dialog", { name: "Aroha" });
-    expect(details.querySelector(".Modal-pills li[title='Microchip']")).toHaveTextContent("ChipUnknown");
+    // (its profile: an unknown chip isn't recorded)
+    const page = await profile("Aroha");
+    await waitFor(() => expect(profileRow(page, "Microchip")).toHaveTextContent("Not recorded"));
 });
 
 test("chip: \"Clear\" undoes Unknown, back to no chip", async () => {
@@ -317,7 +377,8 @@ test("location: moving a monkey into one of its enclosure's introcages, and back
     expect(saved.updates[0].row).toMatchObject({
         troop_id: null, introcage_id: c1.id, moved_on: "2026-10-20", move_reason: "Separated for a while",
     });
-    expect(await screen.findByRole("dialog", { name: "Aroha" })).toHaveTextContent("Holt & Barrington C1");
+    const page = await profile("Aroha");
+    await waitFor(() => expect(profileRow(page, "Home Location")).toHaveTextContent("Holt & Barrington C1"));
 
     // Back to the troop
     await user.click(screen.getByRole("button", { name: "Edit" }));
@@ -494,7 +555,8 @@ test("if the database refuses a delete, it says only admins can delete", async (
     await user.click(within(form()).getByRole("button", { name: "Delete" }));
 
     expect(await within(form()).findByText(/Only admins can delete monkeys/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Aroha,/ })).toBeInTheDocument();
+    // (still there)
+    expect(screen.getByRole("heading", { level: 1, name: "Aroha" })).toBeInTheDocument();
 });
 
 test("if the database refuses, the form stays open with a clear message", async () => {
@@ -519,7 +581,6 @@ test("closing with unsaved changes asks first", async () => {
     await waitFor(() => expect(screen.queryByRole("dialog", { name: /^Edit/ })).toBeNull());
 
     // Changes: asks, and "no" keeps the form open
-    await user.click(card("Aroha"));
     await user.click(await screen.findByRole("button", { name: "Edit" }));
     await user.type(field("Bio"), " x");
     await user.keyboard("{Escape}");
@@ -541,7 +602,8 @@ describe("feeding (introcage monkeys)", () => {
 
     test("Fed By, AM plates and PM bowls; Sickbay hides the plates; saved with the monkey", async () => {
         const { user } = setup({ enclosuresLive: true, start: withAroha });
-        await openEditFor(user, "Aroha");
+        // (the pop-up's quick Edit has Feeding too)
+        await openQuickEditFor(user, "Aroha");
         expect(feeding()).not.toBeNull();
         await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Sickbay");
         expect(within(feeding()).queryByLabelText("AM Plates")).toBeNull();

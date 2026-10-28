@@ -9,8 +9,8 @@ import BanditIcon from "./BanditIcon";
 import { AGE_GROUPS } from "./ages";
 
 // The choices in the Filters panel. Age categories (several can be picked)
-// use the 1 October birthday (see ages.js); monkeys with no birth year
-// count as adults.
+// use the 1 October birthday (see ages.js); monkeys with no birth year are
+// in none of them (All Ages only).
 // (the age categories: ages.js, shared with the Statistics page)
 export { AGE_GROUPS };
 // Where the monkeys live: in a troop, or in an introcage ("all": both)

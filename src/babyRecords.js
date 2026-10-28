@@ -20,6 +20,8 @@ export const RECORD_KINDS = {
         min: 0,
         max: 500,
         defaultDay: "yesterday",
+        // (the history shows this many days at first: See More for the rest)
+        historyDays: 7,
         hint: "Each baby's milk for the day, midnight to midnight.",
     },
     weights: {
@@ -31,13 +33,28 @@ export const RECORD_KINDS = {
         min: 1,
         max: 20000,
         defaultDay: "today",
+        historyDays: 7 * 7,
         hint: "Choose a date and enter the baby weights for that day.",
+    },
+    // Integration's (their own page: IntegrationRecordsPage.jsx)
+    reports: {
+        id: "reports",
+        title: "Reports",
+        hint: "Integration reports for the monkeys being integrated.",
+    },
+    current: {
+        id: "current",
+        title: "Current Integrations",
+        hint: "Who's being integrated, and starting a new one.",
     },
 };
 
 // The teams, and what each records (more teams later: the sections'
 // monitoring, deworming…)
-export const TEAMS = [{ id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] }];
+export const TEAMS = [
+    { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] },
+    { id: "integration", name: "Integration", kinds: ["reports", "current"] },
+];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"
 // → { team, kind }; anything unknown: as far as it's known
@@ -129,6 +146,16 @@ export function historyFor(records, monkeyId) {
             };
         })
         .reverse();
+}
+
+// A history's first look (newest first, as historyFor): the entries in the
+// `days` days up to its latest one (milk: 7 days; weights: 7 weeks). From
+// the latest, not today, so a baby with nothing lately still shows some.
+export function recentHistory(history, days) {
+    if (!history.length) return history;
+    const [y, m, d] = history[0].date.split("-").map(Number);
+    const from = dayText(new Date(y, m - 1, d - (days - 1)));
+    return history.filter((r) => r.date >= from);
 }
 
 // The Monday a day's week starts on ("2026-10-25" → "2026-10-19")

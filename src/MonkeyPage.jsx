@@ -22,9 +22,9 @@ import {
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
 import { useInjuries } from "./Injuries";
-import { IntegrationRecords, RecordList, otherRows, useRecords } from "./MonkeyRecords";
+import { IntegrationRecords, RecordList, otherRows, useRecords, useWeights } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
-import { ageInYears } from "./ages";
+import { ageFromBirthDate, ageInYears } from "./ages";
 import { fullName, homeName, staying } from "./places";
 import PlaceName from "./PlaceName";
 import BenchTreeIcon from "./BenchTreeIcon";
@@ -41,7 +41,7 @@ import "./MonkeyPage.css";
 // stays at the top, then its parts:
 //   Profile         photos, the main facts, bio and description
 //   Arrival Info    arrival date, reason and area of origin, and (staff)
-//                   the Arrival Details text, folding
+//                   the Arrival Info text, folding
 //   Records         staff only, folding: two tabs, like a browser's, each
 //                   a list of records (MonkeyRecords.jsx)
 //     Rehabilitation  movements, observations, escapes, integration
@@ -51,11 +51,14 @@ import "./MonkeyPage.css";
 
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
-// "9 years old", "1 year old", "Baby" (under 1), or null (not known)
-function ageWords(year) {
-    const age = ageInYears(year);
+// With a birth date: as precise as it's useful ("5 days old", "3 weeks
+// old", "4 months old", then years: ageFromBirthDate). With only a birth
+// year: "9 years old", "1 year old", "<1 year old". null: not known.
+function ageWords(monkey) {
+    if (monkey.birthDate) return ageFromBirthDate(monkey.birthDate);
+    const age = ageInYears(monkey.year);
     if (age === null) return null;
-    if (age === 0) return "Baby";
+    if (age === 0) return "<1 year old";
     return age === 1 ? "1 year old" : `${age} years old`;
 }
 
@@ -73,9 +76,10 @@ const TABS = [
     { key: "integration", label: "Integration", icon: IconFriends },
 ];
 
-// The tabs, like a browser's: the chosen one joins the list below it.
-// Left / right arrow keys move between them.
-function Tabs({ tab, onTab }) {
+// The tabs, like a browser's: the chosen one joins the list below it, each
+// with how many records it has ("Medical (13)"; counts: by key, none while
+// loading). Left / right arrow keys move between them.
+function Tabs({ tab, onTab, counts = {} }) {
     const refs = useRef({});
     function onKeyDown(event) {
         const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
@@ -103,7 +107,15 @@ function Tabs({ tab, onTab }) {
                     onKeyDown={onKeyDown}
                 >
                     <Icon size={18} stroke={1.75} aria-hidden="true" />
-                    {label}
+                    <span className="MonkeyPage-tabText">
+                        {label}
+                        {counts[key] !== undefined && (
+                            <>
+                                {" "}
+                                <span className="MonkeyPage-tabCount">({counts[key]})</span>
+                            </>
+                        )}
+                    </span>
                 </button>
             ))}
         </div>
@@ -169,8 +181,11 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const isStaff = Boolean(staff?.canSee);
     const integration = useIntegration(monkey.id, staff);
     const injuries = useInjuries(monkey.id, staff);
-    // Its Arrival Details (staff; written in Add New Monkey or Edit)
-    const arrival = useArrivalInfo(monkey.id, isStaff);
+    // Its Arrival Info (staff; written in Add New Monkey or Edit): loaded
+    // again whenever it's saved (Edit: a new monkey object)
+    const arrival = useArrivalInfo(monkey.id, isStaff, monkey);
+    // Its weights (Baby Care's babies: the Records page), in Medical
+    const weights = useWeights(monkey.id, isStaff);
     const archived = isArchived(monkey);
     // (an archived monkey: admins can add records too, e.g. what's found
     // out afterwards; editing and deleting are as for any monkey)
@@ -185,6 +200,15 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         open: open[key],
         onToggle: () => setOpen((o) => ({ ...o, [key]: !o[key] })),
     });
+
+    // How many records each tab has (its own, and the ones kept elsewhere:
+    // its arrival, injuries, weights), once they've loaded
+    const countFor = (section) =>
+        records.entries.filter((e) => e.section === section).length + otherRows(section, { injuries, monkey, weights }).length;
+    const counts = {
+        ...(records.available && { rehabilitation: countFor("rehabilitation"), medical: countFor("medical") }),
+        ...(integration.available && { integration: integration.entries.length }),
+    };
 
     // In the page's order (Profile: the top of the page). Rehabilitation
     // and Medical: the Records part, on that tab (the part takes the tab's
@@ -221,7 +245,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
             label: "Current Location",
             value: monkey.inSickbay ? "Sickbay" : staying(monkey) ? <PlaceName name={staying(monkey)} /> : homeText(monkey),
         },
-        { icon: IconCalendarEvent, label: "Age", value: ageWords(monkey.year) },
+        { icon: IconCalendarEvent, label: "Age", value: ageWords(monkey) },
         // (Birth Date and Birth Year next to each other: side by side on
         // phones. Once the database has birth dates: "14th Feb 2024", with a
         // grey "(approx.)" before it for a guess, "(app.)" after it on phones)
@@ -347,16 +371,16 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     </div>
                 </section>
 
-                {/* Arrival Info: (staff) the Arrival Details written about it
+                {/* Arrival Info: (staff) the Arrival Info written about it
                     on the left, and the details on the right (phones: the
-                    Arrival Details first) */}
+                    Arrival Info first) */}
                 <Fold title="Arrival Info" jumpId={jumpId("arrival")} {...foldProps("arrival")}>
                     <div className={`MonkeyPage-arrival${arrival.available ? " has-text" : ""}`}>
                         {arrival.available && (
                             <div className="MonkeyPage-arrivalText">
-                                <h3 className="Enclosures-subhead">Arrival Details</h3>
+                                <h3 className="Enclosures-subhead">Arrival Info</h3>
                                 <p className={arrival.info ? "MonkeyPage-text" : "Enclosures-none"}>
-                                    {arrival.info || "No arrival details yet."}
+                                    {arrival.info || "No arrival info yet."}
                                 </p>
                             </div>
                         )}
@@ -371,7 +395,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                 {/* Records (staff): Rehabilitation and Medical, a tab each */}
                 {isStaff && (
                     <Fold title="Records" jumpId={jumpId(tab)} {...foldProps("records")}>
-                        <Tabs tab={tab} onTab={setTab} />
+                        <Tabs tab={tab} onTab={setTab} counts={counts} />
                         <div
                             className="MonkeyPage-tabPanel"
                             id="MonkeyPage-tabPanel"
@@ -385,7 +409,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     key={tab}
                                     section={tab}
                                     records={records}
-                                    others={otherRows(tab, { injuries })}
+                                    others={otherRows(tab, { injuries, monkey, weights })}
                                 />
                             )}
                         </div>

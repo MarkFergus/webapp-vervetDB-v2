@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
 import AdminPage from "./AdminPage";
 import StatusUpdate from "./StatusUpdate";
-import { RecordList, useRecords } from "./MonkeyRecords";
+import { RecordList, otherRows, useRecords } from "./MonkeyRecords";
 import { loadArchive, loadRecords, saveStatus } from "./monkeyData";
 import { supabase } from "./supabase";
 import { DEFAULT_FEEDING } from "./feeding";
@@ -238,6 +238,18 @@ describe("an archived monkey's Full Profile", () => {
         expect(choices).toEqual(["Choose…", "Sanctuary (Restore)", "Released", "Escaped", "Missing"]);
     });
 
+    test("each records tab says how many it has", async () => {
+        loadArchive.mockResolvedValue([{ ...POPPY, arrivalDate: "2026-01-02", arrivalReason: "orphaned" }]);
+        loadRecords.mockResolvedValue([
+            { id: 7, section: "rehabilitation", date: "2026-10-20", category: "status", details: "Status changed", loggedBy: "a", loggedByName: "M" },
+            { id: 8, section: "medical", date: "2026-10-19", category: "vet_visit", details: "Checked", loggedBy: "a", loggedByName: "M" },
+        ]);
+        render(<AdminPage route="admin/archive/poppy-12" staff={ADMIN} />);
+        // (Rehabilitation: its Status record and its arrival)
+        expect(await screen.findByRole("tab", { name: "Rehabilitation (2)" })).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: "Medical (1)" })).toBeInTheDocument();
+    });
+
     test("admins can add records afterwards (e.g. what's found out later)", async () => {
         loadArchive.mockResolvedValue([POPPY]);
         render(<AdminPage route="admin/archive/poppy-12" staff={ADMIN} />);
@@ -328,5 +340,72 @@ describe("saving a status (the database)", () => {
         expect(update).toHaveBeenCalledWith({ status: "released", released_on: "2026-10-27", release_details: "At the dam" });
         rpc.mockRestore();
         from.mockRestore();
+    });
+});
+
+describe("its arrival, at the start of Rehabilitation", () => {
+    const NO_INJURIES = { current: [], healed: [] };
+    function Rehab({ monkey }) {
+        return (
+            <RecordList
+                section="rehabilitation"
+                records={useRecords(1, ADMIN)}
+                others={otherRows("rehabilitation", { injuries: NO_INJURIES, monkey })}
+            />
+        );
+    }
+
+    test("its date and reason; under anything else that day", async () => {
+        loadRecords.mockResolvedValue([
+            { id: 3, section: "rehabilitation", date: "2026-10-20", category: "movement",
+                details: "Moved from Quarantine to Sickbay", loggedBy: "admin-1", loggedByName: "Mark" },
+        ]);
+        render(<Rehab monkey={{ ...MONKEY, arrivalDate: "2026-10-20", arrivalReason: "orphaned" }} />);
+        await screen.findByText("Moved from Quarantine to Sickbay");
+        const rows = screen.getAllByRole("row").slice(1);
+        expect(rows.map((r) => r.querySelector(".Records-text").textContent)).toEqual([
+            "Moved from Quarantine to Sickbay",
+            "Arrived at the sanctuary: Orphaned",
+        ]);
+        expect(within(rows[1]).getByText("Arrival")).toBeInTheDocument();
+        // (changed in Edit, not here)
+        expect(within(rows[1]).queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    test("none without an arrival date; never in Medical", () => {
+        expect(otherRows("rehabilitation", { injuries: NO_INJURIES, monkey: { ...MONKEY, arrivalDate: null } })).toEqual([]);
+        expect(otherRows("medical", { injuries: NO_INJURIES, monkey: { ...MONKEY, arrivalDate: "2026-10-20" } })).toEqual([]);
+    });
+});
+
+describe("its weights (the Records page's), in Medical", () => {
+    const NO_INJURIES = { current: [], healed: [] };
+    const weigh = (date, value, extra = {}) => ({ monkeyId: 1, date, value, notes: null, loggedByName: "Sam", ...extra });
+
+    test("each weighing: the weight, the change since the one before, and its note", () => {
+        const rows = otherRows("medical", {
+            injuries: NO_INJURIES,
+            monkey: MONKEY,
+            weights: [weigh("2026-10-18", 474), weigh("2026-10-25", 512, { notes: "A day late" })],
+        });
+        expect(rows.map((r) => [r.date, r.category, r.details, r.by])).toEqual([
+            ["2026-10-25", "weight", "512 g (+38 g): A day late", "Weight by Sam"],
+            ["2026-10-18", "weight", "474 g", "Weight by Sam"],
+        ]);
+        // (never in Rehabilitation)
+        expect(otherRows("rehabilitation", { injuries: NO_INJURIES, monkey: MONKEY, weights: [weigh("2026-10-18", 474)] })).toEqual([]);
+    });
+
+    test("listed as Weight, in with the rest, not changed here", async () => {
+        render(
+            <RecordList
+                section="medical"
+                records={{ entries: [], available: true, canAdd: false, canEdit: () => true, canDelete: () => true }}
+                others={otherRows("medical", { injuries: NO_INJURIES, monkey: MONKEY, weights: [weigh("2026-10-25", 512)] })}
+            />
+        );
+        const row = screen.getByText("512 g").closest("[role='row']");
+        expect(within(row).getByText("Weight")).toBeInTheDocument();
+        expect(within(row).queryByRole("button")).not.toBeInTheDocument();
     });
 });

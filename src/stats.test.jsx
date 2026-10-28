@@ -232,6 +232,18 @@ describe("Baby Care", () => {
         expect(babyAgeText("2026-10-20", today)).toBe("4 days old");
         expect(babyAgeText("2026-10-01", today)).toBe("3 weeks old");
         expect(babyAgeText("2026-06-01", today)).toBe("4 months old");
+        // (days up to 6, weeks until 3 months, months until a year, then years)
+        expect(babyAgeText("2026-10-24", today)).toBe("Born today");
+        expect(babyAgeText("2026-10-23", today)).toBe("1 day old");
+        expect(babyAgeText("2026-10-18", today)).toBe("6 days old");
+        expect(babyAgeText("2026-10-17", today)).toBe("1 week old");
+        expect(babyAgeText("2026-08-07", today)).toBe("11 weeks old");
+        // (weeks until it's 3 months old by its birth date: the 24th)
+        expect(babyAgeText("2026-07-25", today)).toBe("13 weeks old");
+        expect(babyAgeText("2026-07-24", today)).toBe("3 months old");
+        expect(babyAgeText("2025-10-25", today)).toBe("11 months old");
+        expect(babyAgeText("2025-10-24", today)).toBe("1 year old");
+        expect(babyAgeText("2019-03-02", today)).toBe("7 years old");
         expect(babyAgeText(null, today)).toBeNull();
         const { youngest, oldest } = youngestOldest(BABIES);
         expect([youngest.name, oldest.name]).toEqual(["Muse", "Pip"]);

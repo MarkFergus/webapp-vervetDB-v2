@@ -12,6 +12,7 @@ import {
     dayLabel,
     dayText,
     historyFor,
+    recentHistory,
     isRecordsRoute,
     parseRecordsRoute,
     mondayOf,
@@ -84,6 +85,14 @@ describe("the workings", () => {
         ];
         const saved = [record(21, "2026-10-24", 178), record(22, "2026-10-23", 140)];
         expect(alreadySaved(entries, saved)).toEqual([{ entry: entries[0], saved: saved[0] }]);
+    });
+
+    test("a history's first look: the 7 days (milk) or 7 weeks (weights) up to its latest", () => {
+        // (7 days up to the 27th: from the 21st; 7 weeks: from 9 Sep)
+        const days = ["2026-10-27", "2026-10-25", "2026-10-21", "2026-10-20", "2026-09-09", "2026-09-08"].map((date) => ({ date }));
+        expect(recentHistory(days, 7).map((r) => r.date)).toEqual(["2026-10-27", "2026-10-25", "2026-10-21"]);
+        expect(recentHistory(days, 49).map((r) => r.date)).toEqual(["2026-10-27", "2026-10-25", "2026-10-21", "2026-10-20", "2026-09-09"]);
+        expect(recentHistory([], 7)).toEqual([]);
     });
 
     test("history: newest first, each with the change since the one before (and when that was)", () => {
@@ -311,6 +320,30 @@ describe("viewing", () => {
         // (moved on from Baby Care: still there, under its own heading)
         expect(screen.getByRole("heading", { name: "No Longer in Baby Care" })).toBeInTheDocument();
         expect(screen.getByText("Bongo").closest("li")).toHaveTextContent("The first weight.");
+    });
+
+    test("the history shows the latest 7 days of milk; See More for the rest, See Less back", async () => {
+        loadBabyRecords.mockResolvedValue(
+            ["2026-10-27", "2026-10-26", "2026-10-22", "2026-10-21", "2026-10-20", "2026-10-12"].map((date, i) => record(21, date, 150 + i))
+        );
+        const { user } = open("records/baby-care/milk", { canEnter: false });
+        const muse = (await screen.findByText("Muse")).closest("li");
+        await user.click(within(muse).getByRole("button", { name: "History (6)" }));
+        const rows = () => within(within(muse).getByRole("table")).getAllByRole("row").slice(1);
+        // (27, 26, 22, 21 Oct: the 7 days from the 21st)
+        expect(rows()).toHaveLength(4);
+        await user.click(within(muse).getByRole("button", { name: "See More (2 older)" }));
+        expect(rows()).toHaveLength(6);
+        await user.click(within(muse).getByRole("button", { name: "See Less" }));
+        expect(rows()).toHaveLength(4);
+    });
+
+    test("no See More when the history all fits", async () => {
+        loadBabyRecords.mockResolvedValue(WEIGHED);
+        const { user } = open("records/baby-care/weights", { canEnter: false });
+        const muse = (await screen.findByText("Muse")).closest("li");
+        await user.click(within(muse).getByRole("button", { name: "History (2)" }));
+        expect(within(muse).queryByRole("button", { name: /See More/ })).toBeNull();
     });
 
     test("Weekly Report: this week's weights, ready to copy into WhatsApp", async () => {

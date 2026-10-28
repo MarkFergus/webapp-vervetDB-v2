@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
-import { addRecord, deleteRecord, loadRecords, saveRecord } from "./monkeyData";
+import { addRecord, deleteRecord, loadMonkeyWeights, loadRecords, saveRecord } from "./monkeyData";
+import { changeText, historyFor } from "./babyRecords";
 import { IntegrationForm, newReportDates } from "./IntegrationReports";
 import { summaryDate } from "./feeding";
+import { ARRIVAL_REASONS } from "./arrival";
 import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
@@ -11,9 +13,12 @@ import "./MonkeyRecords.css";
 // A monkey's records, on its page (staff only), one list per tab:
 //   Rehabilitation, Medical   Date | Category | Details; staff add them with
 //     "+ New … Record" (supabase/monkey-records.sql). Every move adds a
-//     Movement record by itself (movement-records.sql). Injuries (and their
-//     updates) are listed in with Medical's; those are changed where
-//     they're added (the pop-up's Quick Actions).
+//     Movement record by itself (movement-records.sql), and every status
+//     change a Status record (monkey-archive.sql). Its arrival (Arrival
+//     Date and Reason) starts Rehabilitation's list; injuries (and their
+//     updates) and weights (the Records page's) are listed in with
+//     Medical's. Those are changed where they're added (Edit; the pop-up's
+//     Quick Actions; Records).
 //   Integration   Date Start | Date End | Integration Report
 //     (supabase/integration-reports.sql)
 
@@ -43,9 +48,10 @@ export const SECTIONS = {
     },
 };
 
-// Records only the database adds, never in the drop-down: a Status record
-// for each status change (monkey-archive.sql)
-const ADDED_BY_DATABASE = { status: "Status" };
+// Categories never in the drop-down: a Status record for each status
+// change (added by the database: monkey-archive.sql), its arrival (from
+// Arrival Date and Reason) and its weights (the Records page's): otherRows
+const OTHER_CATEGORIES = { status: "Status", arrival: "Arrival", weight: "Weight" };
 // ...which, like Movement records, are never changed, and only admins
 // delete one
 const isLog = (entry) => entry.category === "movement" || entry.category === "status";
@@ -110,13 +116,60 @@ export function useRecords(monkeyId, staff, newOpen = NEW_RECORDS_OPEN) {
     };
 }
 
+// A monkey's weights (the Records page's: Baby Care's babies), for its
+// Medical records; loaded when staff open its page. [] until then, or if
+// there are none (or the database hasn't got them).
+export function useWeights(monkeyId, enabled) {
+    const [weights, setWeights] = useState([]);
+    useEffect(() => {
+        if (!enabled || monkeyId == null) {
+            setWeights([]);
+            return;
+        }
+        let cancelled = false;
+        loadMonkeyWeights(monkeyId)
+            .then((list) => !cancelled && setWeights(list))
+            .catch(() => !cancelled && setWeights([]));
+        return () => {
+            cancelled = true;
+        };
+    }, [monkeyId, enabled]);
+    return weights;
+}
+
 // The records kept elsewhere, as rows of a section's list (not changed
-// here): { key, date, category, details, by }. Medical: its injuries and
-// their updates. (Rehabilitation: none; its moves are Movement records of
-// its own, added by the database: movement-records.sql)
-export function otherRows(section, { injuries }) {
+// here): { key, date, category, details, by, first }. Rehabilitation: its
+// arrival (first: before anything else that day). (Its moves and status
+// changes are records of its own, added by the database.) Medical: its
+// injuries and their updates, and its weights ("512 g (+38 g)", and the
+// note) from the Records page.
+export function otherRows(section, { injuries, monkey = null, weights = [] }) {
+    if (section === "rehabilitation") {
+        if (!monkey?.arrivalDate) return [];
+        const reason = ARRIVAL_REASONS[monkey.arrivalReason];
+        return [
+            {
+                key: "arrival",
+                date: monkey.arrivalDate,
+                category: "arrival",
+                details: reason ? `Arrived at the sanctuary: ${reason}` : "Arrived at the sanctuary",
+                by: "From Arrival Info",
+                first: true,
+            },
+        ];
+    }
     if (section !== "medical") return [];
-    return [...injuries.current, ...injuries.healed].flatMap((e) => [
+    const weighings = historyFor(weights, monkey?.id ?? weights[0]?.monkeyId).map((w) => ({
+        key: `weight-${w.date}`,
+        date: w.date,
+        category: "weight",
+        details:
+            `${w.value.toLocaleString("en-GB")} g` +
+            (w.change === null ? "" : ` (${changeText(w.change, "g")})`) +
+            (w.notes ? `: ${w.notes}` : ""),
+        by: `Weight by ${w.loggedByName ?? "Staff"}`,
+    }));
+    return [...weighings, ...[...injuries.current, ...injuries.healed].flatMap((e) => [
         {
             key: `injury-${e.id}`,
             date: e.date,
@@ -131,7 +184,7 @@ export function otherRows(section, { injuries }) {
             details: `Update: ${u.details}`,
             by: `Injury update by ${u.loggedByName ?? "Staff"}`,
         })),
-    ]);
+    ])];
 }
 
 // Edit / Delete at the end of a row (admins, or whoever wrote it). Delete
@@ -265,8 +318,8 @@ export function RecordList({ section, records, others }) {
     const own = records.entries
         .filter((e) => e.section === section)
         .map((e) => ({ key: `record-${e.id}`, entry: e, date: e.date, category: e.category, details: e.details, by: `Added by ${e.loggedByName ?? "Staff"}` }));
-    // Newest first ("Current location" first on the same day)
-    const rows = [...others, ...own].sort((a, b) => b.date.localeCompare(a.date));
+    // Newest first (its arrival last on its day: it came first)
+    const rows = [...others, ...own].sort((a, b) => b.date.localeCompare(a.date) || Boolean(a.first) - Boolean(b.first));
 
     return (
         <div className="Records">
@@ -314,7 +367,7 @@ export function RecordList({ section, records, others }) {
                                     {dayText(row.date)}
                                 </span>
                                 <span role="cell">
-                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? ADDED_BY_DATABASE[row.category] ?? row.category}</span>
+                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? OTHER_CATEGORIES[row.category] ?? row.category}</span>
                                 </span>
                                 <span className="Records-details" role="cell">
                                     <span className="Records-text">{row.details}</span>

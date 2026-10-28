@@ -4,8 +4,10 @@ import { loadArrivalInfo } from "./monkeyData";
 // A new rescue's Arrival Info (staff only; supabase/arrival-info.sql). Loaded
 // when `enabled`; for a monkey not saved yet (monkeyId null) it just checks
 // the database has it.
+//   refresh: anything that changes when it may have been saved (the monkey
+//   itself: Edit saves a new one), so it's loaded again
 //   → { available: the database has it (and this is staff), loaded, info }
-export default function useArrivalInfo(monkeyId, enabled) {
+export default function useArrivalInfo(monkeyId, enabled, refresh = null) {
     const [state, setState] = useState({ available: false, loaded: false, info: "" });
     useEffect(() => {
         if (!enabled) {
@@ -19,6 +21,6 @@ export default function useArrivalInfo(monkeyId, enabled) {
         return () => {
             cancelled = true;
         };
-    }, [monkeyId, enabled]);
+    }, [monkeyId, enabled, refresh]);
     return state;
 }

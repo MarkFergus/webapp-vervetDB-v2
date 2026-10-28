@@ -1,23 +1,16 @@
 // The Statistics page's figures (StatisticsPage.jsx), worked out from the
 // monkeys. Sanctuary monkeys only: not the Bandits (the wild troop), who
-// can be chosen on their own. Age groups: the page's own (finer than the
-// Filters panel's), with unknown ages counted on their own.
+// can be chosen on their own. Age groups: the same as the Filters panel's,
+// with unknown ages counted on their own.
 // Everything goes by where a monkey lives (its home): a monkey in Sickbay
 // or staying in an introcage for now still counts with its troop.
-import { ageInYears } from "./ages";
+import { AGE_GROUPS, ageFromBirthDate, ageInYears } from "./ages";
 import { homeName, inIntrocage } from "./places";
 import { hasTroop, isEnclosure } from "./enclosures";
 import { amPlate, fedBy, hasFeeding } from "./feeding";
 
-// The page's age groups, by age on the 1 October birthday (finer than the
-// Filters panel's, ages.js)
-export const STAT_AGE_GROUPS = [
-    { id: "babies", label: "Babies", hint: "<1", test: (age) => age === 0 },
-    { id: "juveniles", label: "Juveniles", hint: "1–3", test: (age) => age >= 1 && age <= 3 },
-    { id: "youngAdults", label: "Young Adults", hint: "4–10", test: (age) => age >= 4 && age <= 10 },
-    { id: "seniorAdults", label: "Senior Adults", hint: "11–19", test: (age) => age >= 11 && age <= 19 },
-    { id: "goldenOldies", label: "Golden Oldies", hint: "20+", test: (age) => age >= 20 },
-];
+// The age groups (the Filters panel's too: ages.js)
+export const STAT_AGE_GROUPS = AGE_GROUPS;
 
 // The Bandits (the wild troop): not in the sanctuary's figures, but there
 // to choose on their own
@@ -189,22 +182,12 @@ export function amPlatesFor(monkeys, today = new Date()) {
 
 export const BABY_CARE = "Baby Care";
 
-// The days between two dates ("2026-10-01", "2026-10-24")
-const DAY = 24 * 60 * 60 * 1000;
-const daysBetween = (from, to) => Math.round((new Date(`${to}T00:00:00`) - new Date(`${from}T00:00:00`)) / DAY);
 const todayText = (today = new Date()) =>
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
 // A baby's age from its birth date: "5 days old", "3 weeks old", "4 months
-// old"; null without a birth date
-export function babyAgeText(birthDate, today = new Date()) {
-    if (!birthDate) return null;
-    const days = Math.max(0, daysBetween(birthDate, todayText(today)));
-    const say = (n, word) => `${n} ${word}${n === 1 ? "" : "s"} old`;
-    if (days < 14) return say(days, "day");
-    if (days < 63) return say(Math.floor(days / 7), "week");
-    return say(Math.floor(days / 30.44), "month");
-}
+// old" (the Full Profile's too: ages.js); null without a birth date
+export const babyAgeText = (birthDate, today = new Date()) => ageFromBirthDate(birthDate, today);
 
 // Baby Care's youngest and oldest (by birth date; babies without one can't
 // be placed)
