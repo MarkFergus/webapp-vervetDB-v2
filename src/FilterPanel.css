@@ -171,6 +171,11 @@
     vertical-align: -4px;
 }
 
+/* Favourites: the star (smaller than the bandit, so a little lower) */
+.FilterPanel-pillIcon.is-star {
+    vertical-align: -3px;
+}
+
 /* The age range, after the name: "Babies <1" */
 .FilterPanel-pills button small {
     margin-left: 4px;

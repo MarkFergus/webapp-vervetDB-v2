@@ -38,6 +38,7 @@
     --on-status: #121212; /* text and icons on amber, orange, teal and other bright fills */
     --amber-text: #f5b83d; /* the Sickbay amber as text or an icon (Quick Actions) */
     --orange-text: #ff6b1a; /* the game's Ultimate orange as text */
+    --star: #ffc83d; /* a favourite's ★ on its photo (the same in both themes) */
     --map-paper: #f1f1f1; /* behind the sanctuary map (a light drawing in both themes) */
     /* What changes between the themes, beyond the ladder above */
     --text-strong: #ffffff; /* the strongest text: titles, the chosen chip's fill */

@@ -15,11 +15,9 @@ const panel = () => screen.getByRole("dialog", { name: "Filters" });
 // Quick Filters: toggle buttons (several can be on)
 const quickPill = (name) => within(screen.getByRole("group", { name: "Quick Filters" })).getByRole("button", { name });
 const locationPill = (name) => within(screen.getByRole("group", { name: "Living in" })).getByRole("button", { name });
-// The monkeys' cards, in order (their names are "Aroha, …")
+// The monkeys' cards, in order (their names are "Aroha, …"; not their ☆)
 const shownNames = () =>
-    within(document.querySelector(".ShowPage-monkeys"))
-        .getAllByRole("button")
-        .map((b) => b.getAttribute("aria-label").split(",")[0]);
+    [...document.querySelectorAll(".ShowPage-monkeys .MonkeyCard")].map((b) => b.getAttribute("aria-label").split(",")[0]);
 // Age categories: toggle buttons (several can be on)
 const ageButton = (name) =>
     within(screen.getByRole("group", { name: "Category" })).getByRole("button", { name: new RegExp(`^${name}`) });
@@ -314,7 +312,7 @@ describe("Location", () => {
             .map((b) => b.textContent);
         expect(names).toEqual([
             "Top Section", "Middle Section", "Bottom Section", "Sickbay Section", "Bandits",
-            "Baby Care", "Sickbay", "Quarantine", `Babies ${currentBabySeason()}`,
+            "Baby Care", "Sickbay", "Favourites", `Babies ${currentBabySeason()}`,
         ]);
     });
 
@@ -486,14 +484,14 @@ describe("the Enclosures box and the care units", () => {
             .getAllByRole("option")
             .map((o) => o.textContent);
 
-    test("just the troop enclosures (the Bandits and care units are Quick Filters)", async () => {
+    test("the troop enclosures, then Quarantine (the Bandits, Baby Care and Sickbay are Quick Filters)", async () => {
         const user = userEvent.setup();
         render(<ShowPage troops={["All Troops", "Goliath", "Bandits"]} />);
         await user.click(filtersButton());
-        expect(optionTexts()).toEqual(["All Enclosures", "Goliath"]);
+        expect(optionTexts()).toEqual(["All Enclosures", "Goliath", "Quarantine"]);
     });
 
-    test("Baby Care, Sickbay (with the monkeys in Sickbay for now) and Quarantine, none twice", async () => {
+    test("Baby Care, Sickbay (with the monkeys in Sickbay for now) and Favourites, none twice", async () => {
         const user = userEvent.setup();
         const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
         const monkeys = [
@@ -515,12 +513,23 @@ describe("the Enclosures box and the care units", () => {
         await user.click(quickPill("Top Section"));
         expect(shownNames().sort()).toEqual(["Nita", "Pip", "Rocio", "Ziggy"]);
         expectShowing(4);
-        // Quarantine: just its own
+        // Favourites: just the ★ ones (starred on their cards)
         await user.click(within(panel()).getByRole("button", { name: "Clear All" }));
-        await user.click(quickPill("Quarantine"));
+        await user.click(quickPill("Favourites"));
+        expect(document.querySelectorAll(".ShowPage-monkeys .MonkeyCard")).toHaveLength(0);
+        await user.click(quickPill("Favourites"));
+        await user.click(screen.getByRole("button", { name: "Favourite Quin" }));
+        expect(screen.getByRole("button", { name: "Favourite Quin" })).toHaveAttribute("aria-pressed", "true");
+        // (a tap outside put Filters away)
+        await user.click(filtersButton());
+        await user.click(quickPill("Favourites"));
+        expect(shownNames()).toEqual(["Quin"]);
+        // Quarantine: in the Enclosures box (no Quick Filter of its own), last
+        await user.click(quickPill("Favourites"));
+        expect(optionTexts().at(-1)).toBe("Quarantine");
+        await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Quarantine");
         expect(shownNames()).toEqual(["Quin"]);
         // Nita in Sickbay for now is still in her troop's enclosure too
-        await user.click(quickPill("Quarantine"));
         await user.selectOptions(screen.getByRole("combobox", { name: "Filter by enclosure" }), "Goliath");
         expect(shownNames().sort()).toEqual(["Nita", "Rocio"]);
     });

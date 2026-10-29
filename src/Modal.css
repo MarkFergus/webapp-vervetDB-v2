@@ -878,3 +878,13 @@
 .Modal-monitoringNotes {
     white-space: pre-line;
 }
+
+/* Favourites: the cards' ☆ (MonkeyCard.css), top right of the photo, always
+   showing here */
+.Modal-star .MonkeyCard-star {
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    opacity: 1;
+}

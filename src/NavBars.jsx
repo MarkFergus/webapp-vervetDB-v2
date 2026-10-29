@@ -9,6 +9,7 @@ import {
     IconInfoCircle,
     IconLayoutDashboard,
     IconMap2,
+    IconNews,
     IconPhotoPlus,
     IconPlus,
     IconScan,
@@ -132,6 +133,7 @@ export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, 
                     item({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
                 {button(onMap, <IconMap2 stroke={1.75} size={22} aria-hidden="true" />, "Interactive Map")}
                 {item({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
+                {item({ href: "#news", "aria-current": page === "news" ? "page" : undefined }, IconNews, "Latest News")}
                 {item({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
             </div>
             <div className="SideRail-group">
@@ -287,6 +289,7 @@ export function Drawer({
                     {button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, "Interactive Map")}
                     {link({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                     {button(onScan, <IconScan stroke={1.75} size={24} aria-hidden="true" />, "Scan QR Code")}
+                    {link({ href: "#news", "aria-current": page === "news" ? "page" : undefined }, IconNews, "Latest News")}
                     {link({ href: "#game", "aria-current": page === "game" ? "page" : undefined }, IconDeviceGamepad2, "Monkey Guesser")}
                 </div>
                 <div className="Drawer-group">

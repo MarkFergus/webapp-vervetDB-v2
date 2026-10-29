@@ -53,6 +53,8 @@ import { QUICK_FILTERS, inQuickFilters, inSection, quickSections } from "./secti
 import { downloadBlob } from "./canvasHelpers";
 import OfflineModal from "./OfflineModal";
 import SortMenu from "./SortMenu";
+import useFavourites from "./favourites";
+import LatestNewsPage from "./LatestNewsPage";
 import "./ShowPage.css";
 
 // Monkeys added at a time as the page scrolls (continuous scroll)
@@ -91,7 +93,7 @@ const NO_FILTERS = {
 
 // The list on screen is worked out from the search, filters and sort
 // every time, so they always agree with each other.
-function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
+function getVisibleMonkeys(monkeys, { searchValue, filters, sort, favourites }) {
     const { location, quick, troop: troopFilter, year: yearFilter, age, sex } = filters;
     const query = searchValue.trim().toLowerCase();
     const isChipSearch = /^\d+$/.test(query);
@@ -121,7 +123,7 @@ function getVisibleMonkeys(monkeys, { searchValue, filters, sort }) {
             matchesTroop &&
             // (a monkey in Sickbay for now is also under Sickbay: it is
             // one monkey in the list whichever are chosen, shown and counted once)
-            inQuickFilters(monkey, quick) &&
+            inQuickFilters(monkey, quick, undefined, favourites) &&
             matchesYear &&
             matchesSearch &&
             matchesSex &&
@@ -173,6 +175,8 @@ function ShowPage({
     onMonkeyDeleted = () => {},
 }) {
     const { user, role, ready, isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
+    // The ★ monkeys (favourites.js)
+    const { favourites, toggle: toggleFavourite } = useFavourites();
     const canEdit = editable && isEditor;
     // Adding a monkey is for admins only (the database enforces it too)
     const canAdd = canEdit && isAdmin;
@@ -303,8 +307,8 @@ function ShowPage({
     // Only recalculated when the data, search, a filter or the sort changes
     const visibleMonkeys = useMemo(
         () =>
-            getVisibleMonkeys(monkeys, { searchValue, filters, sort }),
-        [monkeys, searchValue, filters, sort]
+            getVisibleMonkeys(monkeys, { searchValue, filters, sort, favourites }),
+        [monkeys, searchValue, filters, sort, favourites]
     );
 
     // The pop-up steps through the monkey list, or (opened from an
@@ -316,6 +320,8 @@ function ShowPage({
     const onUpdates = route === "updates";
     // The Statistics page (#statistics)
     const onStats = route === "statistics";
+    // Latest News (#news): arrivals, releases, moves…
+    const onNews = route === "news";
     // The Admin Dashboard (#admin, and its parts: #admin/staff,
     // #admin/archive…): admins only; anyone else is sent home (once we know
     // who's signed in)
@@ -343,11 +349,11 @@ function ShowPage({
         window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
     }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onAdmin || onRecords;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onNews || onAdmin || onRecords;
     // The game starts at the top
     useEffect(() => {
-        if (onGame || onUpdates || onStats) window.scrollTo?.(0, 0);
-    }, [onGame, onUpdates, onStats]);
+        if (onGame || onUpdates || onStats || onNews) window.scrollTo?.(0, 0);
+    }, [onGame, onUpdates, onStats, onNews]);
     const [modalList, setModalList] = useState(null);
     const neighbours = modalList ?? visibleMonkeys;
     const selectedIndex = neighbours.indexOf(selectedMonkey);
@@ -420,9 +426,9 @@ function ShowPage({
     const pageAddress = () => window.location.pathname + window.location.search;
 
     function showInAddress(m) {
-        // (on the Enclosures pages, and a monkey's page, the address stays
-        // on that page)
-        if (onEnclosures || onMonkeyPage) return;
+        // (on the Enclosures pages, a monkey's page and Latest News, the
+        // address stays on that page)
+        if (onEnclosures || onMonkeyPage || onNews) return;
         const hash = monkeyHash(m);
         if (window.location.hash === hash) return;
         if (isMonkeyHash(window.location.hash)) {
@@ -870,6 +876,11 @@ function ShowPage({
                     onAddPhotos={canEdit ? startAddPhotos : undefined}
                     // (see staff above)
                     staff={staff}
+                    // The ☆ on its photo (favourites.js)
+                    favourite={favourites.has(selectedMonkey?.id)}
+                    onFavourite={selectedMonkey?.id == null ? undefined : () => toggleFavourite(selectedMonkey.id)}
+                    // Recent Edits (staff, signed in, with the database live)
+                    showRecentEdits={Boolean(staff && user && selectedMonkey?.id != null)}
                     // (staff only; not when opened from that page: View Card)
                     onOpenPage={role && !onMonkeyPage ? openPage : undefined}
                     // Released: new arrivals only (living in a care unit), once the database has a status
@@ -947,7 +958,7 @@ function ShowPage({
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onNews ? "news" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -958,6 +969,9 @@ function ShowPage({
                 </div>
             ) : onUpdates ? (
                 <UpdatesPage inert={isAnyModalOpen} />
+            ) : onNews ? (
+                // (a name opens its pop-up, on its own: no previous / next)
+                <LatestNewsPage monkeys={monkeys} onOpenMonkey={(m) => openModal(m, [m])} inert={isAnyModalOpen} />
             ) : onStats ? (
                 <Suspense fallback={<p className="ShowPage-loading">Loading statistics…</p>}>
                     <StatisticsPage monkeys={monkeys} enclosures={enclosures} sections={sections} inert={isAnyModalOpen} />
@@ -1189,6 +1203,8 @@ function ShowPage({
                             stayingIn={staying(m)}
                             newArrival={isNewArrival(m)}
                             img={m.img[0]}
+                            favourite={favourites.has(m.id)}
+                            onFavourite={m.id == null ? undefined : () => toggleFavourite(m.id)}
                         />
                     ))}
                 </div>

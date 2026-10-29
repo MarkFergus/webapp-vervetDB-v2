@@ -1,0 +1,202 @@
+/* Latest News (LatestNewsPage.jsx): the period pills, then the news by day,
+   each with a coloured icon (the colours the app already gives them:
+   New Arrival orange, released green, moved blue, injury red, status amber) */
+
+/* Centred, as wide as the Updates page */
+.LatestNews {
+    box-sizing: border-box;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 12px 64px;
+    font-family: var(--font-ui);
+    color: var(--text);
+}
+
+.LatestNews-title {
+    margin: 16px 0 0;
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--text-strong);
+}
+
+.LatestNews-intro {
+    margin: 6px 0 16px;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+/* 48 Hours · 7 Days · 2 Weeks: the chosen one filled, like the chips */
+.LatestNews-periods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.LatestNews-period {
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.LatestNews-period:hover {
+    background-color: var(--wash-strong, var(--wash));
+}
+
+.LatestNews-period[aria-pressed="true"] {
+    color: var(--surface-1);
+    background-color: var(--text-strong);
+}
+
+.LatestNews-period:focus-visible,
+.LatestNews-name:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.LatestNews-day + .LatestNews-day {
+    margin-top: 20px;
+}
+
+.LatestNews-dayLabel {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.LatestNews-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.LatestNews-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-2);
+}
+
+.LatestNews-item:last-child {
+    border-bottom: none;
+}
+
+.LatestNews-icon {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var(--accent);
+    background-color: rgba(62, 166, 255, 0.15);
+}
+
+.LatestNews-item.is-arrival .LatestNews-icon {
+    color: var(--orange-text);
+    background-color: rgba(255, 122, 26, 0.15);
+}
+
+.LatestNews-item.is-released .LatestNews-icon {
+    color: var(--green);
+    background-color: var(--green-wash);
+}
+
+.LatestNews-item.is-status .LatestNews-icon {
+    color: var(--amber-text);
+    background-color: rgba(245, 166, 35, 0.15);
+}
+
+.LatestNews-item.is-injury .LatestNews-icon {
+    color: var(--danger);
+    background-color: rgba(255, 77, 79, 0.15);
+}
+
+.LatestNews-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.LatestNews-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-strong);
+}
+
+.LatestNews-kind {
+    font-weight: 700;
+}
+
+.LatestNews-name {
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--text-strong);
+    background: none;
+    border: none;
+}
+
+/* A monkey still here: a link to its pop-up */
+button.LatestNews-name {
+    color: var(--accent);
+    cursor: pointer;
+}
+
+button.LatestNews-name:hover {
+    text-decoration: underline;
+}
+
+.LatestNews-place {
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.LatestNews-details {
+    margin: 3px 0 0;
+    font-size: 14px;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+}
+
+.LatestNews-note {
+    margin: 12px 0;
+    font-size: 15px;
+    color: var(--text-2);
+}
+
+.LatestNews-note.is-loading {
+    color: var(--accent);
+}
+
+.LatestNews-signIn {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.LatestNews-problem {
+    margin: 12px 0;
+    font-size: 15px;
+    color: var(--danger);
+}
+
+@media (min-width: 625px) {
+    .LatestNews {
+        padding: 0 24px 64px;
+    }
+}

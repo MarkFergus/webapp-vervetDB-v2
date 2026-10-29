@@ -22,6 +22,7 @@ import {
     IconUserCircle,
     IconCpu,
     IconRosetteDiscountCheck,
+    IconHistory,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -40,6 +41,8 @@ import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useMonitoring from "./useMonitoring";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import StatusUpdate from "./StatusUpdate";
+import RecentEdits from "./RecentEdits";
+import { FavouriteStar } from "./MonkeyCard";
 import { ARCHIVE_STATUSES } from "./monkeyStatus";
 import "./Modal.css";
 import CloseButton from "./CloseButton";
@@ -80,6 +83,9 @@ function Modal({
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
     onOpenPage, // Full Profile: opens the monkey's own page (MonkeyPage), (monkey)
+    favourite = false, // a ★ favourite (favourites.js)
+    onFavourite, // the ☆ on the photo: () → adds or removes it (none: no star)
+    showRecentEdits = false, // staff: Recent Edits, beside Share
 }) {
     // Which of the monkey's photos is showing
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -89,6 +95,15 @@ function Modal({
     // After Share on a computer: "copied" or "failed"; Save image: "saving"
     // or "imageFailed"
     const [shareStatus, setShareStatus] = useState(null);
+    // Recent Edits showing, over the pop-up (a new monkey puts it away)
+    const [editsOpen, setEditsOpen] = useState(false);
+    const editsButtonRef = useRef(null);
+    useEffect(() => setEditsOpen(false), [monkey?.id, isModalOpen]);
+    function closeEdits() {
+        setEditsOpen(false);
+        // (after the panel's gone)
+        setTimeout(() => editsButtonRef.current?.focus());
+    }
     // Firefox's home-screen app: the picture shown here to press and hold
     const [preview, setPreview] = useState(null);
     const closeButtonRef = useRef(null);
@@ -333,10 +348,12 @@ function Modal({
     // typing in a box, or while a form holds the pop-up)
     useDialog(isModalOpen, closeButtonRef, {
         onClose() {
-            if (!locked) handleClose();
+            // (Escape: Recent Edits first, then the pop-up)
+            if (editsOpen) closeEdits();
+            else if (!locked) handleClose();
         },
         onKeyDown(event) {
-            if (locked || isTyping(event.target)) return;
+            if (locked || editsOpen || isTyping(event.target)) return;
             if (event.key === "ArrowLeft" && prevMonkey) {
                 handleClick("prev");
             } else if (event.key === "ArrowRight" && nextMonkey) {
@@ -778,6 +795,17 @@ function Modal({
                                             )}
                                         </ul>
                                     )}
+                                    {/* Favourites: the ☆ top right, as on the cards */}
+                                    {onFavourite && (
+                                        <span className="Modal-star" onPointerDown={(e) => e.stopPropagation()}>
+                                            <FavouriteStar
+                                                className="MonkeyCard-star"
+                                                name={monkey.name}
+                                                favourite={favourite}
+                                                onClick={onFavourite}
+                                            />
+                                        </span>
+                                    )}
                                     {/* Still the grey placeholder: the same badge as the cards */}
                                     {isPlaceholderPhoto(monkey.img[currentIndex]) && (
                                         <span className="Modal-photoNeeded">
@@ -1012,6 +1040,18 @@ function Modal({
                                                 <IconPhotoPlus size={18} aria-hidden="true" />
                                             </button>
                                         )}
+                                        {showRecentEdits && (
+                                            <button
+                                                type="button"
+                                                className="Modal-edit is-quiet is-icon"
+                                                onClick={() => setEditsOpen(true)}
+                                                ref={editsButtonRef}
+                                                aria-label={`Recent edits to ${monkey.name}`}
+                                                title="Recent Edits"
+                                            >
+                                                <IconHistory size={18} aria-hidden="true" />
+                                            </button>
+                                        )}
                                         <button type="button" className="Modal-edit is-quiet is-icon" onClick={shareMonkey} title="Share">
                                             <IconShare size={18} aria-hidden="true" />
                                             <span className="Modal-editLabel">{shareStatus === "copied" ? "Link copied!" : "Share"}</span>
@@ -1029,6 +1069,7 @@ function Modal({
                                     </div>
                                 </div>
                                 </div>
+                                {editsOpen && <RecentEdits monkey={monkey} onClose={closeEdits} />}
                                 <ImagePreview image={preview} onClose={() => setPreview(null)} />
                             </motion.div>
                         </div>

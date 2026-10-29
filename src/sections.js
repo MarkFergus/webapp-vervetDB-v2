@@ -40,7 +40,7 @@ export function inSection(troop, sectionIds) {
 // The Filters panel's Quick Filters: the views staff use most. Several can
 // be on at once (showing the monkeys in any of them; none on = everyone).
 //   section: a section's id (its troops' enclosures; also narrows the
-//            Enclosures box); otherwise test(monkey, today) decides
+//            Enclosures box); otherwise test(monkey, today, favourites) decides
 // (The care units are only here, not in the Enclosures box.)
 //   label(today): the button and its chip under the toolbar
 export const QUICK_FILTERS = [
@@ -53,7 +53,8 @@ export const QUICK_FILTERS = [
     { id: "babyCare", label: () => "Baby Care", test: (m) => homeName(m) === "Baby Care" },
     // (with the monkeys in Sickbay for now, as on its page)
     { id: "sickbayCare", label: () => "Sickbay", test: (m) => homeName(m) === SICKBAY_UNIT || Boolean(m.inSickbay) },
-    { id: "quarantine", label: () => "Quarantine", test: (m) => homeName(m) === "Quarantine" },
+    // The ★ ones (favourites.js: a Set of their ids)
+    { id: "favourites", label: () => "Favourites", test: (m, today, favourites) => Boolean(favourites?.has(m.id)) },
     // This season's sanctuary babies (born this baby season or since: the
     // year changes on 1 October), not the Bandits' wild-born babies
     {
@@ -65,10 +66,13 @@ export const QUICK_FILTERS = [
 ];
 
 // Is this monkey in any of the chosen Quick Filters? ([] = every monkey)
-export function inQuickFilters(monkey, ids, today = new Date()) {
+//   favourites: a Set of the ★ monkeys' ids
+export function inQuickFilters(monkey, ids, today = new Date(), favourites = new Set()) {
     if (!ids.length) return true;
     return QUICK_FILTERS.some(
-        (q) => ids.includes(q.id) && (q.section ? inSection(homeName(monkey), [q.section]) : q.test(monkey, today))
+        (q) =>
+            ids.includes(q.id) &&
+            (q.section ? inSection(homeName(monkey), [q.section]) : q.test(monkey, today, favourites))
     );
 }
 

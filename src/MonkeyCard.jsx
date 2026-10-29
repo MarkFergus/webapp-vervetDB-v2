@@ -1,4 +1,4 @@
-import { IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconStar, IconStarFilled, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -20,7 +20,13 @@ function SexIcon({ sex }) {
 //   inSickbay: true while it's in Sickbay (a badge, top left of the photo)
 //   newArrival: true while it lives in a care unit (a badge, top left)
 //   stayingIn: the introcage it's staying in for now ("Gismo A"; a badge)
-function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, img, onClick }) {
+//   favourite / onFavourite: the ☆ top right of the photo (favourites.js);
+//   no onFavourite, no star. (Beside the card's button, not in it: a button
+//   can't hold another)
+function MonkeyCard({
+    name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, img, onClick,
+    favourite = false, onFavourite,
+}) {
     const photoNeeded = isPlaceholderPhoto(img);
     // What screen readers announce, e.g. "Abby, female, born 2018, Global troop"
     const label = [
@@ -34,7 +40,7 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
         ...(photoNeeded ? ["photo needed"] : []),
     ].join(", ");
 
-    return (
+    const card = (
         <button type="button" className="MonkeyCard" onClick={onClick} aria-label={label}>
             <span className="MonkeyCard-image">
                 {/* alt="" because the name is right below the photo.
@@ -107,6 +113,29 @@ function MonkeyCard({ name, sex, year, troop, inIntrocage = false, inSickbay = f
                     </span>
                 </span>
             </span>
+        </button>
+    );
+    if (!onFavourite) return card;
+    return (
+        <span className={`MonkeyCard-holder${favourite ? " is-favourite" : ""}`}>
+            {card}
+            <FavouriteStar name={name} favourite={favourite} onClick={onFavourite} />
+        </span>
+    );
+}
+
+// The ☆ on a photo: a gold ★ once it's a favourite (also the pop-up's)
+export function FavouriteStar({ name, favourite, onClick, className = "MonkeyCard-star" }) {
+    return (
+        <button
+            type="button"
+            className={`${className}${favourite ? " is-on" : ""}`}
+            onClick={onClick}
+            aria-pressed={favourite}
+            aria-label={`Favourite ${name}`}
+            title={favourite ? "Remove from Favourites" : "Add to Favourites"}
+        >
+            {favourite ? <IconStarFilled size={18} aria-hidden="true" /> : <IconStar size={18} stroke={2} aria-hidden="true" />}
         </button>
     );
 }

@@ -62,7 +62,7 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         expect(drawer()).toBeNull();
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
-            "Monkeys", "Enclosures", "Interactive Map", "Statistics", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About",
+            "Monkeys", "Enclosures", "Interactive Map", "Statistics", "Scan QR Code", "Latest News", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(drawer().querySelectorAll(".Drawer-group")).toHaveLength(3);
         expect(drawerHeadings()).toEqual([]);
@@ -79,7 +79,7 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
             "Add New Monkey", "Admin Dashboard", "Monkeys", "Enclosures", "Add Photos", "Documents", "Records", "Interactive Map",
-            "Statistics", "Scan QR Code", "Monkey Guesser", "Install & Use Offline", "About",
+            "Statistics", "Scan QR Code", "Latest News", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(drawer().querySelector(".Drawer-group").textContent).toBe("Add New MonkeyAdmin Dashboard");
         expect(within(drawer()).getByRole("link", { name: "Admin Dashboard" })).toHaveAttribute("href", "#admin");
@@ -94,7 +94,7 @@ describe("phones: the drawer (☰, top left, from the left)", () => {
         await user.click(menuButton());
         expect(drawerItems()).toEqual([
             "Monkeys", "Enclosures", "Add Photos", "Documents", "Records", "Interactive Map", "Statistics", "Scan QR Code",
-            "Monkey Guesser", "Install & Use Offline", "About",
+            "Latest News", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(within(drawer()).queryByRole("button", { name: "Add New Monkey" })).toBeNull();
         const game = within(drawer()).getByRole("link", { name: "Monkey Guesser" });
@@ -161,7 +161,7 @@ describe("computers: the side rail", () => {
     test("every item, in groups with lines between (no headings); visitors: no Documents", async () => {
         setup();
         expect(railItems()).toEqual([
-            "Monkeys", "Enclosures", "Interactive Map", "Statistics", "Monkey Guesser", "Install & Use Offline", "About",
+            "Monkeys", "Enclosures", "Interactive Map", "Statistics", "Latest News", "Monkey Guesser", "Install & Use Offline", "About",
         ]);
         expect(rail().querySelectorAll(".SideRail-group")).toHaveLength(3);
         expect(rail().querySelector("h2")).toBeNull();

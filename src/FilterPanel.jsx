@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { fullName } from "./places";
-import { IconBolt, IconFilterOff } from "@tabler/icons-react";
+import { IconBolt, IconFilterOff, IconStarFilled } from "@tabler/icons-react";
 import { QUICK_FILTERS, inSection, quickSections } from "./sections";
 import { lockScroll, unlockScroll } from "./useDialog";
 import "./FilterPanel.css";
@@ -179,11 +179,16 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                     <Pills
                         label="Quick Filters"
                         allLabel={null}
-                        // (the Bandits get their bandit, just for fun)
+                        // (the Bandits get their bandit, just for fun; the
+                        // Favourites a star, in the text's colour like the bandit)
                         options={QUICK_FILTERS.map((q) => ({
                             id: q.id,
                             label: q.label(),
-                            icon: q.id === "bandits" && <BanditIcon className="FilterPanel-pillIcon" size={18} aria-hidden="true" />,
+                            icon:
+                                (q.id === "bandits" && <BanditIcon className="FilterPanel-pillIcon" size={18} aria-hidden="true" />) ||
+                                (q.id === "favourites" && (
+                                    <IconStarFilled className="FilterPanel-pillIcon is-star" size={16} aria-hidden="true" />
+                                )),
                         }))}
                         value={filters.quick}
                         onChange={(v) => onChange("quick", v)}
@@ -208,10 +213,11 @@ function FilterPanel({ open, onClose, buttonRef, troops, filters, onChange, onCl
                                 value={filters.troop}
                                 onChange={(e) => onChange("troop", e.target.value)}
                             >
-                                {/* The troops' enclosures; only those in the sections
-                                    chosen in Quick Filters. (Not the Bandits or the
-                                    care units: they have Quick Filters of their own) */}
-                                {troops
+                                {/* The troops' enclosures, then Quarantine (the one care
+                                    unit without a Quick Filter of its own); only those in
+                                    the sections chosen in Quick Filters. (Not the Bandits,
+                                    Baby Care or Sickbay: they have Quick Filters) */}
+                                {[...new Set([...troops, "Quarantine"])]
                                     .filter((t) => t !== "Bandits")
                                     .filter((t) => t === "All Troops" || inSection(t, quickSections(filters.quick)))
                                     .map((t) => (

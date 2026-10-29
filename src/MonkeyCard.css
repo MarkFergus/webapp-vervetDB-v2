@@ -234,3 +234,69 @@
     color: var(--text-3);
     background-color: var(--surface-2);
 }
+
+/* Favourites (favourites.js): the ☆ top right of the photo, beside the card's
+   button (a button can't hold another), so the card is held in a box */
+.MonkeyCard-holder {
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.MonkeyCard-star {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: #ffffff;
+    background-color: rgba(18, 18, 18, 0.35);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+}
+
+.MonkeyCard-star:hover {
+    transform: scale(1.1);
+}
+
+.MonkeyCard-star:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* A favourite: the gold ★, always */
+.MonkeyCard-star.is-on {
+    color: var(--star);
+}
+
+/* Not one yet: computers show the ☆ while the card's hovered or focused;
+   touch screens always (quieter: no hover there) */
+@media (hover: hover) {
+    .MonkeyCard-star:not(.is-on) {
+        opacity: 0;
+    }
+
+    .MonkeyCard-holder:hover .MonkeyCard-star,
+    .MonkeyCard-holder:focus-within .MonkeyCard-star {
+        opacity: 1;
+    }
+}
+
+@media (hover: none) {
+    .MonkeyCard-star:not(.is-on) {
+        opacity: 0.8;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .MonkeyCard-star {
+        transition: none;
+    }
+}
