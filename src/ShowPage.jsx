@@ -27,6 +27,7 @@ import {
     introcageMonkeys,
     isInside,
     isNewArrival,
+    inBabyCare,
     isEnclosuresRoute,
     placeHash,
     residents,
@@ -883,9 +884,14 @@ function ShowPage({
                     showRecentEdits={Boolean(staff && user && selectedMonkey?.id != null)}
                     // (staff only; not when opened from that page: View Card)
                     onOpenPage={role && !onMonkeyPage ? openPage : undefined}
-                    // Released: new arrivals only (living in a care unit), once the database has a status
+                    // Released: new arrivals only (living in a care unit), once the
+                    // database has a status; not Baby Care's babies (they stay at
+                    // the sanctuary: only Sickbay's and Quarantine's are released)
                     onRelease={
-                        canEdit && selectedMonkey?.status !== undefined && isNewArrival(selectedMonkey)
+                        canEdit &&
+                        selectedMonkey?.status !== undefined &&
+                        isNewArrival(selectedMonkey) &&
+                        !inBabyCare(selectedMonkey)
                             ? handleRelease
                             : undefined
                     }

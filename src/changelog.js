@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.20.1",
+        date: "2026-10-29",
+        changes: ["Added Move to Introcage for Baby Care"],
+    },
+    {
         version: "1.20.0",
         date: "2026-10-29",
         changes: [

@@ -36,7 +36,7 @@ import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
-import { isNewArrival } from "./enclosures";
+import { inBabyCare, isNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useMonitoring from "./useMonitoring";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
@@ -55,7 +55,7 @@ const todayText = () => {
 
 // What "Return to ..." goes back to
 const homeWord = (monkey) =>
-    monkey.introcageType === "area" ? "Area" : monkey.introcage ? "Introcage" : "Troop";
+    inBabyCare(monkey) ? "Baby Care" : monkey.introcageType === "area" ? "Area" : monkey.introcage ? "Introcage" : "Troop";
 // Its home, in full: "Gismo Troop" or "Holt & Barrington C1"
 const homeText = (monkey) => (monkey.introcage ? fullName(monkey.introcage) : `${fullName(monkey.troop)} Troop`);
 
@@ -409,7 +409,7 @@ function Modal({
                             {/* Quick Actions (editors): an icon top left (opposite
                                 close) that drops down the quick actions; each one's
                                 little form opens in the same drop-down */}
-                            {(canSickbay || canStay || onRelease || onStatusUpdate || injuries.canAdd) && (
+                            {(canSickbay || canStay || (onWhereabouts && away) || onRelease || onStatusUpdate || injuries.canAdd) && (
                                 <div className="Modal-moreActions" ref={moreRef}>
                                     <button
                                         type="button"
@@ -594,7 +594,7 @@ function Modal({
                                                                         ))}
                                                                     </optgroup>
                                                                 )}
-                                                                {otherChoices.length > 0 && (
+                                                                {otherChoices.length > 0 && ownChoices.length > 0 && (
                                                                     <optgroup label="Other Enclosures">
                                                                         {otherChoices.map((c) => (
                                                                             <option key={c.id} value={c.id}>
@@ -603,6 +603,20 @@ function Modal({
                                                                         ))}
                                                                     </optgroup>
                                                                 )}
+                                                                {/* None its own (a Baby Care baby): each
+                                                                    enclosure's under its name */}
+                                                                {ownChoices.length === 0 &&
+                                                                    [...new Set(otherChoices.map((c) => c.enclosure))].map((enclosure) => (
+                                                                        <optgroup key={enclosure} label={fullName(enclosure)}>
+                                                                            {otherChoices
+                                                                                .filter((c) => c.enclosure === enclosure)
+                                                                                .map((c) => (
+                                                                                    <option key={c.id} value={c.id}>
+                                                                                        {fullName(c.name)}
+                                                                                    </option>
+                                                                                ))}
+                                                                        </optgroup>
+                                                                    ))}
                                                             </select>
                                                         </label>
                                                     )}

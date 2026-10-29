@@ -8,7 +8,7 @@ import MonkeyCard from "./MonkeyCard";
 import { DEFAULT_FEEDING, amSummary } from "./feeding";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 import enclosuresArr from "./enclosuresArr";
-import { awayFrom, introcageMonkeys, residents, stayChoices, troopMonkeys } from "./enclosures";
+import { FOSTER_INTROCAGES, awayFrom, introcageMonkeys, residents, stayChoices, troopMonkeys } from "./enclosures";
 import { monitoringGroups } from "./monitoring";
 import { signFor } from "./introcageSigns";
 import { currentIntrocage, staying } from "./places";
@@ -91,8 +91,18 @@ describe("where it can stay", () => {
         expect(stayChoices(bachelor, enclosuresArr)).toEqual([]);
     });
 
-    test("none for a new arrival or the Bandits", () => {
-        const arrival = { ...base, introcage: "Dreamland", introcageType: "area", enclosure: "Baby Care" };
+    test("a Baby Care baby: the foster-mum introcages only (none its own)", () => {
+        const baby = { ...base, troop: null, introcage: "Dreamland", introcageType: "area", enclosure: "Baby Care", stay: null };
+        const choices = stayChoices(baby, enclosuresArr);
+        expect(choices.map((c) => c.name).sort()).toEqual([...FOSTER_INTROCAGES].sort());
+        expect(choices.every((c) => !c.own)).toBe(true);
+        expect(choices.map((c) => c.name)).not.toContain("Gismo B");
+        // (staying in one already: not offered again)
+        expect(stayChoices({ ...baby, stay: { id: byName("Gismo A").id, introcage: "Gismo A" } }, enclosuresArr).map((c) => c.name)).not.toContain("Gismo A");
+    });
+
+    test("none for the other new arrivals (Quarantine, Sickbay) or the Bandits", () => {
+        const arrival = { ...base, troop: null, introcage: "Quarantine", introcageType: "area", enclosure: "Quarantine" };
         expect(stayChoices(arrival, enclosuresArr)).toEqual([]);
         expect(stayChoices({ ...base, troop: "Bandits", introcage: null }, enclosuresArr)).toEqual([]);
     });
@@ -119,6 +129,23 @@ describe("the pop-up", () => {
         return onWhereabouts;
     };
     const quickActions = () => userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
+
+    test("a Baby Care baby: Move to Introcage, each enclosure's introcages under its name; Return to Baby Care", async () => {
+        const baby = { ...base, troop: null, introcage: "Dreamland", introcageType: "area", enclosure: "Baby Care", stay: null };
+        const { unmount } = render(
+            <Modal isModalOpen monkey={baby} onClose={() => {}} handlePrevNext={() => {}} onWhereabouts={vi.fn()} stayChoices={stayChoices(baby, enclosuresArr)} />
+        );
+        await quickActions();
+        await userEvent.click(screen.getByRole("button", { name: "Move to Introcage" }));
+        const select = screen.getByLabelText("Introcage");
+        expect(within(select).getByRole("group", { name: "Gismo" })).toBeInTheDocument();
+        expect(within(select).queryByRole("group", { name: "Other Enclosures" })).not.toBeInTheDocument();
+        unmount();
+        const staying = { ...baby, stay: { id: byName("Gismo A").id, introcage: "Gismo A" } };
+        render(<Modal isModalOpen monkey={staying} onClose={() => {}} handlePrevNext={() => {}} onWhereabouts={vi.fn()} stayChoices={stayChoices(staying, enclosuresArr)} />);
+        await quickActions();
+        expect(screen.getByRole("button", { name: "Return to Baby Care" })).toBeInTheDocument();
+    });
 
     test("Move to Introcage: which one (its own enclosure's), the date, a note, and Fed By (Sickbay to start with)", async () => {
         const saved = open({ ...ziggy, stay: null });

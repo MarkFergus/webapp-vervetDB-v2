@@ -82,6 +82,19 @@ export const isNewArrival = (monkey) => monkey.introcageType === "area";
 // from the Sickbay section) also lists the monkeys who are in Sickbay for
 // now from elsewhere (their In Sickbay flag), next to its own new arrivals.
 export const SICKBAY_UNIT = "Sickbay";
+
+// Baby Care (the care unit): its babies stay at the sanctuary (never
+// released), and visit introcages for a while (Move to Introcage) while
+// still living there
+export const BABY_CARE = "Baby Care";
+export const inBabyCare = (monkey) => isNewArrival(monkey) && homeName(monkey) === BABY_CARE;
+
+// The introcages with a foster mum, where Baby Care's babies go (Move to
+// Introcage). For now a list here; later a field on the introcage
+export const FOSTER_INTROCAGES = [
+    "Goliath J", "Gismo A", "D&D D", "Engeltjie 7", "Koko A", "Koko A1", "Skrow B", "Skrow C",
+    "Skunkey B2", "Skunkey D", "H&B A", "H&B B", "Jalamango A", "Global A", "James A",
+];
 export const isSickbayUnit = (enclosure) => isCareUnit(enclosure) && enclosure.name === SICKBAY_UNIT;
 
 // Monkeys in any of an enclosure's introcages / areas: its own, and anyone
@@ -123,11 +136,23 @@ export const awayFrom = (introcage, monkeys) =>
 // monkey only: a troop monkey only ever goes into its own enclosure's)
 // every other enclosure's, in the enclosures' order; not its home
 // introcage, nor where it's staying already. [{ id, name, enclosure, own }].
-// None for a new arrival (it lives in a care unit), a Bachelor Block monkey
+// A Baby Care baby: the foster-mum introcages (FOSTER_INTROCAGES), none its
+// own, in the enclosures' order. None for
+// the other new arrivals (Quarantine, Sickbay), a Bachelor Block monkey
 // (only ever its own introcage or Sickbay), or a monkey with no enclosure
 // (the Bandits).
 export function stayChoices(monkey, enclosures) {
     const home = enclosures.find((e) => isEnclosure(e) && e.name === homeName(monkey));
+    if (home && isCareUnit(home) && home.name === BABY_CARE && isNewArrival(monkey)) {
+        return enclosures
+            .filter((e) => isEnclosure(e) && !isCareUnit(e))
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .flatMap((e) =>
+                introcagesOf(e, enclosures)
+                    .filter((i) => i.type === "introcage" && FOSTER_INTROCAGES.includes(i.name) && i.id !== monkey.stay?.id)
+                    .map((i) => ({ id: i.id, name: i.name, enclosure: e.name, own: false }))
+            );
+    }
     if (!home || isCareUnit(home) || home.type === "block") return [];
     const order = (e) => (e.id === home.id ? -1 : e.sortOrder);
     return enclosures
