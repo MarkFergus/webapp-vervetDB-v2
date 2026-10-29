@@ -78,6 +78,20 @@ export const troopMonkeys = (enclosure, monkeys) =>
 // Care Unit), until it's moved to a permanent location
 export const isNewArrival = (monkey) => monkey.introcageType === "area";
 
+// The New Arrival tag (cards, list rows, the pop-up): a new arrival's first
+// 14 days from its Arrival Date, and not while it's staying in an introcage
+// (where it is matters more then: "In Gismo A"). No Arrival Date, no tag.
+// (isNewArrival above still decides what can be done with it.)
+export const NEW_ARRIVAL_DAYS = 14;
+export function showsNewArrival(monkey, today = new Date()) {
+    if (!isNewArrival(monkey) || monkey.stay || !monkey.arrivalDate) return false;
+    const [y, m, d] = monkey.arrivalDate.split("-").map(Number);
+    const days = Math.round(
+        (new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(y, m - 1, d)) / 86400000
+    );
+    return days >= 0 && days < NEW_ARRIVAL_DAYS;
+}
+
 // Sickbay (the care unit; once called "Sickbay Care Unit", to tell it apart
 // from the Sickbay section) also lists the monkeys who are in Sickbay for
 // now from elsewhere (their In Sickbay flag), next to its own new arrivals.

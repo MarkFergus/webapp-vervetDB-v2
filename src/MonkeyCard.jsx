@@ -18,7 +18,8 @@ function SexIcon({ sex }) {
 //   troop: where it lives, its troop or introcage ("Goliath", "H&B C1")
 //   inIntrocage: true for introcage monkeys
 //   inSickbay: true while it's in Sickbay (a badge, top left of the photo)
-//   newArrival: true while it lives in a care unit (a badge, top left)
+//   newArrival: its New Arrival tag (showsNewArrival: its first 14 days in a
+//   care unit; a badge, top left)
 //   stayingIn: the introcage it's staying in for now ("Gismo A"; a badge)
 //   favourite / onFavourite: the ☆ top right of the photo (favourites.js);
 //   no onFavourite, no star. (Beside the card's button, not in it: a button

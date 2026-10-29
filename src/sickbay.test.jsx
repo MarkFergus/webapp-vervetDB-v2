@@ -7,7 +7,7 @@ import MonkeyRow from "./MonkeyRow";
 import { DEFAULT_FEEDING } from "./feeding";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 import enclosuresArr from "./enclosuresArr";
-import { introcageMonkeys, isNewArrival, monkeyCount } from "./enclosures";
+import { introcageMonkeys, isNewArrival, monkeyCount, showsNewArrival } from "./enclosures";
 
 const MONKEY = {
     id: 1, name: "Nita", sex: "female", chip: "123", troop: null, introcage: "Goliath A", introcageType: "introcage",
@@ -171,5 +171,34 @@ describe("Released (new rescues)", () => {
     test("no Released button unless it's given (new rescues, editors)", () => {
         openRelease(rescue, undefined);
         expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+    });
+});
+
+describe("the New Arrival tag", () => {
+    const today = new Date(2026, 9, 29);
+    const rescue = { ...MONKEY, introcage: "Dreamland", introcageType: "area", enclosure: "Baby Care", stay: null };
+
+    test("its first 14 days from its Arrival Date, then it drops off", () => {
+        expect(showsNewArrival({ ...rescue, arrivalDate: "2026-10-29" }, today)).toBe(true);
+        expect(showsNewArrival({ ...rescue, arrivalDate: "2026-10-16" }, today)).toBe(true);
+        expect(showsNewArrival({ ...rescue, arrivalDate: "2026-10-15" }, today)).toBe(false);
+        // (no Arrival Date: no tag)
+        expect(showsNewArrival({ ...rescue, arrivalDate: null }, today)).toBe(false);
+    });
+
+    test("not while it's staying in an introcage (still a new arrival for what can be done)", () => {
+        const visiting = { ...rescue, arrivalDate: "2026-10-28", stay: { id: 1, introcage: "Gismo A" } };
+        expect(showsNewArrival(visiting, today)).toBe(false);
+        expect(isNewArrival(visiting)).toBe(true);
+    });
+
+    test("never for a monkey living in a troop or a normal introcage", () => {
+        expect(showsNewArrival({ ...MONKEY, arrivalDate: "2026-10-28" }, today)).toBe(false);
+    });
+
+    test("cards: the stay shows instead once the tag's gone", () => {
+        render(<MonkeyCard name="Bub" sex="female" year={2026} troop="Dreamland" inIntrocage stayingIn="Gismo A" newArrival={false} img="x.jpg" onClick={() => {}} />);
+        expect(screen.getByText("In Gismo A")).toBeInTheDocument();
+        expect(screen.queryByText("New Arrival")).not.toBeInTheDocument();
     });
 });

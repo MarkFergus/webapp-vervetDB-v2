@@ -27,7 +27,8 @@ export function MonkeyListHeader() {
 //   troop: where it lives, its troop or introcage; inIntrocage: true for
 //   introcage monkeys (see MonkeyCard)
 //   inSickbay: true while it's in Sickbay (a small badge on the photo)
-//   newArrival: true while it lives in a care unit (a small badge, bottom left)
+//   newArrival: its New Arrival tag (showsNewArrival: its first 14 days in a
+//   care unit; a small badge, bottom left)
 //   stayingIn: the introcage it's staying in for now (a small badge)
 function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, chip, img, onClick }) {
     // The same as the cards, e.g. "Abby, female, born 2018, Global troop"
