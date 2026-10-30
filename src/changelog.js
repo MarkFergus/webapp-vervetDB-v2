@@ -23,7 +23,7 @@ export const CHANGELOG = [
     {
         version: "1.21.0",
         date: "2026-10-31",
-        changes: ["New Monitoring feature in Records"],
+        changes: ["New Injuries page in Records > Sections", "New Monitoring feature in Records > Sections"],
     },
     {
         version: "1.20.1",
