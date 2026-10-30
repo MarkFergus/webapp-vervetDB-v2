@@ -11,6 +11,7 @@ import {
     IconHeartHandshake,
     IconMinus,
     IconPlus,
+    IconReportMedical,
     IconScale,
     IconTool,
     IconTrees,
@@ -36,6 +37,7 @@ import {
 import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
 import IntegrationRecordsPage from "./IntegrationRecordsPage";
 import MaintenanceRecordsPage from "./MaintenanceRecordsPage";
+import SectionsRecordsPage from "./SectionsRecordsPage";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
@@ -46,7 +48,9 @@ import "./RecordsPage.css";
 // IntegrationRecordsPage.jsx). Entering: editors and admins (canEnter);
 // anyone else on the staff can view. Maintenance: its own page (Enter /
 // View, MaintenanceRecordsPage.jsx; entering: anyone with a role, canLog).
-// Sections and Meds & Sickbay: coming soon.
+// Sections: Injuries, each troop's current and past ones (their own page:
+// SectionsRecordsPage.jsx; adding, updates, Healed? and Restore: editors
+// and admins). Meds & Sickbay: coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
 const TEAM_ICONS = {
@@ -56,7 +60,13 @@ const TEAM_ICONS = {
     sections: IconTrees,
     "meds-sickbay": IconFirstAidKit,
 };
-const KIND_ICONS = { milk: IconBottle, weights: IconScale, reports: IconFileText, current: IconHeartHandshake };
+const KIND_ICONS = {
+    milk: IconBottle,
+    weights: IconScale,
+    reports: IconFileText,
+    current: IconHeartHandshake,
+    injuries: IconReportMedical,
+};
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
 
@@ -671,8 +681,18 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
 
 // ---- The page: the team, what to record, then Enter / View ----
 
-// maintenance: { live, canLog, me } for Maintenance (MaintenanceRecordsPage)
-function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnter = false, maintenance = {}, inert = false }) {
+// maintenance: { live, canLog, me } for Maintenance (MaintenanceRecordsPage);
+// staff: the pop-up's { canSee, canAdd, userId, isAdmin, readOnly }, for
+// Sections' injuries
+function RecordsPage({
+    route = "records",
+    monkeys = [],
+    enclosures = [],
+    canEnter = false,
+    maintenance = {},
+    staff = null,
+    inert = false,
+}) {
     const { team, kind } = parseRecordsRoute(route);
     const crumbs = [
         { href: "#records", label: "Records" },
@@ -727,6 +747,8 @@ function RecordsPage({ route = "records", monkeys = [], enclosures = [], canEnte
                 // (Integration's: its own page)
                 team.id === "integration" ? (
                     <IntegrationRecordsPage key={kind.id} kind={kind} monkeys={monkeys} canEnter={canEnter} />
+                ) : team.id === "sections" ? (
+                    <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                 ) : (
                     <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} />
                 )

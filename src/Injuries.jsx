@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import ConfirmBubble from "./ConfirmBubble";
-import { IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconAlertTriangle, IconChevronDown, IconPencil, IconTrash } from "@tabler/icons-react";
 import {
     addInjury,
     addInjuryUpdate,
     deleteInjury,
     deleteInjuryUpdate,
     injuryUpdatesAvailable,
+    loadCurrentInjuries,
     loadInjuries,
+    loadPastInjuries,
     saveInjury,
     saveInjuryUpdate,
     setInjuryHealed,
@@ -17,10 +19,12 @@ import useScrollIntoView from "./useScrollIntoView";
 import { useFormLock } from "./formLock";
 import "./IntegrationReports.css";
 
-// Injuries: a section of a monkey's pop-up (staff only). Editors
-// and admins add them (Quick Actions → New Injury) and mark them Healed?,
-// which moves them to the Injury History (kept on record); admins or whoever added
-// one can change or delete it. Listed like the Integration Reports.
+// Injuries: a section of a monkey's pop-up (staff only): its current ones.
+// Editors and admins add them (Quick Actions → New Injury) and mark them
+// Healed? (kept on record: the Full Profile's Medical tab, and Records →
+// Sections → Injuries, Past, where Restore brings one back); admins or
+// whoever added one can change or delete it. Listed like the Integration
+// Reports.
 // A current injury can have dated updates ("wound healing well"), added the
 // same way, listed under it (and on the Monitoring Notes).
 // (supabase/injuries.sql, monitoring.sql)
@@ -28,6 +32,26 @@ import "./IntegrationReports.css";
 export const MAX_INJURY = 500;
 
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
+
+// A current injury with no update (or, with none yet, added) for this
+// many days: "Update Needed" beside Add Update
+export const UPDATE_DUE_DAYS = 14;
+
+// Days from one day ("2026-10-16") to another
+const daysBetween = (from, to) => {
+    const at = (date) => {
+        const [y, m, d] = date.split("-").map(Number);
+        return Date.UTC(y, m - 1, d);
+    };
+    return Math.round((at(to) - at(from)) / 86400000);
+};
+
+// Whether a current injury is due an update (today: "2026-10-30")
+export function updateNeeded(entry, today) {
+    if (entry.healedOn || !today) return false;
+    const last = (entry.updates ?? []).reduce((latest, u) => (u.date > latest ? u.date : latest), entry.date);
+    return daysBetween(last, today) >= UPDATE_DUE_DAYS;
+}
 
 // The injuries of one monkey, loaded when staff open it. available: the
 // database has them (false before injuries.sql, or offline), and this is staff.
@@ -90,6 +114,82 @@ export function useInjuries(monkeyId, staff) {
         async add(values) {
             const saved = await addInjury(monkeyId, values);
             change((list) => [...list, saved]);
+        },
+        async update(id, values) {
+            replace(await saveInjury(id, values));
+        },
+        async setHealed(id, healed) {
+            replace(await setInjuryHealed(id, healed));
+        },
+        async remove(id) {
+            await deleteInjury(id);
+            change((list) => list.filter((e) => e.id !== id));
+        },
+    };
+}
+
+// The injuries of a group of monkeys (Records → Sections → Injuries: a
+// troop's), with the same actions as useInjuries, so InjuryItem works on
+// them. Current ones, or (pastSince: a day, "2026-04-30") those healed
+// since then. One marked Healed? (or, in the past ones, Restored) leaves
+// the list. entries: oldest first; null while loading, "failed" if they
+// couldn't be loaded.
+export function useInjuryList(monkeyIds, staff, pastSince = null) {
+    const key = monkeyIds.join(",");
+    const past = Boolean(pastSince);
+    const [entries, setEntries] = useState(null);
+    useEffect(() => {
+        let cancelled = false;
+        setEntries(null);
+        const ids = key ? key.split(",").map(Number) : [];
+        (pastSince ? loadPastInjuries(ids, pastSince) : loadCurrentInjuries(ids))
+            .then((list) => !cancelled && setEntries(list))
+            .catch(() => !cancelled && setEntries("failed"));
+        return () => {
+            cancelled = true;
+        };
+    }, [key, pastSince]);
+
+    const sorted = (list) => [...list].sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+    const change = (fn) => setEntries((list) => (Array.isArray(list) ? sorted(fn(list)) : list));
+    const replace = (saved) =>
+        change((list) =>
+            Boolean(saved.healedOn) !== past
+                ? list.filter((e) => e.id !== saved.id)
+                : list.map((e) => (e.id === saved.id ? { ...saved, updates: e.updates ?? [] } : e))
+        );
+    const changeUpdates = (injuryId, fn) =>
+        change((list) =>
+            list.map((e) =>
+                e.id === injuryId
+                    ? { ...e, updates: fn(e.updates ?? []).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id) }
+                    : e
+            )
+        );
+    const available = Array.isArray(entries);
+    const canAdd = available && Boolean(staff?.canAdd);
+    return {
+        entries,
+        available,
+        canAdd,
+        canAddUpdate: canAdd && injuryUpdatesAvailable(),
+        canChange: (entry) =>
+            available && !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+        async addUpdate(injuryId, values) {
+            const saved = await addInjuryUpdate(injuryId, values);
+            changeUpdates(injuryId, (list) => [...list, saved]);
+        },
+        async saveUpdate(injuryId, id, values) {
+            const saved = await saveInjuryUpdate(id, values);
+            changeUpdates(injuryId, (list) => list.map((u) => (u.id === id ? saved : u)));
+        },
+        async removeUpdate(injuryId, id) {
+            await deleteInjuryUpdate(id);
+            changeUpdates(injuryId, (list) => list.filter((u) => u.id !== id));
+        },
+        async add(monkeyId, values) {
+            const saved = await addInjury(monkeyId, values);
+            change((list) => [...list, { ...saved, updates: [] }]);
         },
         async update(id, values) {
             replace(await saveInjury(id, values));
@@ -253,8 +353,8 @@ function UpdateItem({ injuryId, update, injuries, today }) {
 // One injury in a list: its date (Edit / Delete icons on the right), the
 // description, who added it, and Healed? (current) or when it healed (Injury
 // History); then its updates, and Add Update (current ones)
-function InjuryItem({ entry, injuries, today }) {
-    const [mode, setMode] = useState(null); // "edit", "delete", "healed" (to confirm) or "update" (adding one)
+export function InjuryItem({ entry, injuries, today }) {
+    const [mode, setMode] = useState(null); // "edit", "delete", "healed" / "restore" (to confirm) or "update" (adding one)
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
 
@@ -298,16 +398,16 @@ function InjuryItem({ entry, injuries, today }) {
                 <b className="Injury-date">{dayText(entry.date)}</b>
                 <p className="Injury-text">{entry.description}</p>
                 <span className="Injury-tools">
-                    {/* Editors and admins: Healed? on a current one; Reopen
+                    {/* Editors and admins: Healed? on a current one; Restore
                         on a healed one (if it was marked by mistake) */}
                     {injuries.canAdd && (
                         <button
                             type="button"
                             className="Modal-edit is-soft Injury-healed"
                             disabled={busy}
-                            onClick={() => (entry.healedOn ? run(() => injuries.setHealed(entry.id, false)) : setMode("healed"))}
+                            onClick={() => setMode(entry.healedOn ? "restore" : "healed")}
                         >
-                            {entry.healedOn ? (busy ? "Saving…" : "Reopen") : "Healed?"}
+                            {entry.healedOn ? "Restore" : "Healed?"}
                         </button>
                     )}
                     {injuries.canChange(entry) && (
@@ -349,6 +449,14 @@ function InjuryItem({ entry, injuries, today }) {
                             onCancel={cancel}
                         />
                     )}
+                    {mode === "restore" && (
+                        <ConfirmBubble
+                            question="Return this record to an active injury?"
+                            busy={busy}
+                            onConfirm={() => run(() => injuries.setHealed(entry.id, false))}
+                            onCancel={cancel}
+                        />
+                    )}
                 </span>
             </div>
             {/* Who added it (and healed it), on one small line */}
@@ -384,24 +492,34 @@ function InjuryItem({ entry, injuries, today }) {
                 />
             ) : (
                 !entry.healedOn &&
-                injuries.canAddUpdate && (
-                    <button type="button" className="Modal-edit is-soft Injury-addUpdate" onClick={() => setMode("update")}>
-                        Add Update
-                    </button>
+                injuryUpdatesAvailable() && (
+                    // Add Update, and beside it Update Needed (none for 14 days)
+                    <div className="Injury-updateRow">
+                        {injuries.canAddUpdate && (
+                            <button type="button" className="Modal-edit is-soft Injury-addUpdate" onClick={() => setMode("update")}>
+                                Add Update
+                            </button>
+                        )}
+                        {updateNeeded(entry, today) && (
+                            <span className="Injury-due">
+                                <IconAlertTriangle size={14} aria-hidden="true" />
+                                Update Needed
+                            </span>
+                        )}
+                    </div>
                 )
             )}
         </li>
     );
 }
 
-// The Injuries section: current injuries (open), and the healed ones under
-// Injury History (folded away). Hidden until the monkey has had an injury.
-//   open / onToggle: the current list's fold (Quick Actions opens it after
-//   adding one)
+// The Injuries section: the current injuries (healed ones: the Full
+// Profile's Medical tab). Hidden while it has none.
+//   open / onToggle: the list's fold (Quick Actions opens it after adding
+//   one)
 export function InjuriesSection({ injuries, open, onToggle, today }) {
-    const [historyOpen, setHistoryOpen] = useState(false);
-    const { current, healed } = injuries;
-    if (!injuries.available || current.length + healed.length === 0) return null;
+    const { current } = injuries;
+    if (!injuries.available || current.length === 0) return null;
 
     return (
         <section className="Integration-list Injuries">
@@ -409,35 +527,12 @@ export function InjuriesSection({ injuries, open, onToggle, today }) {
                 Injuries ({current.length})
                 <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
             </button>
-            {open &&
-                (current.length ? (
-                    <ul>
-                        {current.map((entry) => (
-                            <InjuryItem key={entry.id} entry={entry} injuries={injuries} today={today} />
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="Integration-none">No current injuries.</p>
-                ))}
-            {healed.length > 0 && (
-                <>
-                    <button
-                        type="button"
-                        className="Integration-toggle"
-                        aria-expanded={historyOpen}
-                        onClick={() => setHistoryOpen((o) => !o)}
-                    >
-                        Injury History ({healed.length})
-                        <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
-                    </button>
-                    {historyOpen && (
-                        <ul>
-                            {healed.map((entry) => (
-                                <InjuryItem key={entry.id} entry={entry} injuries={injuries} today={today} />
-                            ))}
-                        </ul>
-                    )}
-                </>
+            {open && (
+                <ul>
+                    {current.map((entry) => (
+                        <InjuryItem key={entry.id} entry={entry} injuries={injuries} today={today} />
+                    ))}
+                </ul>
             )}
         </section>
     );

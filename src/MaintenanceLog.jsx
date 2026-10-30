@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconPencil, IconPlus, IconTool, IconTrash } from "@tabler/icons-react";
 import { addMaintenance, deleteMaintenance, loadMaintenance, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
 import "./MaintenanceLog.css";
@@ -31,9 +31,20 @@ function dayText(date) {
 //   message to show); saveLabel / busyLabel: "Add Entry" / "Adding…"
 // (Records → Maintenance uses it too, to change a report)
 export function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
+    const formRef = useRef(null);
     const [draft, setDraft] = useState(initial);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
+
+    // Phones: typing opens the keyboard over the bottom half, so the form
+    // moves up to the top (under the page's bars); again once the keyboard
+    // is up, as it shrinks the screen
+    const toTop = () => {
+        if (!window.matchMedia?.("(max-width: 624px)").matches) return;
+        const go = () => formRef.current?.scrollIntoView?.({ block: "start", behavior: "auto" });
+        go();
+        setTimeout(go, 350);
+    };
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -58,7 +69,7 @@ export function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
     }
 
     return (
-        <form className="MaintenanceLog-form" onSubmit={handleSubmit}>
+        <form className="MaintenanceLog-form" ref={formRef} onSubmit={handleSubmit} onFocus={toTop}>
             {/* The date, and beside it Routine or Repair */}
             <div className="MaintenanceLog-row">
                 <label className="MaintenanceLog-field is-date">

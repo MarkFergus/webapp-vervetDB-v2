@@ -409,3 +409,41 @@ describe("its weights (the Records page's), in Medical", () => {
         expect(within(row).queryByRole("button")).not.toBeInTheDocument();
     });
 });
+
+describe("its injuries, in Medical: one row each, its updates with it", () => {
+    const injury = (id, extra) => ({ id, date: "2026-10-10", description: `Injury ${id}`, loggedByName: "Sam", healedOn: null, updates: [], ...extra });
+    const UPDATES = [
+        { id: 5, date: "2026-10-14", details: "Healing well", loggedByName: "Sam" },
+        { id: 6, date: "2026-10-21", details: "Stitches out", loggedByName: "Jo" },
+    ];
+    const show = (injuries) =>
+        render(
+            <RecordList
+                section="medical"
+                records={{ entries: [], available: true, canAdd: false, canEdit: () => false, canDelete: () => false }}
+                others={otherRows("medical", { injuries, monkey: MONKEY })}
+            />
+        );
+
+    test("current: its Latest Update and date; All Updates opens them all, newest first", async () => {
+        show({ current: [injury(1, { updates: UPDATES })], healed: [] });
+        // (one row: the updates aren't rows of their own)
+        expect(screen.getAllByRole("row")).toHaveLength(2);
+        const row = screen.getByText("Injury 1").closest("[role='row']");
+        expect(row.querySelector(".Records-injuryState")).toHaveTextContent("Latest Update · 21st Oct 2026: Stitches out");
+        expect(within(row).queryByRole("list", { name: "Updates" })).toBeNull();
+        await userEvent.click(within(row).getByRole("button", { name: /All Updates \(2\)/ }));
+        const items = within(within(row).getByRole("list", { name: "Updates" })).getAllByRole("listitem");
+        expect(items.map((li) => li.textContent)).toEqual(["21st Oct 2026 Stitches out · Jo", "14th Oct 2026 Healing well · Sam"]);
+    });
+
+    test("healed: Healed and its date (the final word), its updates still under All Updates; none: no extras", () => {
+        show({ current: [injury(2)], healed: [injury(1, { healedOn: "2026-10-25", updates: UPDATES })] });
+        const healed = screen.getByText("Injury 1").closest("[role='row']");
+        expect(healed.querySelector(".Records-injuryState")).toHaveTextContent(/^Healed · 25th Oct 2026$/);
+        expect(within(healed).getByRole("button", { name: /All Updates \(2\)/ })).toBeInTheDocument();
+        const plain = screen.getByText("Injury 2").closest("[role='row']");
+        expect(plain.querySelector(".Records-injuryState")).toBeNull();
+        expect(within(plain).queryByRole("button")).toBeNull();
+    });
+});

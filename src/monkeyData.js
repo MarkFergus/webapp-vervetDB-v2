@@ -993,6 +993,22 @@ export async function loadCurrentInjuries(monkeyIds) {
     );
 }
 
+// The injuries of these monkeys healed on or since a day ("2026-04-30"),
+// with their updates: Records → Sections → Injuries, Past. Throws if the
+// database can't be reached, or this isn't staff.
+export async function loadPastInjuries(monkeyIds, since) {
+    if (!monkeyIds.length) return [];
+    return selectInjuries((columns) =>
+        supabase
+            .from("injuries")
+            .select(columns)
+            .in("monkey_id", monkeyIds)
+            .gte("healed_on", since)
+            .order("injury_date")
+            .order("id")
+    );
+}
+
 // Adds an injury ({ date, description }); who and when are filled in by the
 // database. Returns the saved injury.
 export async function addInjury(monkeyId, { date, description }) {

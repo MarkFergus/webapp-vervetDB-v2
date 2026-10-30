@@ -1,6 +1,6 @@
 // Records → Maintenance: Add (find the place, the date, Routine or Repair,
 // what was done) and View (every report: a search, Routine / Repair, Edit
-// and Delete their own); Sections and Meds & Sickbay coming soon
+// and Delete their own); Meds & Sickbay coming soon
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
@@ -84,20 +84,20 @@ describe("the workings", () => {
     });
 });
 
-test("Records: Maintenance, then Sections and Meds & Sickbay (coming soon, not links)", () => {
+test("Records: Maintenance and Sections, then Meds & Sickbay (coming soon, not a link)", () => {
     open("records");
     expect(screen.getByRole("link", { name: /Maintenance/ })).toHaveAttribute("href", "#records/maintenance");
     expect(screen.getByRole("link", { name: /Maintenance/ })).toHaveTextContent("Reports");
-    for (const name of ["Sections", "Meds & Sickbay"]) {
-        const card = screen.getByText(name).closest(".RecordsPage-choice");
-        expect(card.tagName).not.toBe("A");
-        expect(card).toHaveTextContent("Coming soon…");
-    }
+    expect(screen.getByRole("link", { name: /Sections/ })).toHaveAttribute("href", "#records/sections");
+    expect(screen.getByRole("link", { name: /Sections/ })).toHaveTextContent("Injuries");
+    const card = screen.getByText("Meds & Sickbay").closest(".RecordsPage-choice");
+    expect(card.tagName).not.toBe("A");
+    expect(card).toHaveTextContent("Coming soon…");
 });
 
 test("a team coming soon: says so", () => {
-    open("records/sections");
-    expect(screen.getByRole("heading", { level: 1, name: "Sections" })).toBeInTheDocument();
+    open("records/meds-sickbay");
+    expect(screen.getByRole("heading", { level: 1, name: "Meds & Sickbay" })).toBeInTheDocument();
     expect(screen.getByText("Coming soon…")).toBeInTheDocument();
 });
 
@@ -214,4 +214,10 @@ test("offline, or before the database has the log: says so", () => {
     open("records/maintenance", { live: false });
     expect(screen.getByText(/will show here once vervetDB is online/)).toBeInTheDocument();
     expect(loadAllMaintenance).not.toHaveBeenCalled();
+});
+
+test("Records: the teams in alphabetical order", () => {
+    open("records");
+    const names = [...document.querySelectorAll(".RecordsPage-choiceTitle")].map((el) => el.textContent);
+    expect(names).toEqual(["Baby Care", "Integration", "Maintenance", "Meds & Sickbay", "Sections"]);
 });

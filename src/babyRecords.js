@@ -47,17 +47,23 @@ export const RECORD_KINDS = {
         title: "Current Integrations",
         hint: "Who's being integrated, and starting a new one.",
     },
+    // Sections' (their own page: SectionsRecordsPage.jsx)
+    injuries: {
+        id: "injuries",
+        title: "Injuries",
+        hint: "Each troop's current injuries, and those healed in the last 6 months.",
+    },
 };
 
-// The teams, and what each records. page: its own page, no kinds to
+// The teams (in alphabetical order), and what each records. page: its own page, no kinds to
 // choose (Maintenance: MaintenanceRecordsPage.jsx); soon: shown as
 // "Coming soon…", not open yet
 export const TEAMS = [
     { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] },
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
-    { id: "sections", name: "Sections", kinds: [], soon: true },
     { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
+    { id: "sections", name: "Sections", kinds: ["injuries"] },
 ];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"

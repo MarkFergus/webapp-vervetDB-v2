@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconChevronDown, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
 import { addRecord, deleteRecord, loadMonkeyWeights, loadRecords, saveRecord } from "./monkeyData";
 import { changeText, historyFor } from "./babyRecords";
@@ -141,8 +141,8 @@ export function useWeights(monkeyId, enabled) {
 // here): { key, date, category, details, by, first }. Rehabilitation: its
 // arrival (first: before anything else that day). (Its moves and status
 // changes are records of its own, added by the database.) Medical: its
-// injuries and their updates, and its weights ("512 g (+38 g)", and the
-// note) from the Records page.
+// injuries (each with its updates: injury), and its weights ("512 g
+// (+38 g)", and the note) from the Records page.
 export function otherRows(section, { injuries, monkey = null, weights = [] }) {
     if (section === "rehabilitation") {
         if (!monkey?.arrivalDate) return [];
@@ -169,22 +169,60 @@ export function otherRows(section, { injuries, monkey = null, weights = [] }) {
             (w.notes ? `: ${w.notes}` : ""),
         by: `Weight by ${w.loggedByName ?? "Staff"}`,
     }));
-    return [...weighings, ...[...injuries.current, ...injuries.healed].flatMap((e) => [
-        {
+    // (an injury's updates stay with it: InjuryFollowUps)
+    return [
+        ...weighings,
+        ...[...injuries.current, ...injuries.healed].map((e) => ({
             key: `injury-${e.id}`,
             date: e.date,
             category: "injury",
-            details: e.healedOn ? `${e.description} (healed ${dayText(e.healedOn)})` : e.description,
+            details: e.description,
+            injury: e,
             by: `Injury by ${e.loggedByName ?? "Staff"}`,
-        },
-        ...(e.updates ?? []).map((u) => ({
-            key: `update-${u.id}`,
-            date: u.date,
-            category: "injury",
-            details: `Update: ${u.details}`,
-            by: `Injury update by ${u.loggedByName ?? "Staff"}`,
         })),
-    ])];
+    ];
+}
+
+// Under an injury in Medical: Healed · its date (the final word), or its
+// Latest Update · date: details; then All Updates (n), folded away: each
+// one's date, details and who wrote it, newest first
+function InjuryFollowUps({ injury }) {
+    const [open, setOpen] = useState(false);
+    const updates = [...(injury.updates ?? [])].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+    const latest = updates[0];
+    return (
+        <>
+            {injury.healedOn ? (
+                <span className="Records-injuryState is-healed">
+                    <b>Healed · {dayText(injury.healedOn)}</b>
+                </span>
+            ) : (
+                latest && (
+                    <span className="Records-injuryState">
+                        <b>Latest Update · {dayText(latest.date)}:</b> {latest.details}
+                    </span>
+                )
+            )}
+            {updates.length > 0 && (
+                <>
+                    <button type="button" className="Records-updatesToggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+                        All Updates ({updates.length})
+                        <IconChevronDown size={14} stroke={2.5} aria-hidden="true" />
+                    </button>
+                    {open && (
+                        <ul className="Records-updates" aria-label="Updates">
+                            {updates.map((u) => (
+                                <li key={u.id}>
+                                    <b>{dayText(u.date)}</b> {u.details}
+                                    <span className="Records-updateBy"> · {u.loggedByName ?? "Staff"}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </>
+            )}
+        </>
+    );
 }
 
 // Edit / Delete at the end of a row (admins, or whoever wrote it). Delete
@@ -371,6 +409,7 @@ export function RecordList({ section, records, others }) {
                                 </span>
                                 <span className="Records-details" role="cell">
                                     <span className="Records-text">{row.details}</span>
+                                    {row.injury && <InjuryFollowUps injury={row.injury} />}
                                     <span className="Integration-by">{row.by}</span>
                                 </span>
                                 {row.entry && (records.canEdit(row.entry) || records.canDelete(row.entry)) && (

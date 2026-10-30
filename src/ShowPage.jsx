@@ -997,6 +997,7 @@ function ShowPage({
                                 canLog: enclosureEditing.canLog,
                                 me: { userId: enclosureEditing.userId, isAdmin },
                             }}
+                            staff={staff}
                             inert={isAnyModalOpen}
                         />
                     </Suspense>

@@ -89,6 +89,82 @@
     overflow-wrap: anywhere;
 }
 
+/* Under an injury: Healed (green) or its Latest Update (amber), with its
+   date; then All Updates, folded away */
+.Records-injuryState {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+}
+
+.Records-injuryState b {
+    color: var(--amber-text);
+}
+
+.Records-injuryState.is-healed b {
+    color: var(--green);
+}
+
+.Records-updatesToggle {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 4px;
+    padding: 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Records-updatesToggle svg {
+    transition: transform 0.15s ease;
+}
+
+.Records-updatesToggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.Records-updatesToggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Each update: indented under a line */
+.Records-updates {
+    margin: 2px 0;
+    padding: 0 0 0 12px;
+    list-style: none;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-2);
+    border-left: 2px solid var(--line);
+    overflow-wrap: anywhere;
+}
+
+.Records-updates li {
+    padding: 2px 0;
+}
+
+.Records-updates b {
+    margin-right: 4px;
+    color: var(--text-strong);
+}
+
+.Records-updateBy {
+    color: var(--text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Records-updatesToggle svg {
+        transition: none;
+    }
+}
+
 .Records-icons {
     margin: -3px 0 0;
 }

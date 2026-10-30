@@ -1,0 +1,55 @@
+/* Records → Sections → Injuries (SectionsRecordsPage.jsx): Current / Past,
+   the troop picker and New Injury, then a box for each injured monkey
+   with its injuries (the pop-up's list: IntegrationReports.css) */
+
+/* The troop, with New Injury on its right (phones: under it) */
+.SectionsPage-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 12px;
+    margin-bottom: 16px;
+}
+
+.SectionsPage-troop {
+    flex: 0 1 280px;
+}
+
+.Modal-edit.SectionsPage-add {
+    height: 40px;
+}
+
+.SectionsPage-count {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.SectionsPage-monkeys {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.SectionsPage-monkey {
+    padding: 12px 14px 6px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.SectionsPage-who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* (inside the box: no line above, as in the pop-up's sections) */
+.Integration-list.SectionsPage-injuries {
+    margin-top: 6px;
+    padding-top: 0;
+    border-top: none;
+}

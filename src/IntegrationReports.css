@@ -256,6 +256,29 @@
     font-size: 13px;
 }
 
+/* Add Update, with Update Needed beside it */
+.Injury-updateRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+}
+
+.Injury-updateRow:empty {
+    display: none;
+}
+
+/* Update Needed: no update for 14 days (the Sickbay amber) */
+.Injury-due {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber-text);
+}
+
 /* Phones: the date above, the description and buttons under it */
 @media (max-width: 459px) {
     .Injury-line {

@@ -70,22 +70,27 @@ test("asks for a description before saving", async () => {
     expect(addInjury).not.toHaveBeenCalled();
 });
 
-test("Healed? moves an injury to the Injury History, where it stays on record", async () => {
-    loadInjuries.mockResolvedValue([injury(1), injury(2, { healedOn: "2026-10-01", healedByName: "Jo" })]);
+test("Healed? takes an injury off the pop-up (kept on record); healed ones never show here", async () => {
+    loadInjuries.mockResolvedValue([injury(1), injury(3), injury(2, { healedOn: "2026-10-01", healedByName: "Jo" })]);
     setInjuryHealed.mockResolvedValue(injury(1, { healedOn: "2026-10-13", healedByName: "Sam" }));
     open(ADMIN);
-    expect(await screen.findByRole("button", { name: /Injuries \(1\)/ })).toBeInTheDocument();
-    // The healed one: folded away under Injury History
+    expect(await screen.findByRole("button", { name: /Injuries \(2\)/ })).toBeInTheDocument();
+    // The healed one: not in the pop-up at all (no Injury History)
     expect(screen.queryByText("Cut 2")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Healed?" }));
+    expect(screen.queryByRole("button", { name: /Injury History/ })).not.toBeInTheDocument();
+    await userEvent.click(within(screen.getByText("Cut 1").closest("li")).getByRole("button", { name: "Healed?" }));
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
     expect(setInjuryHealed).toHaveBeenCalledWith(1, true);
-    expect(await screen.findByRole("button", { name: /Injuries \(0\)/ })).toBeInTheDocument();
-    expect(screen.getByText("No current injuries.")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /Injury History \(2\)/ }));
-    const cut = screen.getByText("Cut 1").closest("li");
-    expect(within(cut).getByText(/Healed on 13th Oct 2026/)).toBeInTheDocument();
-    expect(within(cut).getByRole("button", { name: "Reopen" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Injuries \(1\)/ })).toBeInTheDocument();
+    expect(screen.queryByText("Cut 1")).not.toBeInTheDocument();
+});
+
+test("only healed injuries: no Injuries section", async () => {
+    loadInjuries.mockResolvedValue([injury(2, { healedOn: "2026-10-01" })]);
+    open(ADMIN);
+    await screen.findByRole("button", { name: "Quick Actions" });
+    expect(screen.queryByRole("button", { name: /Injuries \(/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("Cut 2")).not.toBeInTheDocument();
 });
 
 test("maintenance staff see injuries, but can't add them or mark them healed", async () => {
