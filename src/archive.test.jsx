@@ -447,3 +447,18 @@ describe("its injuries, in Medical: one row each, its updates with it", () => {
         expect(within(plain).queryByRole("button")).toBeNull();
     });
 });
+
+describe("its conditions (Monitoring), in Medical", () => {
+    test("each a dated snapshot of its own, never in Rehabilitation", () => {
+        const conditions = [
+            { id: 2, date: "2026-10-26", description: "Weight improving", loggedByName: "Jo" },
+            { id: 1, date: "2026-10-19", description: "Looking thin", loggedByName: "Sam" },
+        ];
+        const rows = otherRows("medical", { injuries: { current: [], healed: [] }, monkey: MONKEY, conditions });
+        expect(rows.map((r) => [r.date, r.category, r.details, r.by])).toEqual([
+            ["2026-10-26", "condition", "Weight improving", "Condition by Jo"],
+            ["2026-10-19", "condition", "Looking thin", "Condition by Sam"],
+        ]);
+        expect(otherRows("rehabilitation", { injuries: { current: [], healed: [] }, monkey: MONKEY, conditions })).toEqual([]);
+    });
+});

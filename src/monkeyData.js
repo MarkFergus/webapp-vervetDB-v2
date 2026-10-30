@@ -1011,10 +1011,11 @@ export async function loadPastInjuries(monkeyIds, since) {
 
 // Adds an injury ({ date, description }); who and when are filled in by the
 // database. Returns the saved injury.
-export async function addInjury(monkeyId, { date, description }) {
+//   sessionId: added during a monitoring session (its WhatsApp summary)
+export async function addInjury(monkeyId, { date, description, sessionId = null }) {
     const { data, error } = await supabase
         .from("injuries")
-        .insert({ monkey_id: monkeyId, injury_date: date, description })
+        .insert({ monkey_id: monkeyId, injury_date: date, description, ...(sessionId && { session_id: sessionId }) })
         .select(INJURY_COLUMNS)
         .single();
     if (error) {
@@ -1063,10 +1064,11 @@ export async function deleteInjury(id) {
 
 // An update on an injury ({ date, details }); who and when are filled in by
 // the database. Returns the saved update.
-export async function addInjuryUpdate(injuryId, { date, details }) {
+//   sessionId: added during a monitoring session (its WhatsApp summary)
+export async function addInjuryUpdate(injuryId, { date, details, sessionId = null }) {
     const { data, error } = await supabase
         .from("injury_updates")
-        .insert({ injury_id: injuryId, update_date: date, details })
+        .insert({ injury_id: injuryId, update_date: date, details, ...(sessionId && { session_id: sessionId }) })
         .select(UPDATE_COLUMNS)
         .single();
     if (error) {
@@ -1154,6 +1156,164 @@ export async function saveMonitoring(monkeyId, { conditionCheck, notes }) {
         .single();
     if (error) throw saveProblem(error);
     return toAppMonitoring(data);
+}
+
+// ---- Monitoring sessions and conditions (supabase/monitoring-sessions.sql) ----
+
+// A session, as the site uses it: { id, enclosureId, date, status
+// ("in_progress" / "finished"), foodUsed, fence, waters, food, notes,
+// startedBy, startedByName, startedAt, finishedAt, sightings: [{ monkeyId,
+// seen }] }
+const toAppSession = (row) => ({
+    id: row.id,
+    enclosureId: row.enclosure_id,
+    date: row.session_date,
+    status: row.status,
+    foodUsed: row.food_used,
+    fence: row.fence,
+    waters: row.waters,
+    food: row.food,
+    notes: row.notes ?? "",
+    startedBy: row.started_by,
+    startedByName: row.started_by_name,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+    sightings: (row.monitoring_sightings ?? []).map((s) => ({ monkeyId: s.monkey_id, seen: s.seen })),
+});
+const SESSION_COLUMNS =
+    "id, enclosure_id, session_date, status, food_used, fence, waters, food, notes, started_by, started_by_name, started_at, finished_at";
+const SESSION_WITH_SIGHTINGS = `${SESSION_COLUMNS}, monitoring_sightings (monkey_id, seen)`;
+
+// A friendly message for a session that couldn't load (or before
+// monitoring-sessions.sql has run)
+function sessionProblem(error) {
+    console.error("Monitoring sessions failed:", error);
+    if (isOlderDatabase(error) || error?.code === "PGRST202") {
+        return new Error("Monitoring isn't ready yet: supabase/monitoring-sessions.sql needs to be run.");
+    }
+    return error instanceof Error && !error.code ? error : saveProblem(error);
+}
+
+// Every session (in progress and finished), newest first: the last year's
+// (for missing monkeys, last seen and the History). Throws a message to show.
+export async function loadMonitoringSessions() {
+    const since = new Date(Date.now() - 366 * 86400000).toISOString().slice(0, 10);
+    const { data, error } = await supabase
+        .from("monitoring_sessions")
+        .select(SESSION_WITH_SIGHTINGS)
+        .gte("session_date", since)
+        .order("session_date", { ascending: false })
+        .order("started_at", { ascending: false });
+    if (error) throw sessionProblem(error);
+    return data.map(toAppSession);
+}
+
+// Start Session: in progress, in the signed-in person's name
+export async function startMonitoringSession(enclosureId, date) {
+    const { data, error } = await supabase
+        .from("monitoring_sessions")
+        .insert({ enclosure_id: enclosureId, session_date: date })
+        .select(SESSION_COLUMNS)
+        .single();
+    if (error) throw sessionProblem(error);
+    return toAppSession(data);
+}
+
+// Finish Session (or change a finished one): { date, foodUsed, fence,
+// waters, food, notes, seen: [ids], notSeen: [ids] }. Returns it, finished.
+export async function finishMonitoringSession(id, { date, foodUsed, fence, waters, food, notes, seen, notSeen }) {
+    const { data, error } = await supabase.rpc("finish_monitoring_session", {
+        session: id,
+        on_date: date,
+        food_used: foodUsed || null,
+        fence,
+        waters,
+        food,
+        notes: notes.trim() || null,
+        seen,
+        not_seen: notSeen,
+    });
+    if (error) {
+        if (error.code === "P0001") throw new Error(error.message);
+        throw sessionProblem(error);
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return toAppSession({
+        ...row,
+        monitoring_sightings: [
+            ...seen.map((m) => ({ monkey_id: m, seen: true })),
+            ...notSeen.map((m) => ({ monkey_id: m, seen: false })),
+        ],
+    });
+}
+
+// Cancel Session (in progress) or Delete (finished): whoever started it, or an admin
+export async function deleteMonitoringSession(id) {
+    const { data, error } = await supabase.from("monitoring_sessions").delete().eq("id", id).select("id");
+    if (error) throw sessionProblem(error);
+    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+}
+
+// A condition, as the site uses it: { id, monkeyId, date, description,
+// sessionId, loggedBy, loggedByName, loggedAt }
+const toAppCondition = (row) => ({
+    id: row.id,
+    monkeyId: row.monkey_id,
+    date: row.condition_date,
+    description: row.description,
+    sessionId: row.session_id,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+    loggedAt: row.logged_at,
+});
+const CONDITION_COLUMNS = "id, monkey_id, condition_date, description, session_id, logged_by, logged_by_name, logged_at";
+
+// These monkeys' conditions, newest first. Throws if the database hasn't
+// got them yet, or can't be reached.
+export async function loadConditions(monkeyIds) {
+    if (!monkeyIds.length) return [];
+    const { data, error } = await supabase
+        .from("monkey_conditions")
+        .select(CONDITION_COLUMNS)
+        .in("monkey_id", monkeyIds)
+        .order("condition_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw error;
+    return data.map(toAppCondition);
+}
+
+// A new condition ({ date, description, sessionId })
+export async function addCondition(monkeyId, { date, description, sessionId = null }) {
+    const { data, error } = await supabase
+        .from("monkey_conditions")
+        .insert({ monkey_id: monkeyId, condition_date: date, description, session_id: sessionId })
+        .select(CONDITION_COLUMNS)
+        .single();
+    if (error) throw sessionProblem(error);
+    return toAppCondition(data);
+}
+
+// Deletes a condition (admins, or whoever added it)
+export async function deleteCondition(id) {
+    const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", id).select("id");
+    if (error) throw saveProblem(error);
+    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+}
+
+// What was added during a session, oldest first: [{ monkeyId, text, kind
+// ("injury" / "update" / "condition"), at }] (its WhatsApp 🐒 lines)
+export async function loadSessionNotes(sessionId) {
+    const [injuries, updates, conditions] = await Promise.all([
+        supabase.from("injuries").select("monkey_id, description, logged_at").eq("session_id", sessionId),
+        supabase.from("injury_updates").select("details, logged_at, injuries (monkey_id)").eq("session_id", sessionId),
+        supabase.from("monkey_conditions").select("monkey_id, description, logged_at").eq("session_id", sessionId),
+    ]);
+    throwIfError(injuries, updates, conditions);
+    return [
+        ...injuries.data.map((r) => ({ monkeyId: r.monkey_id, text: r.description, kind: "injury", at: r.logged_at })),
+        ...updates.data.map((r) => ({ monkeyId: r.injuries?.monkey_id, text: r.details, kind: "update", at: r.logged_at })),
+        ...conditions.data.map((r) => ({ monkeyId: r.monkey_id, text: r.description, kind: "condition", at: r.logged_at })),
+    ].sort((a, b) => a.at.localeCompare(b.at));
 }
 
 // ---- Baby Care: milk totals (supabase/milk-totals.sql) ----

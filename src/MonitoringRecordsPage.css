@@ -1,0 +1,792 @@
+/* Records → Sections → Monitoring (MonitoringRecordsPage.jsx): In Progress,
+   the troop and Start Session, the History; a session's briefing, results
+   and checklist; then the alerts and the WhatsApp summary. Squared edges,
+   like the rest of the app. */
+
+/* ---- The list ---- */
+
+.Monitoring-inProgress {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+}
+
+.Monitoring-inProgress .RecordsPage-subhead {
+    margin-top: 0;
+}
+
+.Monitoring-inProgress ul + .RecordsPage-subhead {
+    margin-top: 14px;
+}
+
+.Monitoring-inProgress ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Monitoring-inProgress li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+/* Before each: amber in progress, a green tick when finished */
+.Monitoring-stateIcon {
+    flex: none;
+    margin-top: 1px;
+}
+
+.Monitoring-stateIcon.is-progress {
+    color: var(--amber-text);
+}
+
+.Monitoring-stateIcon.is-done {
+    color: var(--green);
+}
+
+.Monitoring-inProgressButtons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Phones: the troop picker and its buttons on one row, the picker
+   taking what's left (a long name ends in …), the buttons in short words */
+@media (max-width: 624px) {
+    .SectionsPage-bar.Monitoring-bar {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .Monitoring-bar .SectionsPage-troop {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .Monitoring-bar .SectionsPage-troop select {
+        text-overflow: ellipsis;
+    }
+
+    .Monitoring-bar .Monitoring-inProgressButtons {
+        flex: none;
+        gap: 6px;
+    }
+
+    .Monitoring-bar .Modal-edit.Monitoring-start {
+        padding: 0 10px;
+    }
+}
+
+.Modal-edit.Monitoring-start {
+    height: 40px;
+}
+
+.Monitoring-due {
+    margin: -8px 0 16px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.Monitoring-due.is-overdue {
+    font-weight: 600;
+    color: var(--amber-text);
+}
+
+.Monitoring-quiet {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+/* History: one compact line each, tap for more */
+.Monitoring-historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Monitoring-history {
+    padding: 10px 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.Monitoring-historyLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    width: 100%;
+    padding: 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-2);
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Monitoring-historyLine b {
+    color: var(--text-strong);
+}
+
+.Monitoring-historyLine svg {
+    margin-left: auto;
+    transition: transform 0.15s ease;
+}
+
+.Monitoring-historyLine[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.Monitoring-historyLine:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.Monitoring-check {
+    white-space: nowrap;
+}
+
+.Monitoring-check.is-good {
+    color: var(--green);
+}
+
+/* (a red !: the monkeys' alerts keep ⚠) */
+.Monitoring-check.is-bad {
+    font-weight: 700;
+    color: var(--danger);
+}
+
+.Monitoring-historySub {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+.Monitoring-historyMore {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+}
+
+/* ---- A session ---- */
+
+.Monitoring-session {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.Monitoring-back {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 4px;
+    height: 34px;
+    padding: 0 12px 0 8px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Monitoring-back:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Under the page's title: when it was started and by whom */
+.Monitoring-started {
+    margin: -6px 0 0;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.Monitoring-started.is-saved {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green);
+}
+
+.Monitoring-sessionTitle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.Monitoring-sessionTitle span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+/* The briefing: a box per part, the important ones coloured */
+.Monitoring-briefing {
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Monitoring-foldButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-strong);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Monitoring-foldButton svg {
+    transition: transform 0.15s ease;
+}
+
+.Monitoring-foldButton[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.Monitoring-briefingParts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Each part: a soft box, tinted for the important ones (the heading
+   carries the colour) */
+.Monitoring-part {
+    padding: 8px 12px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Monitoring-part.is-danger {
+    background-color: rgba(255, 77, 79, 0.1);
+}
+
+.Monitoring-part.is-warn {
+    background-color: rgba(245, 166, 35, 0.1);
+}
+
+.Monitoring-part h3 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.Monitoring-part.is-danger h3 {
+    color: var(--danger);
+}
+
+.Monitoring-part.is-warn h3 {
+    color: var(--amber-text);
+}
+
+.Monitoring-part ul {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text);
+}
+
+.Monitoring-part b {
+    color: var(--text-strong);
+}
+
+.Monitoring-latest {
+    color: var(--text-2);
+}
+
+/* Small flags: Must See, Not Seen Last Session, Injury, Priority, Update Needed */
+.Monitoring-flag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+.Monitoring-flag.is-danger {
+    color: var(--danger);
+    background-color: rgba(255, 77, 79, 0.15);
+}
+
+.Monitoring-flag.is-warn {
+    color: var(--amber-text);
+    background-color: rgba(245, 166, 35, 0.15);
+}
+
+/* The results: the checks, then the checklist */
+.Monitoring-results {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.Monitoring-stepTitle {
+    margin: 4px 0 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Monitoring-stepTitle span {
+    margin-left: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
+}
+
+.Monitoring-date {
+    max-width: 200px;
+}
+
+.Monitoring-date input {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .Monitoring-date input {
+    color-scheme: light;
+}
+
+.Monitoring-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.Monitoring-fieldLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Monitoring-fieldLabel em {
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+/* One choice at a time: a squared group (like Records' Enter / View) */
+.Monitoring-choices {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-self: flex-start;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Monitoring-choices button {
+    height: 34px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Monitoring-choices button:hover {
+    color: var(--text);
+}
+
+.Monitoring-choices button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text);
+}
+
+.Monitoring-choices button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.Monitoring-checklistHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.Monitoring-tickAll {
+    display: flex;
+    gap: 8px;
+}
+
+.Monitoring-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Monitoring-groupTitle {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.Monitoring-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* A monkey: its tick, photo and name, flags on the right; a seen one
+   faintly green */
+.Monitoring-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Monitoring-row.is-seen {
+    background-color: var(--green-wash);
+    border-color: transparent;
+}
+
+/* Phones: the name, then the rest under it; wider: one line in three
+   columns (name 220px | flags, condition, added | buttons) */
+.Monitoring-rowMain {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.Monitoring-seen {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.Monitoring-seen input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+
+.Monitoring-rowInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.Monitoring-rowInfo:empty {
+    display: none;
+}
+
+.Monitoring-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.Monitoring-flags .Monitoring-flag {
+    margin-left: 0;
+}
+
+@media (min-width: 700px) {
+    .Monitoring-rowMain {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .Monitoring-rowInfo:empty {
+        display: block;
+    }
+
+    .Monitoring-rowActions {
+        justify-content: flex-end;
+    }
+}
+
+.Monitoring-note {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Monitoring-added {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    color: var(--green);
+}
+
+.Monitoring-added svg {
+    vertical-align: -2px;
+}
+
+.Monitoring-rowActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* The +: a squared button, big enough to tap */
+.Monitoring-add {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    color: var(--accent);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Monitoring-add:hover {
+    border-color: var(--accent);
+}
+
+.Monitoring-add:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* New Injury / Injury Update / New Condition: a blue box, so it stands out */
+.Monitoring-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    background-color: rgba(62, 166, 255, 0.08);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+}
+
+.Monitoring-formTitle {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+/* An update: the injury it's on */
+.Monitoring-updating {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.Monitoring-updating span {
+    margin-right: 4px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Monitoring-formTitle span {
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+.Monitoring-notes textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.45;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.Monitoring-notes textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+.Monitoring-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.Monitoring-actions .Modal-edit {
+    height: 40px;
+    padding: 0 18px;
+}
+
+.Monitoring-confirmHost {
+    position: relative;
+}
+
+.Monitoring-warning {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    background-color: rgba(245, 166, 35, 0.12);
+    border: 1px solid var(--amber);
+    border-radius: 10px;
+}
+
+.Monitoring-warning p {
+    margin: 0;
+}
+
+.Monitoring-warning svg {
+    vertical-align: -3px;
+    color: var(--amber-text);
+}
+
+/* ---- After Finish: the alerts, then the WhatsApp summary ---- */
+
+.Monitoring-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Monitoring-alerts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    line-height: 1.4;
+    border-radius: 8px;
+}
+
+.Monitoring-alerts svg {
+    flex: none;
+    margin-top: 1px;
+}
+
+.Monitoring-alerts .is-danger {
+    color: var(--text-strong);
+    background-color: rgba(255, 77, 79, 0.15);
+}
+
+.Monitoring-alerts .is-danger svg {
+    color: var(--danger);
+}
+
+.Monitoring-alerts .is-warn {
+    color: var(--text-strong);
+    background-color: rgba(245, 166, 35, 0.15);
+}
+
+.Monitoring-alerts .is-warn svg {
+    color: var(--amber-text);
+}
+
+/* The fence, waters and food: a red ! (not the monkeys' ⚠) */
+.Monitoring-alerts .is-check {
+    background-color: var(--surface-2);
+}
+
+.Monitoring-alerts .is-check svg {
+    color: var(--danger);
+}
+
+.Monitoring-whatsapp {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.Monitoring-whatsapp pre {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 520px;
+    margin: 0;
+    padding: 12px 14px;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Monitoring-historyLine svg,
+    .Monitoring-foldButton svg {
+        transition: none;
+    }
+}

@@ -30,7 +30,7 @@ function pastSince(now = new Date()) {
     return dayText(d);
 }
 
-function rememberedTroop() {
+export function rememberedTroop() {
     try {
         return localStorage.getItem(TROOP_KEY);
     } catch {
@@ -38,7 +38,7 @@ function rememberedTroop() {
     }
 }
 
-function rememberTroop(name) {
+export function rememberTroop(name) {
     try {
         localStorage.setItem(TROOP_KEY, name);
     } catch {

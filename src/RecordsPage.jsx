@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     IconBabyCarriage,
+    IconBinoculars,
     IconBottle,
     IconChartLine,
     IconChevronDown,
@@ -38,6 +39,7 @@ import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
 import IntegrationRecordsPage from "./IntegrationRecordsPage";
 import MaintenanceRecordsPage from "./MaintenanceRecordsPage";
 import SectionsRecordsPage from "./SectionsRecordsPage";
+import MonitoringRecordsPage from "./MonitoringRecordsPage";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
@@ -48,9 +50,9 @@ import "./RecordsPage.css";
 // IntegrationRecordsPage.jsx). Entering: editors and admins (canEnter);
 // anyone else on the staff can view. Maintenance: its own page (Enter /
 // View, MaintenanceRecordsPage.jsx; entering: anyone with a role, canLog).
-// Sections: Injuries, each troop's current and past ones (their own page:
-// SectionsRecordsPage.jsx; adding, updates, Healed? and Restore: editors
-// and admins). Meds & Sickbay: coming soon.
+// Sections: Monitoring, each troop's sessions (MonitoringRecordsPage.jsx),
+// and Injuries, each troop's current and past ones (SectionsRecordsPage.jsx);
+// entering: editors and admins. Meds & Sickbay: coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
 const TEAM_ICONS = {
@@ -66,6 +68,7 @@ const KIND_ICONS = {
     reports: IconFileText,
     current: IconHeartHandshake,
     injuries: IconReportMedical,
+    monitoring: IconBinoculars,
 };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
@@ -694,12 +697,14 @@ function RecordsPage({
     inert = false,
 }) {
     const { team, kind } = parseRecordsRoute(route);
+    // A part's own title (Monitoring: the troop's, while a session's open)
+    const [partTitle, setPartTitle] = useState(null);
     const crumbs = [
         { href: "#records", label: "Records" },
         ...(team ? [{ href: `#records/${team.id}`, label: team.name }] : []),
         ...(kind ? [{ label: kind.title }] : []),
     ];
-    const title = crumbs.at(-1).label;
+    const title = (kind?.id === "monitoring" && partTitle) || crumbs.at(-1).label;
     return (
         <div className="RecordsPage" inert={inert}>
             <Crumbs crumbs={crumbs} />
@@ -748,7 +753,11 @@ function RecordsPage({
                 team.id === "integration" ? (
                     <IntegrationRecordsPage key={kind.id} kind={kind} monkeys={monkeys} canEnter={canEnter} />
                 ) : team.id === "sections" ? (
-                    <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
+                    kind.id === "monitoring" ? (
+                        <MonitoringRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
+                    ) : (
+                        <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
+                    )
                 ) : (
                     <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} />
                 )

@@ -39,6 +39,7 @@ import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import useMonitoring from "./useMonitoring";
+import { useConditions } from "./MonkeyRecords";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import StatusUpdate from "./StatusUpdate";
 import RecentEdits from "./RecentEdits";
@@ -165,6 +166,8 @@ function Modal({
     // Monitoring (staff): Condition Check and Notes for Monitoring, set by
     // admins in Edit (loaded again once it's saved: a new monkey object)
     const monitoring = useMonitoring(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey), monkey);
+    // Its latest condition (Records → Sections → Monitoring), under Monitoring
+    const latestCondition = useConditions(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey))[0] ?? null;
     const { conditionCheck, notes: monitoringNotes } = monitoring.value;
     // Released (new arrivals): its little form (date and details)
     const [releaseForm, setReleaseForm] = useState(null);
@@ -975,8 +978,9 @@ function Modal({
                                             </p>
                                         </section>
                                     )}
-                                    {/* Monitoring (staff): only once there's something */}
-                                    {monitoring.available && (conditionCheck || monitoringNotes) && (
+                                    {/* Monitoring (staff): only once there's something
+                                        (its latest condition too) */}
+                                    {((monitoring.available && (conditionCheck || monitoringNotes)) || latestCondition) && (
                                         <section className="Modal-section">
                                             <h2 className="Modal-label">Monitoring</h2>
                                             <p className="Modal-feeding">
@@ -986,6 +990,12 @@ function Modal({
                                                     </span>
                                                 )}
                                                 {monitoringNotes && <span className="Modal-monitoringNotes">{monitoringNotes}</span>}
+                                                {latestCondition && (
+                                                    <span className="Modal-condition">
+                                                        <b>Condition:</b> {latestCondition.description} ·{" "}
+                                                        {summaryDate(new Date(`${latestCondition.date}T00:00:00`))}
+                                                    </span>
+                                                )}
                                             </p>
                                         </section>
                                     )}

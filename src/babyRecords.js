@@ -47,7 +47,12 @@ export const RECORD_KINDS = {
         title: "Current Integrations",
         hint: "Who's being integrated, and starting a new one.",
     },
-    // Sections' (their own page: SectionsRecordsPage.jsx)
+    // Sections' (their own pages: MonitoringRecordsPage.jsx, SectionsRecordsPage.jsx)
+    monitoring: {
+        id: "monitoring",
+        title: "Monitoring",
+        hint: "Start a troop's monitoring session, enter it after the walk, and look back.",
+    },
     injuries: {
         id: "injuries",
         title: "Injuries",
@@ -63,7 +68,7 @@ export const TEAMS = [
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
     { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
-    { id: "sections", name: "Sections", kinds: ["injuries"] },
+    { id: "sections", name: "Sections", kinds: ["monitoring", "injuries"] },
 ];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"

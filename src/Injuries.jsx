@@ -207,9 +207,19 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
 // Date, then the description, then Confirm and Cancel.
 //   initial: { date, description }; onSave(values) async (throws a message
 //   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
-//   kind: "injury", or "update" (an update on one: "Details")
+//   kind: "injury", "update" (an update on one: "Details") or "condition"
+//   (how a monkey looks: Records → Sections → Monitoring)
 export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = false, kind = "injury" }) {
     const isUpdate = kind === "update";
+    const words = {
+        injury: { label: "Description", placeholder: "What is the injury, and where?", missing: "Please describe the injury." },
+        update: { label: "Details", placeholder: "How is it looking now?", missing: "Please write the update." },
+        condition: {
+            label: "Condition",
+            placeholder: "How does it look? e.g. Looking thin, scruffy coat",
+            missing: "Please describe the condition.",
+        },
+    }[kind];
     // (holds the pop-up while it's open: see formLock.js)
     useFormLock();
     // Editing in a list: brought fully into view as it opens
@@ -222,7 +232,7 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
 
     async function confirm() {
         if (!values.date) return setProblem("Please choose the date.");
-        if (!description) return setProblem(isUpdate ? "Please write the update." : "Please describe the injury.");
+        if (!description) return setProblem(words.missing);
         setBusy(true);
         setProblem(null);
         try {
@@ -240,13 +250,13 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
                 <input type="date" value={values.date} max={max} onChange={set("date")} />
             </label>
             <label>
-                <span>{isUpdate ? "Details" : "Description"}</span>
+                <span>{words.label}</span>
                 <textarea
                     rows={isUpdate ? 3 : 4}
                     value={values.description}
                     maxLength={MAX_INJURY}
                     onChange={set("description")}
-                    placeholder={isUpdate ? "How is it looking now?" : "What is the injury, and where?"}
+                    placeholder={words.placeholder}
                 />
             </label>
             <span className="Integration-count">

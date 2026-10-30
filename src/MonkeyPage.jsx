@@ -22,7 +22,7 @@ import {
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
 import { useInjuries } from "./Injuries";
-import { IntegrationRecords, RecordList, otherRows, useRecords, useWeights } from "./MonkeyRecords";
+import { IntegrationRecords, RecordList, otherRows, useConditions, useRecords, useWeights } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
 import { ageFromBirthDate, ageInYears } from "./ages";
 import { fullName, homeName, staying } from "./places";
@@ -186,6 +186,8 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const arrival = useArrivalInfo(monkey.id, isStaff, monkey);
     // Its weights (Baby Care's babies: the Records page), in Medical
     const weights = useWeights(monkey.id, isStaff);
+    // Its conditions (Monitoring), in Medical
+    const conditions = useConditions(monkey.id, isStaff);
     const archived = isArchived(monkey);
     // (an archived monkey: admins can add records too, e.g. what's found
     // out afterwards; editing and deleting are as for any monkey)
@@ -204,7 +206,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // How many records each tab has (its own, and the ones kept elsewhere:
     // its arrival, injuries, weights), once they've loaded
     const countFor = (section) =>
-        records.entries.filter((e) => e.section === section).length + otherRows(section, { injuries, monkey, weights }).length;
+        records.entries.filter((e) => e.section === section).length + otherRows(section, { injuries, monkey, weights, conditions }).length;
     const counts = {
         ...(records.available && { rehabilitation: countFor("rehabilitation"), medical: countFor("medical") }),
         ...(integration.available && { integration: integration.entries.length }),
@@ -409,7 +411,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     key={tab}
                                     section={tab}
                                     records={records}
-                                    others={otherRows(tab, { injuries, monkey, weights })}
+                                    others={otherRows(tab, { injuries, monkey, weights, conditions })}
                                 />
                             )}
                         </div>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconChevronDown, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
-import { addRecord, deleteRecord, loadMonkeyWeights, loadRecords, saveRecord } from "./monkeyData";
+import { addRecord, deleteRecord, loadConditions, loadMonkeyWeights, loadRecords, saveRecord } from "./monkeyData";
 import { changeText, historyFor } from "./babyRecords";
 import { IntegrationForm, newReportDates } from "./IntegrationReports";
 import { summaryDate } from "./feeding";
@@ -51,7 +51,7 @@ export const SECTIONS = {
 // Categories never in the drop-down: a Status record for each status
 // change (added by the database: monkey-archive.sql), its arrival (from
 // Arrival Date and Reason) and its weights (the Records page's): otherRows
-const OTHER_CATEGORIES = { status: "Status", arrival: "Arrival", weight: "Weight" };
+const OTHER_CATEGORIES = { status: "Status", arrival: "Arrival", weight: "Weight", condition: "Condition" };
 // ...which, like Movement records, are never changed, and only admins
 // delete one
 const isLog = (entry) => entry.category === "movement" || entry.category === "status";
@@ -137,13 +137,33 @@ export function useWeights(monkeyId, enabled) {
     return weights;
 }
 
+// A monkey's conditions (Records → Sections → Monitoring), newest first: none
+// before monitoring-sessions.sql has run, or if they can't be loaded
+export function useConditions(monkeyId, enabled) {
+    const [conditions, setConditions] = useState([]);
+    useEffect(() => {
+        if (!enabled || monkeyId == null) {
+            setConditions([]);
+            return;
+        }
+        let cancelled = false;
+        loadConditions([monkeyId])
+            .then((list) => !cancelled && setConditions(list))
+            .catch(() => !cancelled && setConditions([]));
+        return () => {
+            cancelled = true;
+        };
+    }, [monkeyId, enabled]);
+    return conditions;
+}
+
 // The records kept elsewhere, as rows of a section's list (not changed
 // here): { key, date, category, details, by, first }. Rehabilitation: its
 // arrival (first: before anything else that day). (Its moves and status
 // changes are records of its own, added by the database.) Medical: its
-// injuries (each with its updates: injury), and its weights ("512 g
-// (+38 g)", and the note) from the Records page.
-export function otherRows(section, { injuries, monkey = null, weights = [] }) {
+// injuries (each with its updates: injury), its conditions, and its weights
+// ("512 g (+38 g)", and the note) from the Records page.
+export function otherRows(section, { injuries, monkey = null, weights = [], conditions = [] }) {
     if (section === "rehabilitation") {
         if (!monkey?.arrivalDate) return [];
         const reason = ARRIVAL_REASONS[monkey.arrivalReason];
@@ -169,9 +189,18 @@ export function otherRows(section, { injuries, monkey = null, weights = [] }) {
             (w.notes ? `: ${w.notes}` : ""),
         by: `Weight by ${w.loggedByName ?? "Staff"}`,
     }));
+    // (each condition: a snapshot of its own)
+    const snapshots = conditions.map((c) => ({
+        key: `condition-${c.id}`,
+        date: c.date,
+        category: "condition",
+        details: c.description,
+        by: `Condition by ${c.loggedByName ?? "Staff"}`,
+    }));
     // (an injury's updates stay with it: InjuryFollowUps)
     return [
         ...weighings,
+        ...snapshots,
         ...[...injuries.current, ...injuries.healed].map((e) => ({
             key: `injury-${e.id}`,
             date: e.date,
