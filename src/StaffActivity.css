@@ -1,0 +1,136 @@
+/* Admin Dashboard → Staff Activity (StaffActivity.jsx): who, what and how
+   far back, then the changes by day (the Changelog's list: MyChanges.css) */
+
+.Activity-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 12px;
+    margin-bottom: 14px;
+}
+
+.Activity-choose {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 200px;
+    max-width: 280px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Activity-choose select,
+.Activity-choose input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Activity-choose select:focus-visible,
+.Activity-choose input:focus-visible,
+.Activity-periods button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* 24 Hours · 7 Days · 14 Days · 30 Days · Custom: one squared group,
+   the chosen one filled (like Records' Enter / View) */
+.Activity-periods {
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Activity-periods button {
+    height: 34px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Activity-periods button:hover {
+    color: var(--text);
+}
+
+.Activity-periods button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text);
+}
+
+/* Custom: From and To, on their own line */
+.Activity-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    width: 100%;
+}
+
+.Activity-dates .Activity-choose {
+    flex: 0 1 180px;
+}
+
+.Activity-choose input {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .Activity-choose input {
+    color-scheme: light;
+}
+
+.Activity-count {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+/* (the page scrolls, not the list: no Changelog height cap) */
+.MyChanges.Activity-list {
+    max-height: none;
+    overflow: visible;
+}
+
+.Activity-who {
+    margin: 1px 0 0;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+@media (max-width: 459px) {
+    .Activity-choose {
+        max-width: none;
+    }
+
+    .Activity-periods {
+        display: flex;
+        flex-wrap: nowrap;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .Activity-periods button {
+        flex: 1;
+        padding: 0 4px;
+        font-size: 13px;
+    }
+
+    .Activity-dates .Activity-choose {
+        flex: 1 1 0;
+    }
+}

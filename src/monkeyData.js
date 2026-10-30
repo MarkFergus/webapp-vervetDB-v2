@@ -1180,6 +1180,25 @@ export async function loadStaff() {
     return data.map((row) => ({ userId: row.user_id, name: row.full_name ?? null, email: row.email, role: row.role ?? null }));
 }
 
+// Staff Activity (admins only, supabase/staff-activity.sql and
+// staff-activity-dates.sql): one person's changes (person null: everyone's)
+// from since up to until (Dates), newest first, as staff_activity gives
+// them. Throws a message to show.
+export async function loadStaffActivity(person, since, until) {
+    const { data, error } = await supabase.rpc("staff_activity", {
+        person,
+        since: since.toISOString(),
+        until: until.toISOString(),
+    });
+    if (error) {
+        // (PGRST202: no such function yet)
+        if (isOlderDatabase(error) || error.code === "PGRST202")
+            throw new Error("Staff Activity isn't ready yet: supabase/staff-activity-dates.sql needs to be run.");
+        throw new Error("Couldn't load Staff Activity right now. Please check your connection and try again.");
+    }
+    return data ?? [];
+}
+
 // Gives an account a user type (not your own: the database refuses)
 export async function saveStaffRole(userId, role) {
     const { error } = await supabase.rpc("set_staff_role", { target: userId, new_role: role });

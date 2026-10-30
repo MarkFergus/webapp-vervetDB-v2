@@ -31,7 +31,7 @@
     color: var(--text);
     background-color: var(--surface-2);
     border: none;
-    border-radius: 999px;
+    border-radius: 8px;
     cursor: pointer;
 }
 

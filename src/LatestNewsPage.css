@@ -26,33 +26,37 @@
     color: var(--text-2);
 }
 
-/* 48 Hours · 7 Days · 2 Weeks: the chosen one filled, like the chips */
+/* 48 Hours · 7 Days · 2 Weeks: one squared group, the chosen one filled
+   (like Records' Enter / View) */
 .LatestNews-periods {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
-    gap: 8px;
+    padding: 3px;
     margin-bottom: 20px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
 }
 
 .LatestNews-period {
-    padding: 7px 14px;
+    height: 32px;
+    padding: 0 14px;
     font: inherit;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text);
-    background-color: var(--surface-2);
+    color: var(--text-2);
+    background: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
 .LatestNews-period:hover {
-    background-color: var(--wash-strong, var(--wash));
+    color: var(--text);
 }
 
 .LatestNews-period[aria-pressed="true"] {
-    color: var(--surface-1);
-    background-color: var(--text-strong);
+    color: var(--bg);
+    background-color: var(--text);
 }
 
 .LatestNews-period:focus-visible,

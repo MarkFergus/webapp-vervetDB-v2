@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconMinus, IconUsers } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconHistory, IconMinus, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
 import { ArchiveList, useArchive } from "./MonkeyArchive";
 import MonkeyPage from "./MonkeyPage";
+import StaffActivity from "./StaffActivity";
 import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
 import "./AdminPage.css";
@@ -16,6 +17,9 @@ import "./AdminPage.css";
 //                                   to change. Nobody can be made an admin
 //                                   here (Mark does that). (The database
 //                                   checks both too: admin-dashboard.sql.)
+//   Staff Activity (#admin/activity) what each staff member has added,
+//                                   changed or deleted (StaffActivity.jsx;
+//                                   looking only, for now)
 //   Monkey Archive (#admin/archive) the monkeys no longer at the sanctuary
 //                                   (MonkeyArchive.jsx); each one's Full
 //                                   Profile (#admin/archive/<name>-<id>),
@@ -54,7 +58,7 @@ export const ACCESS = [
     { what: "Enclosure details and troops", who: ["admin"] },
     { what: "Change or delete anyone's records", who: ["admin"] },
     { what: "Status Update and the Monkey Archive", who: ["admin"] },
-    { what: "Admin Dashboard: user types", who: ["admin"] },
+    { what: "Admin Dashboard: user types and Staff Activity", who: ["admin"] },
 ];
 
 function AccessTable() {
@@ -218,6 +222,7 @@ function StaffList() {
 
 const PARTS = [
     { id: "staff", title: "Staff Access", sub: "What each user type can do, and every account's user type", Icon: IconUsers },
+    { id: "activity", title: "Staff Activity", sub: "What each staff member has added, changed or deleted", Icon: IconHistory },
     { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
 ];
 
@@ -301,6 +306,8 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false })
                     <p className="Admin-intro">For admins only.</p>
                     <StaffAccess />
                 </>
+            ) : part.id === "activity" ? (
+                <StaffActivity />
             ) : (
                 <>
                     <p className="Admin-intro">Monkeys no longer at the sanctuary. Their records stay on file.</p>
