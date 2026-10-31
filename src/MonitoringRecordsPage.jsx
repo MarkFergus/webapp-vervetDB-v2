@@ -394,22 +394,60 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     );
 }
 
+// A session's draft on this phone: { form, seen } (localStorage can be
+// missing or full: then there's just no draft)
+const draftKey = (id) => `vervetdb-monitoring-draft-${id}`;
+function loadDraft(id) {
+    try {
+        const draft = JSON.parse(localStorage.getItem(draftKey(id)));
+        return draft?.form && draft?.seen ? draft : null;
+    } catch {
+        return null;
+    }
+}
+function saveDraft(id, draft) {
+    try {
+        localStorage.setItem(draftKey(id), JSON.stringify(draft));
+    } catch {
+        // (no room, or not allowed)
+    }
+}
+function clearDraft(id) {
+    try {
+        localStorage.removeItem(draftKey(id));
+    } catch {
+        // (not allowed)
+    }
+}
+
 // The session: briefing, then the results to enter (or change), then
 // Finish Session. onFinished(session, summary) / onLeave() / onCancelled()
 function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onLeave, onCancelled }) {
     const today = dayText(new Date());
     const facts = useTroopFacts(monkeys, troop, sessions, staff, session);
     const finished = session.status === "finished";
-    const [form, setForm] = useState(() => ({
-        date: session.date,
-        foodUsed: session.foodUsed ?? "",
-        fence: session.fence ?? "",
-        waters: session.waters ?? "",
-        food: session.food ?? "",
-        notes: session.notes ?? "",
-    }));
+    // (one in progress: what was entered so far on this phone, if anything)
+    const [draft] = useState(() => (finished ? null : loadDraft(session.id)));
+    const [form, setForm] = useState(
+        () =>
+            draft?.form ?? {
+                date: session.date,
+                foodUsed: session.foodUsed ?? "",
+                fence: session.fence ?? "",
+                waters: session.waters ?? "",
+                food: session.food ?? "",
+                notes: session.notes ?? "",
+            }
+    );
     // monkey id → seen (a finished one: as it was; new: nobody yet)
-    const [seen, setSeen] = useState(() => Object.fromEntries(session.sightings.map((s) => [s.monkeyId, s.seen])));
+    const [seen, setSeen] = useState(
+        () => draft?.seen ?? Object.fromEntries(session.sightings.map((s) => [s.monkeyId, s.seen]))
+    );
+    // Kept on the phone as it's entered, so a lost connection, a refresh or a
+    // closed tab loses nothing (cleared once finished or cancelled)
+    useEffect(() => {
+        if (!finished) saveDraft(session.id, { form, seen });
+    }, [finished, session.id, form, seen]);
     const [notes, setNotes] = useState([]);
     const [problem, setProblem] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -447,9 +485,14 @@ function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onL
                 seen: facts.all.filter((m) => seen[m.id]).map((m) => m.id),
                 notSeen: facts.all.filter((m) => !seen[m.id]).map((m) => m.id),
             });
+            clearDraft(session.id);
             onFinished(saved, summaryFor(saved, troop, facts, notes, today));
         } catch (error) {
-            setProblem(error.message);
+            setProblem(
+                error.offline && !finished
+                    ? "No connection right now. Everything entered is kept on this phone: try Finish Session again when there's signal."
+                    : error.message
+            );
             setBusy(false);
         }
     }
@@ -458,6 +501,7 @@ function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onL
         setBusy(true);
         try {
             await deleteMonitoringSession(session.id);
+            clearDraft(session.id);
             onCancelled();
         } catch (error) {
             setProblem(error.message);
@@ -893,6 +937,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
         setProblem(null);
         try {
             await deleteMonitoringSession(id);
+            clearDraft(id);
             setSessions((list) => list.filter((s) => s.id !== id));
         } catch (error) {
             setProblem(error.message);

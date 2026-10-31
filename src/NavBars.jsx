@@ -116,21 +116,26 @@ export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, 
                     "Enclosures"
                 )}
             </div>
+            {/* Staff tools */}
+            {(showRecords || onAddPhotos || onProfileBook) && (
+                <div className="SideRail-group">
+                    {showRecords &&
+                        item({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
+                    {/* Staff: photos already taken, matched to their monkeys */}
+                    {onAddPhotos &&
+                        button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={22} aria-hidden="true" />, "Add Photos")}
+                    {/* Staff only (any role): Profile Books, the AM Plates List,
+                        Introcage Signs… */}
+                    {onProfileBook &&
+                        button(
+                            onProfileBook,
+                            <ProfileBookIcon busy={isGeneratingPDF} size={22} />,
+                            isGeneratingPDF ? "Creating PDF…" : "Documents",
+                            { disabled: isGeneratingPDF }
+                        )}
+                </div>
+            )}
             <div className="SideRail-group">
-                {/* Staff: photos already taken, matched to their monkeys */}
-                {onAddPhotos &&
-                    button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={22} aria-hidden="true" />, "Add Photos")}
-                {/* Staff only (any role): Profile Books, the AM Plates List,
-                    Introcage Signs… */}
-                {onProfileBook &&
-                    button(
-                        onProfileBook,
-                        <ProfileBookIcon busy={isGeneratingPDF} size={22} />,
-                        isGeneratingPDF ? "Creating PDF…" : "Documents",
-                        { disabled: isGeneratingPDF }
-                    )}
-                {showRecords &&
-                    item({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
                 {button(onMap, <IconMap2 stroke={1.75} size={22} aria-hidden="true" />, "Interactive Map")}
                 {item({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                 {item({ href: "#news", "aria-current": page === "news" ? "page" : undefined }, IconNews, "Latest News")}

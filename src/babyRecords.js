@@ -51,12 +51,12 @@ export const RECORD_KINDS = {
     monitoring: {
         id: "monitoring",
         title: "Monitoring",
-        hint: "Start a troop's monitoring session, enter it after the walk, and look back.",
+        hint: "Start a monitoring session, record the results, and copy the summary.",
     },
     injuries: {
         id: "injuries",
         title: "Injuries",
-        hint: "Each troop's current injuries, and those healed in the last 6 months.",
+        hint: "View each troop's current injuries, and those healed in the last 6 months.",
     },
 };
 

@@ -63,6 +63,7 @@ const open = (staff = EDITOR) =>
 beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem("vervetdb-sections-troop", "Skunkey");
+    localStorage.removeItem("vervetdb-monitoring-draft-30");
     loadMonitoringSessions.mockResolvedValue(PAST);
     loadConditions.mockImplementation(async (ids) =>
         ids.includes(2) ? [{ id: 1, monkeyId: 2, date: "2026-10-26", description: "Looking thin", sessionId: 12 }] : []
@@ -205,6 +206,33 @@ test("the same troop twice in a day: asks first", async () => {
     expect(screen.getByRole("heading", { level: 1, name: "Skunkey Monitoring" })).toBeInTheDocument();
     // (no update on Paradise's injury since 1 September)
     expect(screen.getByText("Paradise's injury has not been updated since 01/09")).toBeInTheDocument();
+});
+
+test("no connection at Finish: nothing lost, kept on the phone until it's saved", async () => {
+    const user = userEvent.setup();
+    const inProgress = { ...finished(30, "2026-10-30", {}, { startedBy: "u-1" }), status: "in_progress", finishedAt: null };
+    loadMonitoringSessions.mockResolvedValue([inProgress, ...PAST]);
+    finishMonitoringSession.mockRejectedValueOnce(Object.assign(new Error("Couldn't save right now."), { offline: true }));
+    const { unmount } = open();
+    await user.click(await screen.findByRole("button", { name: "Continue Session" }));
+    for (const [group, word] of [["Fence", "Low"], ["Waters", "OK"], ["Food", "Good"]]) {
+        await user.click(within(screen.getByRole("group", { name: group })).getByRole("button", { name: word }));
+    }
+    await user.click(screen.getByRole("checkbox", { name: /Malawi/ }));
+    await user.click(screen.getByRole("button", { name: "Finish Session" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("No connection right now. Everything entered is kept on this phone");
+    // (the tab closed, then opened again: all still there)
+    unmount();
+    open();
+    await user.click(await screen.findByRole("button", { name: "Continue Session" }));
+    expect(within(screen.getByRole("group", { name: "Fence" })).getByRole("button", { name: "Low" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("checkbox", { name: /Malawi/ })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /Paradise/ })).not.toBeChecked();
+    // (saved: the draft's gone)
+    finishMonitoringSession.mockResolvedValue(finished(30, "2026-10-30", { 1: true, 2: false, 3: false, 4: false }));
+    await user.click(screen.getByRole("button", { name: "Finish Session" }));
+    expect(await screen.findByText("Session saved")).toBeInTheDocument();
+    expect(localStorage.getItem("vervetdb-monitoring-draft-30")).toBeNull();
 });
 
 test("the top: In Progress and Recently Monitored (24 hours), every troop, just a list; maintenance staff can't start one", async () => {

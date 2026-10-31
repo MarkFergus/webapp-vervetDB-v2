@@ -337,8 +337,18 @@ function saveProblem(error) {
     if (error.code === "23514") {
         return new Error("The database refused one of the details. Please check the form.");
     }
-    return new Error("Couldn't save right now. Please check your connection and try again.");
+    return offlineError();
 }
+
+// A save that never reached the database (no signal): .offline, so a page
+// can say what it kept
+function offlineError() {
+    const problem = new Error("Couldn't save right now. Please check your connection and try again.");
+    problem.offline = true;
+    return problem;
+}
+const isOffline = (error) =>
+    navigator.onLine === false || /failed to fetch|networkerror|load failed|network request failed/i.test(String(error?.message));
 
 // A move's date and reason, sent along with it: the database adds the
 // Movement record (supabase/movement-records.sql).
@@ -1188,6 +1198,7 @@ const SESSION_WITH_SIGHTINGS = `${SESSION_COLUMNS}, monitoring_sightings (monkey
 // monitoring-sessions.sql has run)
 function sessionProblem(error) {
     console.error("Monitoring sessions failed:", error);
+    if (isOffline(error)) return offlineError();
     if (isOlderDatabase(error) || error?.code === "PGRST202") {
         return new Error("Monitoring isn't ready yet: supabase/monitoring-sessions.sql needs to be run.");
     }
