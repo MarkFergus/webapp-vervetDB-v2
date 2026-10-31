@@ -1,0 +1,38 @@
+/* Mark Seen (MarkSeen.jsx): a missing monkey seen between sessions */
+
+/* The pop-up's line under Monitoring: missing (in red), or who saw it */
+.MarkSeen-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.MarkSeen-line.is-missing b {
+    color: var(--danger);
+}
+
+.MarkSeen-line.is-seen b {
+    color: var(--green);
+}
+
+.MarkSeen-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.MarkSeen-form {
+    flex-basis: 100%;
+    padding: 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+/* (the pop-up: under the Monitoring lines) */
+.Modal-section .MarkSeen-line {
+    margin-top: 4px;
+    font-size: 16px;
+    line-height: 1.5;
+}

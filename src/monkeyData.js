@@ -1171,9 +1171,11 @@ export async function saveMonitoring(monkeyId, { conditionCheck, notes }) {
 // ---- Monitoring sessions and conditions (supabase/monitoring-sessions.sql) ----
 
 // A session, as the site uses it: { id, enclosureId, date, status
-// ("in_progress" / "finished"), foodUsed, fence, waters, food, notes,
-// startedBy, startedByName, startedAt, finishedAt, sightings: [{ monkeyId,
-// seen }] }
+// ("in_progress" / "finished"), foodUsed, fence, waters, food, their short
+// notes (fenceNote, watersNote, foodNote), introcagesChecked,
+// perimeterChecked, notes, maintenance, startedBy, startedByName,
+// startedAt, finishedAt, sightings: [{ monkeyId, seen }] }
+// (supabase/monitoring-checks.sql)
 const toAppSession = (row) => ({
     id: row.id,
     enclosureId: row.enclosure_id,
@@ -1183,7 +1185,13 @@ const toAppSession = (row) => ({
     fence: row.fence,
     waters: row.waters,
     food: row.food,
+    fenceNote: row.fence_note ?? "",
+    watersNote: row.waters_note ?? "",
+    foodNote: row.food_note ?? "",
+    introcagesChecked: Boolean(row.introcages_checked),
+    perimeterChecked: Boolean(row.perimeter_checked),
     notes: row.notes ?? "",
+    maintenance: row.maintenance ?? "",
     startedBy: row.started_by,
     startedByName: row.started_by_name,
     startedAt: row.started_at,
@@ -1191,7 +1199,8 @@ const toAppSession = (row) => ({
     sightings: (row.monitoring_sightings ?? []).map((s) => ({ monkeyId: s.monkey_id, seen: s.seen })),
 });
 const SESSION_COLUMNS =
-    "id, enclosure_id, session_date, status, food_used, fence, waters, food, notes, started_by, started_by_name, started_at, finished_at";
+    "id, enclosure_id, session_date, status, food_used, fence, waters, food, fence_note, waters_note, food_note, " +
+    "introcages_checked, perimeter_checked, notes, maintenance, started_by, started_by_name, started_at, finished_at";
 const SESSION_WITH_SIGHTINGS = `${SESSION_COLUMNS}, monitoring_sightings (monkey_id, seen)`;
 
 // A friendly message for a session that couldn't load (or before
@@ -1200,7 +1209,7 @@ function sessionProblem(error) {
     console.error("Monitoring sessions failed:", error);
     if (isOffline(error)) return offlineError();
     if (isOlderDatabase(error) || error?.code === "PGRST202") {
-        return new Error("Monitoring isn't ready yet: supabase/monitoring-sessions.sql needs to be run.");
+        return new Error("Monitoring isn't ready yet: supabase/monitoring-checks.sql needs to be run.");
     }
     return error instanceof Error && !error.code ? error : saveProblem(error);
 }
@@ -1231,8 +1240,12 @@ export async function startMonitoringSession(enclosureId, date) {
 }
 
 // Finish Session (or change a finished one): { date, foodUsed, fence,
-// waters, food, notes, seen: [ids], notSeen: [ids] }. Returns it, finished.
-export async function finishMonitoringSession(id, { date, foodUsed, fence, waters, food, notes, seen, notSeen }) {
+// waters, food, fenceNote, watersNote, foodNote, introcagesChecked,
+// perimeterChecked, notes, maintenance, seen: [ids], notSeen: [ids] }.
+// Returns it, finished.
+export async function finishMonitoringSession(id, details) {
+    const { date, foodUsed, fence, waters, food, notes, seen, notSeen } = details;
+    const text = (value) => value?.trim() || null;
     const { data, error } = await supabase.rpc("finish_monitoring_session", {
         session: id,
         on_date: date,
@@ -1240,9 +1253,15 @@ export async function finishMonitoringSession(id, { date, foodUsed, fence, water
         fence,
         waters,
         food,
-        notes: notes.trim() || null,
+        notes: text(notes),
         seen,
         not_seen: notSeen,
+        fence_note: text(details.fenceNote),
+        waters_note: text(details.watersNote),
+        food_note: text(details.foodNote),
+        introcages_checked: Boolean(details.introcagesChecked),
+        perimeter_checked: Boolean(details.perimeterChecked),
+        maintenance: text(details.maintenance),
     });
     if (error) {
         if (error.code === "P0001") throw new Error(error.message);
@@ -1309,6 +1328,82 @@ export async function deleteCondition(id) {
     const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", id).select("id");
     if (error) throw saveProblem(error);
     if (!data?.length) throw saveProblem({ code: "PGRST116" });
+}
+
+// ---- Sightings between sessions (supabase/monkey-sightings.sql) ----
+
+// A sighting: { id, monkeyId, date, note, loggedBy, by, at }
+const SPOT_COLUMNS = "id, monkey_id, seen_on, note, logged_by, logged_by_name, logged_at";
+const toAppSpot = (row) => ({
+    id: row.id,
+    monkeyId: row.monkey_id,
+    date: row.seen_on,
+    note: row.note ?? "",
+    loggedBy: row.logged_by,
+    by: row.logged_by_name ?? "Staff",
+    at: row.logged_at,
+});
+
+// Sightings in the last year (all monkeys, or some), newest first. Before
+// monkey-sightings.sql has run: none.
+export async function loadSpotSightings(monkeyIds = null) {
+    const since = new Date(Date.now() - 366 * 86400000).toISOString().slice(0, 10);
+    let query = supabase.from("monkey_sightings").select(SPOT_COLUMNS).gte("seen_on", since);
+    if (monkeyIds) query = query.in("monkey_id", monkeyIds);
+    const { data, error } = await query.order("seen_on", { ascending: false }).order("logged_at", { ascending: false });
+    if (error) {
+        if (isOlderDatabase(error)) return [];
+        throw sessionProblem(error);
+    }
+    return data.map(toAppSpot);
+}
+
+// Mark Seen: a missing monkey seen between sessions ({ date, note })
+export async function addSpotSighting(monkeyId, { date, note = "" }) {
+    const { data, error } = await supabase
+        .from("monkey_sightings")
+        .insert({ monkey_id: monkeyId, seen_on: date, note: note.trim() || null })
+        .select(SPOT_COLUMNS)
+        .single();
+    if (error) {
+        if (isOlderDatabase(error)) throw new Error("Mark Seen isn't ready yet: supabase/monkey-sightings.sql needs to be run.");
+        throw sessionProblem(error);
+    }
+    return toAppSpot(data);
+}
+
+// Deletes a sighting (admins, or whoever added it)
+export async function deleteSpotSighting(id) {
+    const { data, error } = await supabase.from("monkey_sightings").delete().eq("id", id).select("id");
+    if (error) throw sessionProblem(error);
+    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+}
+
+// A monkey's finished sessions it was on the checklist for (newest first,
+// as sessions with just its sighting), and its sightings between them:
+// { sessions, spots } (the pop-up: is it missing?)
+export async function loadMonkeySightings(monkeyId) {
+    const [sightings, spots] = await Promise.all([
+        supabase
+            .from("monitoring_sightings")
+            .select("seen, monitoring_sessions!inner (id, session_date, status, finished_at)")
+            .eq("monkey_id", monkeyId)
+            .eq("monitoring_sessions.status", "finished")
+            .order("session_date", { referencedTable: "monitoring_sessions", ascending: false })
+            .limit(20),
+        loadSpotSightings([monkeyId]),
+    ]);
+    if (sightings.error) throw sessionProblem(sightings.error);
+    const sessions = sightings.data
+        .map((r) => ({
+            id: r.monitoring_sessions.id,
+            date: r.monitoring_sessions.session_date,
+            status: "finished",
+            finishedAt: r.monitoring_sessions.finished_at,
+            sightings: [{ monkeyId, seen: r.seen }],
+        }))
+        .sort((a, b) => b.date.localeCompare(a.date) || String(b.finishedAt).localeCompare(String(a.finishedAt)));
+    return { sessions, spots };
 }
 
 // What was added during a session, oldest first: [{ monkeyId, text, kind

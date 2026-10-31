@@ -7,6 +7,7 @@ import {
     IconCircleCheckFilled,
     IconCopy,
     IconExclamationMark,
+    IconEye,
     IconPlayerPlay,
     IconPencil,
     IconPlus,
@@ -14,16 +15,20 @@ import {
     IconTrash,
 } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
+import { MarkSeenButton, MarkSeenForm, missingText } from "./MarkSeen";
 import { InjuryForm, updateNeeded, useInjuryList } from "./Injuries";
 import { rememberTroop, rememberedTroop } from "./SectionsRecordsPage";
 import {
     addCondition,
+    addSpotSighting,
     deleteMonitoringSession,
+    deleteSpotSighting,
     finishMonitoringSession,
     loadConditions,
     loadMonitoringFor,
     loadMonitoringSessions,
     loadSessionNotes,
+    loadSpotSightings,
     startMonitoringSession,
 } from "./monkeyData";
 import { hasTroop } from "./enclosures";
@@ -33,6 +38,7 @@ import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
 import {
     ALL_GOOD,
+    CHECK_NOTE_MAX,
     FENCE,
     FOODS_USED,
     FOOD_LEVELS,
@@ -56,11 +62,16 @@ import "./MonitoringRecordsPage.css";
 //      See after 2 sessions in a row), who wasn't seen last time, priority
 //      checks, current injuries (Update Needed) and latest conditions
 //   2. Finish Session (after the walk, the same person, or an admin): the
-//      date, food used (or none), fence, waters and food, a Seen tick for
-//      each monkey (+ Injury, Add Update, + Condition), general notes;
-//      then the alerts, and the summary to copy for WhatsApp
+//      date, food used (or none), the checks (fence, waters and food, each
+//      with a short note; Introcages and Perimeter Check ticks), a Seen
+//      tick for each monkey (+ Injury, Add Update, + Condition), general
+//      notes and maintenance; then the alerts, and the summary to copy for
+//      WhatsApp
 //   History: the troop's finished sessions, each to copy again, change or
-//   delete. A troop with no session for over a week is Overdue.
+//   delete, and its monkeys' sightings between sessions. A troop with no
+//   session for over a week is Overdue.
+//   Missing: the troop's monkeys not seen in their last session, each with
+//   Mark Seen (seen since, between sessions: MarkSeen.jsx)
 // Starting and finishing: editors and admins (staff.canAdd); anyone on
 // the staff can look. (supabase/monitoring-sessions.sql)
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly } (as the pop-up's)
@@ -84,11 +95,12 @@ const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
 const timeText = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
 // Choices as one squared group (one at a time; optional: none, and a
-// second tap takes it off)
-function Choices({ label, options, value, onChange, optional = false }) {
+// second tap takes it off). note: { value, onChange }: a short note beside
+// them ("North corner sagging")
+function Choices({ label, options, value, onChange, optional = false, note = null }) {
     const name = optional ? `${label} (optional)` : label;
     return (
-        <div className="Monitoring-field">
+        <div className={`Monitoring-field${note ? " has-note" : ""}`}>
             <span className="Monitoring-fieldLabel">
                 {label}
                 {optional && <em> (optional)</em>}
@@ -105,7 +117,28 @@ function Choices({ label, options, value, onChange, optional = false }) {
                     </button>
                 ))}
             </div>
+            {note && (
+                <input
+                    type="text"
+                    className="Monitoring-checkNote"
+                    aria-label={`${label} note`}
+                    placeholder="Note (optional)"
+                    value={note.value}
+                    maxLength={CHECK_NOTE_MAX}
+                    onChange={(e) => note.onChange(e.target.value)}
+                />
+            )}
         </div>
+    );
+}
+
+// A tick for a check that was done (Introcages Check, Perimeter Check)
+function Tick({ label, checked, onChange }) {
+    return (
+        <label className="Monitoring-tick">
+            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+            {label}
+        </label>
     );
 }
 
@@ -116,17 +149,29 @@ function Flag({ kind, children }) {
 
 // ---- What's known about the troop's monkeys ----
 
-// For a troop: its monkeys (troop first, then each introcage's), their
-// sighting records (the finished sessions before this session), priority
-// checks, current injuries and latest conditions
-function useTroopFacts(monkeys, troop, sessions, staff, session = null) {
+// A troop's monkeys: { inTroop, inIntrocages, all } (troop first, by
+// name, then each introcage's)
+function troopMonkeys(monkeys, troop) {
     const inTroop = troop ? [...monkeysIn(monkeys, troop, "troop")].sort((a, b) => a.name.localeCompare(b.name)) : [];
     const inIntrocages = troop
         ? [...monkeysIn(monkeys, troop, "introcages")].sort(
               (a, b) => (a.introcage ?? "").localeCompare(b.introcage ?? "") || a.name.localeCompare(b.name)
           )
         : [];
-    const all = [...inTroop, ...inIntrocages];
+    return { inTroop, inIntrocages, all: [...inTroop, ...inIntrocages] };
+}
+
+// The sightings between sessions that count for a session: one in
+// progress (or none: the list), all of them; a finished one, those before
+// its day
+const spotsFor = (spots, session) => (session?.status === "finished" ? spots.filter((s) => s.date < session.date) : spots);
+
+// For a troop: its monkeys (troop first, then each introcage's), their
+// sighting records (the finished sessions before this session, and
+// sightings between sessions), priority checks, current injuries and
+// latest conditions
+function useTroopFacts(monkeys, troop, sessions, staff, session = null, spots = []) {
+    const { inTroop, inIntrocages, all } = troopMonkeys(monkeys, troop);
     const ids = all.map((m) => m.id);
     const key = ids.join(",");
     const injuries = useInjuryList(ids, staff);
@@ -147,7 +192,8 @@ function useTroopFacts(monkeys, troop, sessions, staff, session = null) {
     }, [key, reloadConditions]);
 
     const past = troop ? sessionsBefore(sessions, troop.id, session) : [];
-    const records = Object.fromEntries(all.map((m) => [m.id, sightingRecord(past, m.id)]));
+    const counted = spotsFor(spots, session);
+    const records = Object.fromEntries(all.map((m) => [m.id, sightingRecord(past, m.id, counted)]));
     const current = Array.isArray(injuries.entries) ? injuries.entries : [];
     const latestCondition = {};
     for (const c of conditions) if (!latestCondition[c.monkeyId]) latestCondition[c.monkeyId] = c;
@@ -166,9 +212,12 @@ function Briefing({ facts, today }) {
     const notSeenLast = all.filter((m) => records[m.id].missed === 1);
     const priorities = all.filter((m) => priority[m.id]?.conditionCheck || priority[m.id]?.notes);
     const withCondition = all.filter((m) => latestCondition[m.id]);
+    // (seen between sessions, since they were last seen in one)
+    const seenSince = all.filter((m) => records[m.id].spot);
     const byId = Object.fromEntries(all.map((m) => [m.id, m]));
     const seenText = (m) => (records[m.id].lastSeen ? `last seen ${longDate(records[m.id].lastSeen)}` : "not seen in a session yet");
-    const empty = !mustSee.length && !notSeenLast.length && !priorities.length && !current.length && !withCondition.length;
+    const empty =
+        !mustSee.length && !notSeenLast.length && !seenSince.length && !priorities.length && !current.length && !withCondition.length;
 
     return (
         <section className="Monitoring-briefing" aria-label="Briefing">
@@ -202,6 +251,22 @@ function Briefing({ facts, today }) {
                                             <b>{m.name}</b> {seenText(m)}
                                         </li>
                                     ))}
+                                </ul>
+                            </div>
+                        )}
+                        {seenSince.length > 0 && (
+                            <div className="Monitoring-part is-good">
+                                <h3>Seen Since Last Session</h3>
+                                <ul>
+                                    {seenSince.map((m) => {
+                                        const spot = records[m.id].spot;
+                                        return (
+                                            <li key={m.id}>
+                                                <b>{m.name}</b> seen {longDate(spot.date)} by {spot.by}
+                                                {spot.note && <span className="Monitoring-latest"> · {spot.note}</span>}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             </div>
                         )}
@@ -422,23 +487,39 @@ function clearDraft(id) {
 
 // The session: briefing, then the results to enter (or change), then
 // Finish Session. onFinished(session, summary) / onLeave() / onCancelled()
-function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onLeave, onCancelled }) {
+function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinished, onLeave, onCancelled }) {
     const today = dayText(new Date());
-    const facts = useTroopFacts(monkeys, troop, sessions, staff, session);
+    const facts = useTroopFacts(monkeys, troop, sessions, staff, session, spots);
     const finished = session.status === "finished";
     // (one in progress: what was entered so far on this phone, if anything)
     const [draft] = useState(() => (finished ? null : loadDraft(session.id)));
-    const [form, setForm] = useState(
-        () =>
-            draft?.form ?? {
-                date: session.date,
-                foodUsed: session.foodUsed ?? "",
-                fence: session.fence ?? "",
-                waters: session.waters ?? "",
-                food: session.food ?? "",
-                notes: session.notes ?? "",
-            }
-    );
+    const [form, setForm] = useState(() => {
+        const saved = {
+            date: session.date,
+            foodUsed: session.foodUsed ?? "",
+            fence: session.fence ?? "",
+            fenceNote: session.fenceNote ?? "",
+            waters: session.waters ?? "",
+            watersNote: session.watersNote ?? "",
+            food: session.food ?? "",
+            foodNote: session.foodNote ?? "",
+            introcagesChecked: Boolean(session.introcagesChecked),
+            perimeterChecked: Boolean(session.perimeterChecked),
+            notes: session.notes ?? "",
+            maintenance: session.maintenance ?? "",
+        };
+        if (!draft) return saved;
+        // (a draft from before the words changed: a choice no longer there is cleared)
+        const known = (value, options) => (value in options ? value : "");
+        const form = { ...saved, ...draft.form };
+        return {
+            ...form,
+            foodUsed: known(form.foodUsed, FOODS_USED),
+            fence: known(form.fence, FENCE),
+            waters: known(form.waters, WATERS),
+            food: known(form.food, FOOD_LEVELS),
+        };
+    });
     // monkey id → seen (a finished one: as it was; new: nobody yet)
     const [seen, setSeen] = useState(
         () => draft?.seen ?? Object.fromEntries(session.sightings.map((s) => [s.monkeyId, s.seen]))
@@ -554,9 +635,34 @@ function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onL
                     <input type="date" value={form.date} max={today} onChange={(e) => set("date")(e.target.value)} />
                 </label>
                 <Choices label="Food" options={FOODS_USED} value={form.foodUsed} onChange={set("foodUsed")} optional />
-                <Choices label="Fence" options={FENCE} value={form.fence} onChange={set("fence")} />
-                <Choices label="Waters" options={WATERS} value={form.waters} onChange={set("waters")} />
-                <Choices label="Food" options={FOOD_LEVELS} value={form.food} onChange={set("food")} />
+                {/* The enclosure's checks, together in a box */}
+                <section className="Monitoring-checks" aria-label="Checks">
+                    <Choices
+                        label="Fence"
+                        options={FENCE}
+                        value={form.fence}
+                        onChange={set("fence")}
+                        note={{ value: form.fenceNote, onChange: set("fenceNote") }}
+                    />
+                    <Choices
+                        label="Waters"
+                        options={WATERS}
+                        value={form.waters}
+                        onChange={set("waters")}
+                        note={{ value: form.watersNote, onChange: set("watersNote") }}
+                    />
+                    <Choices
+                        label="Food"
+                        options={FOOD_LEVELS}
+                        value={form.food}
+                        onChange={set("food")}
+                        note={{ value: form.foodNote, onChange: set("foodNote") }}
+                    />
+                    <div className="Monitoring-ticks">
+                        <Tick label="Introcages Check" checked={form.introcagesChecked} onChange={set("introcagesChecked")} />
+                        <Tick label="Perimeter Check" checked={form.perimeterChecked} onChange={set("perimeterChecked")} />
+                    </div>
+                </section>
 
                 <div className="Monitoring-checklistHead">
                     <h3 className="Monitoring-stepTitle">
@@ -588,6 +694,16 @@ function SessionPage({ session, troop, monkeys, sessions, staff, onFinished, onL
                         maxLength={1000}
                         placeholder="e.g. Raining, low sightings"
                         onChange={(e) => set("notes")(e.target.value)}
+                    />
+                </label>
+                <label className="IntegrationPage-choose Monitoring-notes">
+                    <span>Maintenance</span>
+                    <textarea
+                        rows={2}
+                        value={form.maintenance}
+                        maxLength={1000}
+                        placeholder="What needs doing, e.g. Branches need cutting, fence break by the gate"
+                        onChange={(e) => set("maintenance")(e.target.value)}
                     />
                 </label>
 
@@ -647,22 +763,34 @@ function summaryFor(session, troop, facts, notes, today) {
     const mustSee = notSeen
         .map((m) => ({ name: m.name, missed: facts.records[m.id].missed + 1, lastSeen: facts.records[m.id].lastSeen }))
         .filter((m) => m.missed >= MUST_SEE_AFTER);
+    // Seen this time: the priority checks, and those who were Must See
+    const prioritySeen = facts.all
+        .filter((m) => session.sightings.find((s) => s.monkeyId === m.id)?.seen)
+        .filter(
+            (m) =>
+                facts.priority[m.id]?.conditionCheck || facts.priority[m.id]?.notes || facts.records[m.id].missed >= MUST_SEE_AFTER
+        )
+        .map((m) => m.name);
     const staleInjuries = facts.current
         .filter((i) => updateNeeded(i, today))
         .map((i) => ({ name: names[i.monkeyId], since: lastNews(i) }));
+    const checkNotes = { fence: session.fenceNote, waters: session.watersNote, food: session.foodNote };
     return {
-        alerts: sessionAlerts({ mustSee, staleInjuries, fence: session.fence, waters: session.waters, food: session.food }),
+        alerts: sessionAlerts({ mustSee, staleInjuries, fence: session.fence, waters: session.waters, food: session.food, checkNotes }),
         text: whatsappText({
             troop: troop.name,
             date: session.date,
             missing,
             total: facts.all.length,
+            prioritySeen,
             mustSee,
             notes: notes.filter((n) => names[n.monkeyId]).map((n) => ({ name: names[n.monkeyId], text: n.text })),
             fence: session.fence,
             waters: session.waters,
             food: session.food,
+            checkNotes,
             generalNotes: session.notes,
+            maintenance: session.maintenance,
         }),
     };
 }
@@ -737,7 +865,7 @@ function Check({ icon, label, value, good, words }) {
     );
 }
 
-function HistoryItem({ session, troop, monkeys, sessions, staff, canChange, onChange, onDeleted }) {
+function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChange, onChange, onDeleted }) {
     const [open, setOpen] = useState(false);
     const [summary, setSummary] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -746,7 +874,7 @@ function HistoryItem({ session, troop, monkeys, sessions, staff, canChange, onCh
     const byId = Object.fromEntries(monkeys.map((m) => [m.id, m]));
     const notSeen = session.sightings.filter((s) => !s.seen).map((s) => byId[s.monkeyId]?.name ?? "A monkey");
     const seenCount = session.sightings.filter((s) => s.seen).length;
-    const facts = useTroopFacts(monkeys, open ? troop : null, sessions, staff, session);
+    const facts = useTroopFacts(monkeys, open ? troop : null, sessions, staff, session, spots);
 
     useEffect(() => {
         if (!open) return;
@@ -789,6 +917,7 @@ function HistoryItem({ session, troop, monkeys, sessions, staff, canChange, onCh
             {open && (
                 <div className="Monitoring-historyMore">
                     {session.notes && <p className="Monitoring-note">📝 {session.notes}</p>}
+                    {session.maintenance && <p className="Monitoring-note">🔧 {session.maintenance}</p>}
                     {summary ? <WhatsAppSummary text={summary.text} /> : <p className="Monitoring-quiet">Loading…</p>}
                     {problem && (
                         <p className="RecordsPage-problem" role="alert">
@@ -834,6 +963,90 @@ function HistoryItem({ session, troop, monkeys, sessions, staff, canChange, onCh
     );
 }
 
+// ---- Missing, and sightings between sessions ----
+
+// A missing monkey: why, and Mark Seen
+function MissingItem({ monkey, record, canMark, onMark }) {
+    const [open, setOpen] = useState(false);
+    return (
+        <li className={record.missed >= MUST_SEE_AFTER ? "is-danger" : "is-warn"}>
+            <span className="Monitoring-missingText">
+                <IconAlertTriangle size={18} aria-hidden="true" />
+                <span>
+                    <b>{monkey.name}</b> {missingText(record)}
+                </span>
+            </span>
+            {canMark && !open && <MarkSeenButton name={monkey.name} onClick={() => setOpen(true)} />}
+            {open && (
+                <MarkSeenForm
+                    name={monkey.name}
+                    onCancel={() => setOpen(false)}
+                    onSave={async (values) => {
+                        await onMark(values);
+                        setOpen(false);
+                    }}
+                />
+            )}
+        </li>
+    );
+}
+
+// In the History: "Malawi seen 1st Nov 2026 by Sam" (Delete: whoever
+// added it, or an admin)
+function SpotItem({ spot, name, canDelete, onDeleted }) {
+    const [deleting, setDeleting] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [problem, setProblem] = useState(null);
+    return (
+        <li className="Monitoring-history Monitoring-spot">
+            <p className="Monitoring-spotLine">
+                <IconEye size={16} aria-hidden="true" />
+                <span>
+                    <b>{longDate(spot.date)}</b> {name} seen by {spot.by}
+                    {spot.note && <span className="Monitoring-latest"> · {spot.note}</span>}
+                </span>
+                {canDelete && (
+                    <span className="Monitoring-confirmHost">
+                        <button
+                            type="button"
+                            className="Monitoring-spotDelete"
+                            aria-label={`Delete ${name}'s sighting`}
+                            title="Delete"
+                            onClick={() => setDeleting(true)}
+                        >
+                            <IconTrash size={16} aria-hidden="true" />
+                        </button>
+                        {deleting && (
+                            <ConfirmBubble
+                                question="Delete this sighting?"
+                                danger
+                                busy={busy}
+                                onConfirm={async () => {
+                                    setBusy(true);
+                                    try {
+                                        await deleteSpotSighting(spot.id);
+                                        onDeleted();
+                                    } catch (error) {
+                                        setProblem(error.message);
+                                        setBusy(false);
+                                        setDeleting(false);
+                                    }
+                                }}
+                                onCancel={() => setDeleting(false)}
+                            />
+                        )}
+                    </span>
+                )}
+            </p>
+            {problem && (
+                <p className="RecordsPage-problem" role="alert">
+                    {problem}
+                </p>
+            )}
+        </li>
+    );
+}
+
 // ---- The page ----
 
 // onTitle(title): the page's title while a session's open ("Skunkey
@@ -846,9 +1059,12 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     );
     const [chosen, setChosen] = useState(rememberedTroop);
     const phone = usePhone();
-    const troop = troops.find((t) => t.name === chosen) ?? troops[0] ?? null;
+    // (none chosen yet: Choose Troop)
+    const troop = troops.find((t) => t.name === chosen) ?? null;
     // null while loading; "failed"; or the sessions
     const [sessions, setSessions] = useState(null);
+    // Sightings between sessions (Mark Seen): the last year's
+    const [spots, setSpots] = useState([]);
     const [problem, setProblem] = useState(null);
     // What's showing: the list, a session ({ id }), or one just finished
     // ({ done: summary, troopId })
@@ -861,9 +1077,10 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
     const reload = useCallback(
         () =>
-            loadMonitoringSessions()
-                .then((list) => {
+            Promise.all([loadMonitoringSessions(), loadSpotSightings().catch(() => [])])
+                .then(([list, seen]) => {
                     setSessions(list);
+                    setSpots(seen);
                     setProblem(null);
                 })
                 .catch((error) => {
@@ -905,6 +1122,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                 troop={troopById[open.enclosureId]}
                 monkeys={monkeys}
                 sessions={sessions}
+                spots={spots}
                 staff={staff}
                 onLeave={() => setView(null)}
                 onCancelled={() => {
@@ -930,6 +1148,29 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
         .filter((s) => s.status === "finished" && s.finishedAt && Date.now() - new Date(s.finishedAt) < 86400000)
         .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)));
     const history = troop ? troopSessions(sessions, troop.id) : [];
+    // The troop's monkeys, and who's missing (not seen in their last
+    // session, nor since)
+    const members = troopMonkeys(monkeys, troop).all;
+    const missing = members
+        .map((m) => ({ monkey: m, record: sightingRecord(history, m.id, spots) }))
+        .filter((m) => m.record.missed > 0);
+    // The History: the sessions and the troop's sightings between them,
+    // newest first (a sighting before a session on the same day)
+    const memberIds = new Set(members.map((m) => m.id));
+    const nameOf = Object.fromEntries(members.map((m) => [m.id, m.name]));
+    const historyItems = [
+        ...history.map((s) => ({ kind: "session", date: s.date, at: s.finishedAt, item: s })),
+        ...spots.filter((s) => memberIds.has(s.monkeyId)).map((s) => ({ kind: "spot", date: s.date, at: s.at, item: s })),
+    ].sort(
+        (a, b) =>
+            b.date.localeCompare(a.date) || (a.kind === b.kind ? String(b.at).localeCompare(String(a.at)) : a.kind === "spot" ? -1 : 1)
+    );
+    const canDeleteSpot = (s) => canEnter && Boolean(staff?.isAdmin || s.loggedBy === staff?.userId);
+
+    async function markSeen(monkeyId, values) {
+        const spot = await addSpotSighting(monkeyId, values);
+        setSpots((list) => [spot, ...list]);
+    }
 
     // Cancel (In Progress): deleted, after asking
     async function cancelSession(id) {
@@ -1006,7 +1247,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
             <div className="SectionsPage-bar Monitoring-bar">
                 <label className="IntegrationPage-choose SectionsPage-troop">
-                    <span>Troop</span>
+                    <span>New Monitoring Session</span>
                     <select
                         value={troop?.name ?? ""}
                         onChange={(e) => {
@@ -1014,6 +1255,11 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                             rememberTroop(e.target.value);
                         }}
                     >
+                        {!troop && (
+                            <option value="" disabled>
+                                Choose Troop
+                            </option>
+                        )}
                         {troops.map((t) => (
                             <option key={t.id} value={t.name}>
                                 {/* (phones: D&D, H&B) */}
@@ -1074,25 +1320,54 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                 </p>
             )}
 
-            <h2 className="RecordsPage-subhead">History</h2>
-            {history.length ? (
+            {/* Missing: not seen in their last session (Mark Seen: editors and admins) */}
+            {troop && missing.length > 0 && (
+                <section className="Monitoring-missing" aria-label="Missing">
+                    <h2 className="RecordsPage-subhead">Missing</h2>
+                    <ul>
+                        {missing.map(({ monkey, record }) => (
+                            <MissingItem
+                                key={monkey.id}
+                                monkey={monkey}
+                                record={record}
+                                canMark={canEnter}
+                                onMark={(values) => markSeen(monkey.id, values)}
+                            />
+                        ))}
+                    </ul>
+                </section>
+            )}
+
+            {troop && <h2 className="RecordsPage-subhead">{fullName(troop.name)} Troop History</h2>}
+            {!troop ? null : historyItems.length ? (
                 <ul className="Monitoring-historyList" aria-label="History">
-                    {history.map((s) => (
-                        <HistoryItem
-                            key={s.id}
-                            session={s}
-                            troop={troop}
-                            monkeys={monkeys}
-                            sessions={sessions}
-                            staff={staff}
-                            canChange={canChange(s)}
-                            onChange={() => setView({ id: s.id })}
-                            onDeleted={reload}
-                        />
-                    ))}
+                    {historyItems.map(({ kind, item }) =>
+                        kind === "spot" ? (
+                            <SpotItem
+                                key={`spot-${item.id}`}
+                                spot={item}
+                                name={nameOf[item.monkeyId]}
+                                canDelete={canDeleteSpot(item)}
+                                onDeleted={() => setSpots((list) => list.filter((s) => s.id !== item.id))}
+                            />
+                        ) : (
+                            <HistoryItem
+                                key={item.id}
+                                session={item}
+                                troop={troop}
+                                monkeys={monkeys}
+                                sessions={sessions}
+                                spots={spots}
+                                staff={staff}
+                                canChange={canChange(item)}
+                                onChange={() => setView({ id: item.id })}
+                                onDeleted={reload}
+                            />
+                        )
+                    )}
                 </ul>
             ) : (
-                <p className="RecordsPage-none">No sessions for {troop ? `${fullName(troop.name)} Troop` : "this troop"} yet.</p>
+                <p className="RecordsPage-none">No sessions for {fullName(troop.name)} Troop yet.</p>
             )}
         </div>
     );

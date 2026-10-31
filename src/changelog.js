@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.21.1",
+        date: "2026-10-31",
+        changes: [
+            "Added Mark Seen for missing monkeys in Monitoring and the monkey pop-up",
+            "Improved Monitoring page with extra checks and notes",
+            "Improved Monitoring summary for WhatsApp",
+        ],
+    },
+    {
         version: "1.21.0",
         date: "2026-10-31",
         changes: ["New Injuries page in Records > Sections", "New Monitoring feature in Records > Sections"],

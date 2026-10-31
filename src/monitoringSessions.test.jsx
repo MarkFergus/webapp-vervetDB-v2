@@ -6,6 +6,8 @@ import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
 import {
     addInjuryUpdate,
+    addSpotSighting,
+    loadSpotSightings,
     deleteMonitoringSession,
     finishMonitoringSession,
     loadConditions,
@@ -29,6 +31,9 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadCurrentInjuries: vi.fn(),
     injuryUpdatesAvailable: () => true,
     addInjuryUpdate: vi.fn(),
+    loadSpotSightings: vi.fn(),
+    addSpotSighting: vi.fn(),
+    deleteSpotSighting: vi.fn(),
 }));
 
 const place = (id, name, type, parentId = null) => ({ id, name, type, parentId, sortOrder: id });
@@ -43,7 +48,7 @@ const MONKEYS = [
 const EDITOR = { canSee: true, canAdd: true, userId: "u-1", isAdmin: false };
 
 const finished = (id, date, seen, extra = {}) => ({
-    id, enclosureId: 1, date, status: "finished", foodUsed: null, fence: "good", waters: "ok", food: "good", notes: "",
+    id, enclosureId: 1, date, status: "finished", foodUsed: null, fence: "good", waters: "good", food: "good", notes: "",
     startedBy: "u-9", startedByName: "Jo", startedAt: `${date}T08:00:00Z`, finishedAt: `${date}T10:00:00Z`,
     sightings: Object.entries(seen).map(([monkeyId, s]) => ({ monkeyId: Number(monkeyId), seen: s })), ...extra,
 });
@@ -70,6 +75,7 @@ beforeEach(() => {
     );
     loadMonitoringFor.mockImplementation(async (ids) => (ids.includes(4) ? { 4: { conditionCheck: true, notes: "Check her weight" } } : {}));
     loadSessionNotes.mockResolvedValue([]);
+    loadSpotSightings.mockResolvedValue([]);
     loadCurrentInjuries.mockImplementation(async (ids) =>
         ids.includes(3)
             ? [{ id: 5, monkeyId: 3, date: "2026-09-01", description: "Eye infection", loggedBy: "u-9", healedOn: null, updates: [] }]
@@ -78,6 +84,19 @@ beforeEach(() => {
 });
 
 afterAll(() => localStorage.removeItem("vervetdb-sections-troop"));
+
+test("no troop chosen yet: Choose Troop, and no History until there is", async () => {
+    const user = userEvent.setup();
+    localStorage.removeItem("vervetdb-sections-troop");
+    open();
+    const picker = await screen.findByLabelText("New Monitoring Session");
+    expect(picker).toHaveDisplayValue("Choose Troop");
+    expect(screen.queryByRole("button", { name: "Start Session" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Troop History/ })).toBeNull();
+    await user.selectOptions(picker, "Goliath");
+    expect(screen.getByRole("heading", { name: "Goliath Troop History" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start Session" })).toBeInTheDocument();
+});
 
 test("Sections: Monitoring, then Injuries", () => {
     render(<RecordsPage route="records/sections" monkeys={MONKEYS} enclosures={ENCLOSURES} staff={EDITOR} />);
@@ -95,6 +114,8 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     });
     open();
     // The History: newest first, compact, with ⚠ for a problem
+    expect(await screen.findByLabelText("New Monitoring Session")).toHaveValue("Skunkey");
+    expect(screen.getByRole("heading", { name: "Skunkey Troop History" })).toBeInTheDocument();
     const history = await screen.findByRole("list", { name: "History" });
     expect(within(history).getAllByRole("listitem")).toHaveLength(3);
     expect(within(history).getAllByRole("button")[0]).toHaveTextContent("26th Oct 2026");
@@ -119,8 +140,15 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     await user.click(screen.getByRole("button", { name: "Finish Session" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Please choose the Fence, Waters and Food checks.");
     await user.click(within(screen.getByRole("group", { name: "Fence" })).getByRole("button", { name: "Good" }));
-    await user.click(within(screen.getByRole("group", { name: "Waters" })).getByRole("button", { name: "OK" }));
+    await user.click(within(screen.getByRole("group", { name: "Waters" })).getByRole("button", { name: "Good" }));
     await user.click(within(screen.getByRole("group", { name: "Food" })).getByRole("button", { name: "Good" }));
+    // (the checks together in a box, each with a short note; the Introcages and Perimeter ticks)
+    const checks = screen.getByRole("region", { name: "Checks" });
+    expect(within(screen.getByRole("group", { name: "Waters" })).getAllByRole("button").map((b) => b.textContent)).toEqual(["Good", "Low", "Bad"]);
+    expect(within(screen.getByRole("group", { name: "Food" })).getAllByRole("button").map((b) => b.textContent)).toEqual(["Good", "Low", "Too Much"]);
+    expect(within(checks).getByLabelText("Fence note")).toHaveAttribute("maxLength", "50");
+    await user.type(within(checks).getByLabelText("Fence note"), "Gate sticking");
+    await user.click(within(checks).getByLabelText("Perimeter Check"));
     // (food used: optional, one only, tap again to take it off)
     const used = screen.getByRole("group", { name: "Food (optional)" });
     await user.click(within(used).getByRole("button", { name: "Corn" }));
@@ -153,13 +181,16 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(await within(paradise).findByText("eye almost back to normal")).toBeInTheDocument();
 
     await user.type(screen.getByLabelText("General Notes"), "Raining");
-    finishMonitoringSession.mockImplementation(async (id, values) => ({
-        ...finished(id, values.date, Object.fromEntries([...values.seen.map((m) => [m, true]), ...values.notSeen.map((m) => [m, false])])),
-        fence: values.fence, waters: values.waters, food: values.food, notes: values.notes, foodUsed: values.foodUsed,
+    await user.type(screen.getByLabelText("Maintenance"), "Branches cut");
+    finishMonitoringSession.mockImplementation(async (id, { seen, notSeen, ...values }) => ({
+        ...finished(id, values.date, Object.fromEntries([...seen.map((m) => [m, true]), ...notSeen.map((m) => [m, false])])),
+        ...values,
     }));
     await user.click(screen.getByRole("button", { name: "Finish Session" }));
     expect(finishMonitoringSession).toHaveBeenCalledWith(20, {
-        date: today(), foodUsed: "seeds", fence: "good", waters: "ok", food: "good", notes: "Raining", seen: [3, 4], notSeen: [2, 1],
+        date: today(), foodUsed: "seeds", fence: "good", fenceNote: "Gate sticking", waters: "good", watersNote: "", food: "good",
+        foodNote: "", introcagesChecked: false, perimeterChecked: true, notes: "Raining", maintenance: "Branches cut",
+        seen: [3, 4], notSeen: [2, 1],
     });
 
     // The alerts, then the summary to copy
@@ -174,7 +205,9 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(text).toContain("⚠️ Malawi not seen for 3 sessions (since 12.10)");
     expect(text).toContain("🐒 Paradise eye almost back to normal");
     expect(text).toMatch(/^📋 Skunkey Monitoring \d\d\.\d\d\n_Raining_\n/);
-    expect(text).toMatch(/🥗 good\n💧 good\n⚡️ good$/);
+    // (Pip: a priority check, seen)
+    expect(text).toContain("Daisy Mae (seen 26.10) and Malawi (seen 12.10)\nPip seen\n");
+    expect(text).toMatch(/🥗 good\n💧 good\n⚡️ good \(Gate sticking\)\n\n🔧 Branches cut$/);
     await user.click(screen.getByRole("button", { name: "Copy for WhatsApp" }));
     expect(writeText).toHaveBeenCalledWith(text);
     expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
@@ -193,7 +226,7 @@ test("the same troop twice in a day: asks first", async () => {
     finishMonitoringSession.mockResolvedValue(finished(30, today(), { 1: true, 2: true, 3: true, 4: true }));
     open();
     await user.click(await screen.findByRole("button", { name: "Continue Session" }));
-    for (const [group, word] of [["Fence", "Good"], ["Waters", "OK"], ["Food", "Good"]]) {
+    for (const [group, word] of [["Fence", "Good"], ["Waters", "Good"], ["Food", "Good"]]) {
         await user.click(within(screen.getByRole("group", { name: group })).getByRole("button", { name: word }));
     }
     await user.click(screen.getByRole("button", { name: "Tick All Seen" }));
@@ -215,7 +248,7 @@ test("no connection at Finish: nothing lost, kept on the phone until it's saved"
     finishMonitoringSession.mockRejectedValueOnce(Object.assign(new Error("Couldn't save right now."), { offline: true }));
     const { unmount } = open();
     await user.click(await screen.findByRole("button", { name: "Continue Session" }));
-    for (const [group, word] of [["Fence", "Low"], ["Waters", "OK"], ["Food", "Good"]]) {
+    for (const [group, word] of [["Fence", "Low"], ["Waters", "Good"], ["Food", "Good"]]) {
         await user.click(within(screen.getByRole("group", { name: group })).getByRole("button", { name: word }));
     }
     await user.click(screen.getByRole("checkbox", { name: /Malawi/ }));
@@ -304,7 +337,7 @@ test("phones: D&D in the troop picker, and Continue / Cancel without \"Session\"
         );
         expect(await screen.findByRole("button", { name: "Continue" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
-        expect(within(screen.getByLabelText("Troop")).getByRole("option", { name: /^D&D/ })).toBeInTheDocument();
+        expect(within(screen.getByLabelText("New Monitoring Session")).getByRole("option", { name: /^D&D/ })).toBeInTheDocument();
     } finally {
         window.matchMedia = original;
     }
@@ -329,4 +362,41 @@ test("the +: no Update for a monkey without an injury; a condition saved for the
     await user.type(within(rox).getByLabelText("Condition"), "Scruffy coat");
     await user.click(within(rox).getByRole("button", { name: "Confirm" }));
     expect(addCondition).toHaveBeenCalledWith(2, { date: today(), description: "Scruffy coat", sessionId: 30 });
+});
+
+test("Missing: Mark Seen ticks a monkey off between sessions; it shows in the History and the next briefing", async () => {
+    const user = userEvent.setup();
+    addSpotSighting.mockImplementation(async (monkeyId, { date, note }) => ({
+        id: 7, monkeyId, date, note, loggedBy: "u-1", by: "Sam", at: new Date().toISOString(),
+    }));
+    startMonitoringSession.mockResolvedValue({
+        ...finished(21, today(), {}), status: "in_progress", finishedAt: null, startedBy: "u-1", startedByName: "Sam",
+    });
+    open();
+    // (Malawi: missed the last 2 sessions)
+    const missing = await screen.findByRole("region", { name: "Missing" });
+    expect(within(missing).getByText(/Not seen in the last 2 sessions · last seen 12th Oct 2026/)).toBeInTheDocument();
+    await user.click(within(missing).getByRole("button", { name: "Mark Malawi Seen" }));
+    const form = within(missing).getByRole("group", { name: "Mark Malawi Seen" });
+    expect(within(form).getByLabelText("Seen On")).toHaveValue(today());
+    await user.type(within(form).getByLabelText("Note (optional)"), "By the gate");
+    await user.click(within(form).getByRole("button", { name: "Confirm" }));
+    expect(addSpotSighting).toHaveBeenCalledWith(1, { date: today(), note: "By the gate" });
+    // (no longer missing: the box goes; the History has the sighting, newest first)
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Missing" })).toBeNull());
+    const history = screen.getByRole("list", { name: "History" });
+    expect(within(history).getAllByRole("listitem")[0]).toHaveTextContent(/Malawi seen by Sam · By the gate/);
+    expect(within(history).getByRole("button", { name: "Delete Malawi's sighting" })).toBeInTheDocument();
+    // The next briefing: seen since, and not Must See
+    await user.click(screen.getByRole("button", { name: "Start Session" }));
+    const briefing = await screen.findByRole("region", { name: "Briefing" });
+    expect(within(briefing).getByText("Seen Since Last Session")).toBeInTheDocument();
+    expect(within(briefing).queryByText("Must See")).toBeNull();
+});
+
+test("Missing: only editors and admins can Mark Seen", async () => {
+    open({ canSee: true, canAdd: false, userId: "u-2", isAdmin: false });
+    const missing = await screen.findByRole("region", { name: "Missing" });
+    expect(within(missing).getByText("Malawi")).toBeInTheDocument();
+    expect(within(missing).queryByRole("button", { name: /Mark .* Seen/ })).toBeNull();
 });

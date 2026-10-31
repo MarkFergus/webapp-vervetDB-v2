@@ -1,6 +1,7 @@
 // Monitoring sessions' rules: last seen, missed in a row, overdue, the
 // seen line, the WhatsApp summary and the alerts
 import {
+    prioritySeenLine,
     isOverdue,
     latestSessionDays,
     seenLine,
@@ -33,10 +34,24 @@ test("a troop's finished sessions, newest first", () => {
 
 test("last seen, and sessions missed in a row (sessions it wasn't on don't count)", () => {
     const past = troopSessions(SESSIONS, 1);
-    expect(sightingRecord(past, 1)).toEqual({ lastSeen: "2026-10-26", missed: 0 });
-    expect(sightingRecord(past, 2)).toEqual({ lastSeen: "2026-10-12", missed: 2 });
-    expect(sightingRecord(past, 3)).toEqual({ lastSeen: null, missed: 1 });
-    expect(sightingRecord(past, 9)).toEqual({ lastSeen: null, missed: 0 });
+    expect(sightingRecord(past, 1)).toEqual({ lastSeen: "2026-10-26", missed: 0, spot: null });
+    expect(sightingRecord(past, 2)).toEqual({ lastSeen: "2026-10-12", missed: 2, spot: null });
+    expect(sightingRecord(past, 3)).toEqual({ lastSeen: null, missed: 1, spot: null });
+    expect(sightingRecord(past, 9)).toEqual({ lastSeen: null, missed: 0, spot: null });
+});
+
+test("Mark Seen: a sighting between sessions counts as seen; only the sessions after it count as missed", () => {
+    const past = troopSessions(SESSIONS, 1);
+    const spot = (date, extra = {}) => ({ id: 1, monkeyId: 2, date, by: "Sam", note: "", at: `${date}T09:00:00Z`, ...extra });
+    // (missed 19th and 26th; seen on the 20th: only the 26th counts)
+    expect(sightingRecord(past, 2, [spot("2026-10-20")])).toEqual({ lastSeen: "2026-10-20", missed: 1, spot: spot("2026-10-20") });
+    // (seen the same day as the last session, after it: not missing)
+    expect(sightingRecord(past, 2, [spot("2026-10-26")])).toMatchObject({ lastSeen: "2026-10-26", missed: 0 });
+    // (the latest of them counts; one before the last session it was seen in: no change)
+    expect(sightingRecord(past, 2, [spot("2026-10-20"), spot("2026-10-27", { id: 2 })]).spot.id).toBe(2);
+    expect(sightingRecord(past, 2, [spot("2026-10-01")])).toEqual({ lastSeen: "2026-10-12", missed: 2, spot: null });
+    // (another monkey's: no change)
+    expect(sightingRecord(past, 1, [spot("2026-10-27")]).spot).toBeNull();
 });
 
 test("overdue: no session yet, or the last over a week ago", () => {
@@ -48,7 +63,7 @@ test("overdue: no session yet, or the last over a week ago", () => {
 });
 
 test("the seen line", () => {
-    expect(seenLine([], 10)).toBe("All seen");
+    expect(seenLine([], 10)).toBe("✅ All seen");
     expect(seenLine([{ name: "Malawi", lastSeen: "2026-10-26" }, { name: "Daisy Mae", lastSeen: "2026-10-26" }], 10)).toBe(
         "All seen except Malawi and Daisy Mae (both seen 26.10)"
     );
@@ -72,8 +87,9 @@ test("the WhatsApp summary, as staff post it", () => {
                 { name: "Paradise", text: "eye almost back to normal" },
                 { name: "Rox", text: "heard coughing again" },
             ],
+            prioritySeen: ["Victoria", "Hocus"],
             fence: "good",
-            waters: "ok",
+            waters: "good",
             food: "good",
         })
     ).toBe(
@@ -81,13 +97,41 @@ test("the WhatsApp summary, as staff post it", () => {
             "📋 Skunkey Monitoring 30.10",
             "",
             "All seen except Malawi and Daisy Mae (both seen 26.10)",
+            "Victoria and Hocus both seen",
             "",
             "🐒 Paradise eye almost back to normal",
             "🐒 Rox heard coughing again",
             "",
+            "🥗💧⚡️ all good",
+        ].join("\n")
+    );
+    // Everyone seen: ✅ (and the priority ones still named, to search the chat for); a note on a check: each on its own line; maintenance last
+    expect(
+        whatsappText({
+            troop: "Skunkey",
+            date: "2026-10-30",
+            missing: [],
+            total: 30,
+            prioritySeen: ["Victoria"],
+            fence: "good",
+            waters: "good",
+            food: "good",
+            checkNotes: { waters: " topped up " },
+            maintenance: "Branches cut\n\nFence break fixed ",
+        })
+    ).toBe(
+        [
+            "📋 Skunkey Monitoring 30.10",
+            "",
+            "✅ All seen",
+            "Victoria seen",
+            "",
             "🥗 good",
-            "💧 good",
+            "💧 good (topped up)",
             "⚡️ good",
+            "",
+            "🔧 Branches cut",
+            "🔧 Fence break fixed",
         ].join("\n")
     );
     // Must See, problems and general notes; full troop names
@@ -98,9 +142,11 @@ test("the WhatsApp summary, as staff post it", () => {
             missing: [{ name: "Malawi", lastSeen: "2026-10-19" }],
             total: 30,
             mustSee: [{ name: "Malawi", missed: 2, lastSeen: "2026-10-19" }],
+            prioritySeen: ["Victoria"],
             fence: "not_working",
-            waters: "not_ok",
-            food: "low",
+            waters: "bad",
+            food: "too_much",
+            checkNotes: { fence: "north corner" },
             generalNotes: " Raining, low sightings \n",
         })
     ).toBe(
@@ -109,11 +155,12 @@ test("the WhatsApp summary, as staff post it", () => {
             "_Raining, low sightings_",
             "",
             "All seen except Malawi (seen 19.10)",
+            "Victoria seen",
             "⚠️ Malawi not seen for 2 sessions (since 19.10)",
             "",
-            "🥗 low",
-            "💧 not ok",
-            "⚡️ not working",
+            "🥗 too much",
+            "💧 bad",
+            "⚡️ not working (north corner)",
         ].join("\n")
     );
 });
@@ -124,15 +171,23 @@ test("the alerts after a session", () => {
             mustSee: [{ name: "Hermes", missed: 2, lastSeen: "2026-10-14" }, { name: "Pip", missed: 3, lastSeen: null }],
             staleInjuries: [{ name: "Jacob", since: "2026-10-10" }],
             fence: "low",
-            waters: "ok",
-            food: "high",
+            waters: "good",
+            food: "too_much",
+            checkNotes: { fence: "Top wire sagging" },
         })
     ).toEqual([
         { level: "danger", text: "Hermes has not been seen since 14/10, missing on the last 2 sessions" },
         { level: "danger", text: "Pip has not been seen in the last 3 sessions" },
         { level: "warn", text: "Jacob's injury has not been updated since 10/10" },
-        { level: "danger", check: true, text: "Fence: Low" },
-        { level: "danger", check: true, text: "Food: High" },
+        { level: "danger", check: true, text: "Fence: Low (Top wire sagging)" },
+        { level: "danger", check: true, text: "Food: Too Much" },
     ]);
-    expect(sessionAlerts({ fence: "good", waters: "ok", food: "good" })).toEqual([]);
+    expect(sessionAlerts({ fence: "good", waters: "good", food: "good" })).toEqual([]);
+});
+
+test("the priority monkeys seen", () => {
+    expect(prioritySeenLine([])).toBe("");
+    expect(prioritySeenLine(["Victoria"])).toBe("Victoria seen");
+    expect(prioritySeenLine(["Victoria", "Hocus"])).toBe("Victoria and Hocus both seen");
+    expect(prioritySeenLine(["Victoria", "Hocus", "Rox"])).toBe("Victoria, Hocus and Rox all seen");
 });
