@@ -98,10 +98,15 @@ test("no troop chosen yet: Choose Troop, and no History until there is", async (
     expect(screen.getByRole("button", { name: "Start Session" })).toBeInTheDocument();
 });
 
-test("Sections: Monitoring, then Injuries", () => {
+test("Sections: Monitoring, Injuries, then Deworming", () => {
     render(<RecordsPage route="records/sections" monkeys={MONKEYS} enclosures={ENCLOSURES} staff={EDITOR} />);
     const links = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
-    expect(links).toEqual(["#records", "#records/sections/monitoring", "#records/sections/injuries"]);
+    expect(links).toEqual([
+        "#records",
+        "#records/sections/monitoring",
+        "#records/sections/injuries",
+        "#records/sections/deworming",
+    ]);
 });
 
 test("a whole session: Start (the briefing), the checks and checklist, Finish, then the alerts and the WhatsApp summary", async () => {

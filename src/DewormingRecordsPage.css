@@ -1,0 +1,255 @@
+/* Records → Sections → Deworming (DewormingRecordsPage.jsx): the sheets'
+   list, Prepare Sheet's form, and one sheet */
+
+/* (room under the page's title) */
+.Deworming,
+.Deworming-prepare,
+.Deworming-sheet {
+    margin-top: 20px;
+}
+
+.Modal-edit.Deworming-new {
+    margin-bottom: 16px;
+}
+
+.Deworming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Deworming-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    padding: 12px 14px;
+    font-family: inherit;
+    text-align: left;
+    color: var(--text);
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.Deworming-item:hover {
+    background-color: var(--surface-2);
+}
+
+.Deworming-item b {
+    font-size: 15px;
+    color: var(--text-strong);
+}
+
+.Deworming-item span,
+.Deworming-meta,
+.Deworming-count,
+.Deworming-about {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+/* ---- Prepare Sheet ---- */
+
+.Deworming-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.Deworming-instructions {
+    margin-top: 12px;
+}
+
+/* Set All To: a dewormer and dose for every ticked monkey */
+.Deworming-setAll {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 10px 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Deworming-setAllLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Deworming-setAll select,
+.Deworming-dose select,
+.Deworming-dose input {
+    height: 36px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-dose input {
+    width: 130px;
+}
+
+.Deworming-count {
+    margin: 14px 0 6px;
+}
+
+.Deworming-lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+
+.Deworming-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.Deworming-line:not(.is-on) {
+    opacity: 0.6;
+}
+
+.Deworming-who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.Deworming-who input {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--green);
+}
+
+.Deworming-who b {
+    display: block;
+    font-size: 15px;
+    color: var(--text-strong);
+}
+
+.Deworming-dose {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.Deworming-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* Save's check: doses that aren't the usual one */
+.Deworming-unusual {
+    margin-top: 16px;
+    padding: 4px 14px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--amber);
+    border-radius: 12px;
+}
+
+.Deworming-unusual p {
+    margin: 10px 0 6px;
+    font-size: 14px;
+}
+
+.Deworming-unusual ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Deworming-unusual .Deworming-actions {
+    margin-top: 12px;
+}
+
+/* ---- One sheet ---- */
+
+.Deworming-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* (the sheet's title: full strength, not the dimmer subheading) */
+.RecordsPage-subhead.Deworming-sheetTitle {
+    color: var(--text-strong);
+}
+
+.Deworming-meta {
+    margin: 2px 0 8px;
+}
+
+.Deworming-note {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--text-2);
+    background-color: var(--surface-1);
+    border-left: 3px solid var(--amber);
+    border-radius: 6px;
+}
+
+.Deworming-table {
+    width: 100%;
+    font-size: 14px;
+    border-collapse: collapse;
+}
+
+.Deworming-table th,
+.Deworming-table td {
+    padding: 7px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+}
+
+.Deworming-table thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-3);
+}
+
+.Deworming-table tbody th {
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+/* Delete's question, above its button */
+.Deworming-confirmHost {
+    position: relative;
+}

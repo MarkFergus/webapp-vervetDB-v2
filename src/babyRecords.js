@@ -47,7 +47,8 @@ export const RECORD_KINDS = {
         title: "Current Integrations",
         hint: "Who's being integrated, and starting a new one.",
     },
-    // Sections' (their own pages: MonitoringRecordsPage.jsx, SectionsRecordsPage.jsx)
+    // Sections' (their own pages: MonitoringRecordsPage.jsx, SectionsRecordsPage.jsx,
+    // DewormingRecordsPage.jsx)
     monitoring: {
         id: "monitoring",
         title: "Monitoring",
@@ -57,6 +58,11 @@ export const RECORD_KINDS = {
         id: "injuries",
         title: "Injuries",
         hint: "View each troop's current injuries, and those healed in the last 6 months.",
+    },
+    deworming: {
+        id: "deworming",
+        title: "Deworming",
+        hint: "Deworming sheets: who's dewormed with what, ready to print and complete.",
     },
 };
 
@@ -68,7 +74,7 @@ export const TEAMS = [
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
     { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
-    { id: "sections", name: "Sections", kinds: ["monitoring", "injuries"] },
+    { id: "sections", name: "Sections", kinds: ["monitoring", "injuries", "deworming"] },
 ];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"

@@ -11,6 +11,7 @@ import {
     IconFriends,
     IconHeartHandshake,
     IconMinus,
+    IconPill,
     IconPlus,
     IconReportMedical,
     IconScale,
@@ -39,6 +40,7 @@ import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
 import IntegrationRecordsPage from "./IntegrationRecordsPage";
 import MaintenanceRecordsPage from "./MaintenanceRecordsPage";
 import SectionsRecordsPage from "./SectionsRecordsPage";
+import DewormingRecordsPage from "./DewormingRecordsPage";
 import MonitoringRecordsPage from "./MonitoringRecordsPage";
 import "./RecordsPage.css";
 
@@ -51,7 +53,8 @@ import "./RecordsPage.css";
 // anyone else on the staff can view. Maintenance: its own page (Enter /
 // View, MaintenanceRecordsPage.jsx; entering: anyone with a role, canLog).
 // Sections: Monitoring, each troop's sessions (MonitoringRecordsPage.jsx),
-// and Injuries, each troop's current and past ones (SectionsRecordsPage.jsx);
+// Injuries, each troop's current and past ones (SectionsRecordsPage.jsx), and
+// Deworming, the deworming sheets (DewormingRecordsPage.jsx);
 // entering: editors and admins. Meds & Sickbay: coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
@@ -69,6 +72,7 @@ const KIND_ICONS = {
     current: IconHeartHandshake,
     injuries: IconReportMedical,
     monitoring: IconBinoculars,
+    deworming: IconPill,
 };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
@@ -755,6 +759,8 @@ function RecordsPage({
                 ) : team.id === "sections" ? (
                     kind.id === "monitoring" ? (
                         <MonitoringRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
+                    ) : kind.id === "deworming" ? (
+                        <DewormingRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     ) : (
                         <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     )

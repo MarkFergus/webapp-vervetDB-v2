@@ -1620,3 +1620,74 @@ export async function saveBabyRecords(kindId, entries, replace) {
     }
     return data;
 }
+
+// ---- Deworming (supabase/deworming.sql) ----
+
+// A database sheet → { id, groupKey, groupName, session, startDate,
+// instructions, status, preparedByName, lines: [{ monkeyId, medication,
+// dose, days }] }
+const toAppSheet = (row) => ({
+    id: row.id,
+    groupKey: row.group_key,
+    groupName: row.group_name,
+    session: row.session,
+    startDate: row.start_date,
+    instructions: row.instructions ?? "",
+    status: row.status,
+    preparedByName: row.prepared_by_name ?? null,
+    lines: (row.deworming_lines ?? []).map((l) => ({
+        monkeyId: l.monkey_id,
+        medication: l.medication,
+        dose: l.dose,
+        days: l.days,
+    })),
+});
+
+// Every deworming sheet, newest first. Throws a message to show.
+export async function loadDewormingSheets() {
+    const { data, error } = await supabase
+        .from("deworming_sheets")
+        .select("id, group_key, group_name, session, start_date, instructions, status, prepared_by_name, deworming_lines (monkey_id, medication, dose, days)")
+        .order("start_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) {
+        console.error("Loading deworming sheets failed:", error);
+        if (isOlderDatabase(error)) throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
+        throw new Error("Couldn't load the deworming sheets. Please check your connection and try again.");
+    }
+    return data.map(toAppSheet);
+}
+
+// Prepare Sheet's Save (admins): a new sheet (no id) or a change to one,
+// with its monkeys → its id. Throws a message to show.
+export async function saveDewormingSheet(sheet) {
+    const { data, error } = await supabase.rpc("save_deworming_sheet", {
+        sheet: {
+            id: sheet.id ?? null,
+            group_key: sheet.groupKey,
+            group_name: sheet.groupName,
+            session: sheet.session,
+            start_date: sheet.startDate,
+            instructions: sheet.instructions,
+            lines: sheet.lines.map((l) => ({ monkey_id: l.monkeyId, medication: l.medication, dose: l.dose, days: l.days })),
+        },
+    });
+    if (error) {
+        console.error("Saving a deworming sheet failed:", error);
+        if (error.code === "PGRST202") throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
+        if (error.code === "42501") throw new Error("Only admins can prepare deworming sheets. Are you still signed in as an admin?");
+        if (error.code === "P0001") throw new Error(error.message);
+        throw saveProblem(error);
+    }
+    return data;
+}
+
+// Deletes a sheet (admins). Throws a message to show.
+export async function deleteDewormingSheet(id) {
+    const { data, error } = await supabase.from("deworming_sheets").delete().eq("id", id).select("id");
+    if (error) {
+        console.error("Deleting a deworming sheet failed:", error);
+        throw offlineError();
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete deworming sheets.");
+}

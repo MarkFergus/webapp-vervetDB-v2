@@ -1,7 +1,7 @@
 // The PDFs' fonts: plain Open Sans for the working sheets (the AM Plates
 // List, Troop Monitoring Sheets: no frills), and Caladea, a serif drawn to
 // Cambria's measurements (Cambria itself can't be bundled in a website),
-// for the Profile Book and Introcage Signs
+// for the Profile Book and Introcage Signs (and the Deworming Sheet's title)
 import { Font } from "@react-pdf/renderer";
 import { FORM_FONT, REPORT_FONT } from "./pdfTextWidth";
 import OpenSansRegular from "./fonts/OpenSans-Regular.ttf";
