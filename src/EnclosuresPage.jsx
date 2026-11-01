@@ -41,6 +41,7 @@ import {
     TYPE_NAMES,
     establishedText,
     introcageMonkeys,
+    showsInjuredRescue,
     showsNewArrival,
     introcageWord,
     introcagesOf,
@@ -534,6 +535,7 @@ function MonkeyGroup({ title, monkeys, onOpen, empty, ...fold }) {
                             inSickbay={m.inSickbay}
                             stayingIn={staying(m)}
                             newArrival={showsNewArrival(m)}
+                            injuredRescue={showsInjuredRescue(m)}
                             chip={m.chip}
                             img={m.img[0]}
                             onClick={() => onOpen(m, monkeys)}

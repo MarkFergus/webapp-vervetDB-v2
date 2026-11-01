@@ -39,11 +39,16 @@ export const SECTIONS = {
     },
     medical: {
         title: "Medical",
-        // (injuries: New Injury, in the pop-up's Quick Actions)
-        categories: { food_monitoring: "Food Monitoring", observation: "Observation" },
-        older: { injury: "Injury", medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
+        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", observation: "Observation" },
+        older: { medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
     },
 };
+
+// Saved in their own tables, not as a record: an Injury (injuries.sql:
+// Current Injuries, with updates and Healed?) and a Condition
+// (monitoring-sessions.sql: Latest Condition). Offered, and changed here,
+// only when the page says how (RecordList's elsewhere: admins)
+const SAVED_ELSEWHERE = { injury: 500, condition: 500 };
 
 // A Movement record's words, as the database writes them for a move:
 // "Moved from Goliath A to Goliath Troop: integrated" (the reason optional)
@@ -160,8 +165,9 @@ export function useWeights(monkeyId, enabled) {
 }
 
 // A monkey's conditions (Records → Sections → Monitoring), newest first: none
-// before monitoring-sessions.sql has run, or if they can't be loaded
-export function useConditions(monkeyId, enabled) {
+// before monitoring-sessions.sql has run, or if they can't be loaded.
+// version: a new number loads them again (one's been added)
+export function useConditions(monkeyId, enabled, version = 0) {
     const [conditions, setConditions] = useState([]);
     useEffect(() => {
         if (!enabled || monkeyId == null) {
@@ -175,7 +181,7 @@ export function useConditions(monkeyId, enabled) {
         return () => {
             cancelled = true;
         };
-    }, [monkeyId, enabled]);
+    }, [monkeyId, enabled, version]);
     return conditions;
 }
 
@@ -217,6 +223,7 @@ export function otherRows(section, { injuries, monkey = null, weights = [], cond
         date: c.date,
         category: "condition",
         details: c.description,
+        condition: c,
         by: `Condition by ${c.loggedByName ?? "Staff"}`,
     }));
     // (an injury's updates stay with it: InjuryFollowUps)
@@ -387,8 +394,11 @@ function startValues(initial, places) {
 // pop-up's Quick Actions forms). A Movement: From and To, then Reason
 // (optional), as Edit asks for a new home location.
 //   initial: { date, category, details }; places: movementPlaces;
-//   onSave(values) async (throws a message to show); onCancel()
-function RecordForm({ section, initial, places = [], onSave, onCancel, scrollIntoView = false }) {
+//   elsewhere: the categories saved in their own tables that can be added
+//   (a new record only); locked: the category can't change (an injury or
+//   a condition, edited); onSave(values) async (throws a message to show);
+//   onCancel()
+function RecordForm({ section, initial, places = [], elsewhere = [], locked = false, onSave, onCancel, scrollIntoView = false }) {
     const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(() => startValues(initial, places));
     const [busy, setBusy] = useState(false);
@@ -397,12 +407,19 @@ function RecordForm({ section, initial, places = [], onSave, onCancel, scrollInt
     const { categories, older } = SECTIONS[section];
     // (a record saved with a category no longer offered keeps it; a Status
     // record stays one)
-    const fixed = initial.category && !categories[initial.category] && !older[initial.category];
+    const fixed = locked || (initial.category && !categories[initial.category] && !older[initial.category]);
+    // (Injury and Condition: only when they can be saved; a record already
+    // saved as one keeps it)
+    const offered = Object.fromEntries(
+        Object.entries(categories).filter(([key]) => !(key in SAVED_ELSEWHERE) || elsewhere.includes(key) || key === initial.category)
+    );
     const choices = initial.category && !categories[initial.category]
-        ? { ...categories, [initial.category]: older[initial.category] ?? OTHER_CATEGORIES[initial.category] ?? initial.category }
-        : categories;
+        ? { ...offered, [initial.category]: older[initial.category] ?? OTHER_CATEGORIES[initial.category] ?? initial.category }
+        : offered;
     const movement = values.category === "movement" && !values.plain;
     const text = movement ? values.reason : values.details;
+    // (an injury's or a condition's description: 500 at most, as their tables)
+    const max = ((locked || elsewhere.includes(values.category)) && SAVED_ELSEWHERE[values.category]) || MAX_RECORD;
     const placeOf = (pick, other) => (pick === OTHER ? other.trim() : pick);
 
     async function confirm() {
@@ -418,6 +435,8 @@ function RecordForm({ section, initial, places = [], onSave, onCancel, scrollInt
             if (details.length > MAX_RECORD) return setProblem(`Please shorten the reason (${MAX_RECORD} characters in all).`);
         } else if (!details) {
             return setProblem("Please write the details.");
+        } else if (details.length > max) {
+            return setProblem(`Please shorten the details (${max} characters at most).`);
         }
         setBusy(true);
         setProblem(null);
@@ -472,10 +491,10 @@ function RecordForm({ section, initial, places = [], onSave, onCancel, scrollInt
             )}
             <label>
                 <span>{movement ? "Reason (optional)" : "Details"}</span>
-                <textarea rows={4} value={text} maxLength={MAX_RECORD} onChange={set(movement ? "reason" : "details")} />
+                <textarea rows={4} value={text} maxLength={max} onChange={set(movement ? "reason" : "details")} />
             </label>
             <span className="Integration-count">
-                {text.length} / {MAX_RECORD}
+                {text.length} / {max}
             </span>
             {problem && (
                 <p className="Integration-problem" role="alert">
@@ -497,10 +516,12 @@ function RecordForm({ section, initial, places = [], onSave, onCancel, scrollInt
 // One section's list: "+ New … Record" at the top, then the records in
 // columns (phones: date and category on a line, the details under them)
 //   others: the records kept elsewhere (otherRows); places: Movement's From
-//   and To (movementPlaces)
-export function RecordList({ section, records, others, places = [] }) {
+//   and To (movementPlaces); elsewhere: { injury, condition }: each
+//   { add(values), update(id, values), remove(id) } in its own table
+//   (values: { date, description }; async, throwing a message to show)
+export function RecordList({ section, records, others, places = [], elsewhere = {} }) {
     const [adding, setAdding] = useState(false);
-    const [editing, setEditing] = useState(null); // a record id
+    const [editing, setEditing] = useState(null); // a row's key
     const { title, categories, older } = SECTIONS[section];
 
     const own = records.entries
@@ -516,9 +537,12 @@ export function RecordList({ section, records, others, places = [] }) {
                     <RecordForm
                         section={section}
                         places={places}
+                        elsewhere={Object.keys(elsewhere)}
                         initial={{ date: todayText(), category: "", details: "" }}
                         onSave={async (values) => {
-                            await records.add({ section, ...values });
+                            const kept = elsewhere[values.category];
+                            if (kept) await kept.add({ date: values.date, description: values.details });
+                            else await records.add({ section, ...values });
                             setAdding(false);
                         }}
                         onCancel={() => setAdding(false)}
@@ -536,16 +560,21 @@ export function RecordList({ section, records, others, places = [] }) {
                         <span role="columnheader">Category</span>
                         <span role="columnheader">Details</span>
                     </div>
-                    {rows.map((row) =>
-                        row.entry && editing === row.entry.id ? (
+                    {rows.map((row) => {
+                        // (an injury or a condition: changed in its own table)
+                        const own = row.injury ?? row.condition;
+                        const kept = own && elsewhere[row.category];
+                        return editing === row.key ? (
                             <div className="Records-editing" key={row.key}>
                                 <RecordForm
                                     scrollIntoView
                                     section={section}
                                     places={places}
+                                    locked={Boolean(kept)}
                                     initial={{ date: row.date, category: row.category, details: row.details }}
                                     onSave={async (values) => {
-                                        await records.update(row.entry.id, values);
+                                        if (kept) await kept.update(own.id, { date: values.date, description: values.details });
+                                        else await records.update(row.entry.id, values);
                                         setEditing(null);
                                     }}
                                     onCancel={() => setEditing(null)}
@@ -567,13 +596,20 @@ export function RecordList({ section, records, others, places = [] }) {
                                 {row.entry && (records.canEdit(row.entry) || records.canDelete(row.entry)) && (
                                     <RowIcons
                                         question="Delete this record?"
-                                        onEdit={records.canEdit(row.entry) ? () => setEditing(row.entry.id) : undefined}
+                                        onEdit={records.canEdit(row.entry) ? () => setEditing(row.key) : undefined}
                                         onDelete={records.canDelete(row.entry) ? () => records.remove(row.entry.id) : undefined}
                                     />
                                 )}
+                                {kept && (
+                                    <RowIcons
+                                        question={row.injury ? "Delete this injury and its updates?" : "Delete this condition?"}
+                                        onEdit={() => setEditing(row.key)}
+                                        onDelete={() => kept.remove(own.id)}
+                                    />
+                                )}
                             </div>
-                        )
-                    )}
+                        );
+                    })}
                 </div>
             ) : (
                 <p className="Integration-none Records-none">No {title.toLowerCase()} records yet.</p>

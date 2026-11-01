@@ -35,6 +35,7 @@
     /* Status fills (badges), the same in both themes, always with dark text */
     --amber: #f5b83d; /* In Sickbay */
     --orange: #ff7a1a; /* New Arrival */
+    --rescue: #b794ff; /* violet: Injured Rescue */
     --on-status: #121212; /* text and icons on amber, orange, teal and other bright fills */
     --amber-text: #f5b83d; /* the Sickbay amber as text or an icon (Quick Actions) */
     --orange-text: #ff6b1a; /* the game's Ultimate orange as text */

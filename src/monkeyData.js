@@ -1323,6 +1323,18 @@ export async function addCondition(monkeyId, { date, description, sessionId = nu
     return toAppCondition(data);
 }
 
+// Changes a condition's date or description (admins, or whoever added it)
+export async function saveCondition(id, { date, description }) {
+    const { data, error } = await supabase
+        .from("monkey_conditions")
+        .update({ condition_date: date, description })
+        .eq("id", id)
+        .select(CONDITION_COLUMNS)
+        .single();
+    if (error) throw saveProblem(error);
+    return toAppCondition(data);
+}
+
 // Deletes a condition (admins, or whoever added it)
 export async function deleteCondition(id) {
     const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", id).select("id");

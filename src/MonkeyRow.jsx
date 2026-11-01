@@ -1,4 +1,4 @@
-import { IconCube, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconBandage, IconCube, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -30,7 +30,7 @@ export function MonkeyListHeader() {
 //   newArrival: its New Arrival tag (showsNewArrival: its first 14 days in a
 //   care unit; a small badge, bottom left)
 //   stayingIn: the introcage it's staying in for now (a small badge)
-function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, chip, img, onClick }) {
+function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, injuredRescue = false, chip, img, onClick }) {
     // The same as the cards, e.g. "Abby, female, born 2018, Global troop"
     const label = [
         name,
@@ -38,6 +38,7 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
         year ? `born ${year}` : "birth year unknown",
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(newArrival ? ["new arrival"] : []),
+        ...(injuredRescue ? ["injured rescue"] : []),
         ...(inSickbay ? ["in Sickbay"] : []),
         ...(stayingIn ? [`staying in ${fullName(stayingIn)}`] : []),
         ...(isPlaceholderPhoto(img) ? ["photo needed"] : []),
@@ -71,6 +72,11 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
                 {newArrival && (
                     <span className="MonkeyRow-newArrival" title="New Arrival">
                         <IconSparkles size={12} aria-hidden="true" />
+                    </span>
+                )}
+                {injuredRescue && (
+                    <span className="MonkeyRow-rescue" title="Injured Rescue">
+                        <IconBandage size={12} aria-hidden="true" />
                     </span>
                 )}
             </span>

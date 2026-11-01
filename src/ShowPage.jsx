@@ -27,6 +27,7 @@ import {
     introcageMonkeys,
     isInside,
     isNewArrival,
+    showsInjuredRescue,
     showsNewArrival,
     inBabyCare,
     isEnclosuresRoute,
@@ -1198,6 +1199,7 @@ function ShowPage({
                             inSickbay={m.inSickbay}
                             stayingIn={staying(m)}
                             newArrival={showsNewArrival(m)}
+                            injuredRescue={showsInjuredRescue(m)}
                             chip={m.chip}
                             img={m.img[0]}
                         />
@@ -1217,6 +1219,7 @@ function ShowPage({
                             inSickbay={m.inSickbay}
                             stayingIn={staying(m)}
                             newArrival={showsNewArrival(m)}
+                            injuredRescue={showsInjuredRescue(m)}
                             img={m.img[0]}
                             favourite={favourites.has(m.id)}
                             onFavourite={m.id == null ? undefined : () => toggleFavourite(m.id)}

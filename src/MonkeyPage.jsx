@@ -28,6 +28,7 @@ import {
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
 import { useInjuries } from "./Injuries";
+import { addCondition, deleteCondition, saveCondition } from "./monkeyData";
 import { IntegrationRecords, RecordList, otherRows, useConditions, useRecords, useWeights } from "./MonkeyRecords";
 import useArrivalInfo from "./useArrivalInfo";
 import { ageFromBirthDate, ageInYears } from "./ages";
@@ -202,7 +203,21 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Its weights (Baby Care's babies: the Records page), in Medical
     const weights = useWeights(monkey.id, isStaff);
     // Its conditions (Monitoring), in Medical
-    const conditions = useConditions(monkey.id, isStaff);
+    // (loaded again once one's added in Medical: conditionsVersion)
+    const [conditionsVersion, setConditionsVersion] = useState(0);
+    const conditions = useConditions(monkey.id, isStaff, conditionsVersion);
+    // Medical's Injuries and Conditions, for admins: each in its own table
+    const conditionsChanged = () => setConditionsVersion((v) => v + 1);
+    const keptElsewhere = {
+        ...(injuries.available && {
+            injury: { add: injuries.add, update: injuries.update, remove: injuries.remove },
+        }),
+        condition: {
+            add: (values) => addCondition(monkey.id, values).then(conditionsChanged),
+            update: (id, values) => saveCondition(id, values).then(conditionsChanged),
+            remove: (id) => deleteCondition(id).then(conditionsChanged),
+        },
+    };
     // Monitoring (staff; monkeys in monitoring sessions): last seen (and
     // missing), Priority Check and Notes for Monitoring (again once saved)
     const monitored = isStaff && !isNewArrival(monkey) && !isArchived(monkey);
@@ -508,6 +523,10 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     records={records}
                                     others={otherRows(tab, { injuries, monkey, weights, conditions })}
                                     places={places}
+                                    // (admins: Injuries and Conditions too,
+                                    // added and changed where the pop-up's and
+                                    // Monitoring's are)
+                                    elsewhere={records.canAdd && tab === "medical" ? keptElsewhere : {}}
                                 />
                             )}
                         </div>

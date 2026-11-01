@@ -588,6 +588,11 @@
     background-color: var(--orange);
 }
 
+/* Injured Rescue: violet */
+.Modal-status li.is-rescue {
+    background-color: var(--rescue);
+}
+
 /* A link to its enclosure's page: the whole pill */
 .Modal-pills li.is-link {
     padding: 0;

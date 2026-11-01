@@ -16,6 +16,7 @@ import {
     IconArrowBigLeftLines,
     IconTrees,
     IconSparkles,
+    IconBandage,
     IconBolt,
     IconArrowBigRightLines,
     IconCube,
@@ -36,7 +37,7 @@ import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
 import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
-import { inBabyCare, isNewArrival, showsNewArrival } from "./enclosures";
+import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import StatusUpdate from "./StatusUpdate";
@@ -781,14 +782,20 @@ function Modal({
                                                 : monkey.name
                                         }
                                     ></img>
-                                    {/* Its status (New Arrival, In Sickbay, In Gismo A):
+                                    {/* Its status (New Arrival, Injured Rescue, In Sickbay, In Gismo A):
                                         on the photo, top left, like the cards */}
-                                    {(showsNewArrival(monkey) || monkey.inSickbay || stayingIn) && (
+                                    {(showsNewArrival(monkey) || showsInjuredRescue(monkey) || monkey.inSickbay || stayingIn) && (
                                         <ul className="Modal-status" aria-label="Status">
                                             {showsNewArrival(monkey) && (
                                                 <li className="is-newArrival">
                                                     <IconSparkles size={15} stroke={2} aria-hidden="true" />
                                                     New Arrival
+                                                </li>
+                                            )}
+                                            {showsInjuredRescue(monkey) && (
+                                                <li className="is-rescue">
+                                                    <IconBandage size={15} stroke={2} aria-hidden="true" />
+                                                    Injured Rescue
                                                 </li>
                                             )}
                                             {monkey.inSickbay && (

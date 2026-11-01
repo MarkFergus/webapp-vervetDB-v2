@@ -173,6 +173,53 @@ test("rehabilitation's drop-down", async () => {
     ]);
 });
 
+test("Medical: Injury and Condition too, saved in their own tables (Current Injuries, Latest Condition)", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords();
+    const injury = { add: vi.fn(async () => {}) };
+    const condition = { add: vi.fn(async () => {}) };
+    render(<RecordList section="medical" records={records} others={[]} elsewhere={{ injury, condition }} />);
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Injury", "Condition", "Observation"]);
+    await user.selectOptions(screen.getByLabelText("Category"), "injury");
+    expect(screen.getByLabelText("Details")).toHaveAttribute("maxLength", "500");
+    await user.type(screen.getByLabelText("Details"), "Cut on left hand");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(injury.add).toHaveBeenCalledWith(expect.objectContaining({ description: "Cut on left hand" }));
+    expect(records.add).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    await user.selectOptions(screen.getByLabelText("Category"), "condition");
+    await user.type(screen.getByLabelText("Details"), "Looking thin");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(condition.add).toHaveBeenCalledWith(expect.objectContaining({ description: "Looking thin" }));
+    expect(records.add).not.toHaveBeenCalled();
+});
+
+test("admins change an Injury or a Condition here too, in its own table (its category stays)", async () => {
+    const user = userEvent.setup();
+    const injury = { add: vi.fn(), update: vi.fn(async () => {}), remove: vi.fn(async () => {}) };
+    const condition = { add: vi.fn(), update: vi.fn(async () => {}), remove: vi.fn(async () => {}) };
+    const others = [
+        { key: "injury-9", date: "2026-10-10", category: "injury", details: "Cut on hand", by: "Injury by Jo", injury: { id: 9, updates: [] } },
+        { key: "condition-4", date: "2026-10-08", category: "condition", details: "Thin", by: "Condition by Jo", condition: { id: 4 } },
+    ];
+    render(<RecordList section="medical" records={fakeRecords()} others={others} elsewhere={{ injury, condition }} />);
+    const rowOf = (text) => screen.getByText(text).closest("[role='row']");
+    await user.click(within(rowOf("Cut on hand")).getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Category")).toBeDisabled();
+    await user.type(screen.getByLabelText("Details"), " (left)");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(injury.update).toHaveBeenCalledWith(9, expect.objectContaining({ description: "Cut on hand (left)" }));
+    await user.click(within(rowOf("Thin")).getByRole("button", { name: "Delete" }));
+    expect(screen.getByText("Delete this condition?")).toBeInTheDocument();
+});
+
+test("without elsewhere (not an admin), injuries and conditions have no Edit / Delete", () => {
+    const others = [{ key: "injury-9", date: "2026-10-10", category: "injury", details: "Cut on hand", by: "Injury by Jo", injury: { id: 9, updates: [] } }];
+    render(<RecordList section="medical" records={fakeRecords()} others={others} />);
+    expect(within(screen.getByText("Cut on hand").closest("[role='row']")).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+});
+
 test("older Medical categories keep their names (and stay theirs when edited)", async () => {
     const user = userEvent.setup();
     const records = fakeRecords([{ id: 1, section: "medical", date: "2026-10-02", category: "vet_visit", details: "Check-up", loggedByName: "Sam" }]);

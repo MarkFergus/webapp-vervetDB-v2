@@ -219,6 +219,19 @@
     border-radius: 4px;
 }
 
+/* Injured Rescue: a violet bandage, bottom left of the thumbnail (New
+   Arrival's corner: only one is ever shown) */
+.MonkeyRow-rescue {
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    display: flex;
+    padding: 2px;
+    color: var(--on-status);
+    background-color: var(--rescue);
+    border-radius: 4px;
+}
+
 /* New Arrival: neon orange sparkle, bottom left of the thumbnail */
 .MonkeyRow-newArrival {
     position: absolute;

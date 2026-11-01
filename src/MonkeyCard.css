@@ -199,7 +199,8 @@
 
 .MonkeyCard-sickbay,
 .MonkeyCard-stay,
-.MonkeyCard-newArrival {
+.MonkeyCard-newArrival,
+.MonkeyCard-rescue {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -221,6 +222,11 @@
 .MonkeyCard-newArrival {
     color: var(--on-status);
     background-color: var(--orange);
+}
+
+/* "Injured Rescue" (from the wild, in Sickbay): violet */
+.MonkeyCard-rescue {
+    background-color: var(--rescue);
 }
 
 /* No photo yet: a quiet photo icon in the middle of the grey placeholder */

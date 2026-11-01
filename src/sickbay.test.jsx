@@ -1,5 +1,5 @@
 // In Sickbay: the pop-up's Move to Sickbay / Return buttons, and the badges
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
 import MonkeyCard from "./MonkeyCard";
@@ -7,7 +7,7 @@ import MonkeyRow from "./MonkeyRow";
 import { DEFAULT_FEEDING } from "./feeding";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 import enclosuresArr from "./enclosuresArr";
-import { introcageMonkeys, isNewArrival, monkeyCount, showsNewArrival } from "./enclosures";
+import { introcageMonkeys, isNewArrival, monkeyCount, showsInjuredRescue, showsNewArrival } from "./enclosures";
 
 const MONKEY = {
     id: 1, name: "Nita", sex: "female", chip: "123", troop: null, introcage: "Goliath A", introcageType: "introcage",
@@ -171,6 +171,34 @@ describe("Released (new rescues)", () => {
     test("no Released button unless it's given (new rescues, editors)", () => {
         openRelease(rescue, undefined);
         expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+    });
+});
+
+describe("the Injured Rescue tag (from the wild, living in Sickbay)", () => {
+    const today = new Date(2026, 9, 29);
+    const patient = { ...MONKEY, introcage: "Sickbay A", introcageType: "area", enclosure: "Sickbay", stay: null };
+
+    test("once its New Arrival tag has gone (or with no Arrival Date)", () => {
+        expect(showsInjuredRescue({ ...patient, arrivalDate: "2026-10-20" }, today)).toBe(false);
+        expect(showsNewArrival({ ...patient, arrivalDate: "2026-10-20" }, today)).toBe(true);
+        expect(showsInjuredRescue({ ...patient, arrivalDate: "2026-10-15" }, today)).toBe(true);
+        expect(showsInjuredRescue({ ...patient, arrivalDate: null }, today)).toBe(true);
+    });
+
+    test("only Sickbay's own: not Baby Care or Quarantine, not a troop's monkey In Sickbay, not while staying in an introcage", () => {
+        expect(showsInjuredRescue({ ...patient, enclosure: "Baby Care", arrivalDate: "2026-01-01" }, today)).toBe(false);
+        expect(showsInjuredRescue({ ...patient, enclosure: "Quarantine", arrivalDate: "2026-01-01" }, today)).toBe(false);
+        expect(showsInjuredRescue({ ...MONKEY, inSickbay: true }, today)).toBe(false);
+        expect(showsInjuredRescue({ ...patient, arrivalDate: "2026-01-01", stay: { id: 1, introcage: "Gismo A" } }, today)).toBe(false);
+    });
+
+    test("on the card and in the pop-up", () => {
+        const { unmount } = render(<MonkeyCard name="Pip" sex="male" year={2025} troop="Sickbay A" inIntrocage injuredRescue img="x.jpg" onClick={() => {}} />);
+        expect(screen.getByText("Injured Rescue")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /injured rescue/ })).toBeInTheDocument();
+        unmount();
+        render(<Modal isModalOpen monkey={{ ...patient, arrivalDate: "2026-01-01" }} onClose={() => {}} handlePrevNext={() => {}} />);
+        expect(within(screen.getByRole("list", { name: "Status" })).getByText("Injured Rescue")).toBeInTheDocument();
     });
 });
 

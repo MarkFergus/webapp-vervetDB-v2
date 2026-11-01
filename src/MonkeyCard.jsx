@@ -1,4 +1,4 @@
-import { IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconStar, IconStarFilled, IconVenus } from "@tabler/icons-react";
+import { IconBandage, IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconStar, IconStarFilled, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -25,7 +25,7 @@ function SexIcon({ sex }) {
 //   no onFavourite, no star. (Beside the card's button, not in it: a button
 //   can't hold another)
 function MonkeyCard({
-    name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, img, onClick,
+    name, sex, year, troop, inIntrocage = false, inSickbay = false, stayingIn = null, newArrival = false, injuredRescue = false, img, onClick,
     favourite = false, onFavourite,
 }) {
     const photoNeeded = isPlaceholderPhoto(img);
@@ -36,6 +36,7 @@ function MonkeyCard({
         year ? `born ${year}` : "birth year unknown",
         inIntrocage ? `in ${fullName(troop)}` : `${fullName(troop)} troop`,
         ...(newArrival ? ["new arrival"] : []),
+        ...(injuredRescue ? ["injured rescue"] : []),
         ...(inSickbay ? ["in Sickbay"] : []),
         ...(stayingIn ? [`staying in ${fullName(stayingIn)}`] : []),
         ...(photoNeeded ? ["photo needed"] : []),
@@ -55,12 +56,18 @@ function MonkeyCard({
                     crossOrigin="anonymous"
                     onError={fallbackTo(img)}
                 ></img>
-                {(newArrival || inSickbay || stayingIn) && (
+                {(newArrival || injuredRescue || inSickbay || stayingIn) && (
                     <span className="MonkeyCard-badges">
                         {newArrival && (
                             <span className="MonkeyCard-newArrival">
                                 <IconSparkles size={14} aria-hidden="true" />
                                 New Arrival
+                            </span>
+                        )}
+                        {injuredRescue && (
+                            <span className="MonkeyCard-rescue">
+                                <IconBandage size={14} aria-hidden="true" />
+                                Injured Rescue
                             </span>
                         )}
                         {/* One badge is enough: New Arrival comes first */}

@@ -92,6 +92,15 @@ export function showsNewArrival(monkey, today = new Date()) {
     return days >= 0 && days < NEW_ARRIVAL_DAYS;
 }
 
+// The Injured Rescue tag: a monkey from the wild living in Sickbay (the
+// care unit) once its New Arrival tag has gone, until it has a home in an
+// enclosure (only injured rescues go to Sickbay). Not while it's staying in
+// an introcage ("In Gismo A" then). (A troop's monkey in Sickbay for now:
+// In Sickbay instead.)
+export function showsInjuredRescue(monkey, today = new Date()) {
+    return isNewArrival(monkey) && homeName(monkey) === SICKBAY_UNIT && !monkey.stay && !showsNewArrival(monkey, today);
+}
+
 // Sickbay (the care unit; once called "Sickbay Care Unit", to tell it apart
 // from the Sickbay section) also lists the monkeys who are in Sickbay for
 // now from elsewhere (their In Sickbay flag), next to its own new arrivals.
