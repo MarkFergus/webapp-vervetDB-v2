@@ -23,10 +23,27 @@
     color: var(--danger);
 }
 
+/* (an outline: it stands out on the red and amber rows; white in Dark,
+   dark in Light) */
 .MarkSeen-button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.Modal-edit.MarkSeen-button {
+    border: 1px solid var(--text);
+}
+
+/* Phones: the button on its own row, bottom right */
+@media (max-width: 624px) {
+    .MarkSeen-line.is-missing b {
+        flex-basis: 100%;
+    }
+
+    .MarkSeen-button {
+        margin-left: auto;
+    }
 }
 
 .MarkSeen-form {

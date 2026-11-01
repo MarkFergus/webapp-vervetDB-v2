@@ -303,13 +303,17 @@ describe("Status records (added by the database)", () => {
         return <RecordList section="rehabilitation" records={useRecords(1, staff)} others={[]} />;
     }
 
-    test("called Status; never edited, and only admins delete one", async () => {
+    test("called Status; only admins edit or delete one (its category stays Status)", async () => {
         loadRecords.mockResolvedValue([change]);
         const { unmount } = render(<Records staff={ADMIN} />);
         const row = (await screen.findByText(change.details)).closest("[role='row']");
         expect(within(row).getByText("Status")).toBeInTheDocument();
-        expect(within(row).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
-        expect(within(row).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+        await userEvent.click(within(row).getByRole("button", { name: "Edit" }));
+        expect(screen.getByLabelText("Category")).toBeDisabled();
+        expect(screen.getByLabelText("Category")).toHaveValue("status");
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        const again = (await screen.findByText(change.details)).closest("[role='row']");
+        expect(within(again).getByRole("button", { name: "Delete" })).toBeInTheDocument();
         unmount();
         render(<Records staff={{ ...ADMIN, isAdmin: false }} />);
         const theirs = (await screen.findByText(change.details)).closest("[role='row']");

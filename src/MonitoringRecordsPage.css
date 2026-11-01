@@ -40,6 +40,14 @@
     color: var(--text-2);
 }
 
+/* Recently Monitored: one line each (a long one ends in …) */
+.Monitoring-recent > span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* Before each: amber in progress, a green tick when finished */
 .Monitoring-stateIcon {
     flex: none;
@@ -57,6 +65,17 @@
 .Monitoring-inProgressButtons {
     display: flex;
     gap: 8px;
+}
+
+/* Recently Monitored (Last 48 hours): the window, dimmed */
+.Monitoring-when {
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+/* The troop picker: a green outline, so it stands out */
+.Monitoring-bar .SectionsPage-troop select {
+    border-color: var(--green);
 }
 
 /* Phones: the troop picker and its buttons on one row, the picker
@@ -129,6 +148,13 @@
     font-size: 15px;
     color: var(--text);
     border-radius: 8px;
+}
+
+/* Phones: the reason on top, Mark As Seen bottom right */
+@media (max-width: 624px) {
+    .Monitoring-missingText {
+        flex-basis: 100%;
+    }
 }
 
 .Monitoring-missing li.is-danger {

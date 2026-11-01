@@ -254,7 +254,7 @@ function StaffAccess() {
 
 // An archived monkey's Full Profile, with Status Update: any other status,
 // or back to the sanctuary (then it's in the list again: onRestored)
-function ArchivedMonkey({ archive, id, staff, onRestored, inert }) {
+function ArchivedMonkey({ archive, id, staff, onRestored, inert, places }) {
     const back = { href: `#${ARCHIVE_ROUTE}`, label: "Monkey Archive" };
     if (archive.list === null) return <p className="Admin-note">Loading…</p>;
     const monkey = Array.isArray(archive.list) ? (archive.list.find((m) => m.id === id) ?? null) : null;
@@ -268,6 +268,7 @@ function ArchivedMonkey({ archive, id, staff, onRestored, inert }) {
             back={back}
             inert={inert}
             statusChoices={choices}
+            places={places}
             onStatusUpdate={async (m, values) => {
                 const restored = await saveStatus(m.id, values);
                 await archive.reload();
@@ -280,12 +281,12 @@ function ArchivedMonkey({ archive, id, staff, onRestored, inert }) {
 // route: "admin", "admin/staff", "admin/archive"…
 // staff: as MonkeyPage's (for an archived monkey's records)
 // onRestored(monkey): one restored to the sanctuary
-function AdminPage({ route = "admin", staff = null, onRestored, inert = false }) {
+function AdminPage({ route = "admin", staff = null, onRestored, inert = false, places = [] }) {
     const { part, archiveId } = parseAdminRoute(route);
     const archive = useArchive(part?.id === "archive");
     // An archived monkey's page: its Full Profile, as for any monkey
     if (archiveId !== null) {
-        return <ArchivedMonkey archive={archive} id={archiveId} staff={staff} onRestored={onRestored} inert={inert} />;
+        return <ArchivedMonkey archive={archive} id={archiveId} staff={staff} onRestored={onRestored} inert={inert} places={places} />;
     }
     const crumbs = [{ href: "#admin", label: "Admin Dashboard" }, ...(part ? [{ label: part.title }] : [])];
     return (

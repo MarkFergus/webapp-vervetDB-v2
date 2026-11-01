@@ -144,7 +144,7 @@ function Tabs({ tab, onTab, counts = {} }) {
 // the archive (back: { href, label }), a banner with its status, and
 // Status Update (onStatusUpdate(monkey, { status, date, details }), async;
 // statusChoices: the statuses it can change to)
-function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices }) {
+function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices, places = [] }) {
     // (a new page starts at the top)
     useEffect(() => {
         window.scrollTo?.(0, 0);
@@ -169,6 +169,7 @@ function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUp
             back={back}
             onStatusUpdate={onStatusUpdate}
             statusChoices={statusChoices}
+            places={places}
         />
     );
 }
@@ -191,7 +192,7 @@ function StatusBanner({ monkey }) {
     );
 }
 
-function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [] }) {
+function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [], places }) {
     const isStaff = Boolean(staff?.canSee);
     const integration = useIntegration(monkey.id, staff);
     const injuries = useInjuries(monkey.id, staff);
@@ -208,9 +209,9 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const missing = useMissing(monkey.id, monitored);
     const monitoring = useMonitoring(monkey.id, monitored, monkey);
     const archived = isArchived(monkey);
-    // (an archived monkey: admins can add records too, e.g. what's found
-    // out afterwards; editing and deleting are as for any monkey)
-    const records = useRecords(monkey.id, staff, archived ? Boolean(staff?.isAdmin) : undefined);
+    // (admins add them, an archived monkey's too: e.g. what's found out
+    // afterwards)
+    const records = useRecords(monkey.id, staff);
     // The Records tab showing
     const [tab, setTab] = useState("rehabilitation");
     // Status Update's form open (archived monkeys, admins)
@@ -506,6 +507,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     section={tab}
                                     records={records}
                                     others={otherRows(tab, { injuries, monkey, weights, conditions })}
+                                    places={places}
                                 />
                             )}
                         </div>

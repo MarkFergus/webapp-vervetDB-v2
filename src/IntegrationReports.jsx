@@ -35,7 +35,7 @@ export function periodText(from, to) {
 // The reports of one monkey, loaded when staff open it. available: the
 // database has them (false before integration-reports.sql, or offline),
 // and this is staff.
-//   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
+//   staff: { canSee, isAdmin, readOnly (limited) } or null
 export function useIntegration(monkeyId, staff) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
@@ -59,10 +59,10 @@ export function useIntegration(monkeyId, staff) {
     return {
         available: state.available,
         entries: state.entries,
-        canAdd: state.available && Boolean(staff?.canAdd),
-        // Admins, or whoever wrote it
-        canChange: (entry) =>
-            state.available && !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+        // Admins only: the Full Profile is where admins keep the full
+        // records (staff add reports through Records → Integration)
+        canAdd: state.available && Boolean(staff?.isAdmin && !staff.readOnly),
+        canChange: () => state.available && Boolean(staff?.isAdmin && !staff.readOnly),
         async add(values) {
             const saved = await addIntegration(monkeyId, values);
             change((list) => [...list, saved]);

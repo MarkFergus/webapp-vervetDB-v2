@@ -193,7 +193,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
                     aria-current={page === "records" ? "page" : undefined}
                 >
                     <span className="BottomBar-mapCircle" aria-hidden="true">
-                        <IconClipboardList stroke={1.75} size={26} />
+                        <IconClipboardList stroke={1.75} size={30} />
                     </span>
                 </a>
             ) : (
@@ -224,7 +224,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
 // ---- Phones: the drawer from the left ----
 // (☰, top left) Everything, in groups with lines between (no headings), like
 // the computers' side rail: Add New Monkey (admins) on its own; the pages;
-// the tools; the app. (The bottom bar is just quick access to some of them.)
+// the staff tools; the other tools; the app. (The bottom bar is just quick access to some of them.)
 //   onAddMonkey, showAdmin (the Admin Dashboard): admins only; showRecords
 //   (the Records page): staff (any role); onAddPhotos: editors / admins; onProfileBook:
 //   staff (any role): Documents; isGeneratingPDF: while one's made
@@ -279,18 +279,23 @@ export function Drawer({
                         "Enclosures"
                     )}
                 </div>
+                {/* Staff tools (as on the computers' side rail) */}
+                {(showRecords || onAddPhotos || onProfileBook) && (
+                    <div className="Drawer-group">
+                        {showRecords &&
+                            link({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
+                        {onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos")}
+                        {/* (Profile Books, the AM Plates List, Introcage Signs…) */}
+                        {onProfileBook &&
+                            button(
+                                onProfileBook,
+                                <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
+                                isGeneratingPDF ? "Creating PDF…" : "Documents",
+                                { disabled: isGeneratingPDF }
+                            )}
+                    </div>
+                )}
                 <div className="Drawer-group">
-                    {onAddPhotos && button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} aria-hidden="true" />, "Add Photos")}
-                    {/* (Profile Books, the AM Plates List, Introcage Signs…) */}
-                    {onProfileBook &&
-                        button(
-                            onProfileBook,
-                            <ProfileBookIcon busy={isGeneratingPDF} size={24} />,
-                            isGeneratingPDF ? "Creating PDF…" : "Documents",
-                            { disabled: isGeneratingPDF }
-                        )}
-                    {showRecords &&
-                        link({ href: "#records", "aria-current": page === "records" ? "page" : undefined }, IconClipboardList, "Records")}
                     {button(onMap, <IconMap2 stroke={1.75} size={24} aria-hidden="true" />, "Interactive Map")}
                     {link({ href: "#statistics", "aria-current": page === "statistics" ? "page" : undefined }, IconChartBar, "Statistics")}
                     {button(onScan, <IconScan stroke={1.75} size={24} aria-hidden="true" />, "Scan QR Code")}

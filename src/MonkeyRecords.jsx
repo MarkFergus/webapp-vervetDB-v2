@@ -6,13 +6,16 @@ import { changeText, historyFor } from "./babyRecords";
 import { IntegrationForm, newReportDates } from "./IntegrationReports";
 import { summaryDate } from "./feeding";
 import { ARRIVAL_REASONS } from "./arrival";
+import { SICKBAY_UNIT, placeChoices } from "./enclosures";
+import { fullName } from "./places";
 import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
 
 // A monkey's records, on its page (staff only), one list per tab:
-//   Rehabilitation, Medical   Date | Category | Details; staff add them with
-//     "+ New … Record" (supabase/monkey-records.sql). Every move adds a
+//   Rehabilitation, Medical   Date | Category | Details; admins add them
+//     with "+ New … Record", e.g. historical ones (monkey-records.sql,
+//     monkey-records-admin.sql), and change any of them. Every move adds a
 //     Movement record by itself (movement-records.sql), and every status
 //     change a Status record (monkey-archive.sql). Its arrival (Arrival
 //     Date and Reason) starts Rehabilitation's list; injuries (and their
@@ -24,37 +27,59 @@ import "./MonkeyRecords.css";
 
 export const MAX_RECORD = 1000;
 
-// "+ New Rehabilitation / Medical Record": off for now, while staff try out
-// Integration first (the lists still show). true turns them back on.
-export const NEW_RECORDS_OPEN = false;
-
-// Each section's name and categories, in the drop-down's order
+// Each section's name and categories, in the drop-down's order; older:
+// categories no longer offered, still named (records saved with them)
 export const SECTIONS = {
     rehabilitation: {
         title: "Rehabilitation",
         // (integration: its own tab now, so not offered; the database still
         // allows it)
-        categories: { movement: "Movement", observation: "Observation", escape: "Escape" },
+        categories: { movement: "Movement", escape: "Escape", observation: "Observation" },
+        older: {},
     },
     medical: {
         title: "Medical",
-        categories: {
-            injury: "Injury",
-            medicine: "Medicine",
-            treatment: "Treatment",
-            vet_visit: "Vet Visit",
-            observation: "Observation",
-        },
+        // (injuries: New Injury, in the pop-up's Quick Actions)
+        categories: { food_monitoring: "Food Monitoring", observation: "Observation" },
+        older: { injury: "Injury", medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
     },
 };
+
+// A Movement record's words, as the database writes them for a move:
+// "Moved from Goliath A to Goliath Troop: integrated" (the reason optional)
+export const movementText = ({ from, to, reason = "" }) =>
+    `Moved from ${from} to ${to}${reason.trim() ? `: ${reason.trim()}` : ""}`;
+
+// ...and back again ({ from, to, reason }), or null (e.g. "Home changed
+// from …": edited as plain details)
+export function parseMovement(details) {
+    const match = /^Moved from (.+?) to (.+?)(?:: ([\s\S]*))?$/.exec(details ?? "");
+    return match ? { from: match[1], to: match[2], reason: match[3] ?? "" } : null;
+}
+
+// Movement's From and To: every place, as its records name them, a group
+// per enclosure: "Goliath Troop", "Goliath A"…, Sickbay (and Other…, typed
+// in, in the form). [{ label, options: ["Goliath Troop", "Goliath A", …] }]
+//   troops (no "All Troops"), enclosures, homeOf(troop): its enclosure
+export function movementPlaces(troops, enclosures, homeOf) {
+    const groups = placeChoices(troops, enclosures, homeOf)
+        .map((choice) => ({
+            label: fullName(choice.enclosure),
+            options: [
+                ...(choice.troop ? [`${fullName(choice.troop)} Troop`] : []),
+                ...(choice.enclosure === SICKBAY_UNIT ? ["Sickbay"] : []),
+                ...choice.introcages.map((c) => fullName(c.name)),
+            ],
+        }))
+        .filter((group) => group.options.length);
+    // (In Sickbay: "Sickbay", even without its care unit)
+    return groups.some((g) => g.options.includes("Sickbay")) ? groups : [...groups, { label: "Sickbay", options: ["Sickbay"] }];
+}
 
 // Categories never in the drop-down: a Status record for each status
 // change (added by the database: monkey-archive.sql), its arrival (from
 // Arrival Date and Reason) and its weights (the Records page's): otherRows
 const OTHER_CATEGORIES = { status: "Status", arrival: "Arrival", weight: "Weight", condition: "Condition" };
-// ...which, like Movement records, are never changed, and only admins
-// delete one
-const isLog = (entry) => entry.category === "movement" || entry.category === "status";
 
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
@@ -64,16 +89,11 @@ const todayText = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const isWriterOrAdmin = (staff, entry) =>
-    !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId));
-
 // One monkey's records, loaded when staff open its page. available: the
 // database has them (false before monkey-records.sql, or offline), and
 // this is staff.
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
-//   newOpen: "+ New … Record" on (an archived monkey's, for admins: details
-//   added afterwards), else as NEW_RECORDS_OPEN
-export function useRecords(monkeyId, staff, newOpen = NEW_RECORDS_OPEN) {
+export function useRecords(monkeyId, staff) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
     useEffect(() => {
@@ -92,15 +112,17 @@ export function useRecords(monkeyId, staff, newOpen = NEW_RECORDS_OPEN) {
 
     const sorted = (list) => [...list].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
     const change = (fn) => setState((s) => ({ ...s, entries: sorted(fn(s.entries)) }));
+    const admin = state.available && Boolean(staff?.isAdmin && !staff.readOnly);
     return {
         available: state.available,
         entries: state.entries,
-        canAdd: newOpen && state.available && Boolean(staff?.canAdd),
-        // Admins, or whoever wrote it. A Movement or Status record is a log
-        // of what happened: never changed, and only admins delete one
-        // (movement-records.sql, monkey-archive.sql)
-        canEdit: (entry) => state.available && !isLog(entry) && isWriterOrAdmin(staff, entry),
-        canDelete: (entry) => state.available && Boolean(staff?.isAdmin || (!isLog(entry) && isWriterOrAdmin(staff, entry))),
+        // Admins only: the Full Profile is where admins keep the full
+        // records (historical ones too), and change any of them, Movement
+        // and Status records too. Staff enter theirs through the Records
+        // page (monkey-records-admin.sql)
+        canAdd: admin,
+        canEdit: () => admin,
+        canDelete: () => admin,
         async add(values) {
             const saved = await addRecord(monkeyId, values);
             change((list) => [...list, saved]);
@@ -302,23 +324,101 @@ function RowIcons({ onEdit, onDelete, question }) {
     );
 }
 
+// From / To's "Other…": a place typed in (not in the list)
+const OTHER = "other";
+const PLACE_MAX = 60;
+
+// A Movement's From or To: every place (movementPlaces), then Other… with
+// a box to type it in
+function PlaceSelect({ label, places, value, other, onChange, onOther }) {
+    return (
+        <label>
+            <span>{label}</span>
+            <select value={value} onChange={(e) => onChange(e.target.value)}>
+                <option value="" disabled>
+                    Choose…
+                </option>
+                {places.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                        {group.options.map((name) => (
+                            <option key={name} value={name}>
+                                {name}
+                            </option>
+                        ))}
+                    </optgroup>
+                ))}
+                <option value={OTHER}>Other…</option>
+            </select>
+            {value === OTHER && (
+                <input
+                    type="text"
+                    aria-label={`${label} (Other)`}
+                    value={other}
+                    maxLength={PLACE_MAX}
+                    placeholder="e.g. Arrived from the wild"
+                    onChange={(e) => onOther(e.target.value)}
+                />
+            )}
+        </label>
+    );
+}
+
+// The form's start: { date, category, details } → its values. A Movement's
+// words split into From, To and Reason (a place not in the list: Other…,
+// typed in); one it can't split (e.g. "Home changed from …"): plain details
+function startValues(initial, places) {
+    const known = (name) => places.some((g) => g.options.includes(name));
+    const place = (name) => (name ? (known(name) ? { pick: name, other: "" } : { pick: OTHER, other: name }) : { pick: "", other: "" });
+    const move = initial.category === "movement" && initial.details ? parseMovement(initial.details) : null;
+    const from = place(move?.from);
+    const to = place(move?.to);
+    return {
+        ...initial,
+        plain: initial.category === "movement" && Boolean(initial.details) && !move,
+        from: from.pick,
+        fromOther: from.other,
+        to: to.pick,
+        toOther: to.other,
+        reason: move?.reason ?? "",
+    };
+}
+
 // Date, Category, then the details, then Confirm and Cancel (like the
-// pop-up's Quick Actions forms).
-//   initial: { date, category, details }; onSave(values) async (throws a
-//   message to show); onCancel()
-function RecordForm({ section, initial, onSave, onCancel, scrollIntoView = false }) {
+// pop-up's Quick Actions forms). A Movement: From and To, then Reason
+// (optional), as Edit asks for a new home location.
+//   initial: { date, category, details }; places: movementPlaces;
+//   onSave(values) async (throws a message to show); onCancel()
+function RecordForm({ section, initial, places = [], onSave, onCancel, scrollIntoView = false }) {
     const formRef = useScrollIntoView(scrollIntoView);
-    const [values, setValues] = useState(initial);
+    const [values, setValues] = useState(() => startValues(initial, places));
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
-    const details = values.details.trim();
     const set = (field) => (event) => setValues({ ...values, [field]: event.target.value });
-    const { categories } = SECTIONS[section];
+    const { categories, older } = SECTIONS[section];
+    // (a record saved with a category no longer offered keeps it; a Status
+    // record stays one)
+    const fixed = initial.category && !categories[initial.category] && !older[initial.category];
+    const choices = initial.category && !categories[initial.category]
+        ? { ...categories, [initial.category]: older[initial.category] ?? OTHER_CATEGORIES[initial.category] ?? initial.category }
+        : categories;
+    const movement = values.category === "movement" && !values.plain;
+    const text = movement ? values.reason : values.details;
+    const placeOf = (pick, other) => (pick === OTHER ? other.trim() : pick);
 
     async function confirm() {
         if (!values.date) return setProblem("Please choose the date.");
         if (!values.category) return setProblem("Please choose a category.");
-        if (!details) return setProblem("Please write the details.");
+        let details = values.details.trim();
+        if (movement) {
+            const from = placeOf(values.from, values.fromOther);
+            const to = placeOf(values.to, values.toOther);
+            if (!from) return setProblem("Please choose where it moved from.");
+            if (!to) return setProblem("Please choose where it moved to.");
+            details = movementText({ from, to, reason: values.reason });
+            if (details.length > MAX_RECORD) return setProblem(`Please shorten the reason (${MAX_RECORD} characters in all).`);
+        } else if (!details) {
+            return setProblem("Please write the details.");
+        }
         setBusy(true);
         setProblem(null);
         try {
@@ -333,16 +433,16 @@ function RecordForm({ section, initial, onSave, onCancel, scrollIntoView = false
         <div className="Integration-form Records-form" ref={formRef}>
             <div className="Integration-dates">
                 <label>
-                    <span>Date</span>
+                    <span>{movement ? "Date Moved" : "Date"}</span>
                     <input type="date" value={values.date} max={todayText()} onChange={set("date")} />
                 </label>
                 <label>
                     <span>Category</span>
-                    <select value={values.category} onChange={set("category")}>
+                    <select value={values.category} disabled={fixed} onChange={set("category")}>
                         <option value="" disabled>
                             Choose…
                         </option>
-                        {Object.entries(categories).map(([key, label]) => (
+                        {Object.entries(choices).map(([key, label]) => (
                             <option key={key} value={key}>
                                 {label}
                             </option>
@@ -350,12 +450,32 @@ function RecordForm({ section, initial, onSave, onCancel, scrollIntoView = false
                     </select>
                 </label>
             </div>
+            {movement && (
+                <div className="Integration-dates">
+                    <PlaceSelect
+                        label="From"
+                        places={places}
+                        value={values.from}
+                        other={values.fromOther}
+                        onChange={(from) => setValues({ ...values, from })}
+                        onOther={(fromOther) => setValues({ ...values, fromOther })}
+                    />
+                    <PlaceSelect
+                        label="To"
+                        places={places}
+                        value={values.to}
+                        other={values.toOther}
+                        onChange={(to) => setValues({ ...values, to })}
+                        onOther={(toOther) => setValues({ ...values, toOther })}
+                    />
+                </div>
+            )}
             <label>
-                <span>Details</span>
-                <textarea rows={4} value={values.details} maxLength={MAX_RECORD} onChange={set("details")} />
+                <span>{movement ? "Reason (optional)" : "Details"}</span>
+                <textarea rows={4} value={text} maxLength={MAX_RECORD} onChange={set(movement ? "reason" : "details")} />
             </label>
             <span className="Integration-count">
-                {values.details.length} / {MAX_RECORD}
+                {text.length} / {MAX_RECORD}
             </span>
             {problem && (
                 <p className="Integration-problem" role="alert">
@@ -366,7 +486,7 @@ function RecordForm({ section, initial, onSave, onCancel, scrollIntoView = false
                 <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={confirm}>
                     {busy ? "Saving…" : "Confirm"}
                 </button>
-                <button type="button" className="Modal-edit is-quiet" disabled={busy} onClick={onCancel}>
+                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                     Cancel
                 </button>
             </div>
@@ -376,11 +496,12 @@ function RecordForm({ section, initial, onSave, onCancel, scrollIntoView = false
 
 // One section's list: "+ New … Record" at the top, then the records in
 // columns (phones: date and category on a line, the details under them)
-//   others: the records kept elsewhere (otherRows)
-export function RecordList({ section, records, others }) {
+//   others: the records kept elsewhere (otherRows); places: Movement's From
+//   and To (movementPlaces)
+export function RecordList({ section, records, others, places = [] }) {
     const [adding, setAdding] = useState(false);
     const [editing, setEditing] = useState(null); // a record id
-    const { title, categories } = SECTIONS[section];
+    const { title, categories, older } = SECTIONS[section];
 
     const own = records.entries
         .filter((e) => e.section === section)
@@ -394,6 +515,7 @@ export function RecordList({ section, records, others }) {
                 (adding ? (
                     <RecordForm
                         section={section}
+                        places={places}
                         initial={{ date: todayText(), category: "", details: "" }}
                         onSave={async (values) => {
                             await records.add({ section, ...values });
@@ -420,6 +542,7 @@ export function RecordList({ section, records, others }) {
                                 <RecordForm
                                     scrollIntoView
                                     section={section}
+                                    places={places}
                                     initial={{ date: row.date, category: row.category, details: row.details }}
                                     onSave={async (values) => {
                                         await records.update(row.entry.id, values);
@@ -434,7 +557,7 @@ export function RecordList({ section, records, others }) {
                                     {dayText(row.date)}
                                 </span>
                                 <span role="cell">
-                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? OTHER_CATEGORIES[row.category] ?? row.category}</span>
+                                    <span className={`Records-category is-${row.category}`}>{categories[row.category] ?? older[row.category] ?? OTHER_CATEGORIES[row.category] ?? row.category}</span>
                                 </span>
                                 <span className="Records-details" role="cell">
                                     <span className="Records-text">{row.details}</span>

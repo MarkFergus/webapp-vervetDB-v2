@@ -65,7 +65,7 @@ describe("adding", () => {
     test("+ New Integration Report: Date Start and Date End side by side, the report, Confirm and Cancel", async () => {
         const created = entry(1, { from: "2026-10-04", to: "2026-10-11", report: "Settling in well" });
         addIntegration.mockResolvedValue(created);
-        open(EDITOR);
+        open(ADMIN);
         await userEvent.click(await newButton());
         expect(screen.getByLabelText("Date Start")).toBeInTheDocument();
         expect(screen.getByLabelText("Date End")).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe("adding", () => {
     });
 
     test("Cancel closes it without saving", async () => {
-        open(EDITOR);
+        open(ADMIN);
         await userEvent.click(await newButton());
         await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(screen.queryByLabelText("Integration Report")).not.toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("adding", () => {
     });
 
     test("it needs a report, and the end can't be before the start", async () => {
-        open(EDITOR);
+        open(ADMIN);
         await userEvent.click(await newButton());
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(await screen.findByRole("alert")).toHaveTextContent("Please write the report.");
@@ -107,7 +107,7 @@ describe("adding", () => {
 
     test("a failed save says so and keeps what was typed", async () => {
         addIntegration.mockRejectedValue(new Error("Couldn't save right now."));
-        open(EDITOR);
+        open(ADMIN);
         await userEvent.click(await newButton());
         await userEvent.type(screen.getByLabelText("Integration Report"), "Keep me");
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
@@ -155,19 +155,18 @@ describe("the list", () => {
 
     test("no adding before integration-reports.sql has run (or offline)", async () => {
         loadIntegration.mockRejectedValue({ code: "42P01" });
-        open(EDITOR);
+        open(ADMIN);
         await waitFor(() => expect(loadIntegration).toHaveBeenCalled());
         expect(screen.queryByRole("button", { name: "New Integration Report" })).not.toBeInTheDocument();
     });
 
-    test("an editor can edit or delete their own, not someone else's", async () => {
+    test("editors can't add, edit or delete here, even their own (they use Records → Integration)", async () => {
         loadIntegration.mockResolvedValue([entry(2, { loggedBy: "someone-else", report: "Theirs" }), entry(1, { report: "Mine" })]);
         open(EDITOR);
         await screen.findByText("Mine");
-        expect(within(rowOf("Mine")).getByRole("button", { name: "Edit" })).toBeInTheDocument();
-        expect(within(rowOf("Mine")).getByRole("button", { name: "Delete" })).toBeInTheDocument();
-        expect(within(rowOf("Theirs")).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
-        expect(within(rowOf("Theirs")).queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "New Integration Report" })).not.toBeInTheDocument();
+        expect(within(rowOf("Mine")).queryByRole("button")).not.toBeInTheDocument();
+        expect(within(rowOf("Theirs")).queryByRole("button")).not.toBeInTheDocument();
     });
 
     test("an admin can change anyone's", async () => {
@@ -181,7 +180,7 @@ describe("the list", () => {
     test("editing: the same fields, Confirm saves the change", async () => {
         loadIntegration.mockResolvedValue([entry(1, { report: "Mine" })]);
         saveIntegration.mockResolvedValue(entry(1, { report: "Mine, updated" }));
-        open(EDITOR);
+        open(ADMIN);
         await screen.findByText("Mine");
         await userEvent.click(screen.getByRole("button", { name: "Edit" }));
         const box = screen.getByLabelText("Integration Report");
@@ -196,7 +195,7 @@ describe("the list", () => {
     test("deleting asks first", async () => {
         loadIntegration.mockResolvedValue([entry(1, { report: "Mine" })]);
         deleteIntegration.mockResolvedValue();
-        open(EDITOR);
+        open(ADMIN);
         await screen.findByText("Mine");
         await userEvent.click(screen.getByRole("button", { name: "Delete" }));
         expect(screen.getByText("Delete this report?")).toBeInTheDocument();

@@ -93,6 +93,17 @@ function usePhone() {
 
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
 const timeText = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+// Recently Monitored: "Today", "Yesterday" or (48 hours can reach the day
+// before) "30th Oct", and "Sam" from "Sam Smith"
+function dayWord(at) {
+    const day = dayText(new Date(at));
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (day === dayText(new Date())) return "Today";
+    if (day === dayText(yesterday)) return "Yesterday";
+    return summaryDate(new Date(at)).replace(/ \d{4}$/, "");
+}
+const firstName = (name) => (name ?? "Staff").trim().split(/\s+/)[0];
 
 // Choices as one squared group (one at a time; optional: none, and a
 // second tap takes it off). note: { value, onChange }: a short note beside
@@ -1143,9 +1154,9 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     // (by the troop picker: Continue / Cancel Session, for whoever started
     // it, or an admin)
     const myOpen = troop && inProgress.find((s) => s.enclosureId === troop.id && canChange(s));
-    // Finished in the last 24 hours, newest first
+    // Finished in the last 48 hours, newest first
     const recent = sessions
-        .filter((s) => s.status === "finished" && s.finishedAt && Date.now() - new Date(s.finishedAt) < 86400000)
+        .filter((s) => s.status === "finished" && s.finishedAt && Date.now() - new Date(s.finishedAt) < 2 * 86400000)
         .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)));
     const history = troop ? troopSessions(sessions, troop.id) : [];
     // The troop's monkeys, and who's missing (not seen in their last
@@ -1227,15 +1238,17 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                     )}
                     {recent.length > 0 && (
                         <>
-                            <h2 className="RecordsPage-subhead">Recently Monitored</h2>
+                            <h2 className="RecordsPage-subhead">
+                                Recently Monitored <span className="Monitoring-when">(Last 48 hours)</span>
+                            </h2>
                             <ul aria-label="Recently Monitored">
                                 {recent.map((s) => (
-                                    <li key={s.id}>
+                                    <li key={s.id} className="Monitoring-recent">
                                         <IconCircleCheckFilled size={18} className="Monitoring-stateIcon is-done" aria-hidden="true" />
+                                        {/* (one line: troop · Today · time · first name; phones: D&D, H&B) */}
                                         <span>
-                                            <b>{fullName(troopById[s.enclosureId]?.name ?? "A troop")}</b> · finished{" "}
-                                            {timeText(s.finishedAt)} by {s.startedByName ?? "Staff"} ·{" "}
-                                            {s.sightings.filter((x) => x.seen).length} / {s.sightings.length} seen
+                                            <b>{phone ? troopById[s.enclosureId]?.name ?? "A troop" : fullName(troopById[s.enclosureId]?.name ?? "A troop")}</b>{" "}
+                                            · {dayWord(s.finishedAt)} · {timeText(s.finishedAt)} · {firstName(s.startedByName)}
                                         </span>
                                     </li>
                                 ))}

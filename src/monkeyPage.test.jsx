@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
-import { NEW_RECORDS_OPEN, RecordList, useRecords } from "./MonkeyRecords";
+import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./monkeysArr";
 import { loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
@@ -139,21 +139,18 @@ test("+ New Medical Record: date, category and details, then Confirm", async () 
     const records = fakeRecords();
     render(<RecordList section="medical" records={records} others={[]} />);
     await user.click(screen.getByRole("button", { name: "New Medical Record" }));
-    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
-        "Choose…",
-        "Injury",
-        "Medicine",
-        "Treatment",
-        "Vet Visit",
-        "Observation",
-    ]);
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Observation"]);
+    // (Cancel: the pink outline)
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("is-cancel");
     await user.click(screen.getByRole("button", { name: "Confirm" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Please choose a category.");
-    await user.selectOptions(screen.getByLabelText("Category"), "treatment");
-    await user.type(screen.getByLabelText("Details"), "Wound cleaned");
+    await user.selectOptions(screen.getByLabelText("Category"), "food_monitoring");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Please write the details.");
+    await user.type(screen.getByLabelText("Details"), "Ate half the plate");
     await user.click(screen.getByRole("button", { name: "Confirm" }));
     expect(records.add).toHaveBeenCalledWith(
-        expect.objectContaining({ section: "medical", category: "treatment", details: "Wound cleaned" })
+        expect.objectContaining({ section: "medical", category: "food_monitoring", details: "Ate half the plate" })
     );
     expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
 });
@@ -171,9 +168,93 @@ test("rehabilitation's drop-down", async () => {
     expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
         "Choose…",
         "Movement",
-        "Observation",
         "Escape",
+        "Observation",
     ]);
+});
+
+test("older Medical categories keep their names (and stay theirs when edited)", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords([{ id: 1, section: "medical", date: "2026-10-02", category: "vet_visit", details: "Check-up", loggedByName: "Sam" }]);
+    render(<RecordList section="medical" records={records} others={[]} />);
+    expect(screen.getByText("Vet Visit")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByLabelText("Category")).toHaveValue("vet_visit");
+});
+
+describe("a Movement typed in (historical moves): From, To, Reason (optional)", () => {
+    const PLACES = [
+        { label: "Goliath", options: ["Goliath Troop", "Goliath A"] },
+        { label: "Sickbay", options: ["Sickbay"] },
+    ];
+
+    test("worded like the moves the database adds; Other… typed in", async () => {
+        const user = userEvent.setup();
+        const records = fakeRecords();
+        render(<RecordList section="rehabilitation" records={records} others={[]} places={PLACES} />);
+        await user.click(screen.getByRole("button", { name: "New Rehabilitation Record" }));
+        await user.selectOptions(screen.getByLabelText("Category"), "movement");
+        expect(screen.getByLabelText("Date Moved")).toBeInTheDocument();
+        expect(screen.queryByLabelText("Details")).not.toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(screen.getByRole("alert")).toHaveTextContent("Please choose where it moved from.");
+        await user.selectOptions(screen.getByLabelText("From"), "other");
+        await user.type(screen.getByLabelText("From (Other)"), "The wild");
+        await user.selectOptions(screen.getByLabelText("To"), "Goliath A");
+        // (no reason: fine)
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(records.add).toHaveBeenLastCalledWith(
+            expect.objectContaining({ section: "rehabilitation", category: "movement", details: "Moved from The wild to Goliath A" })
+        );
+    });
+
+    test("editing one: From, To and Reason filled in again", async () => {
+        const user = userEvent.setup();
+        const records = fakeRecords([
+            { id: 4, section: "rehabilitation", date: "2026-10-20", category: "movement", details: "Moved from Goliath A to Goliath Troop: integrated", loggedByName: "Sam" },
+        ]);
+        render(<RecordList section="rehabilitation" records={records} others={[]} places={PLACES} />);
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        expect(screen.getByLabelText("From")).toHaveValue("Goliath A");
+        expect(screen.getByLabelText("To")).toHaveValue("Goliath Troop");
+        expect(screen.getByLabelText("Reason (optional)")).toHaveValue("integrated");
+        await user.selectOptions(screen.getByLabelText("To"), "Sickbay");
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(records.update).toHaveBeenCalledWith(4, expect.objectContaining({ details: "Moved from Goliath A to Sickbay: integrated" }));
+    });
+
+    test("one it can't split (Home changed…) is edited as plain details", async () => {
+        const user = userEvent.setup();
+        const records = fakeRecords([
+            { id: 4, section: "rehabilitation", date: "2026-10-20", category: "movement", details: "Home changed from Gismo Troop to Gismo A", loggedByName: "Sam" },
+        ]);
+        render(<RecordList section="rehabilitation" records={records} others={[]} places={PLACES} />);
+        await user.click(screen.getByRole("button", { name: "Edit" }));
+        expect(screen.getByLabelText("Details")).toHaveValue("Home changed from Gismo Troop to Gismo A");
+        expect(screen.queryByLabelText("From")).not.toBeInTheDocument();
+    });
+
+    test("the words, both ways", () => {
+        expect(movementText({ from: "Holt & Barrington C1", to: "Sickbay", reason: " leg: swollen " })).toBe(
+            "Moved from Holt & Barrington C1 to Sickbay: leg: swollen"
+        );
+        expect(parseMovement("Moved from Holt & Barrington C1 to Sickbay: leg: swollen")).toEqual({
+            from: "Holt & Barrington C1",
+            to: "Sickbay",
+            reason: "leg: swollen",
+        });
+        expect(parseMovement("Moved from A to B")).toEqual({ from: "A", to: "B", reason: "" });
+    });
+
+    test("the places: each troop, then its introcages, full names; Sickbay", () => {
+        const enclosures = [
+            { id: 1, name: "H&B", type: "troop", sortOrder: 1 },
+            { id: 2, name: "H&B C1", type: "introcage", parentId: 1, sortOrder: 1 },
+        ];
+        const places = movementPlaces(["H&B"], enclosures, () => "H&B");
+        expect(places[0]).toEqual({ label: "Holt & Barrington", options: ["Holt & Barrington Troop", "Holt & Barrington C1"] });
+        expect(places.flatMap((g) => g.options)).toContain("Sickbay");
+    });
 });
 
 test("a link to a monkey that isn't there says so", () => {
@@ -225,8 +306,16 @@ test("visitors following a full profile's link get the monkey's pop-up instead",
     window.location.hash = "";
 });
 
-test("the new Rehabilitation / Medical Record buttons are off for now (Integration's stays on)", () => {
-    expect(NEW_RECORDS_OPEN).toBe(false);
+test("+ New Rehabilitation / Medical Record: admins only", async () => {
+    function Records({ staff }) {
+        return <RecordList section="rehabilitation" records={useRecords(1, staff)} others={[]} />;
+    }
+    const { unmount } = render(<Records staff={{ canSee: true, canAdd: true, userId: "admin-1", isAdmin: true }} />);
+    expect(await screen.findByRole("button", { name: "New Rehabilitation Record" })).toBeInTheDocument();
+    unmount();
+    render(<Records staff={{ canSee: true, canAdd: true, userId: "staff-1", isAdmin: false }} />);
+    await screen.findByText("No rehabilitation records yet.");
+    expect(screen.queryByRole("button", { name: "New Rehabilitation Record" })).not.toBeInTheDocument();
 });
 
 describe("Movement records (added by the database for every move)", () => {
@@ -244,20 +333,19 @@ describe("Movement records (added by the database for every move)", () => {
     }
     const rowOf = (text) => screen.getByText(text).closest("[role='row']");
 
-    test("whoever wrote them can't edit or delete them (their other records: both)", async () => {
+    test("editors can't edit or delete any here, even their own (admins only)", async () => {
         loadRecords.mockResolvedValue([movement, note]);
         render(<Records staff={{ canSee: true, canAdd: true, userId: "staff-1", isAdmin: false }} />);
         await screen.findByText("Calm");
         expect(within(rowOf("Moved from Gismo Troop to Sickbay: leg wound")).queryByRole("button")).not.toBeInTheDocument();
-        expect(within(rowOf("Calm")).getByRole("button", { name: "Edit" })).toBeInTheDocument();
-        expect(within(rowOf("Calm")).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+        expect(within(rowOf("Calm")).queryByRole("button")).not.toBeInTheDocument();
     });
 
-    test("admins can delete them, not edit them", async () => {
+    test("admins can edit and delete them", async () => {
         loadRecords.mockResolvedValue([movement]);
         render(<Records staff={{ canSee: true, canAdd: true, userId: "admin-1", isAdmin: true }} />);
         const row = rowOf(await screen.findByText(/Moved from Gismo Troop/).then((el) => el.textContent));
-        expect(within(row).queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+        expect(within(row).getByRole("button", { name: "Edit" })).toBeInTheDocument();
         expect(within(row).getByRole("button", { name: "Delete" })).toBeInTheDocument();
     });
 });

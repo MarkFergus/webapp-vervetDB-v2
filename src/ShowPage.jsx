@@ -37,6 +37,7 @@ import {
 } from "./enclosures";
 import EnclosuresPage from "./EnclosuresPage";
 import MonkeyPage from "./MonkeyPage";
+import { movementPlaces } from "./MonkeyRecords";
 import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
 // (only loaded when it's opened: the rest of the app stays as quick)
@@ -260,6 +261,11 @@ function ShowPage({
     const [pdfReady, setPdfReady] = useState(null);
     // Which Profile Book to make: a troop, or BABIES_BOOK
     const troopNames = troops.filter((t) => t !== "All Troops");
+    // A Movement record's From and To (the Full Profile's Records)
+    const recordPlaces = useMemo(
+        () => movementPlaces(troops.filter((t) => t !== "All Troops"), enclosures, troopHome),
+        [troops, enclosures]
+    );
     const [pdfBook, setPdfBook] = useState(troopNames[0] ?? BABIES_BOOK);
     // The book's monkeys, in sections, in book order
     const pdfSections = useMemo(
@@ -1006,7 +1012,7 @@ function ShowPage({
                 // (nothing while checking who's signed in, or leaving)
                 adminLocked ? null : (
                     <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
-                        <AdminPage route={route} staff={staff} onRestored={handleRestored} inert={isAnyModalOpen} />
+                        <AdminPage route={route} staff={staff} onRestored={handleRestored} inert={isAnyModalOpen} places={recordPlaces} />
                     </Suspense>
                 )
             ) : onMonkeyPage ? (
@@ -1021,6 +1027,7 @@ function ShowPage({
                         // View Card: its pop-up, on its own (no previous / next)
                         onOpenCard={(m) => openModal(m, [m])}
                         inert={isAnyModalOpen}
+                        places={recordPlaces}
                     />
                 )
             ) : onEnclosures ? (

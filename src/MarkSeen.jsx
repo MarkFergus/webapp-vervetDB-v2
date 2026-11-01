@@ -73,7 +73,7 @@ export function MarkSeenForm({ name, onSave, onCancel }) {
                 <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={confirm}>
                     {busy ? "Saving…" : "Confirm"}
                 </button>
-                <button type="button" className="Modal-edit is-quiet" disabled={busy} onClick={onCancel}>
+                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                     Cancel
                 </button>
             </div>

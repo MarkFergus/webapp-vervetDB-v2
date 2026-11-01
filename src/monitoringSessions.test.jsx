@@ -268,7 +268,7 @@ test("no connection at Finish: nothing lost, kept on the phone until it's saved"
     expect(localStorage.getItem("vervetdb-monitoring-draft-30")).toBeNull();
 });
 
-test("the top: In Progress and Recently Monitored (24 hours), every troop, just a list; maintenance staff can't start one", async () => {
+test("the top: In Progress and Recently Monitored (48 hours), every troop, just a list; maintenance staff can't start one", async () => {
     loadMonitoringSessions.mockResolvedValue([
         { ...finished(30, today(), {}), status: "in_progress", finishedAt: null, startedByName: "Jo", enclosureId: 3 },
         finished(31, today(), { 1: true, 2: false }, { finishedAt: new Date().toISOString(), startedByName: "Sam" }),
@@ -277,7 +277,7 @@ test("the top: In Progress and Recently Monitored (24 hours), every troop, just 
     const { unmount } = open();
     const top = await screen.findByRole("region", { name: "In Progress" });
     expect(top).toHaveTextContent(/Goliath · started .* by Jo/);
-    expect(within(top).getByRole("list", { name: "Recently Monitored" })).toHaveTextContent(/Skunkey · finished .* by Sam · 1 \/ 2 seen/);
+    expect(within(top).getByRole("list", { name: "Recently Monitored" })).toHaveTextContent(/^Skunkey · Today · \d\d:\d\d · Sam$/);
     // (older sessions aren't recent)
     expect(within(top).queryByText(/26th Oct/)).toBeNull();
     expect(within(top).queryByRole("button")).toBeNull();
