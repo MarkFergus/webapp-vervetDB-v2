@@ -71,7 +71,7 @@ import "./MonitoringRecordsPage.css";
 //   delete, and its monkeys' sightings between sessions. A troop with no
 //   session for over a week is Overdue.
 //   Missing: the troop's monkeys not seen in their last session, each with
-//   Mark Seen (seen since, between sessions: MarkSeen.jsx)
+//   Mark As Seen (seen since, between sessions: MarkSeen.jsx)
 // Starting and finishing: editors and admins (staff.canAdd); anyone on
 // the staff can look. (supabase/monitoring-sessions.sql)
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly } (as the pop-up's)
@@ -965,7 +965,7 @@ function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChang
 
 // ---- Missing, and sightings between sessions ----
 
-// A missing monkey: why, and Mark Seen
+// A missing monkey: why, and Mark As Seen
 function MissingItem({ monkey, record, canMark, onMark }) {
     const [open, setOpen] = useState(false);
     return (
@@ -1063,7 +1063,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     const troop = troops.find((t) => t.name === chosen) ?? null;
     // null while loading; "failed"; or the sessions
     const [sessions, setSessions] = useState(null);
-    // Sightings between sessions (Mark Seen): the last year's
+    // Sightings between sessions (Mark As Seen): the last year's
     const [spots, setSpots] = useState([]);
     const [problem, setProblem] = useState(null);
     // What's showing: the list, a session ({ id }), or one just finished
@@ -1320,7 +1320,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                 </p>
             )}
 
-            {/* Missing: not seen in their last session (Mark Seen: editors and admins) */}
+            {/* Missing: not seen in their last session (Mark As Seen: editors and admins) */}
             {troop && missing.length > 0 && (
                 <section className="Monitoring-missing" aria-label="Missing">
                     <h2 className="RecordsPage-subhead">Missing</h2>

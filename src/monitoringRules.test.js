@@ -40,7 +40,7 @@ test("last seen, and sessions missed in a row (sessions it wasn't on don't count
     expect(sightingRecord(past, 9)).toEqual({ lastSeen: null, missed: 0, spot: null });
 });
 
-test("Mark Seen: a sighting between sessions counts as seen; only the sessions after it count as missed", () => {
+test("Mark As Seen: a sighting between sessions counts as seen; only the sessions after it count as missed", () => {
     const past = troopSessions(SESSIONS, 1);
     const spot = (date, extra = {}) => ({ id: 1, monkeyId: 2, date, by: "Sam", note: "", at: `${date}T09:00:00Z`, ...extra });
     // (missed 19th and 26th; seen on the 20th: only the 26th counts)

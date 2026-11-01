@@ -874,11 +874,6 @@
     overflow-wrap: anywhere;
 }
 
-/* Notes for Monitoring: kept as typed, line breaks and all */
-.Modal-monitoringNotes {
-    white-space: pre-line;
-}
-
 /* Favourites: the cards' ☆ (MonkeyCard.css), top right of the photo, always
    showing here */
 .Modal-star .MonkeyCard-star {

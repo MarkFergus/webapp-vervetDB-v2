@@ -108,7 +108,7 @@
 }
 
 /* History: one compact line each, tap for more */
-/* Missing: not seen in their last session, each with Mark Seen (Must
+/* Missing: not seen in their last session, each with Mark As Seen (Must
    See: red; missed once: amber) */
 .Monitoring-missing ul {
     display: flex;

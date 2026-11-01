@@ -187,23 +187,13 @@ describe("updates on an injury", () => {
     });
 });
 
-describe("Monitoring in the pop-up (staff)", () => {
-    test("Condition Check and the Notes for Monitoring, once there's something", async () => {
-        loadMonitoring.mockResolvedValue({ conditionCheck: true, notes: "Check she's eating ok", updatedByName: "Sam", updatedAt: null });
-        open(MAINTENANCE);
-        const section = (await screen.findByRole("heading", { name: "Monitoring" })).closest("section");
-        expect(section).toHaveTextContent("Priority Condition Check");
-        expect(section).toHaveTextContent("Check she's eating ok");
-    });
-
-    test("nothing set: no Monitoring section; visitors never load it", async () => {
-        open(MAINTENANCE);
-        await screen.findByRole("heading", { name: "Bio" });
-        expect(screen.queryByRole("heading", { name: "Monitoring" })).not.toBeInTheDocument();
-        loadMonitoring.mockClear();
-        open(null);
-        expect(loadMonitoring).not.toHaveBeenCalled();
-    });
+test("no Monitoring section in the pop-up (it's on the Full Profile), and nothing loaded for it", async () => {
+    loadMonitoring.mockResolvedValue({ conditionCheck: true, notes: "Check she's eating ok", updatedByName: "Sam", updatedAt: null });
+    open(MAINTENANCE);
+    await screen.findByRole("heading", { name: "Bio" });
+    expect(screen.queryByRole("heading", { name: "Monitoring" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Check she's eating ok")).not.toBeInTheDocument();
+    expect(loadMonitoring).not.toHaveBeenCalled();
 });
 
 describe("an open form holds the pop-up until its Cancel", () => {

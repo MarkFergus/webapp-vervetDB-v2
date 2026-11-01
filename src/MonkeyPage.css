@@ -346,3 +346,81 @@
 .MonkeyPage-statusPanel .Modal-sickbayForm textarea {
     max-width: none;
 }
+
+/* Monitoring: one row each, the whole width; the label on the left, the
+   value beside it (phones: under it), wrapping */
+.MonkeyPage-monitoring {
+    margin: 0;
+    border-top: 1px solid var(--surface-2);
+}
+
+.MonkeyPage-monitoringRow {
+    display: flex;
+    gap: 16px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--surface-2);
+}
+
+.MonkeyPage-monitoringRow dt {
+    display: flex;
+    flex: none;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    width: 200px;
+    font-size: 14px;
+    color: var(--text-3);
+}
+
+.MonkeyPage-monitoringRow dd {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 759px) {
+    .MonkeyPage-monitoringRow {
+        flex-direction: column;
+        gap: 3px;
+        padding: 10px 2px;
+    }
+
+    .MonkeyPage-monitoringRow dt {
+        width: auto;
+        font-size: 13px;
+    }
+
+    .MonkeyPage-monitoringRow dd {
+        padding-left: 24px;
+    }
+}
+
+.MonkeyPage-monitoringList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.MonkeyPage-monitoringDate {
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+.MonkeyPage-monitoringLatest {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+}
+
+.MonkeyPage-monitoringNotes {
+    font-weight: 500;
+    white-space: pre-line;
+}

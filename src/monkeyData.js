@@ -1358,7 +1358,7 @@ export async function loadSpotSightings(monkeyIds = null) {
     return data.map(toAppSpot);
 }
 
-// Mark Seen: a missing monkey seen between sessions ({ date, note })
+// Mark As Seen: a missing monkey seen between sessions ({ date, note })
 export async function addSpotSighting(monkeyId, { date, note = "" }) {
     const { data, error } = await supabase
         .from("monkey_sightings")
@@ -1366,7 +1366,7 @@ export async function addSpotSighting(monkeyId, { date, note = "" }) {
         .select(SPOT_COLUMNS)
         .single();
     if (error) {
-        if (isOlderDatabase(error)) throw new Error("Mark Seen isn't ready yet: supabase/monkey-sightings.sql needs to be run.");
+        if (isOlderDatabase(error)) throw new Error("Mark As Seen isn't ready yet: supabase/monkey-sightings.sql needs to be run.");
         throw sessionProblem(error);
     }
     return toAppSpot(data);

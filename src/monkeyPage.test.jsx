@@ -70,6 +70,7 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
     expect(within(bar).getAllByRole("button").map((b) => b.title)).toEqual([
         "Profile",
         "Arrival Info",
+        "Monitoring",
         "Rehabilitation",
         "Medical",
         "Integration",

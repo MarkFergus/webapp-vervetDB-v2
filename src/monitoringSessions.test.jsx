@@ -364,7 +364,7 @@ test("the +: no Update for a monkey without an injury; a condition saved for the
     expect(addCondition).toHaveBeenCalledWith(2, { date: today(), description: "Scruffy coat", sessionId: 30 });
 });
 
-test("Missing: Mark Seen ticks a monkey off between sessions; it shows in the History and the next briefing", async () => {
+test("Missing: Mark As Seen ticks a monkey off between sessions; it shows in the History and the next briefing", async () => {
     const user = userEvent.setup();
     addSpotSighting.mockImplementation(async (monkeyId, { date, note }) => ({
         id: 7, monkeyId, date, note, loggedBy: "u-1", by: "Sam", at: new Date().toISOString(),
@@ -376,8 +376,8 @@ test("Missing: Mark Seen ticks a monkey off between sessions; it shows in the Hi
     // (Malawi: missed the last 2 sessions)
     const missing = await screen.findByRole("region", { name: "Missing" });
     expect(within(missing).getByText(/Not seen in the last 2 sessions · last seen 12th Oct 2026/)).toBeInTheDocument();
-    await user.click(within(missing).getByRole("button", { name: "Mark Malawi Seen" }));
-    const form = within(missing).getByRole("group", { name: "Mark Malawi Seen" });
+    await user.click(within(missing).getByRole("button", { name: "Mark Malawi As Seen" }));
+    const form = within(missing).getByRole("group", { name: "Mark Malawi As Seen" });
     expect(within(form).getByLabelText("Seen On")).toHaveValue(today());
     await user.type(within(form).getByLabelText("Note (optional)"), "By the gate");
     await user.click(within(form).getByRole("button", { name: "Confirm" }));
@@ -394,9 +394,9 @@ test("Missing: Mark Seen ticks a monkey off between sessions; it shows in the Hi
     expect(within(briefing).queryByText("Must See")).toBeNull();
 });
 
-test("Missing: only editors and admins can Mark Seen", async () => {
+test("Missing: only editors and admins can Mark As Seen", async () => {
     open({ canSee: true, canAdd: false, userId: "u-2", isAdmin: false });
     const missing = await screen.findByRole("region", { name: "Missing" });
     expect(within(missing).getByText("Malawi")).toBeInTheDocument();
-    expect(within(missing).queryByRole("button", { name: /Mark .* Seen/ })).toBeNull();
+    expect(within(missing).queryByRole("button", { name: /Mark .* As Seen/ })).toBeNull();
 });

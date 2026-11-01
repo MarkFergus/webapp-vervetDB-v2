@@ -1,6 +1,17 @@
-/* Mark Seen (MarkSeen.jsx): a missing monkey seen between sessions */
+/* Mark As Seen (MarkSeen.jsx): a missing monkey seen between sessions */
 
-/* The pop-up's line under Monitoring: missing (in red), or who saw it */
+/* Last Seen (the Full Profile): the day, then (missing) why in red, with
+   Mark As Seen */
+.MarkSeen-lastSeen {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.MarkSeen-by {
+    color: var(--text-2);
+}
+
 .MarkSeen-line {
     display: flex;
     flex-wrap: wrap;
@@ -10,10 +21,6 @@
 
 .MarkSeen-line.is-missing b {
     color: var(--danger);
-}
-
-.MarkSeen-line.is-seen b {
-    color: var(--green);
 }
 
 .MarkSeen-button {
@@ -28,11 +35,4 @@
     background-color: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: 8px;
-}
-
-/* (the pop-up: under the Monitoring lines) */
-.Modal-section .MarkSeen-line {
-    margin-top: 4px;
-    font-size: 16px;
-    line-height: 1.5;
 }

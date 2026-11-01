@@ -38,9 +38,6 @@ import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
-import useMonitoring from "./useMonitoring";
-import { PopupSighting, useMissing } from "./MarkSeen";
-import { useConditions } from "./MonkeyRecords";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import StatusUpdate from "./StatusUpdate";
 import RecentEdits from "./RecentEdits";
@@ -164,16 +161,7 @@ function Modal({
     const [sickbayForm, setSickbayForm] = useState(null);
     const [sickbayBusy, setSickbayBusy] = useState(false);
     const [sickbayProblem, setSickbayProblem] = useState(null);
-    // Monitoring (staff): Condition Check and Notes for Monitoring, set by
-    // admins in Edit (loaded again once it's saved: a new monkey object)
-    const monitoring = useMonitoring(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey), monkey);
-    // Its latest condition (Records → Sections → Monitoring), under Monitoring
-    const latestCondition = useConditions(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey))[0] ?? null;
-    // Missing (not seen in its last monitoring session), with Mark Seen;
-    // or seen since, between sessions (MarkSeen.jsx)
-    const missing = useMissing(monkey?.id, Boolean(isModalOpen && staff?.canSee && monkey));
-    const showSighting = Boolean(missing.record && (missing.record.missed > 0 || missing.record.spot));
-    const { conditionCheck, notes: monitoringNotes } = monitoring.value;
+    // (Monitoring: on its Full Profile, MonkeyPage.jsx)
     // Released (new arrivals): its little form (date and details)
     const [releaseForm, setReleaseForm] = useState(null);
     const [releaseBusy, setReleaseBusy] = useState(false);
@@ -981,35 +969,6 @@ function Modal({
                                                     .filter(Boolean)
                                                     .join(" · ")}
                                             </p>
-                                        </section>
-                                    )}
-                                    {/* Monitoring (staff): only once there's something
-                                        (its latest condition too, and whether it's missing) */}
-                                    {((monitoring.available && (conditionCheck || monitoringNotes)) || latestCondition || showSighting) && (
-                                        <section className="Modal-section">
-                                            <h2 className="Modal-label">Monitoring</h2>
-                                            <p className="Modal-feeding">
-                                                {conditionCheck && (
-                                                    <span>
-                                                        <b>Priority Condition Check</b>
-                                                    </span>
-                                                )}
-                                                {monitoringNotes && <span className="Modal-monitoringNotes">{monitoringNotes}</span>}
-                                                {latestCondition && (
-                                                    <span className="Modal-condition">
-                                                        <b>Condition:</b> {latestCondition.description} ·{" "}
-                                                        {summaryDate(new Date(`${latestCondition.date}T00:00:00`))}
-                                                    </span>
-                                                )}
-                                            </p>
-                                            {showSighting && (
-                                                <PopupSighting
-                                                    monkey={monkey}
-                                                    record={missing.record}
-                                                    canMark={Boolean(staff?.canAdd) && !staff?.readOnly}
-                                                    onMarked={missing.reload}
-                                                />
-                                            )}
                                         </section>
                                     )}
                                     {/* Injuries (staff): current, then Injury History

@@ -18,6 +18,12 @@ import {
     IconFriends,
     IconUserCircle,
     IconWorldPin,
+    IconBinoculars,
+    IconEye,
+    IconFirstAidKit,
+    IconStethoscope,
+    IconAlertTriangle,
+    IconNotes,
 } from "@tabler/icons-react";
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
@@ -33,6 +39,9 @@ import { summaryDate } from "./feeding";
 import { STATUS_WORDS, isArchived } from "./monkeyStatus";
 import { ARRIVAL_REASONS } from "./arrival";
 import StatusUpdate from "./StatusUpdate";
+import useMonitoring from "./useMonitoring";
+import { LastSeen, useMissing } from "./MarkSeen";
+import { isNewArrival } from "./enclosures";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
 
@@ -42,6 +51,11 @@ import "./MonkeyPage.css";
 //   Profile         photos, the main facts, bio and description
 //   Arrival Info    arrival date, reason and area of origin, and (staff)
 //                   the Arrival Info text, folding
+//   Monitoring      staff only, folding (monkeys checked in monitoring
+//                   sessions: not a new arrival in a care unit, looked after
+//                   daily as part of its care): Last Seen (Mark As Seen when
+//                   missing), Current Injuries, Latest Condition, Priority
+//                   Check, Notes for Monitoring
 //   Records         staff only, folding: two tabs, like a browser's, each
 //                   a list of records (MonkeyRecords.jsx)
 //     Rehabilitation  movements, observations, escapes, integration
@@ -188,6 +202,11 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const weights = useWeights(monkey.id, isStaff);
     // Its conditions (Monitoring), in Medical
     const conditions = useConditions(monkey.id, isStaff);
+    // Monitoring (staff; monkeys in monitoring sessions): last seen (and
+    // missing), Priority Check and Notes for Monitoring (again once saved)
+    const monitored = isStaff && !isNewArrival(monkey) && !isArchived(monkey);
+    const missing = useMissing(monkey.id, monitored);
+    const monitoring = useMonitoring(monkey.id, monitored, monkey);
     const archived = isArchived(monkey);
     // (an archived monkey: admins can add records too, e.g. what's found
     // out afterwards; editing and deleting are as for any monkey)
@@ -197,7 +216,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Status Update's form open (archived monkeys, admins)
     const [statusOpen, setStatusOpen] = useState(false);
     // Which folding parts are open: both to start with
-    const [open, setOpen] = useState({ arrival: true, records: true });
+    const [open, setOpen] = useState({ arrival: true, monitoring: true, records: true });
     const foldProps = (key) => ({
         open: open[key],
         onToggle: () => setOpen((o) => ({ ...o, [key]: !o[key] })),
@@ -218,6 +237,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const jumps = [
         { key: "profile", label: "Profile", icon: IconUserCircle },
         { key: "arrival", label: "Arrival Info", icon: IconDoorEnter },
+        ...(monitored ? [{ key: "monitoring", label: "Monitoring", icon: IconBinoculars }] : []),
         ...(isStaff ? TABS : []),
     ];
     // Scroll down to a part, opening it first if it's folded away
@@ -290,6 +310,63 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         { icon: IconFlag, label: "Arrival Reason", value: ARRIVAL_REASONS[monkey.arrivalReason] ?? null },
         { icon: IconWorldPin, label: "Area of Origin", value: null, wide: true },
     ]);
+
+    // Monitoring's rows, one each, the whole width
+    const latestCondition = conditions[0] ?? null;
+    const { conditionCheck, notes: monitoringNotes } = monitoring.value;
+    const monitoringRows = [
+        {
+            icon: IconEye,
+            label: "Last Seen",
+            value: (
+                <LastSeen
+                    monkey={monkey}
+                    record={missing.record}
+                    canMark={Boolean(staff?.canAdd) && !staff?.readOnly}
+                    onMarked={missing.reload}
+                />
+            ),
+        },
+        {
+            icon: IconFirstAidKit,
+            label: "Current Injuries",
+            value: injuries.current.length ? (
+                <ul className="MonkeyPage-monitoringList">
+                    {injuries.current.map((injury) => {
+                        const latest = [...(injury.updates ?? [])].sort((a, b) => b.date.localeCompare(a.date))[0];
+                        return (
+                            <li key={injury.id}>
+                                {injury.description} <span className="MonkeyPage-monitoringDate">· {dayText(injury.date)}</span>
+                                {latest && (
+                                    <span className="MonkeyPage-monitoringLatest">
+                                        Latest Update: {latest.details} · {dayText(latest.date)}
+                                    </span>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : (
+                "None"
+            ),
+        },
+        {
+            icon: IconStethoscope,
+            label: "Latest Condition",
+            value: latestCondition ? (
+                <>
+                    {latestCondition.description}{" "}
+                    <span className="MonkeyPage-monitoringDate">· {dayText(latestCondition.date)}</span>
+                </>
+            ) : null,
+        },
+        { icon: IconAlertTriangle, label: "Priority Check", value: monitoring.loaded ? (conditionCheck ? "Yes" : "No") : null },
+        {
+            icon: IconNotes,
+            label: "Notes for Monitoring",
+            value: monitoringNotes ? <span className="MonkeyPage-monitoringNotes">{monitoringNotes}</span> : null,
+        },
+    ];
 
     return (
         <div className="Enclosures MonkeyPage" inert={inert}>
@@ -393,6 +470,23 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                         </dl>
                     </div>
                 </Fold>
+
+                {/* Monitoring (staff; monkeys in monitoring sessions) */}
+                {monitored && (
+                    <Fold title="Monitoring" jumpId={jumpId("monitoring")} {...foldProps("monitoring")}>
+                        <dl className="MonkeyPage-monitoring">
+                            {monitoringRows.map(({ icon: Icon, label, value }) => (
+                                <div key={label} className="MonkeyPage-monitoringRow">
+                                    <dt>
+                                        <Icon size={16} aria-hidden="true" />
+                                        {label}
+                                    </dt>
+                                    <dd>{value ?? <span className="Enclosures-unset">Not recorded</span>}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </Fold>
+                )}
 
                 {/* Records (staff): Rehabilitation and Medical, a tab each */}
                 {isStaff && (
