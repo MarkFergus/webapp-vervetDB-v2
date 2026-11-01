@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconHistory, IconMinus, IconUsers } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconHistory, IconMail, IconMinus, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
 import { ArchiveList, useArchive } from "./MonkeyArchive";
 import MonkeyPage from "./MonkeyPage";
 import StaffActivity from "./StaffActivity";
+import WeeklyReports from "./WeeklyReports";
 import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
 import "./AdminPage.css";
@@ -25,6 +26,8 @@ import "./AdminPage.css";
 //                                   Profile (#admin/archive/<name>-<id>),
 //                                   with Status Update to change its status
 //                                   or restore it (monkey-archive.sql)
+//   Weekly Reports (#admin/reports) your own weekly report email: on or off,
+//                                   when, and what's in it (WeeklyReports.jsx)
 
 // The user types, in the table's order (visitors: not signed in)
 export const USER_TYPES = [
@@ -58,7 +61,7 @@ export const ACCESS = [
     { what: "Enclosure details and troops", who: ["admin"] },
     { what: "Change or delete anyone's records", who: ["admin"] },
     { what: "Status Update and the Monkey Archive", who: ["admin"] },
-    { what: "Admin Dashboard: user types and Staff Activity", who: ["admin"] },
+    { what: "Admin Dashboard: user types, Staff Activity and Weekly Reports", who: ["admin"] },
 ];
 
 function AccessTable() {
@@ -224,6 +227,7 @@ const PARTS = [
     { id: "staff", title: "Staff Access", sub: "What each user type can do, and every account's user type", Icon: IconUsers },
     { id: "activity", title: "Staff Activity", sub: "What each staff member has added, changed or deleted", Icon: IconHistory },
     { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
+    { id: "reports", title: "Weekly Reports", sub: "Your weekly report email: when it comes and what's in it", Icon: IconMail },
 ];
 
 // "admin" → no part (the choices); "admin/staff"; "admin/archive" and an
@@ -309,6 +313,11 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false, p
                 </>
             ) : part.id === "activity" ? (
                 <StaffActivity />
+            ) : part.id === "reports" ? (
+                <>
+                    <p className="Admin-intro">Your own weekly summary, by email. Off until you turn it on.</p>
+                    <WeeklyReports />
+                </>
             ) : (
                 <>
                     <p className="Admin-intro">Monkeys no longer at the sanctuary. Their records stay on file.</p>

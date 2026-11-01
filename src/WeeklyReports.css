@@ -1,0 +1,257 @@
+/* Weekly Reports (WeeklyReports.jsx): in an Admin Dashboard card */
+
+.Weekly .MaintenancePage-types {
+    margin-top: 6px;
+}
+
+.Weekly-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    margin-top: 14px;
+}
+
+.Weekly-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.Weekly-field > span,
+.Weekly-include legend {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.Weekly-when {
+    display: flex;
+    gap: 8px;
+}
+
+/* (the Statistics selector's look, as the staff list's user types) */
+.Weekly-field select {
+    height: 36px;
+    min-width: 120px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Weekly-field select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.Weekly-next {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Weekly-include {
+    margin: 14px 0 0;
+    padding: 0;
+    border: none;
+}
+
+.Weekly-include legend {
+    margin-bottom: 4px;
+    padding: 0;
+}
+
+.Weekly-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+}
+
+.Weekly-section:last-child {
+    border-bottom: none;
+}
+
+.Weekly-section input {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--green);
+}
+
+.Weekly-section b {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.Weekly-sub {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.Weekly-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.Weekly-saved {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+}
+
+/* ---- Past Reports ---- */
+
+.Weekly-actions {
+    flex-wrap: wrap;
+}
+
+.Weekly-sent {
+    margin: 10px 0 0;
+}
+
+.Weekly-ticks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+}
+
+.Weekly-ticks label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.Weekly-ticks input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--green);
+}
+
+.Weekly-report {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.Weekly-reportTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.Weekly-reportSection {
+    margin-top: 16px;
+}
+
+.Weekly-reportSection h4 {
+    margin: 0;
+    padding-bottom: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-strong);
+    border-bottom: 1px solid var(--line);
+}
+
+.Weekly-group h5,
+.Weekly-missing h5 {
+    margin: 10px 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-3);
+}
+
+.Weekly-lines,
+.Weekly-missing ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Weekly-lines li {
+    padding: 3px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.Weekly-lines li.is-alert {
+    color: var(--danger);
+}
+
+.Weekly-lineSub {
+    display: block;
+    padding-left: 12px;
+    color: var(--text-2);
+}
+
+.Weekly-none {
+    margin: 0;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text-3);
+}
+
+.Weekly-missing {
+    margin-top: 10px;
+    padding: 2px 12px 8px;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+}
+
+.Weekly-missing h5 {
+    color: var(--danger);
+}
+
+.Weekly-missing li {
+    padding: 2px 0;
+    font-size: 14px;
+    color: var(--danger);
+}
+
+/* The milk totals: a row per baby, a column per day (scrolls on phones) */
+.Weekly-tableWrap {
+    overflow-x: auto;
+}
+
+.Weekly-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+}
+
+.Weekly-table th,
+.Weekly-table td {
+    padding: 5px 6px;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+}
+
+.Weekly-table thead th {
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.Weekly-table tbody th {
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-strong);
+}

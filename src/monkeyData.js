@@ -1487,6 +1487,72 @@ export async function saveStaffRole(userId, role) {
     }
 }
 
+// Weekly Reports (supabase/weekly-reports.sql, admins only): your own
+// settings ({ enabled, weekStarts, sendDay, sendHour, sections }), or null
+// if you haven't saved any yet. Throws a message to show.
+export async function loadWeeklySettings(userId) {
+    const { data, error } = await supabase
+        .from("weekly_report_settings")
+        .select("enabled, week_starts, send_day, send_hour, sections")
+        .eq("user_id", userId)
+        .maybeSingle();
+    if (error) {
+        if (isOlderDatabase(error)) throw new Error("Weekly Reports aren't ready yet: supabase/weekly-reports.sql needs to be run.");
+        throw new Error("Couldn't load your Weekly Reports settings. Please check your connection and try again.");
+    }
+    return data
+        ? { enabled: data.enabled, weekStarts: data.week_starts, sendDay: data.send_day, sendHour: data.send_hour, sections: data.sections }
+        : null;
+}
+
+// Saves your own Weekly Reports settings (added the first time)
+export async function saveWeeklySettings(userId, settings) {
+    const { error } = await supabase.from("weekly_report_settings").upsert({
+        user_id: userId,
+        enabled: settings.enabled,
+        week_starts: settings.weekStarts,
+        send_day: settings.sendDay,
+        send_hour: settings.sendHour,
+        sections: settings.sections,
+    });
+    if (error) {
+        console.error("Saving Weekly Reports settings failed:", error);
+        if (isOlderDatabase(error)) throw new Error("Weekly Reports aren't ready yet: supabase/weekly-reports.sql needs to be run.");
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an admin?");
+        throw saveProblem(error);
+    }
+}
+
+// A week's report (weekly-report-email.sql, admins only), the 7 days from
+// `from` ("2026-10-26"), the sections chosen: its lines, as
+// weekly_report_view words them ({ title, ended, sections }). Throws a
+// message to show.
+export async function loadWeeklyReport(from, sections) {
+    const { data, error } = await supabase.rpc("weekly_report", { week_from: from, sections });
+    if (error) {
+        console.error("Loading a weekly report failed:", error);
+        if (error.code === "PGRST202") throw new Error("Past Reports aren't ready yet: supabase/weekly-report-email.sql needs to be run.");
+        if (error.code === "42501") throw new Error("Weekly Reports are for admins only. Are you still signed in as an admin?");
+        throw new Error("Couldn't load that week's report. Please check your connection and try again.");
+    }
+    return data;
+}
+
+// Email Me: a week's report to your own sign-in email, now (one a minute at
+// most) → the address it went to. Throws a message to show.
+export async function emailMeWeeklyReport(from, sections) {
+    const { data, error } = await supabase.rpc("email_me_weekly_report", { week_from: from, sections });
+    if (error) {
+        console.error("Emailing a weekly report failed:", error);
+        if (error.code === "PGRST202") throw new Error("Email Me isn't ready yet: supabase/weekly-report-email.sql needs to be run.");
+        if (error.code === "42501") throw new Error("Weekly Reports are for admins only. Are you still signed in as an admin?");
+        // (the database's own words: "Please wait a minute…")
+        if (error.code === "P0001") throw new Error(error.message);
+        throw new Error("Couldn't send the email. Please check your connection and try again.");
+    }
+    return data;
+}
+
 // ---- Records: Baby Care's milk totals and weights
 // (supabase/baby-care-records.sql) ----
 
