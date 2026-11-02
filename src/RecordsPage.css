@@ -593,15 +593,23 @@
     min-width: 0;
 }
 
-/* The quick line: one series, no labels (the colour: Statistics' line
-   charts' violet, checked for both themes) */
+/* The quick line: one series, no labels (the colour: each theme's
+   Statistics "count" colour: StatisticsPage.css) */
 .RecordsPage-spark {
-    --spark: #8f84e8;
+    --spark: #9d8cff;
     min-width: 0;
 }
 
+:root[data-palette="night-savannah"] .RecordsPage-spark {
+    --spark: #d9b45a;
+}
+
 :root[data-theme="light"] .RecordsPage-spark {
-    --spark: #6250d6;
+    --spark: #7d5a9e;
+}
+
+:root[data-palette="pastel-safari"] .RecordsPage-spark {
+    --spark: #7b6fcc;
 }
 
 .RecordsPage-spark svg {

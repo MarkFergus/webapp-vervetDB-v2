@@ -21,13 +21,14 @@
     background-color: var(--bar);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--nav-line);
     transition: border-color 0.2s;
 }
 
-/* Scrolled: a faint line where the photos slide under the header */
+/* Scrolled: a faint line where the photos slide under the header (the
+   light theme has its line all along: index.css) */
 .ShowPage-nav.is-scrolled {
-    border-bottom-color: var(--wash-soft);
+    border-bottom-color: var(--nav-line-scrolled);
 }
 
 /* The monkey's pop-up goes over the header */

@@ -42,6 +42,12 @@
         transition: width 0.15s ease, box-shadow 0.15s ease;
     }
 
+    /* A pop-up's open (the rail waits: inert): under its dimmed background,
+       like the rest of the page, not bright above it */
+    .SideRail[inert] {
+        z-index: 1;
+    }
+
     /* Hovered (or tabbed into with the keyboard: not after a click, so it
        closes as soon as the pointer leaves): out over the page, names
        showing. A moment's pause first, so passing over it on the way
@@ -255,15 +261,16 @@
     width: 48px;
     height: 48px;
     color: var(--on-green);
-    background-color: var(--green);
+    background-color: var(--green-fill);
     border: 2px solid #fff;
     border-radius: 50%;
-    box-shadow: 0 4px 14px rgba(62, 207, 142, 0.25), 0 2px 6px var(--shadow);
+    /* (a soft glow in the theme's own green) */
+    box-shadow: 0 4px 14px var(--green-wash), 0 2px 6px var(--shadow);
     transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
 .BottomBar-map:hover .BottomBar-mapCircle {
-    background-color: var(--green-2);
+    background-color: var(--green-fill-2);
 }
 
 .BottomBar-map:active .BottomBar-mapCircle {

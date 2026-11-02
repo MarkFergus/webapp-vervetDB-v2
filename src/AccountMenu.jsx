@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { IconCheck, IconHistory, IconLogout, IconMoon, IconSun, IconUser } from "@tabler/icons-react";
+import {
+    IconCheck,
+    IconHistory,
+    IconLogout,
+    IconMoon,
+    IconMoonStars,
+    IconSun,
+    IconSunHigh,
+    IconUser,
+} from "@tabler/icons-react";
 import { setTheme, useTheme } from "./theme";
 import { useAuth } from "./auth";
 import Avatar from "./Avatar";
@@ -9,13 +18,15 @@ import "./AccountMenu.css";
 // opens the sign-in pop-up. Signed in, a menu drops down (like Supabase's):
 // who you are (photo, name, email), Account (the signed-in pop-up, for
 // now the account page), Changelog (staff: your own changes), a Theme
-// section listing Dark and Light (like Supabase's: the chosen one ticked;
+// section listing the four themes (like Supabase's: the chosen one ticked;
 // tapped, it switches and the menu stays open), and Sign Out.
 //   onAccount: opens the account pop-up; onChangelog: opens it on Changelog
 // The theme choices, in order
 const THEME_CHOICES = [
-    { id: "dark", label: "Dark", Icon: IconMoon },
-    { id: "light", label: "Light", Icon: IconSun },
+    { id: "dark", label: "Neon Night", Icon: IconMoon },
+    { id: "night-savannah", label: "Night Savannah", Icon: IconMoonStars },
+    { id: "light", label: "Acacia", Icon: IconSun },
+    { id: "pastel-safari", label: "Pastel Safari", Icon: IconSunHigh },
 ];
 
 function AccountMenu({ onAccount, onChangelog }) {
@@ -119,7 +130,7 @@ function AccountMenu({ onAccount, onChangelog }) {
                         </button>
                     )}
                     <div className="AccountMenu-divider" role="separator" />
-                    {/* Theme: both choices, the chosen one ticked */}
+                    {/* Theme: the four choices, the chosen one ticked */}
                     <div role="group" aria-labelledby="AccountMenu-themeTitle">
                         <p className="AccountMenu-section" id="AccountMenu-themeTitle">
                             Theme

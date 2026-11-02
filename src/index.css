@@ -23,21 +23,29 @@
     /* One accent: links, focus, filters in use */
     --accent: #3ea6ff;
     --accent-2: #8cc9ff;
-    /* Each of these has one job */
-    --green: #3ecf8e; /* go: Add Photos, Save (and the signed-in account icon) */
-    --green-2: #6bdba8;
+    /* Blue fills with white text: Enter Results, Awaiting Approval */
+    --blue: #2f5bff;
+    --blue-2: #2449e0;
+    /* Each of these has one job ("Electric" neon, 2026-11-02) */
+    --green: #3dff7a; /* go: Add Photos, Save (and the signed-in account icon) */
+    --green-2: #7aff9f;
     --on-green: #121212; /* text and icons on green */
+    /* Green and blue as fills (Save, a chosen Full, Enter Results…): the
+       colour itself, except Pastel Safari's soft pastels (with dark text) */
+    --green-fill: var(--green);
+    --green-fill-2: var(--green-2);
+    --on-blue: #ffffff;
     --stay: #2dd4bf; /* teal: a monkey staying in an introcage for now (In Gismo A) */
-    --pink: #fe39a4; /* destructive and cancel actions in the pop-ups (Delete, Discard) */
-    --pink-2: #ff6dbb;
-    --danger: #ff4e45;
-    --danger-2: #ff8a80;
-    /* Status fills (badges), the same in both themes, always with dark text */
-    --amber: #f5b83d; /* In Sickbay */
+    --pink: #ff1fd6; /* destructive and cancel actions in the pop-ups (Delete, Discard) */
+    --pink-2: #ff5ce0;
+    --danger: #ff2e4d;
+    --danger-2: #ff6b80;
+    /* Status fills (badges), with dark text (themes with their own amber set it) */
+    --amber: #ffe11a; /* In Sickbay */
     --orange: #ff7a1a; /* New Arrival */
     --rescue: #b794ff; /* violet: Injured Rescue */
     --on-status: #121212; /* text and icons on amber, orange, teal and other bright fills */
-    --amber-text: #f5b83d; /* the Sickbay amber as text or an icon (Quick Actions) */
+    --amber-text: #ffe11a; /* the Sickbay amber as text or an icon (Quick Actions) */
     --orange-text: #ff6b1a; /* the game's Ultimate orange as text */
     --star: #ffc83d; /* a favourite's ★ on its photo (the same in both themes) */
     --map-paper: #f1f1f1; /* behind the sanctuary map (a light drawing in both themes) */
@@ -46,9 +54,13 @@
     --wash-soft: rgba(255, 255, 255, 0.08); /* hover on bars and menus */
     --wash: rgba(255, 255, 255, 0.1); /* hover on icon buttons; the current page */
     --wash-strong: rgba(255, 255, 255, 0.16);
-    --green-wash: rgba(62, 207, 142, 0.15); /* the signed-in account icon */
+    --green-wash: rgba(61, 255, 122, 0.15); /* the signed-in account icon */
     --bar: rgba(18, 18, 18, 0.9); /* the blurred top and bottom bars */
     --bar-line: rgba(255, 255, 255, 0.08);
+    /* The line under the top bar: none at the top of the page, faint once
+       scrolled (the light theme's: always, where its cream bar meets the page) */
+    --nav-line: transparent;
+    --nav-line-scrolled: var(--wash-soft);
     --shadow: rgba(0, 0, 0, 0.5); /* things that float: menus, the rail over the page */
     --shadow-strong: rgba(0, 0, 0, 0.6);
     --scrim: rgba(0, 0, 0, 0.8); /* behind a pop-up */
@@ -74,41 +86,132 @@
    the signal colours used as text are deeper so they read on white (all
    pairs AA). Photos keep their dark fade, so names on them stay white. */
 :root[data-theme="light"] {
-    --bg: #ffffff;
-    --surface-1: #ffffff;
-    --surface-2: #f2f2f2;
-    --surface-3: #e5e5e5;
-    --field: #ffffff;
-    --line: #e5e5e5;
-    --line-strong: #c6c6c6;
-    --text: #0f0f0f;
-    --text-2: #5c5c5c;
-    --text-3: #636363;
-    --accent: #065fd4;
-    --accent-2: #0b4db0;
-    --green: #0c7f4b;
-    --green-2: #0a6a3f;
+    /* "Savannah Cream" with Acacia's colours (2026-11-02): a cream page and
+       panels instead of white, and earthier buttons (olive Save, teal blue,
+       clay Cancel) */
+    --bg: #f1e8d4;
+    --surface-1: #f9f4e8;
+    --surface-2: #e7dcc4;
+    --surface-3: #d9ccb0;
+    --field: #fcf8ef;
+    --line: #ddd1b8;
+    --line-strong: #bfb194;
+    --text: #221d13;
+    --text-2: #5c5442;
+    --text-3: #5f5745;
+    --accent: #1f6475;
+    --accent-2: #18505e;
+    --blue: #1f6475;
+    --blue-2: #18505e;
+    --green: #4d6b1f;
+    --green-2: #3f5818;
     --on-green: #ffffff;
-    --pink: #c2006b;
-    --pink-2: #99005a;
-    --danger: #c5221f;
-    --danger-2: #a51b18;
-    --amber-text: #8a5300;
-    --orange-text: #b84300;
-    --text-strong: #0f0f0f;
-    --wash-soft: rgba(0, 0, 0, 0.05);
-    --wash: rgba(0, 0, 0, 0.06);
-    --wash-strong: rgba(0, 0, 0, 0.1);
-    --green-wash: rgba(12, 127, 75, 0.12);
-    --bar: rgba(255, 255, 255, 0.92);
-    --bar-line: rgba(0, 0, 0, 0.08);
-    --shadow: rgba(0, 0, 0, 0.16);
-    --shadow-strong: rgba(0, 0, 0, 0.2);
+    --pink: #a6452a;
+    --pink-2: #8e3a22;
+    --danger: #a8231d;
+    --danger-2: #861c17;
+    --amber: #e3a33a;
+    --amber-text: #7a4806;
+    --orange-text: #9a3f0a;
+    --text-strong: #221d13;
+    --wash-soft: rgba(60, 45, 15, 0.05);
+    --wash: rgba(60, 45, 15, 0.07);
+    --wash-strong: rgba(60, 45, 15, 0.12);
+    --green-wash: rgba(77, 107, 31, 0.14);
+    --bar: rgba(249, 244, 232, 0.92);
+    --bar-line: rgba(60, 45, 15, 0.1);
+    --nav-line: var(--line);
+    --nav-line-scrolled: var(--line);
+    --shadow: rgba(60, 45, 15, 0.16);
+    --shadow-strong: rgba(60, 45, 15, 0.22);
     --scrim: rgba(0, 0, 0, 0.5);
     --scrim-soft: rgba(0, 0, 0, 0.35);
     --photo-fade: rgba(0, 0, 0, 0.78);
-    --selection: rgba(6, 95, 212, 0.2);
+    --selection: rgba(31, 100, 117, 0.22);
     color-scheme: light;
+}
+
+/* ---- The second dark theme: Night Savannah (2026-11-02) ----
+   Warm brown-blacks with Acacia's colours brightened for the dark: olive-lime
+   Save, teal links, clay Cancel. (Its blue fills stay deep, for white text.) */
+:root[data-palette="night-savannah"] {
+    --bg: #16130e;
+    --surface-1: #201c15;
+    --surface-2: #2b261d;
+    --surface-3: #40382a;
+    --field: #1a1711;
+    --line: #353024;
+    --line-strong: #51493a;
+    --text: #f2ead8;
+    --text-2: #b5aa91;
+    --text-3: #a0957c;
+    --accent: #3fa6bc;
+    --accent-2: #7cc6d6;
+    --blue: #1f6475;
+    --blue-2: #2a7c90;
+    --green: #9cc25a;
+    --green-2: #b3d27a;
+    --on-green: #16130e;
+    --pink: #e8835e;
+    --pink-2: #f0a283;
+    --danger: #f06a55;
+    --danger-2: #f59484;
+    --amber: #eab04c;
+    --amber-text: #eab04c;
+    --on-status: #16130e;
+    --orange-text: #f0874a;
+    --text-strong: #fffaf0;
+    --wash-soft: rgba(255, 240, 210, 0.07);
+    --wash: rgba(255, 240, 210, 0.1);
+    --wash-strong: rgba(255, 240, 210, 0.16);
+    --green-wash: rgba(156, 194, 90, 0.15);
+    --bar: rgba(22, 19, 14, 0.9);
+    --bar-line: rgba(255, 240, 210, 0.08);
+    --selection: rgba(63, 166, 188, 0.35);
+}
+
+/* ---- The second light theme: Pastel Safari (2026-11-02) ----
+   A mint page with soft pastel buttons and dark text (Save, blue buttons,
+   In Progress); green, blue and red as text stay deep enough to read, and
+   Delete stays a strong red */
+:root[data-palette="pastel-safari"] {
+    --bg: #eef6f0;
+    --surface-1: #f8fcf9;
+    --surface-2: #dcece1;
+    --surface-3: #c6e0cd;
+    --field: #fbfdfb;
+    --line: #d3e7d8;
+    --line-strong: #a9cdb3;
+    --text: #17261c;
+    --text-2: #4d6455;
+    --text-3: #4c6354;
+    --accent: #1f5f9e;
+    --accent-2: #184c80;
+    --blue: #9cc8f2;
+    --blue-2: #86b9ea;
+    --on-blue: #0d2a45;
+    --green: #1e7a46;
+    --green-2: #18663a;
+    --green-fill: #8fd6a8;
+    --green-fill-2: #7acb97;
+    --on-green: #10301c;
+    --pink: #b8325f;
+    --pink-2: #962850;
+    --danger: #b3322a;
+    --danger-2: #8f2720;
+    --amber: #f6cf73;
+    --amber-text: #6e4b05;
+    --orange-text: #9a4a0a;
+    --text-strong: #17261c;
+    --wash-soft: rgba(20, 60, 35, 0.05);
+    --wash: rgba(20, 60, 35, 0.07);
+    --wash-strong: rgba(20, 60, 35, 0.12);
+    --green-wash: rgba(30, 122, 70, 0.14);
+    --bar: rgba(248, 252, 249, 0.92);
+    --bar-line: rgba(20, 60, 35, 0.1);
+    --shadow: rgba(20, 60, 35, 0.16);
+    --shadow-strong: rgba(20, 60, 35, 0.22);
+    --selection: rgba(31, 95, 158, 0.2);
 }
 
 body {

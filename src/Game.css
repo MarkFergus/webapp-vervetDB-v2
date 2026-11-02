@@ -501,7 +501,7 @@
 
 .Game-typed input.is-correct {
     border-color: var(--green);
-    background-color: rgba(62, 207, 142, 0.2);
+    background-color: color-mix(in srgb, var(--green) 20%, transparent);
 }
 
 .Game-typed input.is-wrong {
@@ -603,7 +603,7 @@
 }
 
 .Game-photo.is-correct {
-    box-shadow: 0 0 0 4px var(--green), 0 0 24px rgba(62, 207, 142, 0.6);
+    box-shadow: 0 0 0 4px var(--green), 0 0 24px color-mix(in srgb, var(--green) 60%, transparent);
     animation: Game-flash 0.5s ease-out;
 }
 
@@ -666,7 +666,7 @@
     opacity: 1;
     color: var(--text-strong);
     border-color: var(--green);
-    background-color: rgba(62, 207, 142, 0.2);
+    background-color: color-mix(in srgb, var(--green) 20%, transparent);
 }
 
 .Game-option.is-wrong {

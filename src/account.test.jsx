@@ -296,16 +296,30 @@ describe("the account menu (computers)", () => {
             "Sign Out",
         ]);
         expect(within(menu).getByRole("menuitem", { name: "Account" })).toHaveFocus();
-        // Theme: its own section, both choices, Dark ticked to start with;
-        // tapping Light switches (and the menu stays open)
+        // Theme: its own section, the four themes, Neon Night ticked to start
+        // with; tapping one switches (and the menu stays open). The page's
+        // data-theme is the mode (dark / light), data-palette the theme when
+        // it isn't its mode's first
         const themes = within(within(menu).getByRole("group", { name: "Theme" })).getAllByRole("menuitemradio");
-        expect(themes.map((t) => [t.textContent, t.getAttribute("aria-checked")])).toEqual([["Dark", "true"], ["Light", "false"]]);
-        await user.click(within(menu).getByRole("menuitemradio", { name: "Light" }));
-        expect(document.documentElement.dataset.theme).toBe("light");
+        expect(themes.map((t) => [t.textContent, t.getAttribute("aria-checked")])).toEqual([
+            ["Neon Night", "true"],
+            ["Night Savannah", "false"],
+            ["Acacia", "false"],
+            ["Pastel Safari", "false"],
+        ]);
+        const root = document.documentElement;
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Acacia" }));
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["light", undefined]);
         expect(localStorage.getItem("vervetdb-theme")).toBe("light");
-        expect(within(menu).getByRole("menuitemradio", { name: "Light" })).toHaveAttribute("aria-checked", "true");
-        await user.click(within(menu).getByRole("menuitemradio", { name: "Dark" }));
-        expect(document.documentElement.dataset.theme).toBe("dark");
+        expect(within(menu).getByRole("menuitemradio", { name: "Acacia" })).toHaveAttribute("aria-checked", "true");
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Pastel Safari" }));
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["light", "pastel-safari"]);
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Night Savannah" }));
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", "night-savannah"]);
+        expect(localStorage.getItem("vervetdb-theme")).toBe("night-savannah");
+        expect(within(menu).getByRole("menuitemradio", { name: "Night Savannah" })).toHaveAttribute("aria-checked", "true");
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Neon Night" }));
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", undefined]);
 
         // Account: the signed-in pop-up, and the menu's put away
         await user.click(within(menu).getByRole("menuitem", { name: "Account" }));

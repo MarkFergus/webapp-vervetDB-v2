@@ -8,23 +8,25 @@
      count       the number of monkeys (age groups, space, where they
                  live, AM plates): violet, so blue only ever means male
      troop / introcages   two steps of the same violet
-     none        grey: not known (e.g. age) */
+     none        grey: not known (e.g. age)
+   Each theme has its own set, in its own colours (below: Neon Night's;
+   then Night Savannah's, Acacia's and Pastel Safari's) */
 .Stats {
-    --viz-count: #8f84e8;
-    --viz-troop: #8f84e8;
-    --viz-introcages: #c3bdf5;
-    --viz-female: #d9448f;
-    --viz-male: #2a8de0;
-    --viz-unknown: #27a870;
+    --viz-count: #9d8cff;
+    --viz-troop: #9d8cff;
+    --viz-introcages: #cbc2ff;
+    --viz-female: #ff4fb8;
+    --viz-male: #3d7bff;
+    --viz-unknown: #3ddc84;
     /* (no value known, e.g. age unknown: grey) */
     --viz-none: #6b6b6b;
     /* The sections: Top green, Middle blue, Bottom red, Sickbay yellow,
        Care Units purple (validated: each bar has its name beside it) */
-    --viz-top: #27a870;
-    --viz-middle: #2a8de0;
-    --viz-bottom: #e34948;
-    --viz-sickbay: #c98500;
-    --viz-careunits: #9085e9;
+    --viz-top: #3ddc84;
+    --viz-middle: #3d7bff;
+    --viz-bottom: #ff3b55;
+    --viz-sickbay: #ffd21a;
+    --viz-careunits: #a78bfa;
 
     box-sizing: border-box;
     max-width: 940px;
@@ -34,19 +36,49 @@
     color: var(--text);
 }
 
+:root[data-palette="night-savannah"] .Stats {
+    --viz-count: #d9b45a;
+    --viz-troop: #d9b45a;
+    --viz-introcages: #f0d99c;
+    --viz-female: #e8835e;
+    --viz-male: #3fa6bc;
+    --viz-unknown: #9cc25a;
+    --viz-none: #5b5345;
+    --viz-top: #9cc25a;
+    --viz-middle: #3fa6bc;
+    --viz-bottom: #f06a55;
+    --viz-sickbay: #eab04c;
+    --viz-careunits: #b48ad1;
+}
+
 :root[data-theme="light"] .Stats {
-    --viz-count: #6250d6;
-    --viz-troop: #5545c9;
-    --viz-introcages: #a69cf0;
-    --viz-female: #b51f6f; /* (the site's pink, a touch softer) */
-    --viz-male: var(--accent);
-    --viz-unknown: var(--green);
-    --viz-none: #b8b8b8;
-    --viz-top: #0c7f4b;
-    --viz-middle: #065fd4;
-    --viz-bottom: #d03a39;
-    --viz-sickbay: #b89000;
-    --viz-careunits: #6250d6;
+    --viz-count: #7d5a9e;
+    --viz-troop: #6e4c8f;
+    --viz-introcages: #b9a0cf;
+    --viz-female: #b2462c;
+    --viz-male: #1f6475;
+    --viz-unknown: #4d6b1f;
+    --viz-none: #c4b89c;
+    --viz-top: #4d6b1f;
+    --viz-middle: #1f6475;
+    --viz-bottom: #a8231d;
+    --viz-sickbay: #b07a10;
+    --viz-careunits: #7d5a9e;
+}
+
+:root[data-palette="pastel-safari"] .Stats {
+    --viz-count: #7b6fcc;
+    --viz-troop: #6f62c4;
+    --viz-introcages: #b3aae8;
+    --viz-female: #d0588a;
+    --viz-male: #3f85c9;
+    --viz-unknown: #3a9d64;
+    --viz-none: #b5c9bb;
+    --viz-top: #3a9d64;
+    --viz-middle: #3f85c9;
+    --viz-bottom: #d9584e;
+    --viz-sickbay: #b8861a;
+    --viz-careunits: #7b6fcc;
 }
 
 .Stats-title {

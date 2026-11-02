@@ -78,15 +78,15 @@
     margin-top: 8px;
 }
 
-/* Enter Results: blue (the same blue as Awaiting Approval), apart from
-   Submit's green */
+/* Enter Results: blue (the same blue as Awaiting Approval: the theme's), apart
+   from Submit's green */
 .Modal-edit.Deworming-enter {
-    color: #ffffff;
-    background-color: #065fd4;
+    color: var(--on-blue);
+    background-color: var(--blue);
 }
 
 .Modal-edit.Deworming-enter:hover:not(:disabled) {
-    background-color: #0b4db0;
+    background-color: var(--blue-2);
 }
 
 /* Add Photo, until every day's complete */
@@ -158,13 +158,13 @@
 }
 
 .Deworming-tag.is-submitted {
-    color: #ffffff;
-    background-color: #065fd4;
+    color: var(--on-blue);
+    background-color: var(--blue);
 }
 
 .Deworming-tag.is-approved {
     color: var(--on-green);
-    background-color: var(--green);
+    background-color: var(--green-fill);
 }
 
 .Deworming-itemText > span,
@@ -541,7 +541,7 @@
 
 .Deworming-results-buttons .is-full[aria-pressed="true"] {
     color: var(--on-green);
-    background-color: var(--green);
+    background-color: var(--green-fill);
 }
 
 .Deworming-results-buttons .is-full[aria-pressed="true"] svg {
@@ -549,7 +549,8 @@
 }
 
 .Deworming-results-buttons .is-none[aria-pressed="true"] {
-    color: #fff;
+    /* (the page's colour on red, as Delete's: readable in every theme) */
+    color: var(--bg);
     background-color: var(--danger);
 }
 
@@ -1016,7 +1017,7 @@
 }
 
 .Deworming-tag.is-overdue {
-    color: #ffffff;
+    color: var(--bg);
     background-color: var(--danger);
 }
 

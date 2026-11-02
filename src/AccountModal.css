@@ -178,7 +178,7 @@
 
 .AccountModal-avatar.is-button:hover .AccountModal-camera,
 .AccountModal-avatar.is-button:focus-visible .AccountModal-camera {
-    background-color: var(--green-2);
+    background-color: var(--green-fill-2);
 }
 
 .AccountModal-avatar.is-button:focus-visible {
@@ -202,8 +202,8 @@
     align-items: center;
     width: 26px;
     height: 26px;
-    color: var(--surface-1);
-    background-color: var(--green);
+    color: var(--on-green);
+    background-color: var(--green-fill);
     border: 2px solid var(--surface-1);
     border-radius: 50%;
 }

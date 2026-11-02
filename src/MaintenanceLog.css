@@ -141,13 +141,13 @@
 /* Add Entry: the site's green, like Save */
 .MaintenanceLog-button.is-save {
     color: var(--on-green);
-    background-color: var(--green);
+    background-color: var(--green-fill);
     border: 1px solid var(--green);
 }
 
 .MaintenanceLog-button.is-save:hover:not(:disabled) {
-    background-color: var(--green-2);
-    border-color: var(--green-2);
+    background-color: var(--green-fill-2);
+    border-color: var(--green-fill-2);
 }
 
 .MaintenanceLog-button:disabled {
