@@ -11,7 +11,9 @@ import {
     approveDewormingSheet,
     deleteDewormingSheet,
     emailDewormingSheet,
+    loadDewormingCalendar,
     loadDewormingSheets,
+    refreshDewormingCalendar,
     removeDewormingMonkey,
     returnDewormingSheet,
     saveDewormingResults,
@@ -46,6 +48,8 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     uploadSheetPhoto: vi.fn(),
     sheetPhotoUrls: vi.fn(),
     addDewormingMonkey: vi.fn(),
+    loadDewormingCalendar: vi.fn(),
+    refreshDewormingCalendar: vi.fn(),
     emailDewormingSheet: vi.fn(),
     sheetPhotoData: vi.fn(),
     removeDewormingMonkey: vi.fn(),
@@ -132,6 +136,8 @@ beforeEach(() => {
     returnDewormingSheet.mockResolvedValue();
     uploadSheetPhoto.mockResolvedValue("1/sheet.jpg");
     addDewormingMonkey.mockResolvedValue(30);
+    loadDewormingCalendar.mockResolvedValue({ events: [], sync: null });
+    refreshDewormingCalendar.mockResolvedValue("0 deworming events");
     removeDewormingMonkey.mockResolvedValue();
     emailDewormingSheet.mockResolvedValue(["mark@vervet.za.org"]);
     sheetPhotoData.mockImplementation(async (paths) => paths.map(() => "data:image/jpeg;base64,QUJD"));
@@ -226,6 +232,88 @@ describe("the page", () => {
             <RecordsPage route="records/sections" monkeys={MONKEYS} enclosures={ENCLOSURES} canEnter staff={EDITOR} />
         );
         expect(screen.getByRole("link", { name: /Deworming/ })).toHaveAttribute("href", "#records/sections/deworming");
+    });
+
+    test("Lists or Schedule: Outlook's dewormings, overdue first; lists open from it", async () => {
+        vi.useFakeTimers({ toFake: ["Date"], now: new Date(2026, 10, 3, 9) });
+        loadDewormingSheets.mockResolvedValue([sheet(1, "6_month", "2026-11-09", [line(1, "Albendazole", "1/4 tab")])]);
+        loadDewormingCalendar.mockResolvedValue({
+            events: [
+                { uid: "a", title: "D&D 6m deworming", startsOn: "2026-11-10" },
+                { uid: "b", title: "Skrow 3m F/U deworming", startsOn: "2026-11-20" },
+                { uid: "c", title: "Global 3m deworming", startsOn: "2026-11-02" },
+                // (before lists started in vervetDB: done on paper, not overdue)
+                { uid: "e", title: "Skrow 6m deworming", startsOn: "2026-10-20" },
+                { uid: "d", title: "Skrw 6m deworming", startsOn: "2026-12-01" },
+            ],
+            sync: { syncedAt: new Date(2026, 10, 3, 8, 50).toISOString(), ok: true, message: null, events: 4 },
+        });
+        const user = userEvent.setup();
+        open(ADMIN);
+        expect(await screen.findByRole("tab", { name: "Lists" })).toHaveAttribute("aria-selected", "true");
+        await user.click(screen.getByRole("tab", { name: "Schedule" }));
+        expect(screen.queryByRole("button", { name: "New Deworming List" })).toBeNull();
+        // (at a glance: Overdue, This Week, each month; the groups with
+        // nothing in Outlook or in progress and no date: No Date Yet. Middle
+        // and Bottom have no introcage monkeys here, so nothing to deworm)
+        const bucket = async (name) =>
+            within(await screen.findByRole("region", { name }))
+                .getAllByRole("listitem")
+                .map((r) => r.textContent);
+        expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+            "Overdue",
+            "November 2026",
+            "No Date Yet",
+            "Couldn't Read",
+        ]);
+        expect(await bucket("Overdue")).toEqual(["MON2NOVGlobal Troop 3-Month DewormingYesterdayOverdue, date TBC"]);
+        expect(await bucket("November 2026")).toEqual([
+            "TUE10NOVD&D Troop 6-Month DewormingIn 7 daysReady",
+            "FRI20NOVSkrow Troop 3-Month F/U DewormingIn 2 weeks · No list yet",
+        ]);
+        expect(screen.getByText("Not in calendar")).toHaveClass("Deworming-tag", "is-todo");
+        expect(await bucket("No Date Yet")).toEqual([
+            "?Top Section ICs 6-Month DewormingNo past deworming foundNot in calendar",
+        ]);
+        expect(screen.getByText("From Outlook, checked 10 minutes ago")).toBeInTheDocument();
+        expect(screen.getByRole("region", { name: "Couldn't Read" })).toHaveTextContent("Tue 1 Dec Skrw 6m deworming");
+        expect(screen.getByRole("region", { name: "Couldn't Read" })).toHaveTextContent(
+            /^Couldn't ReadTip: write each title/
+        );
+        await user.click(screen.getByRole("button", { name: "Refresh Now" }));
+        await waitFor(() => expect(refreshDewormingCalendar).toHaveBeenCalled());
+        // (a list's row opens it)
+        await user.click(screen.getByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
+        expect(screen.getByRole("heading", { level: 1, name: "D&D Troop 6-Month Deworming" })).toBeInTheDocument();
+        vi.useRealTimers();
+    });
+
+    test("Schedule for editors: no Refresh Now or Couldn't Read; before the SQL's run, says so", async () => {
+        loadDewormingCalendar.mockResolvedValue({
+            events: [{ uid: "d", title: "Skrw 6m deworming", startsOn: "2099-12-01" }],
+            sync: {
+                syncedAt: new Date().toISOString(),
+                ok: false,
+                message: "The calendar link didn't give a calendar (status 404)",
+                events: null,
+            },
+        });
+        const user = userEvent.setup();
+        const { unmount } = open(EDITOR);
+        await user.click(await screen.findByRole("tab", { name: "Schedule" }));
+        // (nothing in Outlook to read; every group's next has no date found)
+        expect(await screen.findByRole("region", { name: "No Date Yet" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Refresh Now" })).toBeNull();
+        expect(screen.queryByRole("region", { name: "Couldn't Read" })).toBeNull();
+        expect(screen.queryByText(/status 404/)).toBeNull();
+        unmount();
+
+        loadDewormingCalendar.mockResolvedValue(null);
+        open(ADMIN);
+        await user.click(await screen.findByRole("tab", { name: "Schedule" }));
+        expect(
+            await screen.findByText("The schedule isn't ready yet: supabase/deworming-calendar.sql needs to be run.")
+        ).toBeInTheDocument();
     });
 
     test("editors see the sheets and print them, but can't prepare, edit or delete", async () => {

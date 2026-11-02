@@ -996,3 +996,127 @@
         animation: none;
     }
 }
+
+/* ---- Schedule (from Outlook) ---- */
+
+/* A date with no list yet: not a link */
+.Deworming-item.is-static {
+    cursor: default;
+}
+
+.Deworming-item.is-static:hover {
+    background-color: var(--surface-1);
+}
+
+/* Not in calendar: a to-do (to schedule), outlined */
+.Deworming-tag.is-todo {
+    color: var(--amber-text);
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--amber-text);
+}
+
+.Deworming-tag.is-overdue {
+    color: #ffffff;
+    background-color: var(--danger);
+}
+
+/* "From Outlook, checked 5 minutes ago" and Refresh Now */
+.Deworming-sync {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.Deworming-unread {
+    margin-top: 20px;
+}
+
+/* The Schedule's headings: Overdue, This Week, each month */
+.Deworming-bucket + .Deworming-bucket {
+    margin-top: 18px;
+}
+
+.Deworming-bucketHead {
+    margin: 14px 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-2);
+}
+
+.Deworming-bucketHead.is-late {
+    color: var(--danger);
+}
+
+/* A Schedule row: the date block, the deworming, its tag */
+.Deworming-item.Deworming-when {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.Deworming-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    padding: 4px 0;
+    line-height: 1.1;
+    color: var(--text-strong);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-chip small {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-2);
+}
+
+.Deworming-chip b {
+    font-size: 18px;
+}
+
+.Deworming-chip.is-late {
+    border-color: var(--danger);
+}
+
+.Deworming-chip.is-late b {
+    color: var(--danger);
+}
+
+.Deworming-chip.is-none {
+    min-height: 50px;
+    color: var(--text-2);
+}
+
+/* A phone: the tag under the words, beside the date block */
+@media (max-width: 599px) {
+    .Deworming-item.Deworming-when {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+            "chip text"
+            "chip tag";
+        row-gap: 6px;
+    }
+
+    .Deworming-when .Deworming-chip {
+        grid-area: chip;
+    }
+
+    .Deworming-when .Deworming-itemText {
+        grid-area: text;
+    }
+
+    .Deworming-when .Deworming-tag {
+        grid-area: tag;
+        justify-self: start;
+    }
+}

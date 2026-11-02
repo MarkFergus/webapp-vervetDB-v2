@@ -15,6 +15,8 @@ export const SESSIONS = {
     "3_month_fu": "3-Month F/U",
 };
 const CYCLE = ["6_month", "6_month_fu", "3_month", "3_month_fu"];
+// The session after one in the cycle ("3_month_fu" → "6_month")
+export const sessionAfter = (session) => CYCLE[(CYCLE.indexOf(session) + 1) % CYCLE.length];
 export const isFollowUp = (session) => session.endsWith("_fu");
 // A F/U's main deworming ("6_month_fu" → "6_month")
 export const mainOf = (session) => session.replace(/_fu$/, "");

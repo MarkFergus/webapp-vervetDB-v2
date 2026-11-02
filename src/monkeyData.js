@@ -1841,6 +1841,36 @@ export async function returnDewormingSheet(sheetId, note) {
     if (error) throw dewormingProblem(error, "Sending deworming back");
 }
 
+// ---- Deworming's Schedule: Outlook's events (supabase/deworming-calendar.sql) ----
+
+// The calendar's deworming events and its last fetch → { events: [{ uid,
+// title, startsOn }], sync: { syncedAt, ok, message, events } or null }, or
+// null before deworming-calendar.sql is run. Throws a message to show.
+export async function loadDewormingCalendar() {
+    const [events, sync] = await Promise.all([
+        supabase.from("deworming_calendar").select("uid, title, starts_on").order("starts_on"),
+        supabase.from("deworming_calendar_sync").select("synced_at, ok, message, events").maybeSingle(),
+    ]);
+    if (isOlderDatabase(events.error) || isOlderDatabase(sync.error)) return null;
+    if (events.error || sync.error) {
+        console.error("Loading the deworming calendar failed:", events.error ?? sync.error);
+        throw new Error("Couldn't load the schedule. Please check your connection and try again.");
+    }
+    return {
+        events: events.data.map((e) => ({ uid: e.uid, title: e.title, startsOn: e.starts_on })),
+        sync: sync.data
+            ? { syncedAt: sync.data.synced_at, ok: sync.data.ok, message: sync.data.message, events: sync.data.events }
+            : null,
+    };
+}
+
+// Refresh Now (admins): fetches Outlook's calendar again. Throws a message.
+export async function refreshDewormingCalendar() {
+    const { data, error } = await supabase.rpc("refresh_deworming_calendar");
+    if (error) throw dewormingProblem(error, "Refreshing the deworming calendar");
+    return data;
+}
+
 // ---- The paper sheets' photos (private: the deworming-sheets bucket) ----
 
 const SHEET_BUCKET = "deworming-sheets";

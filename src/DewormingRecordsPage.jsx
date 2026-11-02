@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconClipboardCheck, IconPencil, IconPlus, IconPrinter, IconSend, IconTrash } from "@tabler/icons-react";
-import { deleteDewormingSheet, loadDewormingSheets, saveDewormingResults, saveDewormingSheet } from "./monkeyData";
+import {
+    IconClipboardCheck,
+    IconPencil,
+    IconPlus,
+    IconPrinter,
+    IconRefresh,
+    IconSend,
+    IconTrash,
+} from "@tabler/icons-react";
+import {
+    deleteDewormingSheet,
+    loadDewormingCalendar,
+    loadDewormingSheets,
+    refreshDewormingCalendar,
+    saveDewormingResults,
+    saveDewormingSheet,
+} from "./monkeyData";
+import { relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
+import { timeAgo } from "./savedData";
 import {
     AMOUNTS,
     DEFAULT_INSTRUCTIONS,
@@ -802,6 +819,198 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
     );
 }
 
+// A date's block on the left of a Schedule row: "TUE", "10", "NOV"
+const CHIP_DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+const CHIP_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+function DateChip({ date, late }) {
+    if (!date) {
+        return (
+            <span className="Deworming-chip is-none" aria-hidden="true">
+                <b>?</b>
+            </span>
+        );
+    }
+    const [y, m, d] = date.split("-").map(Number);
+    return (
+        <span className={`Deworming-chip${late ? " is-late" : ""}`} aria-hidden="true">
+            <small>{CHIP_DAYS[new Date(y, m - 1, d).getDay()]}</small>
+            <b>{d}</b>
+            <small>{CHIP_MONTHS[m - 1]}</small>
+        </span>
+    );
+}
+
+// Schedule: the dewormings planned in Outlook (dewormingSchedule.js), and
+// each group's next one that isn't in it yet (worked out: "estimated"), at
+// a glance: under Overdue, This Week, then each month, each with its date
+// block, how long until (or since), and its list's stage once it's
+// prepared (opens it). Where it's from and when it was last fetched;
+// admins: Refresh Now, and any titles that couldn't be read.
+function Schedule({ groups, sheets, canPrepare, onOpen }) {
+    // null: loading; { problem }; false: not set up yet; or the calendar
+    const [calendar, setCalendar] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const [problem, setProblem] = useState(null);
+    const load = useCallback(
+        () =>
+            loadDewormingCalendar()
+                .then((found) => setCalendar(found ?? false))
+                .catch((error) => setCalendar({ problem: error.message })),
+        []
+    );
+    useEffect(() => {
+        load();
+    }, [load]);
+
+    async function refresh() {
+        setRefreshing(true);
+        setProblem(null);
+        try {
+            await refreshDewormingCalendar();
+            await load();
+        } catch (error) {
+            setProblem(error.message);
+        } finally {
+            setRefreshing(false);
+        }
+    }
+
+    if (calendar === null) return <p className="RecordsPage-intro">Loading…</p>;
+    if (calendar === false) {
+        return (
+            <p className="RecordsPage-intro">
+                The schedule isn't ready yet: supabase/deworming-calendar.sql needs to be run.
+            </p>
+        );
+    }
+    if (calendar.problem) {
+        return (
+            <p className="Integration-problem" role="alert">
+                {calendar.problem}
+            </p>
+        );
+    }
+    const { due, overdue, unscheduled, unread } = scheduleOf(calendar.events, groups, sheets, dayText(new Date()));
+    const { sync } = calendar;
+    const today = dayText(new Date());
+    const buckets = scheduleBuckets({ due, overdue, unscheduled }, today);
+    const row = (item) => {
+        const status = item.sheet ? listStatus(item.sheet) : null;
+        const tag = item.sheet
+            ? status.tag && { text: status.tag, tone: status.tone }
+            : item.kind === "estimate"
+              ? {
+                    text: item.late ? "Overdue, not in calendar" : "Not in calendar",
+                    // (to schedule: an amber outline, apart from In Progress's fill)
+                    tone: item.late ? "overdue" : "todo",
+                }
+              : item.late
+                ? { text: "Overdue, date TBC", tone: "overdue" }
+                : null;
+        const when = [
+            item.date ? relativeDay(item.date, today) : "No past deworming found",
+            item.kind === "estimate" && item.date ? "estimated" : null,
+            item.kind === "outlook" && !item.late && !item.sheet ? "No list yet" : null,
+        ]
+            .filter(Boolean)
+            .join(" · ");
+        const content = (
+            <>
+                <DateChip date={item.date} late={item.late} />
+                <span className="Deworming-itemText">
+                    <b>
+                        <SheetTitle text={`${item.groupName} ${SESSIONS[item.session]} Deworming`} />
+                    </b>
+                    <span>{when}</span>
+                </span>
+                {tag && <span className={`Deworming-tag is-${tag.tone}`}>{tag.text}</span>}
+            </>
+        );
+        return (
+            <li key={`${item.kind}-${item.groupKey}-${item.session}-${item.date}`} className="Deworming-row">
+                {item.sheet ? (
+                    <button
+                        type="button"
+                        className="Deworming-item Deworming-when"
+                        onClick={() => onOpen(item.sheet.id)}
+                    >
+                        {content}
+                    </button>
+                ) : (
+                    <div className="Deworming-item Deworming-when is-static">{content}</div>
+                )}
+            </li>
+        );
+    };
+
+    return (
+        <div className="Deworming-schedule">
+            <p className="RecordsPage-hint Deworming-hint">
+                Upcoming dewormings from the Outlook calendar, and any not in it yet (estimated).
+            </p>
+            {buckets.length === 0 ? (
+                <p className="RecordsPage-intro">No dewormings coming up.</p>
+            ) : (
+                buckets.map((b) => (
+                    <section key={b.label} className="Deworming-bucket" aria-label={b.label}>
+                        <h3 className={`Deworming-bucketHead${b.label === "Overdue" ? " is-late" : ""}`}>{b.label}</h3>
+                        <ul className="Deworming-list">{b.items.map(row)}</ul>
+                    </section>
+                ))
+            )}
+            <div className="Deworming-sync">
+                <span className="Deworming-meta">
+                    {sync?.syncedAt ? `From Outlook, checked ${timeAgo(Date.parse(sync.syncedAt))}` : "Not checked yet"}
+                </span>
+                {canPrepare && (
+                    <button
+                        type="button"
+                        className="Deworming-icon"
+                        aria-label="Refresh Now"
+                        title="Refresh Now"
+                        disabled={refreshing}
+                        onClick={refresh}
+                    >
+                        <IconRefresh
+                            size={18}
+                            className={refreshing ? "Deworming-spinner" : undefined}
+                            aria-hidden="true"
+                        />
+                    </button>
+                )}
+            </div>
+            {canPrepare && sync && !sync.ok && sync.message && (
+                <p className="Deworming-done is-warn" role="status">
+                    {sync.message}
+                </p>
+            )}
+            {problem && (
+                <p className="Integration-problem" role="alert">
+                    {problem}
+                </p>
+            )}
+            {canPrepare && unread.length > 0 && (
+                <section className="Deworming-unread" aria-label="Couldn't Read">
+                    <h3 className="RecordsPage-subhead">Couldn't Read</h3>
+                    <p className="RecordsPage-hint Deworming-hint">
+                        Tip: write each title in Outlook as the group, 3m or 6m (and F/U), then "deworming", e.g. "H&B
+                        3m deworming", "Top & Middle IC 6m F/U deworming" (or "Top/Middle IC"), "Global 3m + James 3m
+                        F/U deworming" (a "+" or a comma between groups with different sessions). Use full troop names,
+                        or D&D, H&B, Jala or IC. These couldn't be read:
+                    </p>
+                    <ul className="Deworming-recordList">
+                        {unread.map((u) => (
+                            <li key={`${u.title}-${u.startsOn}`}>
+                                <b>{dayLabel(u.startsOn)}</b> {u.title}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+        </div>
+    );
+}
+
 // onTitle(title, back): the page's title while a sheet (or Prepare Sheet) is
 // open, and the way back above it ("← Deworming Sheets"); null: back to
 // "Deworming". As Monitoring's.
@@ -814,6 +1023,8 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
     const [sheets, setSheets] = useState(null);
     // null (the list), { prepare: true }, { edit: id } or { view: id }
     const [open, setOpen] = useState(null);
+    // Lists (the deworming lists) or Schedule (when each group's due)
+    const [tab, setTab] = useState("lists");
 
     const reload = useCallback(
         () =>
@@ -885,34 +1096,64 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
 
     return (
         <div className="Deworming">
-            {canPrepare && (
-                <button
-                    type="button"
-                    className="Modal-edit is-confirm Deworming-new"
-                    onClick={() => setOpen({ prepare: true })}
-                >
-                    <IconPlus size={16} aria-hidden="true" />
-                    New Deworming List
-                </button>
-            )}
-            <p className="RecordsPage-hint Deworming-hint">
-                Upcoming, current, and completed deworming lists. Click to view summary and enter results.
-            </p>
-            {sheets.length === 0 ? (
-                <p className="RecordsPage-intro">No deworming lists yet.</p>
-            ) : (
-                <ul className="Deworming-list">
-                    {sheets.map((s) => (
-                        <SheetRow
-                            key={s.id}
-                            sheet={s}
-                            monkeys={monkeys}
-                            canPrepare={canPrepare}
-                            onOpen={() => setOpen({ view: s.id })}
-                            onDeleted={reload}
-                        />
+            <div className="RecordsPage-tabRow">
+                <div className="RecordsPage-tabs" role="tablist" aria-label="Deworming">
+                    {[
+                        ["lists", "Lists"],
+                        ["schedule", "Schedule"],
+                    ].map(([id, label]) => (
+                        <button
+                            key={id}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === id}
+                            className={tab === id ? "is-on" : ""}
+                            onClick={() => setTab(id)}
+                        >
+                            {label}
+                        </button>
                     ))}
-                </ul>
+                </div>
+            </div>
+            {tab === "schedule" ? (
+                <Schedule
+                    groups={groups}
+                    sheets={sheets}
+                    canPrepare={canPrepare}
+                    onOpen={(id) => setOpen({ view: id })}
+                />
+            ) : (
+                <>
+                    {canPrepare && (
+                        <button
+                            type="button"
+                            className="Modal-edit is-confirm Deworming-new"
+                            onClick={() => setOpen({ prepare: true })}
+                        >
+                            <IconPlus size={16} aria-hidden="true" />
+                            New Deworming List
+                        </button>
+                    )}
+                    <p className="RecordsPage-hint Deworming-hint">
+                        Upcoming, current, and completed deworming lists. Click to view summary and enter results.
+                    </p>
+                    {sheets.length === 0 ? (
+                        <p className="RecordsPage-intro">No deworming lists yet.</p>
+                    ) : (
+                        <ul className="Deworming-list">
+                            {sheets.map((s) => (
+                                <SheetRow
+                                    key={s.id}
+                                    sheet={s}
+                                    monkeys={monkeys}
+                                    canPrepare={canPrepare}
+                                    onOpen={() => setOpen({ view: s.id })}
+                                    onDeleted={reload}
+                                />
+                            ))}
+                        </ul>
+                    )}
+                </>
             )}
         </div>
     );
