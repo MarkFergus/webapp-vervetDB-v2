@@ -479,6 +479,18 @@
     background-color: rgba(245, 166, 35, 0.15);
 }
 
+/* In Sickbay: the same amber as the card's In Sickbay pill (filled) */
+.Monitoring-flag.is-sickbay {
+    color: var(--on-status);
+    background-color: var(--amber);
+}
+
+/* In Sickbay: not to be seen here (its tick greyed out) */
+.Monitoring-row.is-away .Monitoring-seen input {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 /* The results: the checks, then the checklist */
 .Monitoring-results {
     display: flex;

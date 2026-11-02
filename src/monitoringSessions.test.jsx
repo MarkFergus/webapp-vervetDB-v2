@@ -405,3 +405,48 @@ test("Missing: only editors and admins can Mark As Seen", async () => {
     expect(within(missing).getByText("Malawi")).toBeInTheDocument();
     expect(within(missing).queryByRole("button", { name: /Mark .* As Seen/ })).toBeNull();
 });
+
+test("the checklist goes by where monkeys are now; those in an introcage or Sickbay are seen every day (ticked and locked)", async () => {
+    const user = userEvent.setup();
+    const inProgress = { ...finished(31, "2026-10-30", {}, { startedBy: "u-1" }), status: "in_progress", finishedAt: null };
+    loadMonitoringSessions.mockResolvedValue([inProgress, ...PAST]);
+    finishMonitoringSession.mockResolvedValue(finished(31, "2026-10-30", { 1: true, 2: true, 3: true, 4: true }));
+    // (Malawi, missing the last 2 sessions, is in Sickbay; Daisy Mae is staying in Skunkey B2 for now)
+    const monkeys = MONKEYS.map((m) =>
+        m.id === 1
+            ? { ...m, inSickbay: true }
+            : m.id === 2
+              ? { ...m, stay: { id: 2, introcage: "Skunkey B2", enclosure: "Skunkey" } }
+              : m
+    );
+    render(<RecordsPage route="records/sections/monitoring" monkeys={monkeys} enclosures={ENCLOSURES} staff={EDITOR} />);
+    await user.click(await screen.findByRole("button", { name: "Continue Session" }));
+    // (no Must See for a monkey in Sickbay: seen every day)
+    const briefing = await screen.findByRole("region", { name: "Briefing" });
+    expect(within(briefing).queryByText("Must See")).toBeNull();
+    const group = (title) =>
+        within(screen.getByRole("heading", { level: 3, name: title }).closest(".Monitoring-group"))
+            .getAllByRole("checkbox")
+            .map((c) => c.getAttribute("aria-label"));
+    expect(group("Troop")).toEqual(["Malawi seen", "Paradise seen"]);
+    expect(group("Skunkey B2")).toEqual(["Daisy Mae seen", "Pip seen"]);
+    for (const name of ["Malawi", "Daisy Mae", "Pip"]) {
+        const tick = screen.getByRole("checkbox", { name: `${name} seen` });
+        expect(tick).toBeChecked();
+        expect(tick).toBeDisabled();
+    }
+    const malawi = screen.getByRole("checkbox", { name: "Malawi seen" });
+    expect(malawi.closest("li")).toHaveTextContent("In Sickbay");
+    expect(malawi.closest("li")).not.toHaveTextContent("Must See");
+    // (only Paradise, out in the troop, to look for)
+    expect(screen.getByText("3 / 4 seen")).toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: "Paradise seen" }));
+    expect(screen.getByText("4 / 4 seen")).toBeInTheDocument();
+    for (const name of ["Fence", "Waters", "Food"]) {
+        await user.click(within(screen.getByRole("group", { name })).getByRole("button", { name: "Good" }));
+    }
+    await user.click(screen.getByRole("button", { name: "Finish Session" }));
+    await waitFor(() => expect(finishMonitoringSession).toHaveBeenCalled());
+    // (all saved as seen)
+    expect(finishMonitoringSession.mock.calls[0][1]).toMatchObject({ seen: [2, 1, 3, 4], notSeen: [] });
+});

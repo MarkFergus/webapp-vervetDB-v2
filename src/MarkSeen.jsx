@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconEye } from "@tabler/icons-react";
-import { addSpotSighting, loadMonkeySightings } from "./monkeyData";
-import { sightingRecord } from "./monitoringRules";
+import { addSpotSighting, loadLastMoves, loadMonkeySightings } from "./monkeyData";
+import { seenDaily, sightingRecord } from "./monitoringRules";
 import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
 import { useFormLock } from "./formLock";
@@ -92,18 +92,32 @@ export function MarkSeenButton({ name, onClick }) {
 }
 
 // The Full Profile: whether a monkey's missing ({ missed, lastSeen, spot }, or
-// null while loading / not on any checklist yet), and reload()
-export function useMissing(monkeyId, enabled) {
+// null while loading / not on any checklist yet), and reload(). In an
+// introcage or Sickbay: seen every day; moved back out to its troop: seen
+// that day (its latest move)
+export function useMissing(monkey, enabled) {
+    const monkeyId = monkey?.id;
+    const daily = Boolean(monkey && seenDaily(monkey));
     const [record, setRecord] = useState(null);
     const reload = useCallback(() => {
         if (!enabled || monkeyId == null) {
             setRecord(null);
             return Promise.resolve();
         }
-        return loadMonkeySightings(monkeyId)
-            .then(({ sessions, spots }) => setRecord(sessions.length ? sightingRecord(sessions, monkeyId, spots) : null))
+        return Promise.all([loadMonkeySightings(monkeyId), loadLastMoves([monkeyId])])
+            .then(([{ sessions, spots }, moves]) =>
+                setRecord(
+                    sessions.length
+                        ? sightingRecord(sessions, monkeyId, spots, {
+                              daily,
+                              back: moves[monkeyId],
+                              today: dayText(new Date()),
+                          })
+                        : null
+                )
+            )
             .catch(() => setRecord(null));
-    }, [monkeyId, enabled]);
+    }, [monkeyId, enabled, daily]);
     useEffect(() => {
         reload();
     }, [reload]);

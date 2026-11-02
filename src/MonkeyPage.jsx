@@ -221,7 +221,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Monitoring (staff; monkeys in monitoring sessions): last seen (and
     // missing), Priority Check and Notes for Monitoring (again once saved)
     const monitored = isStaff && !isNewArrival(monkey) && !isArchived(monkey);
-    const missing = useMissing(monkey.id, monitored);
+    const missing = useMissing(monkey, monitored);
     const monitoring = useMonitoring(monkey.id, monitored, monkey);
     const archived = isArchived(monkey);
     // (admins add them, an archived monkey's too: e.g. what's found out

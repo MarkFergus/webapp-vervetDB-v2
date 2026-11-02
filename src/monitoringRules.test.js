@@ -7,6 +7,7 @@ import {
     seenLine,
     sessionAlerts,
     sessionsBefore,
+    seenDaily,
     sightingRecord,
     troopSessions,
     whatsappText,
@@ -190,4 +191,28 @@ test("the priority monkeys seen", () => {
     expect(prioritySeenLine(["Victoria"])).toBe("Victoria seen");
     expect(prioritySeenLine(["Victoria", "Hocus"])).toBe("Victoria and Hocus both seen");
     expect(prioritySeenLine(["Victoria", "Hocus", "Rox"])).toBe("Victoria, Hocus and Rox all seen");
+});
+
+test("in an introcage or Sickbay: seen every day; moved back out to the troop: seen that day", () => {
+    const session = (id, date, seen) => ({ id, date, enclosureId: 1, status: "finished", finishedAt: `${date}T10:00Z`, sightings: [{ monkeyId: 7, seen }] });
+    // (seen 1 Dec, in Sickbay for 3 weeks (no sessions for him), back on 22 Dec, not seen on 23 Dec)
+    const past = [session(2, "2026-12-23", false), session(1, "2026-12-01", true)];
+    expect(sightingRecord(past, 7)).toEqual({ lastSeen: "2026-12-01", missed: 1, spot: null });
+    expect(sightingRecord(past, 7, [], { back: "2026-12-22" })).toEqual({ lastSeen: "2026-12-22", missed: 1, spot: null });
+    // (moved back after the 23rd's session: nothing missed since)
+    expect(sightingRecord(past, 7, [], { back: "2026-12-24" })).toEqual({ lastSeen: "2026-12-24", missed: 0, spot: null });
+    // (a move longer ago than his last sighting: changes nothing)
+    expect(sightingRecord(past, 7, [], { back: "2026-11-20" })).toEqual({ lastSeen: "2026-12-01", missed: 1, spot: null });
+    // (in Sickbay or an introcage now: seen today, never missed)
+    expect(sightingRecord(past, 7, [], { daily: true, today: "2026-12-30" })).toEqual({
+        lastSeen: "2026-12-30",
+        missed: 0,
+        spot: null,
+    });
+    expect([{ inSickbay: true }, { introcage: "Gismo A" }, { stay: { introcage: "Gismo A" } }, {}].map(seenDaily)).toEqual([
+        true,
+        true,
+        true,
+        false,
+    ]);
 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import {
     IconAlertTriangle,
     IconCheck,
@@ -24,6 +24,7 @@ import {
     deleteSpotSighting,
     finishMonitoringSession,
     loadConditions,
+    loadLastMoves,
     loadMonitoringFor,
     loadMonitoringSessions,
     loadSessionNotes,
@@ -46,6 +47,7 @@ import {
     isOverdue,
     latestSessionDays,
     sessionAlerts,
+    seenDaily,
     sessionsBefore,
     sightingRecord,
     troopSessions,
@@ -176,6 +178,21 @@ function troopMonkeys(monkeys, troop) {
 // its day
 const spotsFor = (spots, session) => (session?.status === "finished" ? spots.filter((s) => s.date < session.date) : spots);
 
+// Where a monkey is now, for a session's checklist: the introcage it's
+// staying in for now, or its own (null: with the troop). (The printed sheet
+// lists them at home.) In Sickbay: in its usual place.
+const checkPlace = (m) => (m.inSickbay ? m.introcage : (m.stay?.introcage ?? m.introcage)) ?? null;
+
+// The checklist's groups: the troop, then each introcage, by name
+//   → [{ title, monkeys }]
+function checklistGroups(all) {
+    const places = [...new Set(all.map(checkPlace).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    return [
+        { title: "Troop", monkeys: all.filter((m) => !checkPlace(m)) },
+        ...places.map((place) => ({ title: fullName(place), monkeys: all.filter((m) => checkPlace(m) === place) })),
+    ].filter((g) => g.monkeys.length);
+}
+
 // For a troop: its monkeys (troop first, then each introcage's), their
 // sighting records (the finished sessions before this session, and
 // sightings between sessions), priority checks, current injuries and
@@ -187,6 +204,8 @@ function useTroopFacts(monkeys, troop, sessions, staff, session = null, spots = 
     const injuries = useInjuryList(ids, staff);
     const [priority, setPriority] = useState({});
     const [conditions, setConditions] = useState([]);
+    // (each monkey's latest move: back out to its troop, for its last seen)
+    const [lastMoves, setLastMoves] = useState({});
     const reloadConditions = useCallback(() => {
         const list = key ? key.split(",").map(Number) : [];
         return loadConditions(list)
@@ -198,12 +217,17 @@ function useTroopFacts(monkeys, troop, sessions, staff, session = null, spots = 
         loadMonitoringFor(list)
             .then(setPriority)
             .catch(() => setPriority({}));
+        loadLastMoves(list).then(setLastMoves);
         reloadConditions();
     }, [key, reloadConditions]);
 
     const past = troop ? sessionsBefore(sessions, troop.id, session) : [];
     const counted = spotsFor(spots, session);
-    const records = Object.fromEntries(all.map((m) => [m.id, sightingRecord(past, m.id, counted)]));
+    // (in an introcage or Sickbay: seen every day; moved back out: seen that day)
+    const today = dayText(new Date());
+    const records = Object.fromEntries(
+        all.map((m) => [m.id, sightingRecord(past, m.id, counted, { daily: seenDaily(m), back: lastMoves[m.id], today })])
+    );
     const current = Array.isArray(injuries.entries) ? injuries.entries : [];
     const latestCondition = {};
     for (const c of conditions) if (!latestCondition[c.monkeyId]) latestCondition[c.monkeyId] = c;
@@ -344,6 +368,8 @@ const ADD_KINDS = { update: "Update", injury: "Injury", condition: "Condition" }
 // and a +: an injury, an update on one, or a condition (saved straight
 // away, linked to the session)
 function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded }) {
+    // (in an introcage or Sickbay: seen every day, so ticked and locked)
+    const daily = seenDaily(monkey);
     const [mode, setMode] = useState(null); // "injury", "update" or "condition"
     const record = facts.records[monkey.id];
     const injuries = facts.current.filter((i) => i.monkeyId === monkey.id);
@@ -351,7 +377,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     const priority = facts.priority[monkey.id];
     const condition = facts.latestCondition[monkey.id];
     const isPriority = Boolean(priority?.conditionCheck || priority?.notes);
-    const hasFlags = record.missed > 0 || injuries.length > 0 || isPriority;
+    const hasFlags = Boolean(monkey.inSickbay) || record.missed > 0 || injuries.length > 0 || isPriority;
     const close = () => setMode(null);
 
     async function save(values) {
@@ -371,12 +397,18 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     }
 
     return (
-        <li className={`Monitoring-row${seen ? " is-seen" : ""}`}>
+        <li className={`Monitoring-row${seen || daily ? " is-seen" : ""}${daily ? " is-daily" : ""}`}>
             {/* One line on wider screens: the tick and name | flags,
                 condition and what's been added | the buttons (phones: stacked) */}
             <div className="Monitoring-rowMain">
                 <label className="Monitoring-seen">
-                    <input type="checkbox" checked={seen} onChange={(e) => onSeen(e.target.checked)} aria-label={`${monkey.name} seen`} />
+                    <input
+                        type="checkbox"
+                        checked={seen || daily}
+                        disabled={daily}
+                        onChange={(e) => onSeen(e.target.checked)}
+                        aria-label={`${monkey.name} seen`}
+                    />
                     <span className="RecordsPage-baby">
                         <span className="RecordsPage-name">{monkey.name}</span>
                         <span className="RecordsPage-place">
@@ -387,6 +419,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                 <div className="Monitoring-rowInfo">
                     {hasFlags && (
                         <span className="Monitoring-flags">
+                            {monkey.inSickbay && <Flag kind="sickbay">In Sickbay</Flag>}
                             {record.missed >= MUST_SEE_AFTER && <Flag kind="danger">Must See</Flag>}
                             {record.missed === 1 && <Flag kind="warn">Not Seen Last Session</Flag>}
                             {injuries.length > 0 && <Flag kind="danger">Injury</Flag>}
@@ -556,7 +589,9 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
         reloadNotes();
     }, [reloadNotes]);
 
-    const seenCount = facts.all.filter((m) => seen[m.id]).length;
+    // (introcage and Sickbay monkeys: always seen)
+    const isSeen = (m) => seenDaily(m) || Boolean(seen[m.id]);
+    const seenCount = facts.all.filter(isSeen).length;
 
     async function finish(confirmed = false) {
         setProblem(null);
@@ -573,8 +608,8 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
         try {
             const saved = await finishMonitoringSession(session.id, {
                 ...form,
-                seen: facts.all.filter((m) => seen[m.id]).map((m) => m.id),
-                notSeen: facts.all.filter((m) => !seen[m.id]).map((m) => m.id),
+                seen: facts.all.filter(isSeen).map((m) => m.id),
+                notSeen: facts.all.filter((m) => !isSeen(m)).map((m) => m.id),
             });
             clearDraft(session.id);
             onFinished(saved, summaryFor(saved, troop, facts, notes, today));
@@ -622,8 +657,6 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                 </ul>
             </div>
         );
-    // Introcage monkeys: under each introcage's name
-    const introcages = [...new Set(facts.inIntrocages.map((m) => m.introcage))];
 
     return (
         <div className="Monitoring-session">
@@ -688,10 +721,12 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                         </button>
                     </span>
                 </div>
-                {section("Troop", facts.inTroop)}
-                {introcages.map((name) =>
-                    section(fullName(name), facts.inIntrocages.filter((m) => m.introcage === name))
-                )}
+                {/* (where they are now: a troop monkey staying in an introcage
+                    is under that introcage; Sickbay's are in their usual place.
+                    Those in an introcage or Sickbay: ticked, seen every day) */}
+                {checklistGroups(facts.all).map((g) => (
+                    <Fragment key={g.title}>{section(g.title, g.monkeys)}</Fragment>
+                ))}
 
                 <label className="IntegrationPage-choose Monitoring-notes">
                     <span>General Notes</span>
@@ -1099,6 +1134,14 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     useEffect(() => {
         reload();
     }, [reload]);
+    // (the troop's monkeys' latest moves: back out to it, for their last seen)
+    const [lastMoves, setLastMoves] = useState({});
+    const memberKey = troopMonkeys(monkeys, troop)
+        .all.map((m) => m.id)
+        .join(",");
+    useEffect(() => {
+        loadLastMoves(memberKey ? memberKey.split(",").map(Number) : []).then(setLastMoves);
+    }, [memberKey]);
 
     // The page's title: the troop's, while one of its sessions is open
     const troopOf = (id) => enclosures.find((e) => e.id === id);
@@ -1159,8 +1202,12 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     // The troop's monkeys, and who's missing (not seen in their last
     // session, nor since)
     const members = troopMonkeys(monkeys, troop).all;
+    // (in an introcage or Sickbay: seen every day, never missing)
     const missing = members
-        .map((m) => ({ monkey: m, record: sightingRecord(history, m.id, spots) }))
+        .map((m) => ({
+            monkey: m,
+            record: sightingRecord(history, m.id, spots, { daily: seenDaily(m), back: lastMoves[m.id], today }),
+        }))
         .filter((m) => m.record.missed > 0);
     // The History: the sessions and the troop's sightings between them,
     // newest first (a sighting before a session on the same day)

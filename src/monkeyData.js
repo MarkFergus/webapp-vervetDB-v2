@@ -1391,6 +1391,23 @@ export async function deleteSpotSighting(id) {
     if (!data?.length) throw saveProblem({ code: "PGRST116" });
 }
 
+// The day each monkey last moved (its latest Movement record: e.g. back
+// out to its troop from Sickbay) → { monkeyId: "2026-12-22" }. Before
+// movement-records.sql, or offline: none.
+export async function loadLastMoves(monkeyIds) {
+    if (!monkeyIds.length) return {};
+    const { data, error } = await supabase
+        .from("monkey_records")
+        .select("monkey_id, record_date")
+        .eq("category", "movement")
+        .in("monkey_id", monkeyIds)
+        .order("record_date", { ascending: false });
+    if (error) return {};
+    const moves = {};
+    for (const row of data) if (!moves[row.monkey_id]) moves[row.monkey_id] = row.record_date;
+    return moves;
+}
+
 // A monkey's finished sessions it was on the checklist for (newest first,
 // as sessions with just its sighting), and its sightings between them:
 // { sessions, spots } (the pop-up: is it missing?)

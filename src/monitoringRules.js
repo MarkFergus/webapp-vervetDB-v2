@@ -49,23 +49,36 @@ export function sessionsBefore(sessions, enclosureId, session) {
     );
 }
 
+// Seen every day by the people feeding and cleaning, so never "not seen":
+// a monkey in Sickbay, in its introcage, or staying in one for now. (Only
+// monkeys out in their troop are looked for in a session.)
+export const seenDaily = (monkey) => Boolean(monkey.inSickbay || monkey.introcage || monkey.stay);
+
 // A monkey's record in those sessions (newest first): { lastSeen (a day or
 // null), missed (sessions in a row it wasn't seen, up to the latest),
 // spot (the sighting it was last seen in, if that's how) }. Sessions it
 // wasn't on the checklist for don't count. spots: sightings between
 // sessions ([{ monkeyId, date, by, note }]): one counts as seen, so only
 // the sessions after it count as missed (the same day: after the session)
-export function sightingRecord(sessions, monkeyId, spots = []) {
+//   daily: seen every day where it is now (seenDaily): last seen today,
+//   never missed
+//   back: the day it moved back out to its troop (its latest move: from
+//   Sickbay or an introcage), seen every day until then: counts as seen
+//   that day
+export function sightingRecord(sessions, monkeyId, spots = [], { daily = false, back = null, today = null } = {}) {
+    if (daily) return { lastSeen: today, missed: 0, spot: null };
     const spot = latestSpot(spots, monkeyId);
+    // (the latest of a sighting between sessions and the move back out)
+    const seen = back && (!spot || back > spot.date) ? { date: back, spot: null } : spot ? { date: spot.date, spot } : null;
     let missed = 0;
     for (const session of sessions) {
-        if (spot && spot.date >= session.date) return { lastSeen: spot.date, missed, spot };
+        if (seen && seen.date >= session.date) return { lastSeen: seen.date, missed, spot: seen.spot };
         const sighting = session.sightings.find((s) => s.monkeyId === monkeyId);
         if (!sighting) continue;
         if (sighting.seen) return { lastSeen: session.date, missed, spot: null };
         missed += 1;
     }
-    return spot ? { lastSeen: spot.date, missed, spot } : { lastSeen: null, missed, spot: null };
+    return seen ? { lastSeen: seen.date, missed, spot: seen.spot } : { lastSeen: null, missed, spot: null };
 }
 
 // A monkey's latest sighting between sessions (or null)
