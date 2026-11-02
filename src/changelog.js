@@ -21,6 +21,17 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.23.0",
+        date: "2026-11-03",
+        changes: [
+            "New Deworming Schedule from the Outlook calendar",
+            "New themes: Night Savannah, Acacia and Pastel Safari, and a brighter Neon Night",
+            "Improved Monitoring checklist: monkeys shown where they are now",
+            "Improved Deworming lists: Add Photo and Submit on the list's page",
+            "Fixed the side menu staying bright behind pop-ups",
+        ],
+    },
+    {
         version: "1.22.0",
         date: "2026-11-02",
         changes: [
