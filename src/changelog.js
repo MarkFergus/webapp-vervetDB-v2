@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.22.0",
+        date: "2026-11-02",
+        changes: [
+            "New Deworming page in Records > Sections",
+            "New Weekly Reports in Admin Dashboard",
+            "Improved back buttons on Monitoring pages",
+        ],
+    },
+    {
         version: "1.21.3",
         date: "2026-11-01",
         changes: ["Added Injured Rescue tag for Sickbay rescues", "Improved Medical records on Full Profiles"],
