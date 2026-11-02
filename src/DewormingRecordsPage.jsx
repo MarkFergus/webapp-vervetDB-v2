@@ -632,7 +632,7 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, o
                         {sheet.status === "submitted"
                             ? "Edit Results"
                             : started
-                              ? "Continue Results"
+                              ? "Enter Results"
                               : "Record Results"}
                     </button>
                 )}

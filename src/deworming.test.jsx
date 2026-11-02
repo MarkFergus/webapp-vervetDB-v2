@@ -625,7 +625,7 @@ describe("completing a sheet", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Continue Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         expect(form.getByText("Finished course as missed dose on Day 2")).toBeInTheDocument();
         await user.click(form.getByRole("button", { name: "Enter Anyway" }));
@@ -686,7 +686,7 @@ describe("completing a sheet", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Continue Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         expect(form.getAllByRole("tab").map((t) => t.getAttribute("aria-label"))).toEqual([
             "Day 1 (complete)",
@@ -872,7 +872,7 @@ describe("completing a sheet", () => {
         await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
         expect(screen.getByRole("note")).toHaveTextContent("Sent back: Day 3 is missing");
         expect(screen.getByText("In Progress")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Continue Results" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Enter Results" })).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
     });
 });
@@ -1043,7 +1043,7 @@ describe("monkeys added while completing a list, and Day 4", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Continue Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         expect(form.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Day 1", "Day 2", "Day 3"]);
         await user.click(form.getByRole("button", { name: "Save Day 3" }));
