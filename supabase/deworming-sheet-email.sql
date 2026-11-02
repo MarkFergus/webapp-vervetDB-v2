@@ -1,11 +1,11 @@
--- Deworming: the paper sheet's photo emailed on Submit (2026-11-02)
--- When staff submit a deworming list, the website makes a PDF of the paper
--- sheet's photos and this emails it, attached, from reports@vervetdb.com
--- to mark@vervet.za.org (for now: change private.deworming_sheet_to below).
--- Sent each time a list is submitted (again after a Send Back too).
+-- Deworming: the paper sheet's photo emailed on Approve (2026-11-02)
+-- When an admin approves a deworming list, the website makes a PDF of the
+-- paper sheet's photos and this emails it, attached, from
+-- reports@vervetdb.com to mark@vervet.za.org (for now: change
+-- private.deworming_sheet_to below). Once per list.
 --
--- Only for the list the person just submitted (in the last 15 minutes),
--- once per submission, so it can't be used to send other emails.
+-- Only for the list the person just approved (in the last 15 minutes),
+-- once, so it can't be used to send other emails.
 -- Uses the Resend key already saved in the Vault (as the weekly reports).
 -- Safe to run more than once.
 --
@@ -15,7 +15,7 @@
 
 begin;
 
--- When the sheet's photo was last emailed (once per submission)
+-- When the sheet's photo was emailed (once)
 alter table public.deworming_sheets add column if not exists photo_emailed_at timestamptz;
 
 -- Who gets the submitted sheets' photos
@@ -26,7 +26,7 @@ immutable
 as $$ select '["mark@vervet.za.org"]'::jsonb $$;
 
 ------------------------------------------------------------------------
--- Email the sheet's PDF (base64), just after Submit → the addresses
+-- Email the sheet's PDF (base64), just after Approve → the addresses
 ------------------------------------------------------------------------
 create or replace function public.email_deworming_sheet(sheet bigint, pdf text, file_name text)
 returns jsonb
@@ -45,11 +45,11 @@ begin
     if not found then
         raise exception 'That deworming list no longer exists.' using errcode = 'P0001';
     end if;
-    if s.status <> 'submitted' or s.submitted_by is distinct from auth.uid()
-            or s.submitted_at < now() - interval '15 minutes' then
-        raise exception 'Only the list you just submitted can be emailed.' using errcode = '42501';
+    if s.status <> 'approved' or s.approved_by is distinct from auth.uid()
+            or s.approved_at < now() - interval '15 minutes' then
+        raise exception 'Only the list you just approved can be emailed.' using errcode = '42501';
     end if;
-    if s.photo_emailed_at >= s.submitted_at then
+    if s.photo_emailed_at is not null then
         raise exception 'This list''s photo has already been emailed.' using errcode = 'P0001';
     end if;
     if pdf is null or char_length(pdf) > 30000000 or pdf !~ '^[A-Za-z0-9+/=]+$' then
@@ -71,10 +71,12 @@ begin
             'html', '<div style="font-family:Arial,sans-serif;font-size:15px;color:#222">'
                 || '<p>The paper sheet for <b>' || replace(replace(title, '&', '&amp;'), '<', '&lt;') || '</b> is attached.</p>'
                 || '<p>Submitted by ' || coalesce(replace(replace(s.submitted_by_name, '&', '&amp;'), '<', '&lt;'), 'staff')
-                || ', waiting for approval.</p>'
+                || ', approved by ' || coalesce(replace(replace(s.approved_by_name, '&', '&amp;'), '<', '&lt;'), 'an admin')
+                || '.</p>'
                 || '<p style="font-size:13px;color:#666"><a href="' || site || '#records/sections/deworming">Open Deworming in vervetDB</a></p></div>',
             'text', 'The paper sheet for ' || title || ' is attached.' || E'\n'
-                || 'Submitted by ' || coalesce(s.submitted_by_name, 'staff') || ', waiting for approval.' || E'\n\n'
+                || 'Submitted by ' || coalesce(s.submitted_by_name, 'staff')
+                || ', approved by ' || coalesce(s.approved_by_name, 'an admin') || '.' || E'\n\n'
                 || site || '#records/sections/deworming',
             'attachments', jsonb_build_array(jsonb_build_object(
                 'filename', coalesce(nullif(regexp_replace(file_name, '[^A-Za-z0-9_.-]', '', 'g'), ''), 'deworming_sheet.pdf'),

@@ -718,21 +718,31 @@ describe("completing a sheet", () => {
             photos: ["1/sheet.jpg"],
             daysDone: [1, 2, 3],
         });
-        // (then the photo, as a PDF, emailed)
-        await waitFor(() => expect(emailDewormingSheet).toHaveBeenCalled());
-        expect(sheetPhotoData).toHaveBeenCalledWith(["1/sheet.jpg"]);
-        expect(emailDewormingSheet.mock.calls[0][0]).toBe(1);
-        expect(emailDewormingSheet.mock.calls[0][1]).toBeInstanceOf(Blob);
-        expect(emailDewormingSheet.mock.calls[0][2]).toBe("deworming_sheet_D_D_Troop_6_Month_2026-11-02.pdf");
+        // (the photo's emailed on Approve, not now)
+        expect(emailDewormingSheet).not.toHaveBeenCalled();
     });
 
-    test("Submit still goes through if the photo email fails", async () => {
+    test("Approve still goes through if the photo email fails", async () => {
         emailDewormingSheet.mockRejectedValue(new Error("offline"));
         vi.spyOn(console, "error").mockImplementation(() => {});
+        loadDewormingSheets.mockResolvedValue([{ ...ready(), status: "submitted", photos: ["1/a.jpg"] }]);
+        const user = userEvent.setup();
+        open(ADMIN);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        await user.click(screen.getByRole("button", { name: "Approve" }));
+        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Confirm" }));
+        await waitFor(() => expect(emailDewormingSheet).toHaveBeenCalled());
+        await waitFor(() => expect(loadDewormingSheets).toHaveBeenCalledTimes(2));
+        expect(console.error).toHaveBeenCalledWith(expect.stringMatching(/Emailing the photo/), expect.any(Error));
+        console.error.mockRestore();
+    });
+
+    test("an admin changing a submitted sheet: Save, no Submit (it's waiting for Approve)", async () => {
         const full = { result: "full", food: "JS" };
         loadDewormingSheets.mockResolvedValue([
             {
                 ...ready(),
+                status: "submitted",
                 daysDone: [1, 2, 3],
                 photos: ["1/sheet.jpg"],
                 lines: [
@@ -742,16 +752,15 @@ describe("completing a sheet", () => {
             },
         ]);
         const user = userEvent.setup();
-        open(EDITOR);
-        await user.click(await screen.findByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Continue Results" }));
-        const finish = within(screen.getByRole("region", { name: "Finish" }));
-        await user.click(finish.getByRole("button", { name: "Submit" }));
-        await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(emailDewormingSheet).toHaveBeenCalled());
-        await waitFor(() => expect(screen.queryByRole("region", { name: "Record Results" })).toBeNull());
-        expect(console.error).toHaveBeenCalledWith(expect.stringMatching(/Emailing the photo/), expect.any(Error));
-        console.error.mockRestore();
+        open(ADMIN);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        await user.click(screen.getByRole("button", { name: "Edit Results" }));
+        const form = within(screen.getByRole("region", { name: "Record Results" }));
+        expect(form.queryByRole("region", { name: "Finish" })).toBeNull();
+        expect(form.queryByRole("button", { name: "Submit" })).toBeNull();
+        await user.click(form.getByRole("button", { name: "Save Day 3" }));
+        await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
+        expect(saveDewormingResults.mock.calls[0][1].submit).toBe(false);
     });
 
     test("a submitted sheet: editors wait; admins check each record, then Approve", async () => {
@@ -797,6 +806,12 @@ describe("completing a sheet", () => {
             { lineId: 11, text: "6-Month - 1/4 tab Albendazole, one dose only (refused Day 2)" },
             { lineId: 12, text: "6-Month - 1/2 tab Milbeworm, one dose only" },
         ]);
+        // (then the paper sheet's photo, as a PDF, emailed)
+        await waitFor(() => expect(emailDewormingSheet).toHaveBeenCalled());
+        expect(sheetPhotoData).toHaveBeenCalledWith(["1/sheet.jpg"]);
+        expect(emailDewormingSheet.mock.calls[0][0]).toBe(1);
+        expect(emailDewormingSheet.mock.calls[0][1]).toBeInstanceOf(Blob);
+        expect(emailDewormingSheet.mock.calls[0][2]).toBe("deworming_sheet_D_D_Troop_6_Month_2026-11-03.pdf");
     });
 
     test("Send Back, with a note for staff", async () => {

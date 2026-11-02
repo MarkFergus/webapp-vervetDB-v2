@@ -826,9 +826,9 @@ function Day4Question({ lines, onDecide, onClose }) {
     );
 }
 
-// After Submit: the paper sheet's photos as a PDF, emailed (to Mark, for
-// now: supabase/deworming-sheet-email.sql). Not sent: logged, as the sheet's
-// submitted anyway (the photos are in the app)
+// After Approve: the paper sheet's photos as a PDF, emailed once (to Mark,
+// for now: supabase/deworming-sheet-email.sql). Not sent: logged, as the
+// sheet's approved anyway (the photos are in the app)
 async function emailPhotos(sheet, photos) {
     try {
         const [{ pdf }, { default: DewormingPhotosPDF }, data] = await Promise.all([
@@ -936,7 +936,6 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
             });
             setLines(saving);
             setDaysDone(done);
-            if (submit) await emailPhotos({ ...sheet, startedOn, staffNames }, photos);
             await onSaved(submit);
             if (!submit) {
                 setStatus({
@@ -1095,7 +1094,8 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                 </button>
             </div>
 
-            {allDone && (
+            {/* (an admin changing a submitted sheet: no Submit, it's waiting for Approve) */}
+            {allDone && sheet.status !== "submitted" && (
                 <section className="Deworming-finish" aria-label="Finish">
                     <h3 className="RecordsPage-subhead">Finish</h3>
                     <p className="Deworming-meta">Upload a photo of the deworming sheet and press Submit to finish.</p>
@@ -1167,6 +1167,7 @@ export function Review({ sheet, lines, onDone }) {
                 sheet.id,
                 lines.map((l) => ({ lineId: l.id, text: texts[l.id].trim() }))
             );
+            await emailPhotos(sheet, sheet.photos ?? []);
             await onDone();
         } catch (error) {
             setProblem(error.message);
