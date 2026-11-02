@@ -4,6 +4,7 @@ import {
     IconCheck,
     IconCopy,
     IconEraser,
+    IconLoader2,
     IconPencil,
     IconPlus,
     IconTrash,
@@ -61,7 +62,8 @@ import useDialog from "./useDialog";
 //                 course; after Day 3, Day 4 for those whose course
 //                 started a day late
 //   ResultsTable  what each monkey got, day by day
-//   SheetPhotos   the paper sheet's photos (private: only staff see them)
+//   SheetPhotos   the paper sheet's photos (private: only staff see them),
+//   AddPhotoButton   and adding them (the sheet's page: then Submit)
 //   Review        (admins, a submitted sheet) each monkey's record to
 //                 check, then Approve (into its Medical records) or Send
 //                 Back with a note
@@ -150,12 +152,10 @@ export function ResultsTable({ lines }) {
     );
 }
 
-// The paper sheet's photos: each opens full size; staff can add more while
-// it's being completed (onAdd / onRemove)
-export function SheetPhotos({ paths, sheetId, onChange = null }) {
+// The paper sheet's photos: each opens full size; onRemove (while it's
+// being completed): an ✕ on each
+export function SheetPhotos({ paths, onRemove = null }) {
     const [urls, setUrls] = useState({});
-    const [busy, setBusy] = useState(false);
-    const [problem, setProblem] = useState(null);
     const key = paths.join("|");
     useEffect(() => {
         let cancelled = false;
@@ -166,75 +166,69 @@ export function SheetPhotos({ paths, sheetId, onChange = null }) {
         // (only when the photos change: key)
     }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    return (
+        <ul className="Deworming-photoList">
+            {paths.map((p, i) => (
+                <li key={p}>
+                    {urls[p] ? (
+                        <a href={urls[p]} target="_blank" rel="noreferrer">
+                            <img src={urls[p]} alt={`Paper copy, photo ${i + 1}`} />
+                        </a>
+                    ) : (
+                        <span className="Deworming-photoWait">Photo {i + 1}</span>
+                    )}
+                    {onRemove && (
+                        <button
+                            type="button"
+                            className="Deworming-photoRemove"
+                            aria-label={`Remove photo ${i + 1}`}
+                            onClick={() => onRemove(p)}
+                        >
+                            <IconX size={14} aria-hidden="true" />
+                        </button>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+// Add Photo: the paper sheet's photo(s), uploaded → onAdded(paths); a green
+// tick once there's one (done)
+export function AddPhotoButton({ sheetId, done, disabled, onAdded, onProblem }) {
+    const [busy, setBusy] = useState(false);
     async function add(event) {
         const files = [...event.target.files];
         event.target.value = "";
         if (!files.length) return;
         setBusy(true);
-        setProblem(null);
+        onProblem(null);
         try {
             const added = [];
             for (const file of files) added.push(await uploadSheetPhoto(file, sheetId));
-            onChange([...paths, ...added]);
+            await onAdded(added);
         } catch (error) {
-            setProblem(error.message);
+            onProblem(error.message);
         } finally {
             setBusy(false);
         }
     }
-
+    const off = disabled || busy;
     return (
-        <div className="Deworming-photos">
-            {paths.length > 0 && (
-                <ul className="Deworming-photoList">
-                    {paths.map((p, i) => (
-                        <li key={p}>
-                            {urls[p] ? (
-                                <a href={urls[p]} target="_blank" rel="noreferrer">
-                                    <img src={urls[p]} alt={`Paper copy, photo ${i + 1}`} />
-                                </a>
-                            ) : (
-                                <span className="Deworming-photoWait">Photo {i + 1}</span>
-                            )}
-                            {onChange && (
-                                <button
-                                    type="button"
-                                    className="Deworming-photoRemove"
-                                    aria-label={`Remove photo ${i + 1}`}
-                                    onClick={() => onChange(paths.filter((x) => x !== p))}
-                                >
-                                    <IconX size={14} aria-hidden="true" />
-                                </button>
-                            )}
-                        </li>
-                    ))}
-                </ul>
+        <span className="Deworming-photoRow">
+            <label
+                className={`Modal-edit is-soft Deworming-photoAdd${busy ? " is-busy" : ""}${off ? " is-off" : ""}`}
+                aria-disabled={off || undefined}
+            >
+                <IconCamera size={16} aria-hidden="true" />
+                {busy ? "Uploading…" : "Add Photo"}
+                <input type="file" accept="image/*" multiple hidden disabled={off} onChange={add} />
+            </label>
+            {/* (a photo's there: done) */}
+            {done && !busy && (
+                <IconCheck className="Deworming-photoDone" size={22} stroke={3} aria-label="Photo added" role="img" />
             )}
-            {onChange && (
-                <div className="Deworming-photoRow">
-                    <label className={`Modal-edit is-soft Deworming-photoAdd${busy ? " is-busy" : ""}`}>
-                        <IconCamera size={16} aria-hidden="true" />
-                        {busy ? "Uploading…" : "Add Photo"}
-                        <input type="file" accept="image/*" multiple hidden disabled={busy} onChange={add} />
-                    </label>
-                    {/* (a photo's there: done) */}
-                    {paths.length > 0 && !busy && (
-                        <IconCheck
-                            className="Deworming-photoDone"
-                            size={22}
-                            stroke={3}
-                            aria-label="Photo added"
-                            role="img"
-                        />
-                    )}
-                </div>
-            )}
-            {problem && (
-                <p className="Integration-problem" role="alert">
-                    {problem}
-                </p>
-            )}
-        </div>
+        </span>
     );
 }
 
@@ -863,6 +857,47 @@ const tidy = (dose) => ({
     note: dose.note?.trim() || null,
 });
 
+// A sheet's results to save (saveDewormingResults), from the sheet and its
+// lines: { startedOn, staffNames, dayNotes, photos, daysDone, lines }
+export const resultsOf = (sheet, lines) => ({
+    startedOn: sheet.startedOn ?? sheet.startDate,
+    staffNames: sheet.staffNames ?? "",
+    dayNotes: sheet.dayNotes ?? {},
+    photos: sheet.photos ?? [],
+    daysDone: sheet.daysDone ?? [],
+    lines: lines.map((l) => ({
+        ...l,
+        doses: Object.fromEntries(Object.entries(l.doses ?? {}).map(([d, x]) => [d, tidy(x)])),
+    })),
+});
+
+// Are all a sheet's days complete? (Day 1–3, and Day 4 when anyone needs it)
+export const allDaysDone = (sheet) => sheetDays(sheet.lines).every((d) => (sheet.daysDone ?? []).includes(d));
+
+// Copy's spinner: just long enough to see it copied again
+const COPY_PAUSE = 350;
+
+// Is a day saved, and not changed since? (its results saved, or it was
+// saved complete; and the day's entries, its note, the start date and
+// staff as saved)
+//   stored: what's saved; now: { lines, dayNotes, startedOn, staffNames }
+function isSaved(stored, now, day) {
+    // (each entry's result, food, note and change, whatever its shape)
+    const entry = (d) =>
+        d
+            ? [d.result ?? null, d.food?.trim() || null, d.note?.trim() || null, d.medication ?? null, d.dose ?? null]
+            : null;
+    const entries = (ls) => JSON.stringify(ls.map((l) => [l.id, entry(l.doses?.[day])]));
+    const anything = stored.daysDone.includes(day) || stored.lines.some((l) => l.doses?.[day]);
+    return (
+        anything &&
+        entries(stored.lines) === entries(now.lines) &&
+        (stored.dayNotes[day] ?? "").trim() === (now.dayNotes[day] ?? "").trim() &&
+        stored.startedOn === now.startedOn &&
+        stored.staffNames.trim() === now.staffNames.trim()
+    );
+}
+
 export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, onCancel }) {
     const [lines, setLines] = useState(startLines);
     const [daysDone, setDaysDone] = useState(sheet.daysDone ?? []);
@@ -870,16 +905,36 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
     const [startedOn, setStartedOn] = useState(sheet.startedOn ?? sheet.startDate);
     const [staffNames, setStaffNames] = useState(sheet.staffNames ?? "");
     const [dayNotes, setDayNotes] = useState(sheet.dayNotes ?? {});
-    const [photos, setPhotos] = useState(sheet.photos ?? []);
-    // null, "saving", { saved: message }, "copied" or { problem }
+    // null, "saving" or { problem }
     const [status, setStatus] = useState(null);
-    const [submitting, setSubmitting] = useState(false);
+    // What's saved (as opened, or last saved): a day that's saved, and not
+    // changed since, says "Saved!" (coming back to it too)
+    const [stored, setStored] = useState(() => ({
+        lines: startLines,
+        dayNotes: sheet.dayNotes ?? {},
+        startedOn: sheet.startedOn ?? sheet.startDate,
+        staffNames: sheet.staffNames ?? "",
+        daysDone: sheet.daysDone ?? [],
+    }));
+    // Copy's "Copied!" (a short spinner first: copied again), until something's changed
+    const [copied, setCopied] = useState(false);
+    const [copying, setCopying] = useState(false);
+    // Something changed (a result, a note, the day…): Copy again
+    const changed = () => {
+        setStatus(null);
+        setCopied(false);
+    };
     const [adding, setAdding] = useState(false);
     // After Day 3: the monkeys whose course needs a Day 4 (asked first)
     const [askDay4, setAskDay4] = useState(null);
-    const stopSubmitting = useCallback(() => setSubmitting(false), []);
     const days = sheetDays(lines);
-    const allDone = days.every((d) => daysDone.includes(d));
+    // (saved, with someone still to do: said. All there but not saved
+    // complete: Save Day N, to complete it)
+    const toDo = stored.daysDone.includes(day) ? [] : stillToDo(lines, day);
+    const saved =
+        isSaved(stored, { lines, dayNotes, startedOn, staffNames }, day) &&
+        (stored.daysDone.includes(day) || toDo.length > 0);
+    const missing = saved ? toDo : [];
     // (a day opens once the one before it is complete)
     const isOpen = (d) => d === 1 || daysDone.includes(d - 1);
 
@@ -893,59 +948,37 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                 return { ...l, doses };
             })
         );
-        setStatus(null);
+        changed();
     };
 
     // Save Day N: saved, and complete once everyone has a result (or is
-    // done already); Submit: the same, sent for approval. Day 3 complete:
-    // first, Day 4 for anyone whose course started a day late (asked)
+    // done already). Day 3 complete: first, Day 4 for anyone whose course
+    // started a day late (asked). (Submit's on the sheet's page.)
     //   decided: the lines with their Day 4 decisions
-    async function save(submit = false, decided = null) {
-        setSubmitting(false);
-        if (submit && !photos.length) {
-            return setStatus({ problem: "Please upload a photo of the deworming sheet before submitting." });
-        }
-        const missing = submit ? [] : stillToDo(lines, day);
-        if (!submit && day === 3 && !missing.length && !decided) {
+    async function save(decided = null) {
+        const missing = stillToDo(lines, day);
+        if (day === 3 && !missing.length && !decided) {
             const late = lines.filter((l) => needsDay4(l));
             if (late.length) return setAskDay4(late);
         }
         // (Day 3 saved: each line's Day 4, as decided (none needed: cleared))
         const saving =
-            !submit && day === 3 && !missing.length
+            day === 3 && !missing.length
                 ? lines.map((l) => ({ ...l, day4: needsDay4(l) ? (decided?.[l.id] ?? true) : null }))
                 : lines;
-        const done = submit
-            ? daysDone
-            : missing.length
-              ? daysDone.filter((d) => d !== day)
-              : [...new Set([...daysDone, day])].sort();
+        const done = missing.length ? daysDone.filter((d) => d !== day) : [...new Set([...daysDone, day])].sort();
         setStatus("saving");
         try {
             await saveDewormingResults(sheet.id, {
-                startedOn,
-                staffNames,
-                dayNotes,
-                photos,
-                daysDone: done,
-                submit,
-                lines: saving.map((l) => ({
-                    ...l,
-                    doses: Object.fromEntries(Object.entries(l.doses).map(([d, x]) => [d, tidy(x)])),
-                })),
+                ...resultsOf({ ...sheet, startedOn, staffNames, dayNotes, daysDone: done }, saving),
+                submit: false,
             });
             setLines(saving);
             setDaysDone(done);
-            await onSaved(submit);
-            if (!submit) {
-                setStatus({
-                    saved: missing.length
-                        ? `Saved. Day ${day} isn't complete yet: ${nameList(missing)} still ${missing.length === 1 ? "needs" : "need"} a result.`
-                        : day < sheetDays(saving).at(-1)
-                          ? `Day ${day} complete. Copy the summary, then go on to Day ${day + 1}.`
-                          : `Day ${day} complete. Copy the summary, then upload the photo and submit below.`,
-                });
-            }
+            // (the button says Saved!; anyone still to do: said too)
+            setStored({ lines: saving, dayNotes, startedOn, staffNames, daysDone: done });
+            setStatus(null);
+            await onSaved();
         } catch (error) {
             setStatus({ problem: error.message });
         }
@@ -956,31 +989,45 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
         try {
             await removeDewormingMonkey(line.id);
             setLines((ls) => ls.filter((l) => l.id !== line.id));
-            setStatus(null);
+            changed();
         } catch (error) {
             setStatus({ problem: error.message });
         }
     }
 
+    // Copy (again too): a moment's spinner, then "Copied!"
     async function copy() {
         const text = daySummary(sheet, lines, day, dayNotes[day] ?? "");
         if (!text) return setStatus({ problem: `Nothing entered for Day ${day} yet.` });
+        setCopying(true);
         try {
-            await navigator.clipboard.writeText(text);
-            setStatus("copied");
+            await Promise.all([
+                navigator.clipboard.writeText(text),
+                new Promise((done) => setTimeout(done, COPY_PAUSE)),
+            ]);
+            setStatus(null);
+            setCopied(true);
         } catch {
             setStatus({ problem: "Couldn't copy. Please try again." });
+        } finally {
+            setCopying(false);
         }
     }
 
     const busy = status === "saving";
     return (
         <section className="Deworming-results" aria-label="Record Results">
-            <h3 className="RecordsPage-subhead">Record Results</h3>
             <div className="Deworming-fields">
                 <label className="IntegrationPage-choose">
                     <span>Date Started (Day 1)</span>
-                    <input type="date" value={startedOn} onChange={(e) => setStartedOn(e.target.value)} />
+                    <input
+                        type="date"
+                        value={startedOn}
+                        onChange={(e) => {
+                            setStartedOn(e.target.value);
+                            changed();
+                        }}
+                    />
                 </label>
                 <label className="IntegrationPage-choose">
                     <span>Staff Member(s)</span>
@@ -988,7 +1035,10 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                         type="text"
                         maxLength={120}
                         value={staffNames}
-                        onChange={(e) => setStaffNames(e.target.value)}
+                        onChange={(e) => {
+                            setStaffNames(e.target.value);
+                            changed();
+                        }}
                     />
                 </label>
             </div>
@@ -1006,7 +1056,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                         title={isOpen(d) ? undefined : `Complete Day ${d - 1} first`}
                         onClick={() => {
                             setDay(d);
-                            setStatus(null);
+                            changed();
                         }}
                     >
                         Day {d}
@@ -1047,7 +1097,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                     onAdded={(line) => {
                         setAdding(false);
                         setLines((ls) => [...ls, line]);
-                        setStatus(null);
+                        changed();
                     }}
                 />
             )}
@@ -1057,7 +1107,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                     onClose={() => setAskDay4(null)}
                     onDecide={(decided) => {
                         setAskDay4(null);
-                        save(false, decided);
+                        save(decided);
                     }}
                 />
             )}
@@ -1067,62 +1117,41 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                     type="text"
                     maxLength={300}
                     value={dayNotes[day] ?? ""}
-                    onChange={(e) => setDayNotes({ ...dayNotes, [day]: e.target.value })}
+                    onChange={(e) => {
+                        setDayNotes({ ...dayNotes, [day]: e.target.value });
+                        changed();
+                    }}
                 />
             </label>
+            <p className="Deworming-meta Deworming-saveHint">Save results and copy a summary to share in Team Chat.</p>
 
             {status?.problem && (
                 <p className="Integration-problem" role="alert">
                     {status.problem}
                 </p>
             )}
-            {(status?.saved || status === "copied") && (
-                <p className="Deworming-done" role="status">
-                    {status === "copied" ? `Day ${day} summary copied` : status.saved}
+            {missing.length > 0 && (
+                <p className="Deworming-done is-warn" role="status">
+                    Day {day} isn't complete yet: {nameList(missing)} still {missing.length === 1 ? "needs" : "need"} a
+                    result.
                 </p>
             )}
             <div className="Deworming-actions">
                 <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={() => save()}>
-                    {busy ? "Saving…" : `Save Day ${day}`}
+                    {busy ? "Saving…" : saved ? "Saved!" : `Save Day ${day}`}
                 </button>
-                <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={copy}>
-                    <IconCopy size={16} aria-hidden="true" />
-                    Copy Day {day} Summary
+                <button type="button" className="Modal-edit is-soft" disabled={busy || copying} onClick={copy}>
+                    {copying ? (
+                        <IconLoader2 className="Deworming-spinner" size={16} stroke={2.5} aria-hidden="true" />
+                    ) : (
+                        <IconCopy size={16} aria-hidden="true" />
+                    )}
+                    {copying ? "Copying…" : copied ? "Copied!" : `Copy Day ${day} Summary`}
                 </button>
                 <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                     Close
                 </button>
             </div>
-
-            {/* (an admin changing a submitted sheet: no Submit, it's waiting for Approve) */}
-            {allDone && sheet.status !== "submitted" && (
-                <section className="Deworming-finish" aria-label="Finish">
-                    <h3 className="RecordsPage-subhead">Finish</h3>
-                    <p className="Deworming-meta">Upload a photo of the deworming sheet and press Submit to finish.</p>
-                    <SheetPhotos paths={photos} sheetId={sheet.id} onChange={setPhotos} />
-                    <div className="Deworming-actions">
-                        <span className="Deworming-confirmHost">
-                            <button
-                                type="button"
-                                className="Modal-edit is-confirm"
-                                disabled={busy || !photos.length}
-                                title={photos.length ? undefined : "Upload a photo of the deworming sheet first"}
-                                onClick={() => setSubmitting(true)}
-                            >
-                                Submit
-                            </button>
-                            {submitting && (
-                                <ConfirmBubble
-                                    question="Submit for approval? Only an admin can change it after."
-                                    busy={busy}
-                                    onConfirm={() => save(true)}
-                                    onCancel={stopSubmitting}
-                                />
-                            )}
-                        </span>
-                    </div>
-                </section>
-            )}
         </section>
     );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconClipboardCheck, IconPencil, IconPlus, IconPrinter, IconTrash } from "@tabler/icons-react";
-import { deleteDewormingSheet, loadDewormingSheets, saveDewormingSheet } from "./monkeyData";
+import { IconClipboardCheck, IconPencil, IconPlus, IconPrinter, IconSend, IconTrash } from "@tabler/icons-react";
+import { deleteDewormingSheet, loadDewormingSheets, saveDewormingResults, saveDewormingSheet } from "./monkeyData";
 import {
     AMOUNTS,
     DEFAULT_INSTRUCTIONS,
@@ -22,22 +22,32 @@ import { ageLabel } from "./ages";
 import { fullName } from "./places";
 import { downloadBlob } from "./canvasHelpers";
 import ConfirmBubble from "./ConfirmBubble";
-import { ResultsForm, ResultsTable, Review, SheetPhotos } from "./DewormingResults";
+import {
+    AddPhotoButton,
+    ResultsForm,
+    ResultsTable,
+    Review,
+    SheetPhotos,
+    allDaysDone,
+    resultsOf,
+} from "./DewormingResults";
 import "./IntegrationRecordsPage.css"; // (the pickers' look)
 import "./DewormingRecordsPage.css";
 
 // Records → Sections → Deworming: the deworming sheets.
-//   the list     every sheet, newest first; staff open one to see who's on
-//                it, and print it (Print Sheet: the paper sheet, as before)
+//   the list     every sheet, newest first, with where it's up to; Print
+//                (the paper sheet, as before) and (admins) Delete icons;
+//                staff open one to see who's on it
 //   Prepare Sheet (admins)   a deworming group and session (the next in
 //                its cycle to start with), the start date, the line under
 //                the printed title, and each monkey's dewormer and dose
 //                (dewormingRules.js: who's ticked to start with, and with
 //                what). Edit (until results are entered) and Delete too.
-//   a sheet      Record Results (editors and admins: DewormingResults.jsx),
-//                day by day, with the paper sheet's photo, then Submit for
-//                Approval; admins Approve it (each monkey's record goes into
-//                its Medical records) or Send it Back
+//   a sheet      Enter Results (editors and admins: DewormingResults.jsx),
+//                day by day; then Add Photo (the paper sheet) and Submit for
+//                Approval, each once the one before is done; admins Approve
+//                it (each monkey's record goes into its Medical records) or
+//                Send it Back
 //   staff: { isAdmin, canAdd, readOnly, … } (as the pop-up's)
 
 const OTHER = "other";
@@ -481,36 +491,40 @@ export function listStatus(sheet) {
     return { text: day ? `Day ${day}` : "Ready to Submit", tag: "In Progress", tone: "progress" };
 }
 
-// One sheet: who's on it and with what, Print Sheet; Record Results (staff,
-// until it's submitted); the results and photos; Review (admins, once
-// submitted); and (admins, before any results) Edit and Delete
-function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, onChanged }) {
+// Print: the paper sheet as a PDF, downloaded. Throws a message to show.
+async function printSheet(sheet, monkeys) {
+    try {
+        const [{ pdf }, { default: DewormingSheetPDF }] = await Promise.all([
+            import("@react-pdf/renderer"),
+            import("./DewormingSheetPDF"),
+        ]);
+        const lines = printOrder(namedLines(sheet, monkeys));
+        const blob = await pdf(<DewormingSheetPDF sheet={sheet} lines={lines} />).toBlob();
+        const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
+        downloadBlob(blob, `deworming_${name}_${sheet.startDate}.pdf`);
+    } catch (error) {
+        console.error(error);
+        throw new Error("Couldn't create the PDF. Check your internet connection, then try again.");
+    }
+}
+
+// A sheet in the list: its title and where it's up to (opens it), then
+// Print and (admins) Delete, as icons
+function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
     const [deleting, setDeleting] = useState(false);
-    const [recording, setRecording] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
-    const lines = printOrder(namedLines(sheet, monkeys));
     const stopDeleting = useCallback(() => setDeleting(false), []);
-    // (results entered, or a monkey added: Edit would lose them)
-    const started = lines.some((l) => Object.keys(l.doses ?? {}).length || (l.kind && l.kind !== "list"));
-    const stage = stageText(sheet);
-    // (staff until it's submitted; admins until it's approved)
-    const canEnter = canRecord && (sheet.status === "ready" || (sheet.status === "submitted" && canPrepare));
+    const status = listStatus(sheet);
+    const title = sheetTitle(sheet);
 
     async function print() {
         setBusy(true);
         setProblem(null);
         try {
-            const [{ pdf }, { default: DewormingSheetPDF }] = await Promise.all([
-                import("@react-pdf/renderer"),
-                import("./DewormingSheetPDF"),
-            ]);
-            const blob = await pdf(<DewormingSheetPDF sheet={sheet} lines={lines} />).toBlob();
-            const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
-            downloadBlob(blob, `deworming_${name}_${sheet.startDate}.pdf`);
+            await printSheet(sheet, monkeys);
         } catch (error) {
-            console.error(error);
-            setProblem("Couldn't create the PDF. Check your internet connection, then try again.");
+            setProblem(error.message);
         } finally {
             setBusy(false);
         }
@@ -528,6 +542,107 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, o
         }
     }
 
+    return (
+        <li className="Deworming-row">
+            <div className="Deworming-rowMain">
+                <button type="button" className="Deworming-item" onClick={onOpen}>
+                    <span className="Deworming-itemText">
+                        <b>
+                            <SheetTitle text={title} />
+                        </b>
+                        <span>
+                            Starts {dayLabel(sheet.startDate)} ·{" "}
+                            {sheet.lines.length === 1 ? "1 monkey" : `${sheet.lines.length} monkeys`} · {status.text}
+                        </span>
+                    </span>
+                    {status.tag && <span className={`Deworming-tag is-${status.tone}`}>{status.tag}</span>}
+                </button>
+                <span className="Deworming-rowTools">
+                    <button
+                        type="button"
+                        className="Deworming-icon"
+                        aria-label="Print"
+                        title="Print"
+                        disabled={busy}
+                        onClick={print}
+                    >
+                        <IconPrinter size={18} aria-hidden="true" />
+                    </button>
+                    {canPrepare && (
+                        <span className="Deworming-confirmHost">
+                            <button
+                                type="button"
+                                className="Deworming-icon is-danger"
+                                aria-label="Delete"
+                                title="Delete"
+                                disabled={busy}
+                                onClick={() => setDeleting(true)}
+                            >
+                                <IconTrash size={18} aria-hidden="true" />
+                            </button>
+                            {deleting && (
+                                <ConfirmBubble
+                                    question={
+                                        sheet.status === "approved"
+                                            ? "Delete this list? (The Medical records it added stay.)"
+                                            : "Delete this list?"
+                                    }
+                                    danger
+                                    busy={busy}
+                                    onConfirm={remove}
+                                    onCancel={stopDeleting}
+                                />
+                            )}
+                        </span>
+                    )}
+                </span>
+            </div>
+            {problem && (
+                <p className="Integration-problem" role="alert">
+                    {problem}
+                </p>
+            )}
+        </li>
+    );
+}
+
+// One sheet: who's on it and with what; Enter Results, Add Photo and Submit
+// (staff, until it's submitted: each once the one before is done); the
+// results and photos; Review (admins, once submitted); and (admins, before
+// any results) Edit
+function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged }) {
+    const [recording, setRecording] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [problem, setProblem] = useState(null);
+    const lines = printOrder(namedLines(sheet, monkeys));
+    const stopSubmitting = useCallback(() => setSubmitting(false), []);
+    // (results entered, or a monkey added: Edit would lose them)
+    const started = lines.some((l) => Object.keys(l.doses ?? {}).length || (l.kind && l.kind !== "list"));
+    const stage = stageText(sheet);
+    // (staff until it's submitted; admins until it's approved)
+    const canEnter = canRecord && (sheet.status === "ready" || (sheet.status === "submitted" && canPrepare));
+
+    const daysDone = allDaysDone(sheet);
+    const photos = sheet.photos ?? [];
+    // (staff completing it: Add Photo and Submit too)
+    const completing = canEnter && sheet.status === "ready";
+
+    // The photos (added or removed), or Submit: saved with the results
+    async function saveSheet(changes, submit = false) {
+        setBusy(true);
+        setProblem(null);
+        setSubmitting(false);
+        try {
+            await saveDewormingResults(sheet.id, { ...resultsOf({ ...sheet, ...changes }, sheet.lines), submit });
+            await onChanged();
+        } catch (error) {
+            setProblem(error.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
     if (recording) {
         return (
             <section className="Deworming-sheet" aria-label={sheetTitle(sheet)}>
@@ -536,10 +651,7 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, o
                     lines={lines}
                     monkeys={monkeys}
                     onCancel={() => setRecording(false)}
-                    onSaved={async (submitted) => {
-                        await onChanged();
-                        if (submitted) setRecording(false);
-                    }}
+                    onSaved={onChanged}
                 />
             </section>
         );
@@ -597,10 +709,13 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, o
                     </tbody>
                 </table>
             )}
-            {sheet.photos?.length > 0 && (
+            {photos.length > 0 && (
                 <>
                     <h3 className="RecordsPage-subhead">Photo of the Paper Copy</h3>
-                    <SheetPhotos paths={sheet.photos} sheetId={sheet.id} />
+                    <SheetPhotos
+                        paths={photos}
+                        onRemove={completing ? (p) => saveSheet({ photos: photos.filter((x) => x !== p) }) : null}
+                    />
                 </>
             )}
             {sheet.status === "approved" && (
@@ -620,57 +735,66 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, o
                     {problem}
                 </p>
             )}
+            {completing && (
+                <p className="Deworming-meta Deworming-steps">
+                    Enter Results at the end of each day. When all days are complete, upload a photo of the completed
+                    sheet and press Submit to finalise deworming.
+                </p>
+            )}
             <div className="Deworming-actions">
                 {canEnter && (
                     <button
                         type="button"
-                        className="Modal-edit is-confirm"
+                        className="Modal-edit Deworming-enter"
                         disabled={busy}
                         onClick={() => setRecording(true)}
                     >
                         <IconClipboardCheck size={16} aria-hidden="true" />
-                        {sheet.status === "submitted"
-                            ? "Edit Results"
-                            : started
-                              ? "Enter Results"
-                              : "Record Results"}
+                        {sheet.status === "submitted" ? "Edit Results" : "Enter Results"}
                     </button>
                 )}
-                <button type="button" className="Modal-edit" disabled={busy} onClick={print}>
-                    <IconPrinter size={16} aria-hidden="true" />
-                    Print List
-                </button>
+                {completing && (
+                    <>
+                        <AddPhotoButton
+                            sheetId={sheet.id}
+                            done={photos.length > 0}
+                            disabled={busy || !daysDone}
+                            onAdded={(added) => saveSheet({ photos: [...photos, ...added] })}
+                            onProblem={setProblem}
+                        />
+                        <span className="Deworming-confirmHost">
+                            <button
+                                type="button"
+                                className="Modal-edit is-confirm"
+                                disabled={busy || !daysDone || !photos.length}
+                                title={
+                                    !daysDone
+                                        ? "Complete every day first"
+                                        : photos.length
+                                          ? undefined
+                                          : "Add a photo of the deworming sheet first"
+                                }
+                                onClick={() => setSubmitting(true)}
+                            >
+                                <IconSend size={16} aria-hidden="true" />
+                                Submit
+                            </button>
+                            {submitting && (
+                                <ConfirmBubble
+                                    question="Submit for approval? Only an admin can change it after."
+                                    busy={busy}
+                                    onConfirm={() => saveSheet({}, true)}
+                                    onCancel={stopSubmitting}
+                                />
+                            )}
+                        </span>
+                    </>
+                )}
                 {canPrepare && sheet.status === "ready" && !started && (
                     <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={onEdit}>
                         <IconPencil size={16} aria-hidden="true" />
                         Edit
                     </button>
-                )}
-                {canPrepare && (
-                    <span className="Deworming-confirmHost">
-                        <button
-                            type="button"
-                            className="Modal-edit is-soft"
-                            disabled={busy}
-                            onClick={() => setDeleting(true)}
-                        >
-                            <IconTrash size={16} aria-hidden="true" />
-                            Delete
-                        </button>
-                        {deleting && (
-                            <ConfirmBubble
-                                question={
-                                    sheet.status === "approved"
-                                        ? "Delete this list? (The Medical records it added stay.)"
-                                        : "Delete this list?"
-                                }
-                                danger
-                                busy={busy}
-                                onConfirm={remove}
-                                onCancel={stopDeleting}
-                            />
-                        )}
-                    </span>
                 )}
             </div>
             {canPrepare && sheet.status === "submitted" && <Review sheet={sheet} lines={lines} onDone={onChanged} />}
@@ -755,10 +879,6 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                 canRecord={canRecord}
                 onChanged={reload}
                 onEdit={() => setOpen({ edit: sheet.id })}
-                onDeleted={async () => {
-                    await reload();
-                    setOpen(null);
-                }}
             />
         );
     }
@@ -782,32 +902,16 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                 <p className="RecordsPage-intro">No deworming lists yet.</p>
             ) : (
                 <ul className="Deworming-list">
-                    {sheets.map((s) => {
-                        const status = listStatus(s);
-                        return (
-                            <li key={s.id}>
-                                <button
-                                    type="button"
-                                    className="Deworming-item"
-                                    onClick={() => setOpen({ view: s.id })}
-                                >
-                                    <span className="Deworming-itemText">
-                                        <b>
-                                            <SheetTitle text={sheetTitle(s)} />
-                                        </b>
-                                        <span>
-                                            Starts {dayLabel(s.startDate)} ·{" "}
-                                            {s.lines.length === 1 ? "1 monkey" : `${s.lines.length} monkeys`} ·{" "}
-                                            {status.text}
-                                        </span>
-                                    </span>
-                                    {status.tag && (
-                                        <span className={`Deworming-tag is-${status.tone}`}>{status.tag}</span>
-                                    )}
-                                </button>
-                            </li>
-                        );
-                    })}
+                    {sheets.map((s) => (
+                        <SheetRow
+                            key={s.id}
+                            sheet={s}
+                            monkeys={monkeys}
+                            canPrepare={canPrepare}
+                            onOpen={() => setOpen({ view: s.id })}
+                            onDeleted={reload}
+                        />
+                    ))}
                 </ul>
             )}
         </div>

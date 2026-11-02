@@ -253,11 +253,13 @@ describe("the page", () => {
                 .map((r) => r.textContent)
         ).toEqual(["Ash1/4 tab Albendazole3 days", "Meggy1/2 tab Milbeworm1 day"]);
         expect(page.queryByRole("button", { name: "Edit" })).toBeNull();
-        expect(page.queryByRole("button", { name: "Delete" })).toBeNull();
-        expect(page.getByRole("button", { name: "Print List" })).toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Deworming Lists" }));
         expect(screen.getByRole("heading", { level: 1, name: "Deworming" })).toBeInTheDocument();
         expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
+        // (on the list: Print for everyone, Delete for admins only)
+        const row = within(screen.getByRole("listitem"));
+        expect(row.getByRole("button", { name: "Print" })).toBeInTheDocument();
+        expect(row.queryByRole("button", { name: "Delete" })).toBeNull();
     });
 
     test("Print Sheet: the paper sheet as a PDF", async () => {
@@ -272,8 +274,8 @@ describe("the page", () => {
         });
         const user = userEvent.setup();
         open(EDITOR);
-        await user.click(await screen.findByRole("button", { name: /6-Month F\/U Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Print List" }));
+        // (from the list, without opening it)
+        await user.click(await screen.findByRole("button", { name: "Print" }));
         await waitFor(() => expect(names).toEqual(["deworming_D_D_Troop_6_Month_F_U_2026-11-20.pdf"]));
     });
 
@@ -378,7 +380,8 @@ describe("the page", () => {
             lines: [{ monkeyId: 5, medication: "Panacur", dose: "3/4 tsp", days: 3 }],
         });
 
-        // (back on the sheet) Delete
+        // (back on the sheet; then on the list) Delete
+        await user.click(await screen.findByRole("button", { name: "Deworming Lists" }));
         await user.click(await screen.findByRole("button", { name: "Delete" }));
         const ask = screen.getByRole("dialog", { name: "Delete this list?" });
         expect(within(ask).getByRole("button", { name: "Confirm" })).toHaveClass("is-danger");
@@ -548,8 +551,9 @@ describe("completing a sheet", () => {
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
         expect(screen.getByText("Ready")).toBeInTheDocument();
-        await user.click(screen.getByRole("button", { name: "Record Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
+        expect(form.getByText("Save results and copy a summary to share in Team Chat.")).toBeInTheDocument();
         // (Day 1–3: no Day 4 for now)
         expect(form.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Day 1", "Day 2", "Day 3"]);
         expect(form.getByRole("tab", { name: "Day 1" })).toHaveAttribute("aria-selected", "true");
@@ -569,14 +573,24 @@ describe("completing a sheet", () => {
         expect(writeText).toHaveBeenCalledWith(
             "*D&D Troop 6-Month Deworming*\n_Day 1_\n✅ All took\n\n🐒 Meggy only got 3/4 dose today"
         );
+        expect(await form.findByRole("button", { name: "Copied!" })).toBeInTheDocument();
 
         // Day 2 opens once Day 1 is saved complete
         expect(form.getByRole("tab", { name: "Day 2" })).toBeDisabled();
         await user.type(form.getByLabelText("Staff Member(s)"), "Sam");
         await user.click(form.getByRole("button", { name: "Save Day 1" }));
-        expect(await form.findByRole("status")).toHaveTextContent(
-            "Day 1 complete. Copy the summary, then go on to Day 2."
-        );
+        // (the button says so: no line)
+        expect(await form.findByRole("button", { name: "Saved!" })).toBeInTheDocument();
+        expect(form.queryByRole("status")).toBeNull();
+        // (copying after: still Saved!, nothing's changed)
+        await user.click(form.getByRole("button", { name: "Copy Day 1 Summary" }));
+        expect(await form.findByRole("button", { name: "Copied!" })).toBeInTheDocument();
+        expect(form.getByRole("button", { name: "Saved!" })).toBeInTheDocument();
+        // (copied again: a moment's "Copying…", then Copied! again)
+        await user.click(form.getByRole("button", { name: "Copied!" }));
+        expect(form.getByRole("button", { name: "Copying…" })).toBeDisabled();
+        expect(await form.findByRole("button", { name: "Copied!" })).toBeInTheDocument();
+        expect(writeText).toHaveBeenCalledTimes(3);
         const [id, saved] = saveDewormingResults.mock.calls[0];
         expect(id).toBe(1);
         expect(saved).toMatchObject({
@@ -602,10 +616,43 @@ describe("completing a sheet", () => {
         await user.click(within(form.getByRole("group", { name: "Ash: Day 2" })).getByRole("button", { name: "Full" }));
         await user.click(form.getByRole("button", { name: "Save Day 2" }));
         expect(await form.findByRole("status")).toHaveTextContent(
-            "Saved. Day 2 isn't complete yet: Meggy still needs a result."
+            "Day 2 isn't complete yet: Meggy still needs a result."
         );
+        expect(form.getByRole("button", { name: "Saved!" })).toBeInTheDocument();
         expect(saveDewormingResults.mock.calls[1][1].daysDone).toEqual([1]);
+        // (anything changed: Save again)
+        await user.click(
+            within(form.getByRole("group", { name: "Meggy: Day 2" })).getByRole("button", { name: "Full" })
+        );
+        expect(form.getByRole("button", { name: "Save Day 2" })).toBeInTheDocument();
+        expect(form.queryByRole("status")).toBeNull();
         expect(form.getByRole("tab", { name: "Day 3" })).toBeDisabled();
+    });
+
+    test("coming back: a saved day says Saved!; a new day, Save", async () => {
+        const full = { result: "full", food: "JS" };
+        loadDewormingSheets.mockResolvedValue([
+            {
+                ...ready(),
+                daysDone: [1],
+                lines: [
+                    { id: 11, ...line(1, "Albendazole", "1/4 tab"), doses: { 1: full, 2: full } },
+                    { id: 12, ...line(2, "Milbeworm", "1/2 tab", 1), doses: { 1: full } },
+                ],
+            },
+        ]);
+        const user = userEvent.setup();
+        open(EDITOR);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
+        const form = within(screen.getByRole("region", { name: "Record Results" }));
+        // (Day 2: Ash saved, Meggy's done with her Milbeworm: but not saved complete)
+        expect(form.getByRole("tab", { name: "Day 2" })).toHaveAttribute("aria-selected", "true");
+        expect(form.getByRole("button", { name: "Save Day 2" })).toBeInTheDocument();
+        await user.click(form.getByRole("tab", { name: "Day 1 (complete)" }));
+        expect(form.getByRole("button", { name: "Saved!" })).toBeInTheDocument();
+        await user.selectOptions(form.getByLabelText("Food for Ash"), "Banana");
+        expect(form.getByRole("button", { name: "Save Day 1" })).toBeInTheDocument();
     });
 
     test("Enter Anyway on a monkey that's done; Reset puts it back to just the advice", async () => {
@@ -641,7 +688,7 @@ describe("completing a sheet", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Record Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         // (nothing entered yet: no Reset)
         expect(form.getByRole("button", { name: "Reset Ash" })).toBeDisabled();
@@ -671,54 +718,72 @@ describe("completing a sheet", () => {
         ).toHaveAttribute("aria-pressed", "false");
     });
 
-    test("all 3 days complete: upload the sheet's photo, then Submit", async () => {
+    test("the sheet's page: Enter Results, then Add Photo once every day's complete, then Submit", async () => {
         const full = { result: "full", food: "JS" };
-        loadDewormingSheets.mockResolvedValue([
-            {
-                ...ready(),
-                daysDone: [1, 2, 3],
-                lines: [
-                    { id: 11, ...line(1, "Albendazole", "1/4 tab"), doses: { 1: full, 2: full, 3: full } },
-                    { id: 12, ...line(2, "Milbeworm", "1/2 tab", 1), doses: { 1: full } },
-                ],
-            },
-        ]);
+        let current = {
+            ...ready(),
+            daysDone: [1, 2],
+            lines: [
+                { id: 11, ...line(1, "Albendazole", "1/4 tab"), doses: { 1: full, 2: full } },
+                { id: 12, ...line(2, "Milbeworm", "1/2 tab", 1), doses: { 1: full } },
+            ],
+        };
+        loadDewormingSheets.mockImplementation(async () => [current]);
+        saveDewormingResults.mockImplementation(async (id, results) => {
+            current = { ...current, photos: results.photos, status: results.submit ? "submitted" : "ready" };
+            return current.status;
+        });
         const user = userEvent.setup();
+        const { unmount } = open(EDITOR);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        expect(
+            screen.getByText(
+                "Enter Results at the end of each day. When all days are complete, upload a photo of the completed sheet and press Submit to finalise deworming."
+            )
+        ).toBeInTheDocument();
+        // (Day 3 not complete: Add Photo and Submit wait)
+        expect(screen.getByLabelText("Add Photo")).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+        unmount();
+
+        current = {
+            ...current,
+            daysDone: [1, 2, 3],
+            lines: [{ ...current.lines[0], doses: { 1: full, 2: full, 3: full } }, current.lines[1]],
+        };
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        // (no Finish inside Enter Results any more)
         await user.click(screen.getByRole("button", { name: "Enter Results" }));
-        const form = within(screen.getByRole("region", { name: "Record Results" }));
-        expect(form.getAllByRole("tab").map((t) => t.getAttribute("aria-label"))).toEqual([
-            "Day 1 (complete)",
-            "Day 2 (complete)",
-            "Day 3 (complete)",
-        ]);
-        const finish = within(form.getByRole("region", { name: "Finish" }));
-        expect(
-            finish.getByText("Upload a photo of the deworming sheet and press Submit to finish.")
-        ).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Submit" })).toBeNull();
+        await user.click(screen.getByRole("button", { name: "Close" }));
         // (no photo yet: Submit can't be pressed, and no tick)
-        expect(finish.getByRole("button", { name: "Submit" })).toBeDisabled();
-        expect(finish.queryByRole("img", { name: "Photo added" })).toBeNull();
+        expect(screen.getByLabelText("Add Photo")).toBeEnabled();
+        expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+        expect(screen.queryByRole("img", { name: "Photo added" })).toBeNull();
 
-        await user.upload(finish.getByLabelText("Add Photo"), new File(["x"], "sheet.jpg", { type: "image/jpeg" }));
-        expect(await finish.findByRole("img", { name: "Paper copy, photo 1" })).toHaveAttribute(
+        await user.upload(screen.getByLabelText("Add Photo"), new File(["x"], "sheet.jpg", { type: "image/jpeg" }));
+        await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
+        expect(saveDewormingResults.mock.calls[0][1]).toMatchObject({ submit: false, photos: ["1/sheet.jpg"] });
+        expect(await screen.findByRole("img", { name: "Paper copy, photo 1" })).toHaveAttribute(
             "src",
             "https://x/1/sheet.jpg"
         );
-        expect(finish.getByRole("img", { name: "Photo added" })).toBeInTheDocument();
-        await user.click(finish.getByRole("button", { name: "Submit" }));
+        expect(screen.getByRole("img", { name: "Photo added" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "Submit" }));
         expect(screen.getByRole("dialog")).toHaveAccessibleName(
             "Submit for approval? Only an admin can change it after."
         );
         await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
-        expect(saveDewormingResults.mock.calls[0][1]).toMatchObject({
+        await waitFor(() => expect(saveDewormingResults).toHaveBeenCalledTimes(2));
+        expect(saveDewormingResults.mock.calls[1][1]).toMatchObject({
             submit: true,
             photos: ["1/sheet.jpg"],
             daysDone: [1, 2, 3],
         });
-        // (the photo's emailed on Approve, not now)
+        // (submitted: waiting for approval, no more Submit; the photo's emailed on Approve, not now)
+        expect(await screen.findByText("Waiting for Approval")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Submit" })).toBeNull();
         expect(emailDewormingSheet).not.toHaveBeenCalled();
     });
 
@@ -758,6 +823,9 @@ describe("completing a sheet", () => {
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         expect(form.queryByRole("region", { name: "Finish" })).toBeNull();
         expect(form.queryByRole("button", { name: "Submit" })).toBeNull();
+        // (opened: Day 3 as saved; a change, then Save)
+        expect(form.getByRole("button", { name: "Saved!" })).toBeInTheDocument();
+        await user.type(form.getByLabelText("Note for Day 3 (added to the summary)"), "Checked by admin");
         await user.click(form.getByRole("button", { name: "Save Day 3" }));
         await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
         expect(saveDewormingResults.mock.calls[0][1].submit).toBe(false);
@@ -948,7 +1016,7 @@ describe("monkeys added while completing a list, and Day 4", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Record Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         const form = within(screen.getByRole("region", { name: "Record Results" }));
         expect(form.getByRole("tab", { name: "Day 2" })).toHaveAttribute("aria-selected", "true");
         await user.click(form.getByRole("button", { name: "Add Monkey" }));
@@ -999,7 +1067,7 @@ describe("monkeys added while completing a list, and Day 4", () => {
         const user = userEvent.setup();
         open(EDITOR);
         await user.click(await screen.findByRole("button", { name: /D&D Troop 6-Month Deworming/ }));
-        await user.click(screen.getByRole("button", { name: "Record Results" }));
+        await user.click(screen.getByRole("button", { name: "Enter Results" }));
         await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         const add = within(screen.getByRole("dialog", { name: "Add Monkey: Day 3" }));
         await user.type(add.getByLabelText("Find a monkey"), "gus");
