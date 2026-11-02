@@ -61,7 +61,7 @@ export const ACCESS = [
     { what: "Enclosure details and troops", who: ["admin"] },
     { what: "Change or delete anyone's records", who: ["admin"] },
     { what: "Status Update and the Monkey Archive", who: ["admin"] },
-    { what: "Prepare deworming sheets", who: ["admin"] },
+    { what: "Prepare deworming lists", who: ["admin"] },
     { what: "Admin Dashboard: user types, Staff Activity and Weekly Reports", who: ["admin"] },
 ];
 

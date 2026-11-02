@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     IconAlertTriangle,
-    IconArrowLeft,
     IconCheck,
     IconChevronDown,
     IconCircleCheckFilled,
@@ -628,11 +627,8 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
 
     return (
         <div className="Monitoring-session">
-            <button type="button" className="Monitoring-back" onClick={onLeave}>
-                <IconArrowLeft size={18} aria-hidden="true" />
-                Monitoring
-            </button>
-            {/* (the page's title is the troop's: "Skunkey Monitoring") */}
+            {/* (the page's title is the troop's: "Skunkey Monitoring"; the way
+                back, ← Monitoring, is above it: onTitle) */}
             <p className="Monitoring-started">
                 {finished ? "Changing the session of " : "Started "}
                 {longDate(session.date)}
@@ -1060,7 +1056,7 @@ function SpotItem({ spot, name, canDelete, onDeleted }) {
 
 // ---- The page ----
 
-// onTitle(title): the page's title while a session's open ("Skunkey
+// onTitle(title, back): the page's title while a session's open ("Skunkey
 // Monitoring"; null: back to "Monitoring")
 export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], staff = null, onTitle = () => {} }) {
     const today = dayText(new Date());
@@ -1112,9 +1108,10 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
           ? troopOf(sessions.find((s) => s.id === view.id)?.enclosureId)
           : null;
     const title = openTroop ? `${fullName(openTroop.name)} Monitoring` : null;
+    const leave = useCallback(() => setView(null), []);
     useEffect(() => {
-        onTitle(title);
-    }, [title, onTitle]);
+        onTitle(title, title ? { label: "Monitoring", onClick: leave } : null);
+    }, [title, onTitle, leave]);
     useEffect(() => () => onTitle(null), [onTitle]);
 
     if (sessions === null) return <p className="RecordsPage-none">Loading…</p>;

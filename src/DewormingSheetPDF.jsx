@@ -7,12 +7,13 @@ import { sheetTitle } from "./dewormingRules";
 // line under it (the sheet's instructions), Staff Member(s) and Date
 // Started to write in, then a row per monkey: Day 1–3 boxes and its dose
 // and dewormer. A 1-day dewormer (Milbeworm): N/A in Day 2 and Day 3.
-// Two blank rows at the end, for anyone added on the day.
+// Blank rows at the end, for anyone added on the day (and the monkeys
+// staff added, if printed again: marked, at the end).
 //   sheet: a deworming sheet; lines: its monkeys with their names, in
 //   printOrder (by dewormer, then name)
 
 const LINE = "0.75pt solid #000";
-const BLANK_ROWS = 2;
+const BLANK_ROWS = 5;
 
 const styles = StyleSheet.create({
     page: {
@@ -108,7 +109,13 @@ export default function DewormingSheetPDF({ sheet, lines }) {
                                 "",
                                 l.days === 1 ? "N/A" : "",
                                 l.days === 1 ? "N/A" : "",
-                                `${l.dose} ${l.medication}`,
+                                `${l.dose} ${l.medication}${
+                                    l.kind === "accidental"
+                                        ? ` (accidental, Day ${l.fromDay})`
+                                        : l.kind === "added"
+                                          ? ` (added Day ${l.fromDay})`
+                                          : ""
+                                }`,
                             ]}
                         />
                     ))}

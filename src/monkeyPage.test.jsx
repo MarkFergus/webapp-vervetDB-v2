@@ -139,7 +139,7 @@ test("+ New Medical Record: date, category and details, then Confirm", async () 
     const records = fakeRecords();
     render(<RecordList section="medical" records={records} others={[]} />);
     await user.click(screen.getByRole("button", { name: "New Medical Record" }));
-    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Observation"]);
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Deworming", "Observation"]);
     // (Cancel: the pink outline)
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("is-cancel");
     await user.click(screen.getByRole("button", { name: "Confirm" }));
@@ -180,7 +180,7 @@ test("Medical: Injury and Condition too, saved in their own tables (Current Inju
     const condition = { add: vi.fn(async () => {}) };
     render(<RecordList section="medical" records={records} others={[]} elsewhere={{ injury, condition }} />);
     await user.click(screen.getByRole("button", { name: "New Medical Record" }));
-    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Injury", "Condition", "Observation"]);
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Injury", "Condition", "Deworming", "Observation"]);
     await user.selectOptions(screen.getByLabelText("Category"), "injury");
     expect(screen.getByLabelText("Details")).toHaveAttribute("maxLength", "500");
     await user.type(screen.getByLabelText("Details"), "Cut on left hand");

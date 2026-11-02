@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconArrowLeft, IconPencil, IconPlus, IconPrinter, IconTrash } from "@tabler/icons-react";
+import { IconClipboardCheck, IconPencil, IconPlus, IconPrinter, IconTrash } from "@tabler/icons-react";
 import { deleteDewormingSheet, loadDewormingSheets, saveDewormingSheet } from "./monkeyData";
 import {
     AMOUNTS,
@@ -22,6 +22,7 @@ import { ageLabel } from "./ages";
 import { fullName } from "./places";
 import { downloadBlob } from "./canvasHelpers";
 import ConfirmBubble from "./ConfirmBubble";
+import { ResultsForm, ResultsTable, Review, SheetPhotos } from "./DewormingResults";
 import "./IntegrationRecordsPage.css"; // (the pickers' look)
 import "./DewormingRecordsPage.css";
 
@@ -32,9 +33,12 @@ import "./DewormingRecordsPage.css";
 //                its cycle to start with), the start date, the line under
 //                the printed title, and each monkey's dewormer and dose
 //                (dewormingRules.js: who's ticked to start with, and with
-//                what). Edit and Delete too (admins).
-// (Completing a sheet and approving it come next.)
-//   staff: { isAdmin, readOnly, … } (as the pop-up's)
+//                what). Edit (until results are entered) and Delete too.
+//   a sheet      Record Results (editors and admins: DewormingResults.jsx),
+//                day by day, with the paper sheet's photo, then Submit for
+//                Approval; admins Approve it (each monkey's record goes into
+//                its Medical records) or Send it Back
+//   staff: { isAdmin, canAdd, readOnly, … } (as the pop-up's)
 
 const OTHER = "other";
 
@@ -191,8 +195,9 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
     }
 
     return (
-        <section className="Deworming-prepare" aria-label={editing ? "Edit Sheet" : "Prepare Sheet"}>
-            <h2 className="RecordsPage-subhead">{editing ? "Edit Sheet" : "Prepare Sheet"}</h2>
+        <section className="Deworming-prepare" aria-label={editing ? "Edit List" : "New Deworming List"}>
+            {/* (the page's title, "New Deworming List" / "Edit List", and the way back
+                above it: onTitle) */}
             <div className="Deworming-fields">
                 <label className="IntegrationPage-choose">
                     <span>Group</span>
@@ -424,7 +429,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
             ) : (
                 <div className="Deworming-actions">
                     <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={() => save()}>
-                        {busy ? "Saving…" : "Save Sheet"}
+                        {busy ? "Saving…" : "Save List"}
                     </button>
                     <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                         Cancel
@@ -437,12 +442,60 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
 
 // One sheet: who's on it and with what, Print Sheet, and (admins) Edit and
 // Delete
-function SheetView({ sheet, monkeys, canPrepare, onBack, onEdit, onDeleted }) {
+// A sheet's stage, in words: Ready (nothing entered yet), In Progress,
+// Waiting for Approval, Approved
+export function stageText(sheet) {
+    if (sheet.status === "approved") return "Approved";
+    if (sheet.status === "submitted") return "Waiting for Approval";
+    return sheet.lines.some((l) => Object.keys(l.doses ?? {}).length || (l.kind && l.kind !== "list"))
+        ? "In Progress"
+        : "Ready";
+}
+
+// A sheet in the list: where it's up to (Not Started, Day 2, Ready to
+// Submit…) and its tag on the right (Ready dark, In Progress amber, Awaiting
+// Approval blue, Completed green)
+// A sheet's title on screen, with "F/U" kept whole: a long title breaks
+// before "F/U Deworming" or before "Deworming", never inside "F/U"
+export function SheetTitle({ text }) {
+    return text.split(/(F\/U)/).map((part, i) =>
+        part === "F/U" ? (
+            <span key={i} className="Deworming-nowrap">
+                F/U
+            </span>
+        ) : (
+            part
+        )
+    );
+}
+
+export function listStatus(sheet) {
+    // (Day 4 when anyone needs it)
+    const days = [1, 2, 3, ...(sheet.lines.some((l) => l.day4 === true) ? [4] : [])];
+    const allDays = `Days 1–${days.at(-1)} Done`;
+    if (sheet.status === "approved") return { text: allDays, tag: "Completed", tone: "approved" };
+    if (sheet.status === "submitted") return { text: allDays, tag: "Awaiting Approval", tone: "submitted" };
+    const done = sheet.daysDone ?? [];
+    if (stageText(sheet) === "Ready" && done.length === 0) return { text: "Not Started", tag: "Ready", tone: "ready" };
+    const day = days.find((d) => !done.includes(d));
+    return { text: day ? `Day ${day}` : "Ready to Submit", tag: "In Progress", tone: "progress" };
+}
+
+// One sheet: who's on it and with what, Print Sheet; Record Results (staff,
+// until it's submitted); the results and photos; Review (admins, once
+// submitted); and (admins, before any results) Edit and Delete
+function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onDeleted, onChanged }) {
     const [deleting, setDeleting] = useState(false);
+    const [recording, setRecording] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
     const lines = printOrder(namedLines(sheet, monkeys));
     const stopDeleting = useCallback(() => setDeleting(false), []);
+    // (results entered, or a monkey added: Edit would lose them)
+    const started = lines.some((l) => Object.keys(l.doses ?? {}).length || (l.kind && l.kind !== "list"));
+    const stage = stageText(sheet);
+    // (staff until it's submitted; admins until it's approved)
+    const canEnter = canRecord && (sheet.status === "ready" || (sheet.status === "submitted" && canPrepare));
 
     async function print() {
         setBusy(true);
@@ -475,84 +528,163 @@ function SheetView({ sheet, monkeys, canPrepare, onBack, onEdit, onDeleted }) {
         }
     }
 
+    if (recording) {
+        return (
+            <section className="Deworming-sheet" aria-label={sheetTitle(sheet)}>
+                <ResultsForm
+                    sheet={sheet}
+                    lines={lines}
+                    monkeys={monkeys}
+                    onCancel={() => setRecording(false)}
+                    onSaved={async (submitted) => {
+                        await onChanged();
+                        if (submitted) setRecording(false);
+                    }}
+                />
+            </section>
+        );
+    }
+
     return (
         <section className="Deworming-sheet" aria-label={sheetTitle(sheet)}>
-            <button type="button" className="Deworming-back" onClick={onBack}>
-                <IconArrowLeft size={16} aria-hidden="true" />
-                All Sheets
-            </button>
-            <h2 className="RecordsPage-subhead Deworming-sheetTitle">{sheetTitle(sheet)}</h2>
+            {/* (the page's title is the sheet's: "H&B Troop 3-Month Deworming") */}
             <p className="Deworming-meta">
-                Starts {dayLabel(sheet.startDate)} · {lines.length === 1 ? "1 monkey" : `${lines.length} monkeys`} ·
-                Ready
+                {sheet.startedOn ? `Started ${dayLabel(sheet.startedOn)}` : `Starts ${dayLabel(sheet.startDate)}`} ·{" "}
+                {lines.length === 1 ? "1 monkey" : `${lines.length} monkeys`} ·{" "}
+                <span className={`Deworming-stage is-${sheet.status}`}>{stage}</span>
                 {sheet.preparedByName ? ` · prepared by ${sheet.preparedByName}` : ""}
             </p>
+            {sheet.status === "ready" && sheet.returnNote && (
+                <p className="Deworming-returned" role="note">
+                    <b>Sent back:</b> {sheet.returnNote}
+                </p>
+            )}
+            {sheet.status === "submitted" && (
+                <p className="Deworming-meta">
+                    Submitted{sheet.submittedByName ? ` by ${sheet.submittedByName}` : ""}, waiting for an admin to
+                    approve it.
+                </p>
+            )}
+            {sheet.status === "approved" && (
+                <p className="Deworming-meta">
+                    Approved{sheet.approvedByName ? ` by ${sheet.approvedByName}` : ""}: in each monkey's Medical
+                    records.
+                </p>
+            )}
             {sheet.instructions && <p className="Deworming-note">{sheet.instructions}</p>}
-            <table className="Deworming-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Details</th>
-                        <th scope="col">Days</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {lines.map((l) => (
-                        <tr key={l.monkeyId}>
-                            <th scope="row">{l.name}</th>
-                            <td>
-                                {l.dose} {l.medication}
-                            </td>
-                            <td>{l.days === 1 ? "1 day" : "3 days"}</td>
+            {sheet.staffNames && <p className="Deworming-meta">Staff: {sheet.staffNames}</p>}
+            {started || sheet.status !== "ready" ? (
+                <ResultsTable lines={lines} />
+            ) : (
+                <table className="Deworming-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Details</th>
+                            <th scope="col">Days</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {lines.map((l) => (
+                            <tr key={l.monkeyId}>
+                                <th scope="row">{l.name}</th>
+                                <td>
+                                    {l.dose} {l.medication}
+                                </td>
+                                <td>{l.days === 1 ? "1 day" : "3 days"}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+            {sheet.photos?.length > 0 && (
+                <>
+                    <h3 className="RecordsPage-subhead">Photo of the Paper Copy</h3>
+                    <SheetPhotos paths={sheet.photos} sheetId={sheet.id} />
+                </>
+            )}
+            {sheet.status === "approved" && (
+                <>
+                    <h3 className="RecordsPage-subhead">Records</h3>
+                    <ul className="Deworming-recordList">
+                        {lines.map((l) => (
+                            <li key={l.id ?? l.monkeyId}>
+                                <b>{l.name}</b> {l.recordText}
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
             {problem && (
                 <p className="Integration-problem" role="alert">
                     {problem}
                 </p>
             )}
             <div className="Deworming-actions">
+                {canEnter && (
+                    <button
+                        type="button"
+                        className="Modal-edit is-confirm"
+                        disabled={busy}
+                        onClick={() => setRecording(true)}
+                    >
+                        <IconClipboardCheck size={16} aria-hidden="true" />
+                        {sheet.status === "submitted"
+                            ? "Edit Results"
+                            : started
+                              ? "Continue Results"
+                              : "Record Results"}
+                    </button>
+                )}
                 <button type="button" className="Modal-edit" disabled={busy} onClick={print}>
                     <IconPrinter size={16} aria-hidden="true" />
-                    Print Sheet
+                    Print List
                 </button>
+                {canPrepare && sheet.status === "ready" && !started && (
+                    <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={onEdit}>
+                        <IconPencil size={16} aria-hidden="true" />
+                        Edit
+                    </button>
+                )}
                 {canPrepare && (
-                    <>
-                        <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={onEdit}>
-                            <IconPencil size={16} aria-hidden="true" />
-                            Edit
+                    <span className="Deworming-confirmHost">
+                        <button
+                            type="button"
+                            className="Modal-edit is-soft"
+                            disabled={busy}
+                            onClick={() => setDeleting(true)}
+                        >
+                            <IconTrash size={16} aria-hidden="true" />
+                            Delete
                         </button>
-                        <span className="Deworming-confirmHost">
-                            <button
-                                type="button"
-                                className="Modal-edit is-soft"
-                                disabled={busy}
-                                onClick={() => setDeleting(true)}
-                            >
-                                <IconTrash size={16} aria-hidden="true" />
-                                Delete
-                            </button>
-                            {deleting && (
-                                <ConfirmBubble
-                                    question="Delete this sheet?"
-                                    danger
-                                    busy={busy}
-                                    onConfirm={remove}
-                                    onCancel={stopDeleting}
-                                />
-                            )}
-                        </span>
-                    </>
+                        {deleting && (
+                            <ConfirmBubble
+                                question={
+                                    sheet.status === "approved"
+                                        ? "Delete this list? (The Medical records it added stay.)"
+                                        : "Delete this list?"
+                                }
+                                danger
+                                busy={busy}
+                                onConfirm={remove}
+                                onCancel={stopDeleting}
+                            />
+                        )}
+                    </span>
                 )}
             </div>
+            {canPrepare && sheet.status === "submitted" && <Review sheet={sheet} lines={lines} onDone={onChanged} />}
         </section>
     );
 }
 
-export default function DewormingRecordsPage({ monkeys = [], enclosures = [], staff = null }) {
+// onTitle(title, back): the page's title while a sheet (or Prepare Sheet) is
+// open, and the way back above it ("← Deworming Sheets"); null: back to
+// "Deworming". As Monitoring's.
+export default function DewormingRecordsPage({ monkeys = [], enclosures = [], staff = null, onTitle = () => {} }) {
     const canPrepare = Boolean(staff?.isAdmin && !staff.readOnly);
+    // (editors and admins: recording results)
+    const canRecord = Boolean(staff?.canAdd && !staff.readOnly);
     const groups = useMemo(() => dewormingGroups(enclosures, monkeys), [enclosures, monkeys]);
     // null: loading; { problem }; or the sheets
     const [sheets, setSheets] = useState(null);
@@ -569,6 +701,23 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
     useEffect(() => {
         reload();
     }, [reload]);
+
+    const openId = open?.view ?? open?.edit;
+    const openSheet = openId && Array.isArray(sheets) ? sheets.find((s) => s.id === openId) : null;
+    const title = open?.prepare
+        ? "New Deworming List"
+        : open?.edit
+          ? "Edit List"
+          : openSheet
+            ? sheetTitle(openSheet)
+            : null;
+    const backToSheets = useCallback(() => setOpen(null), []);
+    // (kept the same between renders: it goes up to the page's title)
+    const titleText = useMemo(() => title && <SheetTitle text={title} />, [title]);
+    useEffect(() => {
+        onTitle(titleText, titleText ? { label: "Deworming Lists", onClick: backToSheets } : null);
+    }, [titleText, onTitle, backToSheets]);
+    useEffect(() => () => onTitle(null), [onTitle]);
 
     if (sheets === null) return <p className="RecordsPage-intro">Loading…</p>;
     if (sheets.problem) {
@@ -603,7 +752,8 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                 sheet={sheet}
                 monkeys={monkeys}
                 canPrepare={canPrepare}
-                onBack={() => setOpen(null)}
+                canRecord={canRecord}
+                onChanged={reload}
                 onEdit={() => setOpen({ edit: sheet.id })}
                 onDeleted={async () => {
                     await reload();
@@ -622,24 +772,42 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                     onClick={() => setOpen({ prepare: true })}
                 >
                     <IconPlus size={16} aria-hidden="true" />
-                    Prepare Sheet
+                    New Deworming List
                 </button>
             )}
+            <p className="RecordsPage-hint Deworming-hint">
+                Upcoming, current, and completed deworming lists. Click to view summary and enter results.
+            </p>
             {sheets.length === 0 ? (
-                <p className="RecordsPage-intro">No deworming sheets yet.</p>
+                <p className="RecordsPage-intro">No deworming lists yet.</p>
             ) : (
                 <ul className="Deworming-list">
-                    {sheets.map((s) => (
-                        <li key={s.id}>
-                            <button type="button" className="Deworming-item" onClick={() => setOpen({ view: s.id })}>
-                                <b>{sheetTitle(s)}</b>
-                                <span>
-                                    Starts {dayLabel(s.startDate)} ·{" "}
-                                    {s.lines.length === 1 ? "1 monkey" : `${s.lines.length} monkeys`} · Ready
-                                </span>
-                            </button>
-                        </li>
-                    ))}
+                    {sheets.map((s) => {
+                        const status = listStatus(s);
+                        return (
+                            <li key={s.id}>
+                                <button
+                                    type="button"
+                                    className="Deworming-item"
+                                    onClick={() => setOpen({ view: s.id })}
+                                >
+                                    <span className="Deworming-itemText">
+                                        <b>
+                                            <SheetTitle text={sheetTitle(s)} />
+                                        </b>
+                                        <span>
+                                            Starts {dayLabel(s.startDate)} ·{" "}
+                                            {s.lines.length === 1 ? "1 monkey" : `${s.lines.length} monkeys`} ·{" "}
+                                            {status.text}
+                                        </span>
+                                    </span>
+                                    {status.tag && (
+                                        <span className={`Deworming-tag is-${status.tone}`}>{status.tag}</span>
+                                    )}
+                                </button>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>

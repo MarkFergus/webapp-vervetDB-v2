@@ -1624,8 +1624,13 @@ export async function saveBabyRecords(kindId, entries, replace) {
 // ---- Deworming (supabase/deworming.sql) ----
 
 // A database sheet → { id, groupKey, groupName, session, startDate,
-// instructions, status, preparedByName, lines: [{ monkeyId, medication,
-// dose, days }] }
+// instructions, status ("ready", "submitted", "approved"), preparedByName,
+// startedOn, staffNames, dayNotes ({ 1: "…" }), photos (paths), daysDone
+// (the days saved complete: [1, 2]),
+// submittedByName, approvedByName, returnNote, lines: [{ id, monkeyId,
+// medication, dose, days, recordText, kind ("list", "added",
+// "accidental"), fromDay, addedByName, day4, doses: { 1: { result, food,
+// note, medication, dose } } }] }
 const toAppSheet = (row) => ({
     id: row.id,
     groupKey: row.group_key,
@@ -1635,25 +1640,67 @@ const toAppSheet = (row) => ({
     instructions: row.instructions ?? "",
     status: row.status,
     preparedByName: row.prepared_by_name ?? null,
+    startedOn: row.started_on ?? null,
+    staffNames: row.staff_names ?? "",
+    dayNotes: row.day_notes ?? {},
+    photos: row.photos ?? [],
+    daysDone: row.days_done ?? [],
+    submittedByName: row.submitted_by_name ?? null,
+    approvedByName: row.approved_by_name ?? null,
+    returnNote: row.return_note ?? null,
     lines: (row.deworming_lines ?? []).map((l) => ({
+        id: l.id,
         monkeyId: l.monkey_id,
         medication: l.medication,
         dose: l.dose,
         days: l.days,
+        recordText: l.record_text ?? null,
+        kind: l.kind ?? "list",
+        fromDay: l.from_day ?? 1,
+        addedByName: l.added_by_name ?? null,
+        day4: l.day_4 ?? null,
+        doses: Object.fromEntries(
+            (l.deworming_doses ?? []).map((d) => [
+                d.day,
+                {
+                    result: d.result,
+                    food: d.food ?? null,
+                    note: d.note ?? null,
+                    medication: d.medication ?? null,
+                    dose: d.dose ?? null,
+                },
+            ])
+        ),
     })),
 });
 
-// Every deworming sheet, newest first. Throws a message to show.
+const SHEET_COLUMNS = "id, group_key, group_name, session, start_date, instructions, status, prepared_by_name";
+const resultColumns = (lineColumns) =>
+    "started_on, staff_names, day_notes, photos, days_done, submitted_by_name, approved_by_name, return_note, " +
+    `deworming_lines (id, monkey_id, medication, dose, days, record_text, ${lineColumns}` +
+    "deworming_doses (day, result, food, note, medication, dose))";
+// (deworming-additions.sql: the monkeys staff added, and Day 4)
+const ADDED_COLUMNS = "kind, from_day, added_by_name, day_4, ";
+
+// Every deworming sheet, newest first. Throws a message to show. (Before
+// deworming-results.sql has run: the sheets without their results.)
 export async function loadDewormingSheets() {
-    const { data, error } = await supabase
-        .from("deworming_sheets")
-        .select("id, group_key, group_name, session, start_date, instructions, status, prepared_by_name, deworming_lines (monkey_id, medication, dose, days)")
-        .order("start_date", { ascending: false })
-        .order("id", { ascending: false });
+    const load = (columns) =>
+        supabase
+            .from("deworming_sheets")
+            .select(columns)
+            .order("start_date", { ascending: false })
+            .order("id", { ascending: false });
+    let { data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns(ADDED_COLUMNS)}`);
+    if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns("")}`));
+    if (isOlderDatabase(error)) {
+        ({ data, error } = await load(`${SHEET_COLUMNS}, deworming_lines (id, monkey_id, medication, dose, days)`));
+    }
     if (error) {
         console.error("Loading deworming sheets failed:", error);
-        if (isOlderDatabase(error)) throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
-        throw new Error("Couldn't load the deworming sheets. Please check your connection and try again.");
+        if (isOlderDatabase(error))
+            throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
+        throw new Error("Couldn't load the deworming lists. Please check your connection and try again.");
     }
     return data.map(toAppSheet);
 }
@@ -1669,13 +1716,20 @@ export async function saveDewormingSheet(sheet) {
             session: sheet.session,
             start_date: sheet.startDate,
             instructions: sheet.instructions,
-            lines: sheet.lines.map((l) => ({ monkey_id: l.monkeyId, medication: l.medication, dose: l.dose, days: l.days })),
+            lines: sheet.lines.map((l) => ({
+                monkey_id: l.monkeyId,
+                medication: l.medication,
+                dose: l.dose,
+                days: l.days,
+            })),
         },
     });
     if (error) {
         console.error("Saving a deworming sheet failed:", error);
-        if (error.code === "PGRST202") throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
-        if (error.code === "42501") throw new Error("Only admins can prepare deworming sheets. Are you still signed in as an admin?");
+        if (error.code === "PGRST202")
+            throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
+        if (error.code === "42501")
+            throw new Error("Only admins can prepare deworming lists. Are you still signed in as an admin?");
         if (error.code === "P0001") throw new Error(error.message);
         throw saveProblem(error);
     }
@@ -1689,5 +1743,179 @@ export async function deleteDewormingSheet(id) {
         console.error("Deleting a deworming sheet failed:", error);
         throw offlineError();
     }
-    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete deworming sheets.");
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete deworming lists.");
+}
+
+// A deworming problem from the database, as words to show
+function dewormingProblem(error, what) {
+    console.error(`${what} failed:`, error);
+    if (error.code === "PGRST202")
+        return new Error("This isn't ready yet: supabase/deworming-results.sql needs to be run.");
+    if (error.code === "42501") return new Error("The database didn't allow this. Are you still signed in?");
+    // (the database's own words: "Please add a photo…")
+    if (error.code === "P0001") return new Error(error.message);
+    return saveProblem(error);
+}
+
+// Saves a sheet's results (staff, as they go), or submits them for
+// approval (submit: true) → its status. Throws a message to show.
+//   results: { startedOn, staffNames, dayNotes, photos, daysDone, lines
+//   (with their doses), submit }
+export async function saveDewormingResults(sheetId, results) {
+    const { data, error } = await supabase.rpc("save_deworming_results", {
+        sheet: sheetId,
+        results: {
+            started_on: results.startedOn,
+            staff_names: results.staffNames,
+            day_notes: results.dayNotes,
+            photos: results.photos,
+            days_done: results.daysDone ?? [],
+            submit: Boolean(results.submit),
+            // (each line's Day 4 decision)
+            day_4: results.lines.map((l) => ({ line_id: l.id, day_4: l.day4 ?? null })),
+            doses: results.lines.flatMap((l) =>
+                Object.entries(l.doses ?? {}).map(([day, d]) => ({
+                    line_id: l.id,
+                    day: Number(day),
+                    result: d.result,
+                    food: d.food,
+                    note: d.note,
+                    medication: d.medication,
+                    dose: d.dose,
+                }))
+            ),
+        },
+    });
+    if (error) throw dewormingProblem(error, "Saving deworming results");
+    return data;
+}
+
+// A deworming problem with a monkey staff add or remove, as words to show
+function additionProblem(error, what) {
+    if (error.code === "PGRST202") {
+        console.error(`${what} failed:`, error);
+        return new Error("Adding monkeys isn't ready yet: supabase/deworming-additions.sql needs to be run.");
+    }
+    return dewormingProblem(error, what);
+}
+
+// Add Monkey (staff, while completing a sheet) → the new line's id.
+//   line: { monkeyId, kind ("added" / "accidental"), fromDay, medication,
+//   dose, days }
+export async function addDewormingMonkey(sheetId, line) {
+    const { data, error } = await supabase.rpc("add_deworming_monkey", {
+        sheet: sheetId,
+        line: {
+            monkey_id: line.monkeyId,
+            kind: line.kind,
+            from_day: line.fromDay,
+            medication: line.medication,
+            dose: line.dose,
+            days: line.days,
+        },
+    });
+    if (error) throw additionProblem(error, "Adding a monkey to deworming");
+    return data;
+}
+
+// Removes a monkey staff added (not one of the sheet's own)
+export async function removeDewormingMonkey(lineId) {
+    const { error } = await supabase.rpc("remove_deworming_monkey", { line: lineId });
+    if (error) throw additionProblem(error, "Removing a monkey from deworming");
+}
+
+// Approve (admins): each monkey's record, in these words → how many
+// records were added. records: [{ lineId, text }]
+export async function approveDewormingSheet(sheetId, records) {
+    const { data, error } = await supabase.rpc("approve_deworming_sheet", {
+        sheet: sheetId,
+        records: records.map((r) => ({ line_id: r.lineId, text: r.text })),
+    });
+    if (error) throw dewormingProblem(error, "Approving deworming");
+    return data;
+}
+
+// Send Back (admins): a submitted sheet back to staff, with a note
+export async function returnDewormingSheet(sheetId, note) {
+    const { error } = await supabase.rpc("return_deworming_sheet", { sheet: sheetId, note });
+    if (error) throw dewormingProblem(error, "Sending deworming back");
+}
+
+// ---- The paper sheets' photos (private: the deworming-sheets bucket) ----
+
+const SHEET_BUCKET = "deworming-sheets";
+// Big enough to read handwriting, small enough to upload on a phone
+const SHEET_PHOTO_WIDTH = 2000;
+
+// A photo of a paper sheet, shrunk and uploaded → its path
+export async function uploadSheetPhoto(file, sheetId) {
+    let blob = file;
+    try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, SHEET_PHOTO_WIDTH / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        blob = (await new Promise((done) => canvas.toBlob(done, "image/jpeg", 0.85))) ?? file;
+    } catch {
+        // (couldn't shrink it here: the photo as it is)
+    }
+    const path = `${sheetId}/${Date.now()}.jpg`;
+    const { error } = await supabase.storage
+        .from(SHEET_BUCKET)
+        .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+    if (error) {
+        console.error("Uploading a sheet photo failed:", error);
+        if (/bucket not found/i.test(error.message)) {
+            throw new Error("Sheet photos aren't ready yet: supabase/deworming-results.sql needs to be run.");
+        }
+        throw new Error("Couldn't upload the photo. Please check your connection and try again.");
+    }
+    return path;
+}
+
+// The photos themselves, as data URLs (for the emailed PDF), in order
+export async function sheetPhotoData(paths) {
+    return Promise.all(
+        paths.map(async (path) => {
+            const { data, error } = await supabase.storage.from(SHEET_BUCKET).download(path);
+            if (error) throw error;
+            return new Promise((done, fail) => {
+                const reader = new FileReader();
+                reader.onload = () => done(reader.result);
+                reader.onerror = () => fail(reader.error);
+                reader.readAsDataURL(data);
+            });
+        })
+    );
+}
+
+// Emails a submitted sheet's photos (a PDF) to whoever gets them
+// (supabase/deworming-sheet-email.sql) → the addresses. Throws if not sent.
+export async function emailDewormingSheet(sheetId, pdfBlob, fileName) {
+    const dataUrl = await new Promise((done, fail) => {
+        const reader = new FileReader();
+        reader.onload = () => done(reader.result);
+        reader.onerror = () => fail(reader.error);
+        reader.readAsDataURL(pdfBlob);
+    });
+    const { data, error } = await supabase.rpc("email_deworming_sheet", {
+        sheet: sheetId,
+        pdf: dataUrl.slice(dataUrl.indexOf(",") + 1),
+        file_name: fileName,
+    });
+    if (error) throw dewormingProblem(error, "Emailing the deworming sheet");
+    return data;
+}
+
+// The photos' addresses to show (for an hour) → { path: url }
+export async function sheetPhotoUrls(paths) {
+    if (!paths.length) return {};
+    const { data, error } = await supabase.storage.from(SHEET_BUCKET).createSignedUrls(paths, 3600);
+    if (error) {
+        console.error("Loading sheet photos failed:", error);
+        return {};
+    }
+    return Object.fromEntries(data.filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
 }

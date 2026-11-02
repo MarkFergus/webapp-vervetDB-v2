@@ -39,7 +39,7 @@ export const SECTIONS = {
     },
     medical: {
         title: "Medical",
-        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", observation: "Observation" },
+        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", deworming: "Deworming", observation: "Observation" },
         older: { medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
     },
 };

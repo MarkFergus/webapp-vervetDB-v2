@@ -62,7 +62,7 @@ export const RECORD_KINDS = {
     deworming: {
         id: "deworming",
         title: "Deworming",
-        hint: "Deworming sheets: who's dewormed with what, ready to print and complete.",
+        hint: "Deworming lists: who's dewormed with what, ready to print and complete.",
     },
 };
 

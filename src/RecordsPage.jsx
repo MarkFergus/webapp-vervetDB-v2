@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+    IconArrowLeft,
     IconBabyCarriage,
     IconBinoculars,
     IconBottle,
@@ -701,17 +702,29 @@ function RecordsPage({
     inert = false,
 }) {
     const { team, kind } = parseRecordsRoute(route);
-    // A part's own title (Monitoring: the troop's, while a session's open)
-    const [partTitle, setPartTitle] = useState(null);
+    // A part's own title and way back, while something in it is open (in
+    // place of the breadcrumbs): Monitoring's session ("Skunkey Monitoring",
+    // ← Monitoring), a deworming sheet ("H&B Troop 3-Month Deworming",
+    // ← Deworming Sheets). part: { title, back: { label, onClick } } or null
+    const [part, setPart] = useState(null);
+    const setPartTitle = useCallback((title, back = null) => setPart(title ? { title, back } : null), []);
+    const partTitle = part?.title ?? null;
     const crumbs = [
         { href: "#records", label: "Records" },
         ...(team ? [{ href: `#records/${team.id}`, label: team.name }] : []),
         ...(kind ? [{ label: kind.title }] : []),
     ];
-    const title = (kind?.id === "monitoring" && partTitle) || crumbs.at(-1).label;
+    const title = ((kind?.id === "monitoring" || kind?.id === "deworming") && partTitle) || crumbs.at(-1).label;
     return (
         <div className="RecordsPage" inert={inert}>
-            <Crumbs crumbs={crumbs} />
+            {part?.back ? (
+                <button type="button" className="RecordsPage-back" onClick={part.back.onClick}>
+                    <IconArrowLeft size={18} aria-hidden="true" />
+                    {part.back.label}
+                </button>
+            ) : (
+                <Crumbs crumbs={crumbs} />
+            )}
             <h1 className="RecordsPage-title">{title}</h1>
             {!team ? (
                 <>
@@ -760,7 +773,7 @@ function RecordsPage({
                     kind.id === "monitoring" ? (
                         <MonitoringRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
                     ) : kind.id === "deworming" ? (
-                        <DewormingRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
+                        <DewormingRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
                     ) : (
                         <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     )

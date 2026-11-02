@@ -1,5 +1,5 @@
 /* Records → Sections → Deworming (DewormingRecordsPage.jsx): the sheets'
-   list, Prepare Sheet's form, and one sheet */
+   list, New Deworming List's form, and one list */
 
 /* (room under the page's title) */
 .Deworming,
@@ -10,6 +10,11 @@
 
 .Modal-edit.Deworming-new {
     margin-bottom: 16px;
+}
+
+/* The line about the lists, just above them */
+.RecordsPage-hint.Deworming-hint {
+    margin: 0 0 8px;
 }
 
 .Deworming-list {
@@ -23,8 +28,8 @@
 
 .Deworming-item {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 12px;
     width: 100%;
     padding: 12px 14px;
     font-family: inherit;
@@ -45,7 +50,50 @@
     color: var(--text-strong);
 }
 
-.Deworming-item span,
+.Deworming-itemText {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+/* "F/U" never split across two lines */
+.Deworming-nowrap {
+    white-space: nowrap;
+}
+
+/* Where a sheet is up to, on the right of its row */
+.Deworming-item .Deworming-tag {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--on-status);
+    white-space: nowrap;
+    border-radius: 6px;
+}
+
+.Deworming-tag.is-ready {
+    color: var(--text);
+    background-color: var(--surface-3);
+}
+
+.Deworming-tag.is-progress {
+    background-color: var(--amber);
+}
+
+.Deworming-tag.is-submitted {
+    color: #ffffff;
+    background-color: #065fd4;
+}
+
+.Deworming-tag.is-approved {
+    color: var(--on-green);
+    background-color: var(--green);
+}
+
+.Deworming-itemText > span,
 .Deworming-meta,
 .Deworming-count,
 .Deworming-about {
@@ -189,26 +237,6 @@
 
 /* ---- One sheet ---- */
 
-.Deworming-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-    padding: 0;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--accent);
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-/* (the sheet's title: full strength, not the dimmer subheading) */
-.RecordsPage-subhead.Deworming-sheetTitle {
-    color: var(--text-strong);
-}
-
 .Deworming-meta {
     margin: 2px 0 8px;
 }
@@ -252,4 +280,622 @@
 /* Delete's question, above its button */
 .Deworming-confirmHost {
     position: relative;
+}
+
+/* ---- Results (DewormingResults.jsx) ---- */
+
+.Deworming-stage.is-submitted {
+    color: var(--amber);
+    font-weight: 600;
+}
+
+.Deworming-stage.is-approved {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.Deworming-returned {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--pink);
+    border-radius: 8px;
+}
+
+.Deworming-tableWrap {
+    overflow-x: auto;
+}
+
+.Deworming-results td {
+    white-space: nowrap;
+}
+
+.Deworming-results td.is-none {
+    color: var(--danger);
+}
+
+.Deworming-results td.is-3-4,
+.Deworming-results td.is-1-2,
+.Deworming-results td.is-1-4,
+.Deworming-results td.is-skipped {
+    color: var(--amber);
+}
+
+.Deworming-days {
+    margin: 16px 0 4px;
+}
+
+/* A day saved complete: its tick; one not open yet (the day before isn't
+   complete): faded */
+.Deworming-days button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.Deworming-days button.is-complete svg {
+    color: var(--green);
+}
+
+.Deworming-days button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.Deworming-finish {
+    margin-top: 20px;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+}
+
+/* Submit, until a photo's added: clearly not ready yet */
+.Deworming-finish .Modal-edit.is-confirm:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.Deworming-entries {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+
+/* Phones: the name with its icons on the right, then any advice, the
+   results, and the food and note */
+.Deworming-entry {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "head icons"
+        "advice advice"
+        "buttons buttons"
+        "more more";
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.Deworming-entry .Deworming-entryHead {
+    grid-area: head;
+}
+
+.Deworming-entry .Deworming-rowIcons {
+    grid-area: icons;
+}
+
+.Deworming-entry .Deworming-advice {
+    grid-area: advice;
+}
+
+.Deworming-entry .Deworming-results-buttons {
+    grid-area: buttons;
+    justify-self: start;
+}
+
+.Deworming-entry .Deworming-entryMore {
+    grid-area: more;
+}
+
+.Deworming-entryMore:empty {
+    display: none;
+}
+
+.Deworming-entry.is-done {
+    opacity: 0.7;
+}
+
+.Deworming-entryHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    margin-bottom: 6px;
+}
+
+.Deworming-entryHead b {
+    font-size: 15px;
+    color: var(--text-strong);
+}
+
+.Deworming-advice {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.Deworming-advice.is-warn {
+    color: var(--amber);
+    font-weight: 600;
+}
+
+/* Full / 3/4 / 1/2 / 1/4 / None / Skipped: one squared group */
+.Deworming-results-buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 3px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Deworming-results-buttons button {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 34px;
+    min-width: 44px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Deworming-results-buttons button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text);
+}
+
+/* Chosen: Full green (its tick green before), a partial amber, Miss red */
+.Deworming-results-buttons .is-full svg {
+    color: var(--green);
+}
+
+.Deworming-results-buttons .is-full[aria-pressed="true"] {
+    color: var(--on-green);
+    background-color: var(--green);
+}
+
+.Deworming-results-buttons .is-full[aria-pressed="true"] svg {
+    color: inherit;
+}
+
+.Deworming-results-buttons .is-none[aria-pressed="true"] {
+    color: #fff;
+    background-color: var(--danger);
+}
+
+/* Partial: a drop-down (3/4, 1/2, 1/4) dressed as one of the buttons */
+.Deworming-partial {
+    height: 34px;
+    padding: 0 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Deworming-partial.is-on {
+    color: #121212;
+    background-color: var(--amber);
+}
+
+.Deworming-partial:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.Deworming-results-buttons button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.Deworming-entryMore {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.Deworming-entryMore select,
+.Deworming-entryMore input {
+    height: 36px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-entryMore input {
+    width: 140px;
+}
+
+.Deworming-entryMore .Deworming-noteInput {
+    flex: 1 1 180px;
+}
+
+/* Change Dewormer (a pop-up) and Reset, at the row's end */
+.Deworming-rowIcons {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.Deworming-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Deworming-icon:hover:not(:disabled) {
+    color: var(--text-strong);
+}
+
+.Deworming-icon:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* (a dewormer changed that day) */
+.Deworming-icon.is-changed {
+    color: var(--amber);
+    border-color: var(--amber);
+}
+
+.Deworming-about.is-changed {
+    color: var(--amber);
+}
+
+.Deworming-dialogFields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.Deworming-dialogFields select,
+.Deworming-dialogFields input {
+    height: 40px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-link {
+    padding: 0 0 0 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Deworming-dayNote {
+    margin-top: 14px;
+}
+
+.Deworming-done {
+    margin: 12px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green);
+}
+
+/* The paper sheet's photos */
+.Deworming-photoList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+}
+
+.Deworming-photoList li {
+    position: relative;
+}
+
+.Deworming-photoList img,
+.Deworming-photoWait {
+    display: block;
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-photoWait {
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+.Deworming-photoRemove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--text);
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Deworming-photoRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.Deworming-photoDone {
+    color: var(--green);
+}
+
+.Modal-edit.Deworming-photoAdd {
+    display: inline-flex;
+    cursor: pointer;
+}
+
+.Modal-edit.Deworming-photoAdd.is-busy {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* Review (admins) */
+.Deworming-review {
+    margin-top: 20px;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+}
+
+.Deworming-records,
+.Deworming-recordList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Deworming-recordList li {
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Deworming-recordList b {
+    margin-right: 6px;
+    color: var(--text-strong);
+}
+
+.Deworming-sendBack {
+    margin-top: 12px;
+}
+
+/* Desktop: each monkey on one row (a full troop is a long list): the
+   name and its dose, the results, then the food, note and dewormer change;
+   any advice under them */
+@media (min-width: 900px) {
+    .Deworming-entry {
+        display: grid;
+        grid-template-columns: 190px auto 1fr auto;
+        grid-template-areas:
+            "head buttons more icons"
+            ". advice advice advice";
+        align-items: center;
+        column-gap: 14px;
+        padding: 6px 0;
+    }
+
+    .Deworming-entryHead {
+        grid-area: head;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        margin: 0;
+        min-width: 0;
+    }
+
+    .Deworming-entryHead b {
+        font-size: 14px;
+    }
+
+    .Deworming-entryHead .Deworming-about {
+        font-size: 12px;
+    }
+
+    .Deworming-results-buttons {
+        grid-area: buttons;
+    }
+
+    .Deworming-results-buttons button,
+    .Deworming-partial {
+        height: 30px;
+        min-width: 40px;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    .Deworming-entryMore {
+        grid-area: more;
+        margin-top: 0;
+    }
+
+    .Deworming-entryMore select,
+    .Deworming-entryMore input {
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .Deworming-rowIcons {
+        grid-area: icons;
+        margin-left: 0;
+    }
+
+    .Deworming-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .Deworming-advice {
+        grid-area: advice;
+        margin: 4px 0 0;
+    }
+
+    /* (done: the advice beside the name, no second row) */
+    .Deworming-entry.is-done .Deworming-advice {
+        grid-row: 1;
+        grid-column: 2 / 4;
+        margin: 0;
+    }
+}
+
+/* ---- Monkeys added while completing a list, and Day 4 ---- */
+
+/* "Added Day 2" / "Accidental", beside the monkey's name */
+.Deworming-addedTag {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    vertical-align: 1px;
+    background-color: var(--surface-3);
+    border-radius: 6px;
+}
+
+.Deworming-addedTag.is-accidental {
+    color: var(--on-status);
+    background-color: var(--amber);
+}
+
+.Modal-edit.Deworming-addMonkey {
+    margin-top: 12px;
+}
+
+.Deworming-icon.is-danger:hover:not(:disabled) {
+    color: var(--pink);
+    border-color: var(--pink);
+}
+
+.Deworming-addDialog .RecordsPage-tabs,
+.Deworming-day4 .RecordsPage-tabs {
+    margin: 12px 0 4px;
+}
+
+.Deworming-search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text);
+    background-color: var(--field);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+}
+
+.Deworming-matches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Deworming-matches button {
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.Deworming-matches button:hover {
+    background-color: var(--surface-3);
+}
+
+.Deworming-chosen {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 16px;
+}
+
+.Deworming-day4 {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Deworming-day4 li + li {
+    margin-top: 14px;
+}
+
+.Deworming-day4 p {
+    margin: 0;
+}
+
+.Deworming-reviewHead {
+    margin: 18px 0 8px;
+    font-size: 14px;
+    color: var(--text-strong);
+}
+
+.Deworming-reviewNote {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-2);
 }
