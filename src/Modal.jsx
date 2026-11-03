@@ -24,6 +24,7 @@ import {
     IconCpu,
     IconRosetteDiscountCheck,
     IconHistory,
+    IconEye,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -39,6 +40,7 @@ import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
+import { addObservation } from "./monkeyData";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import StatusUpdate from "./StatusUpdate";
 import RecentEdits from "./RecentEdits";
@@ -172,6 +174,9 @@ function Modal({
     // Injuries: New Injury's form, and the current list's fold
     const injuries = useInjuries(monkey?.id, staff);
     const [injuryForm, setInjuryForm] = useState(false);
+    // Observation (Quick Actions): a quick note on how it's doing, which
+    // also counts as seen (its last seen date)
+    const [observationForm, setObservationForm] = useState(false);
     const [injuriesOpen, setInjuriesOpen] = useState(true);
 
     // Saves straight away; the pop-up stays open, now with the new state.
@@ -241,7 +246,7 @@ function Modal({
         (form.to === "introcage" || (form.to === "return" && Boolean(form.introcageId)));
     // A tap outside Quick Actions closes it, unless one of its forms is open
     // (so a half-filled form isn't lost)
-    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || statusForm);
+    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || observationForm || statusForm);
     // Any form open in the pop-up (these, or one in a list: editing an
     // injury, adding an update…) holds it: no other monkey and no closing
     // until its Cancel or Confirm (formLock.js)
@@ -265,6 +270,7 @@ function Modal({
         setReleaseProblem(null);
         setMoreOpen(false);
         setInjuryForm(false);
+        setObservationForm(false);
         setSickbayForm(null);
         setSickbayProblem(null);
     }
@@ -486,6 +492,16 @@ function Modal({
                                                     New Injury
                                                 </button>
                                             )}
+                                            {injuries.canAdd && !formOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="Modal-edit is-sickbay"
+                                                    onClick={() => setObservationForm(true)}
+                                                >
+                                                    <IconEye size={18} aria-hidden="true" />
+                                                    Observation
+                                                </button>
+                                            )}
                                             {/* (the rare, final one last) */}
                                             {onStatusUpdate && !formOpen && (
                                                 <button
@@ -496,6 +512,22 @@ function Modal({
                                                     <IconRosetteDiscountCheck size={18} aria-hidden="true" />
                                                     Status Update
                                                 </button>
+                                            )}
+                                            {observationForm && (
+                                                <InjuryForm
+                                                    kind="observation"
+                                                    initial={{ date: todayText(), description: "" }}
+                                                    max={todayText()}
+                                                    onSave={async (values) => {
+                                                        await addObservation(monkey.id, values);
+                                                        setObservationForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                    onCancel={() => {
+                                                        setObservationForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                />
                                             )}
                                             {injuryForm && (
                                                 <InjuryForm

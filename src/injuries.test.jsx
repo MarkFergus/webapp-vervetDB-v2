@@ -2,7 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
-import { addInjury, addInjuryUpdate, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
+import { addInjury, addInjuryUpdate, addObservation, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -19,6 +19,7 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     saveInjuryUpdate: vi.fn(),
     deleteInjuryUpdate: vi.fn(),
     loadMonitoring: vi.fn(),
+    addObservation: vi.fn(),
 }));
 
 const MONKEY = {
@@ -240,4 +241,19 @@ describe("an open form holds the pop-up until its Cancel", () => {
         expect(handlePrevNext).not.toHaveBeenCalled();
         expect(onClose).not.toHaveBeenCalled();
     });
+});
+
+test("Observation (Quick Actions): a quick note on how it's doing, saved for the day (and as seen)", async () => {
+    addObservation.mockResolvedValue();
+    open({ ...ADMIN, isAdmin: false });
+    await screen.findByRole("button", { name: "Quick Actions" });
+    await quickActions();
+    await userEvent.click(screen.getByRole("button", { name: "Observation" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Please write what you saw.");
+    const date = screen.getByLabelText("Date");
+    await userEvent.type(screen.getByLabelText("Observation"), "Seen eating and moving around ok");
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(addObservation).toHaveBeenCalledWith(7, { date: date.value, description: "Seen eating and moving around ok" });
+    expect(screen.queryByLabelText("Observation")).toBeNull();
 });

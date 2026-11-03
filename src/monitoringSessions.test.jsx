@@ -125,7 +125,8 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(within(history).getAllByRole("listitem")).toHaveLength(3);
     expect(within(history).getAllByRole("button")[0]).toHaveTextContent("26th Oct 2026");
     expect(within(history).getByLabelText("Fence: Low")).toHaveTextContent("⚡️ !");
-    expect(within(history).getAllByRole("button")[0]).toHaveTextContent("3 / 4 seen");
+    // (the troop's monkeys only: Pip, in his introcage, isn't counted)
+    expect(within(history).getAllByRole("button")[0]).toHaveTextContent("2 / 3 seen");
 
     await user.click(screen.getByRole("button", { name: "Start Session" }));
     expect(startMonitoringSession).toHaveBeenCalledWith(1, today());
@@ -163,11 +164,12 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
 
     // …the checklist (introcage monkeys under their introcage), Tick All, untick the missing
     expect(screen.getByRole("heading", { name: "Skunkey B2" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Tick All Seen" }));
-    expect(screen.getByText("4 / 4 seen")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Tick All" }));
+    expect(screen.getAllByRole("checkbox", { name: / seen$/, checked: true })).toHaveLength(4);
     await user.click(screen.getByLabelText("Malawi seen"));
     await user.click(screen.getByLabelText("Daisy Mae seen"));
-    expect(screen.getByText("2 / 4 seen")).toBeInTheDocument();
+    expect(screen.getAllByRole("checkbox", { name: / seen$/, checked: true })).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Checklist" })).toBeInTheDocument();
 
     // …and an update on Paradise's injury, linked to the session
     addInjuryUpdate.mockImplementation(async (_id, { date, details }) => ({ id: 8, date, details, loggedBy: "u-1" }));
@@ -205,14 +207,14 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     // (Paradise's injury had an update just now: no alert for it)
     expect(within(alerts).queryByText(/Paradise's injury/)).toBeNull();
     const text = screen.getByLabelText("WhatsApp summary").textContent;
-    expect(text).toContain("📋 Skunkey Monitoring");
+    expect(text).toContain("📋 *Skunkey Monitoring");
     expect(text).toContain("All seen except Daisy Mae (seen 26.10) and Malawi (seen 12.10)");
     expect(text).toContain("⚠️ Malawi not seen for 3 sessions (since 12.10)");
     expect(text).toContain("🐒 Paradise eye almost back to normal");
-    expect(text).toMatch(/^📋 Skunkey Monitoring \d\d\.\d\d\n_Raining_\n/);
+    expect(text).toMatch(/^📋 \*Skunkey Monitoring \d\d\.\d\d\*\n_Raining_\n/);
     // (Pip: a priority check, seen)
     expect(text).toContain("Daisy Mae (seen 26.10) and Malawi (seen 12.10)\nPip seen\n");
-    expect(text).toMatch(/🥗 good\n💧 good\n⚡️ good \(Gate sticking\)\n\n🔧 Branches cut$/);
+    expect(text).toMatch(/🥗 good\n💧 good\n⚡️ good \(Gate sticking\)\n☑️ Perimeter checked\n\n🔧 Branches cut$/);
     await user.click(screen.getByRole("button", { name: "Copy for WhatsApp" }));
     expect(writeText).toHaveBeenCalledWith(text);
     expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
@@ -234,7 +236,7 @@ test("the same troop twice in a day: asks first", async () => {
     for (const [group, word] of [["Fence", "Good"], ["Waters", "Good"], ["Food", "Good"]]) {
         await user.click(within(screen.getByRole("group", { name: group })).getByRole("button", { name: word }));
     }
-    await user.click(screen.getByRole("button", { name: "Tick All Seen" }));
+    await user.click(screen.getByRole("button", { name: "Tick All" }));
     await user.click(screen.getByRole("button", { name: "Finish Session" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Skunkey already has a session on");
     expect(finishMonitoringSession).not.toHaveBeenCalled();
@@ -300,11 +302,46 @@ test("the History: tap a session for its summary again", async () => {
     await user.click(within(history).getAllByRole("button")[0]);
     await waitFor(() => expect(screen.getByLabelText("WhatsApp summary").textContent).toContain("🐒 Paradise eye looks sore"));
     const text = screen.getByLabelText("WhatsApp summary").textContent;
-    expect(text).toContain("📋 Skunkey Monitoring 26.10");
+    expect(text).toContain("📋 *Skunkey Monitoring 26.10*");
     // (as it was then: Malawi last seen before that session)
     expect(text).toContain("All seen except Malawi (seen 12.10)");
     expect(text).toContain("⚡️ low");
     expect(loadSessionNotes).toHaveBeenCalledWith(12);
+});
+
+test("an opened History session: Edit, then copy and delete as icons on the right (Edit and delete: admins or whoever ran it)", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue();
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    deleteMonitoringSession.mockResolvedValue();
+    const { unmount } = open();
+    // (an editor who didn't run it: copy only)
+    let history = await screen.findByRole("list", { name: "History" });
+    await user.click(within(history).getAllByRole("button")[0]);
+    await waitFor(() => expect(screen.getByLabelText("WhatsApp summary")).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Copy for WhatsApp" })).toHaveClass("Monitoring-icon");
+    unmount();
+
+    open({ ...EDITOR, isAdmin: true });
+    history = await screen.findByRole("list", { name: "History" });
+    await user.click(within(history).getAllByRole("button")[0]);
+    await waitFor(() => expect(screen.getByLabelText("WhatsApp summary")).toBeInTheDocument());
+    const row = screen.getByRole("button", { name: "Edit" }).closest(".Monitoring-historyActions");
+    expect(within(row).getAllByRole("button").map((b) => b.getAttribute("aria-label") ?? b.textContent)).toEqual([
+        "Edit",
+        "Copy for WhatsApp",
+        "Delete",
+    ]);
+    await user.click(within(row).getByRole("button", { name: "Copy for WhatsApp" }));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("📋 *Skunkey Monitoring 26.10*"));
+    expect(within(row).getByRole("button", { name: "Copied" })).toBeInTheDocument();
+    await user.click(within(row).getByRole("button", { name: "Delete" }));
+    const ask = screen.getByRole("dialog", { name: "Delete this session?" });
+    expect(within(ask).getByRole("button", { name: "Confirm" })).toHaveClass("is-danger");
+    await user.click(within(ask).getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(deleteMonitoringSession).toHaveBeenCalledWith(12));
 });
 
 test("by the troop picker: Continue Session and Cancel Session for your own", async () => {
@@ -406,11 +443,13 @@ test("Missing: only editors and admins can Mark As Seen", async () => {
     expect(within(missing).queryByRole("button", { name: /Mark .* As Seen/ })).toBeNull();
 });
 
-test("the checklist goes by where monkeys are now; those in an introcage or Sickbay are seen every day (ticked and locked)", async () => {
+test("the checklist goes by where monkeys are now; Sickbay's are ticked (seen there), introcage monkeys ticked off by hand but never missing", async () => {
     const user = userEvent.setup();
     const inProgress = { ...finished(31, "2026-10-30", {}, { startedBy: "u-1" }), status: "in_progress", finishedAt: null };
-    loadMonitoringSessions.mockResolvedValue([inProgress, ...PAST]);
-    finishMonitoringSession.mockResolvedValue(finished(31, "2026-10-30", { 1: true, 2: true, 3: true, 4: true }));
+    // (Pip, in his introcage, wasn't ticked last session: never missing all the same)
+    const past = [finished(12, "2026-10-26", { 1: false, 2: true, 3: true, 4: false }, { fence: "low" }), ...PAST.slice(1)];
+    loadMonitoringSessions.mockResolvedValue([inProgress, ...past]);
+    finishMonitoringSession.mockResolvedValue(finished(31, "2026-10-30", { 1: true, 2: true, 3: true, 4: false }));
     // (Malawi, missing the last 2 sessions, is in Sickbay; Daisy Mae is staying in Skunkey B2 for now)
     const monkeys = MONKEYS.map((m) =>
         m.id === 1
@@ -421,32 +460,38 @@ test("the checklist goes by where monkeys are now; those in an introcage or Sick
     );
     render(<RecordsPage route="records/sections/monitoring" monkeys={monkeys} enclosures={ENCLOSURES} staff={EDITOR} />);
     await user.click(await screen.findByRole("button", { name: "Continue Session" }));
-    // (no Must See for a monkey in Sickbay: seen every day)
+    // (no Must See or Not Seen for a monkey in Sickbay or an introcage: seen every day)
     const briefing = await screen.findByRole("region", { name: "Briefing" });
     expect(within(briefing).queryByText("Must See")).toBeNull();
+    expect(within(briefing).queryByText("Not Seen Last Session")).toBeNull();
     const group = (title) =>
         within(screen.getByRole("heading", { level: 3, name: title }).closest(".Monitoring-group"))
             .getAllByRole("checkbox")
             .map((c) => c.getAttribute("aria-label"));
     expect(group("Troop")).toEqual(["Malawi seen", "Paradise seen"]);
     expect(group("Skunkey B2")).toEqual(["Daisy Mae seen", "Pip seen"]);
-    for (const name of ["Malawi", "Daisy Mae", "Pip"]) {
-        const tick = screen.getByRole("checkbox", { name: `${name} seen` });
-        expect(tick).toBeChecked();
-        expect(tick).toBeDisabled();
-    }
     const malawi = screen.getByRole("checkbox", { name: "Malawi seen" });
+    expect(malawi).toBeChecked();
+    expect(malawi).toBeDisabled();
     expect(malawi.closest("li")).toHaveTextContent("In Sickbay");
     expect(malawi.closest("li")).not.toHaveTextContent("Must See");
-    // (only Paradise, out in the troop, to look for)
-    expect(screen.getByText("3 / 4 seen")).toBeInTheDocument();
+    for (const name of ["Daisy Mae", "Pip"]) {
+        const tick = screen.getByRole("checkbox", { name: `${name} seen` });
+        expect(tick).not.toBeChecked();
+        expect(tick).toBeEnabled();
+        expect(tick.closest("li")).not.toHaveTextContent("Not Seen Last Session");
+    }
+    expect(screen.getAllByRole("checkbox", { name: / seen$/, checked: true })).toHaveLength(1);
     await user.click(screen.getByRole("checkbox", { name: "Paradise seen" }));
-    expect(screen.getByText("4 / 4 seen")).toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: "Daisy Mae seen" }));
+    expect(screen.getAllByRole("checkbox", { name: / seen$/, checked: true })).toHaveLength(3);
     for (const name of ["Fence", "Waters", "Food"]) {
         await user.click(within(screen.getByRole("group", { name })).getByRole("button", { name: "Good" }));
     }
     await user.click(screen.getByRole("button", { name: "Finish Session" }));
     await waitFor(() => expect(finishMonitoringSession).toHaveBeenCalled());
-    // (all saved as seen)
-    expect(finishMonitoringSession.mock.calls[0][1]).toMatchObject({ seen: [2, 1, 3, 4], notSeen: [] });
+    expect(finishMonitoringSession.mock.calls[0][1]).toMatchObject({ seen: [2, 1, 3], notSeen: [4] });
+    // (the summary: Pip, unticked in his introcage, isn't "missing")
+    await waitFor(() => expect(screen.getByLabelText("WhatsApp summary").textContent).toContain("All seen"));
+    expect(screen.getByLabelText("WhatsApp summary").textContent).not.toContain("Pip");
 });

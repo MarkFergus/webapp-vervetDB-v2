@@ -173,10 +173,13 @@ export function whatsappText({
     waters,
     food,
     checkNotes = {},
+    introcagesChecked = false,
+    perimeterChecked = false,
     generalNotes = "",
     maintenance = "",
 }) {
-    const lines = [`📋 ${fullName(troop)} Monitoring ${dotDate(date)}`];
+    // (the title in bold: WhatsApp's *…*)
+    const lines = [`📋 *${fullName(troop)} Monitoring ${dotDate(date)}*`];
     // (a line at a time, each in italics: WhatsApp's _…_ stops at a new line)
     for (const line of generalNotes.split("\n").map((l) => l.trim()).filter(Boolean)) lines.push(`_${line}_`);
     lines.push("", seenLine(missing, total));
@@ -193,6 +196,9 @@ export function whatsappText({
     const allGood = fence === ALL_GOOD.fence && waters === ALL_GOOD.waters && food === ALL_GOOD.food;
     if (allGood && !note("fence") && !note("waters") && !note("food")) lines.push("", "🥗💧⚡️ all good");
     else lines.push("", `🥗 ${word(food)}${note("food")}`, `💧 ${word(waters)}${note("waters")}`, `⚡️ ${word(fence)}${note("fence")}`);
+    // (the Introcages and Perimeter Checks, under the enclosure's: those done)
+    const checked = [introcagesChecked && "Introcages", perimeterChecked && "Perimeter"].filter(Boolean);
+    if (checked.length) lines.push(`☑️ ${checked.join(" & ")} checked`);
     const jobs = maintenance.split("\n").map((l) => l.trim()).filter(Boolean);
     if (jobs.length) lines.push("", ...jobs.map((job) => `🔧 ${job}`));
     return lines.join("\n");

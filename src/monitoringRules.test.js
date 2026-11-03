@@ -92,10 +92,12 @@ test("the WhatsApp summary, as staff post it", () => {
             fence: "good",
             waters: "good",
             food: "good",
+            introcagesChecked: true,
+            perimeterChecked: true,
         })
     ).toBe(
         [
-            "📋 Skunkey Monitoring 30.10",
+            "📋 *Skunkey Monitoring 30.10*",
             "",
             "All seen except Malawi and Daisy Mae (both seen 26.10)",
             "Victoria and Hocus both seen",
@@ -104,9 +106,11 @@ test("the WhatsApp summary, as staff post it", () => {
             "🐒 Rox heard coughing again",
             "",
             "🥗💧⚡️ all good",
+            "☑️ Introcages & Perimeter checked",
         ].join("\n")
     );
-    // Everyone seen: ✅ (and the priority ones still named, to search the chat for); a note on a check: each on its own line; maintenance last
+    // Everyone seen: ✅ (and the priority ones still named, to search the chat for); a note on a check: each on its own line;
+    // the Introcages / Perimeter Checks done under them (none done: no line); maintenance last
     expect(
         whatsappText({
             troop: "Skunkey",
@@ -118,11 +122,12 @@ test("the WhatsApp summary, as staff post it", () => {
             waters: "good",
             food: "good",
             checkNotes: { waters: " topped up " },
+            perimeterChecked: true,
             maintenance: "Branches cut\n\nFence break fixed ",
         })
     ).toBe(
         [
-            "📋 Skunkey Monitoring 30.10",
+            "📋 *Skunkey Monitoring 30.10*",
             "",
             "✅ All seen",
             "Victoria seen",
@@ -130,6 +135,7 @@ test("the WhatsApp summary, as staff post it", () => {
             "🥗 good",
             "💧 good (topped up)",
             "⚡️ good",
+            "☑️ Perimeter checked",
             "",
             "🔧 Branches cut",
             "🔧 Fence break fixed",
@@ -152,7 +158,7 @@ test("the WhatsApp summary, as staff post it", () => {
         })
     ).toBe(
         [
-            "📋 Dino & Daniel Monitoring 30.10",
+            "📋 *Dino & Daniel Monitoring 30.10*",
             "_Raining, low sightings_",
             "",
             "All seen except Malawi (seen 19.10)",

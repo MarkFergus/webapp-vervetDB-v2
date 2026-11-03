@@ -1408,6 +1408,23 @@ export async function loadLastMoves(monkeyIds) {
     return moves;
 }
 
+// Observation (the pop-up's Quick Actions): a quick note on how a monkey's
+// doing ({ date, description }): an Observation in its Rehabilitation
+// records, and a sighting (as Mark As Seen), so it counts as seen that day.
+// Throws a message to show.
+export async function addObservation(monkeyId, { date, description }) {
+    const { error } = await supabase
+        .from("monkey_records")
+        .insert({ monkey_id: monkeyId, section: "rehabilitation", record_date: date, category: "observation", details: description.trim() });
+    if (error) {
+        console.error("Adding an observation failed:", error);
+        if (error.code === "42501")
+            throw new Error("Observations aren't ready yet: supabase/observations.sql needs to be run.");
+        throw saveProblem(error);
+    }
+    await addSpotSighting(monkeyId, { date, note: description });
+}
+
 // A monkey's finished sessions it was on the checklist for (newest first,
 // as sessions with just its sighting), and its sightings between them:
 // { sessions, spots } (the pop-up: is it missing?)

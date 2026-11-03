@@ -219,6 +219,11 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
             placeholder: "How does it look? e.g. Looking thin, scruffy coat",
             missing: "Please describe the condition.",
         },
+        observation: {
+            label: "Observation",
+            placeholder: "e.g. Seen eating and moving around ok",
+            missing: "Please write what you saw.",
+        },
     }[kind];
     // (holds the pop-up while it's open: see formLock.js)
     useFormLock();

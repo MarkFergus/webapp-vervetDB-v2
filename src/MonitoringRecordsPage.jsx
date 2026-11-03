@@ -4,6 +4,7 @@ import {
     IconCheck,
     IconChevronDown,
     IconCircleCheckFilled,
+    IconClipboardList,
     IconCopy,
     IconExclamationMark,
     IconEye,
@@ -368,8 +369,9 @@ const ADD_KINDS = { update: "Update", injury: "Injury", condition: "Condition" }
 // and a +: an injury, an update on one, or a condition (saved straight
 // away, linked to the session)
 function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded }) {
-    // (in an introcage or Sickbay: seen every day, so ticked and locked)
-    const daily = seenDaily(monkey);
+    // (in Sickbay: seen and checked there, so ticked and locked. In an
+    // introcage: ticked off by hand, as its check, though it's never missing)
+    const daily = Boolean(monkey.inSickbay);
     const [mode, setMode] = useState(null); // "injury", "update" or "condition"
     const record = facts.records[monkey.id];
     const injuries = facts.current.filter((i) => i.monkeyId === monkey.id);
@@ -589,9 +591,8 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
         reloadNotes();
     }, [reloadNotes]);
 
-    // (introcage and Sickbay monkeys: always seen)
-    const isSeen = (m) => seenDaily(m) || Boolean(seen[m.id]);
-    const seenCount = facts.all.filter(isSeen).length;
+    // (Sickbay's: always seen; the rest, introcages too: ticked off)
+    const isSeen = (m) => Boolean(m.inSickbay || seen[m.id]);
 
     async function finish(confirmed = false) {
         setProblem(null);
@@ -706,7 +707,7 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
 
                 <div className="Monitoring-checklistHead">
                     <h3 className="Monitoring-stepTitle">
-                        Checklist <span>{seenCount} / {facts.all.length} seen</span>
+                        Checklist
                     </h3>
                     <span className="Monitoring-tickAll">
                         <button
@@ -714,7 +715,7 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                             className="Modal-edit is-soft"
                             onClick={() => setSeen(Object.fromEntries(facts.all.map((m) => [m.id, true])))}
                         >
-                            Tick All Seen
+                            Tick All
                         </button>
                         <button type="button" className="Modal-edit is-quiet" onClick={() => setSeen({})}>
                             Clear All
@@ -722,8 +723,8 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                     </span>
                 </div>
                 {/* (where they are now: a troop monkey staying in an introcage
-                    is under that introcage; Sickbay's are in their usual place.
-                    Those in an introcage or Sickbay: ticked, seen every day) */}
+                    is under that introcage; Sickbay's are in their usual place,
+                    ticked: seen there every day) */}
                 {checklistGroups(facts.all).map((g) => (
                     <Fragment key={g.title}>{section(g.title, g.monkeys)}</Fragment>
                 ))}
@@ -800,7 +801,10 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
 // The alerts and the WhatsApp summary of a finished session
 function summaryFor(session, troop, facts, notes, today) {
     const names = Object.fromEntries(facts.all.map((m) => [m.id, m.name]));
-    const notSeen = facts.all.filter((m) => !session.sightings.find((s) => s.monkeyId === m.id)?.seen);
+    // (not those in an introcage or Sickbay, unticked or not: seen every day)
+    const notSeen = facts.all.filter(
+        (m) => !seenDaily(m) && !session.sightings.find((s) => s.monkeyId === m.id)?.seen
+    );
     const missing = notSeen.map((m) => ({ name: m.name, lastSeen: facts.records[m.id].lastSeen }));
     const mustSee = notSeen
         .map((m) => ({ name: m.name, missed: facts.records[m.id].missed + 1, lastSeen: facts.records[m.id].lastSeen }))
@@ -831,6 +835,8 @@ function summaryFor(session, troop, facts, notes, today) {
             waters: session.waters,
             food: session.food,
             checkNotes,
+            introcagesChecked: session.introcagesChecked,
+            perimeterChecked: session.perimeterChecked,
             generalNotes: session.notes,
             maintenance: session.maintenance,
         }),
@@ -838,7 +844,9 @@ function summaryFor(session, troop, facts, notes, today) {
 }
 
 // Copy for WhatsApp: the summary, and a button to copy it
-function WhatsAppSummary({ text }) {
+// The summary to paste into WhatsApp; showCopy: its Copy for WhatsApp
+// button under it (the History's: an icon beside Edit instead)
+function WhatsAppSummary({ text, showCopy = true }) {
     const [copied, setCopied] = useState(false);
     async function copy() {
         try {
@@ -851,10 +859,12 @@ function WhatsAppSummary({ text }) {
     return (
         <div className="Monitoring-whatsapp">
             <pre aria-label="WhatsApp summary">{text}</pre>
-            <button type="button" className="Modal-edit is-confirm" onClick={copy}>
-                <IconCopy size={18} aria-hidden="true" />
-                {copied ? "Copied" : "Copy for WhatsApp"}
-            </button>
+            {showCopy && (
+                <button type="button" className="Modal-edit is-confirm" onClick={copy}>
+                    <IconCopy size={18} aria-hidden="true" />
+                    {copied ? "Copied" : "Copy for WhatsApp"}
+                </button>
+            )}
         </div>
     );
 }
@@ -913,9 +923,22 @@ function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChang
     const [deleting, setDeleting] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
+    const [copied, setCopied] = useState(false);
     const byId = Object.fromEntries(monkeys.map((m) => [m.id, m]));
-    const notSeen = session.sightings.filter((s) => !s.seen).map((s) => byId[s.monkeyId]?.name ?? "A monkey");
-    const seenCount = session.sightings.filter((s) => s.seen).length;
+
+    async function copy() {
+        try {
+            await navigator.clipboard.writeText(summary.text);
+            setCopied(true);
+        } catch {
+            setProblem("Couldn't copy. Please try again.");
+        }
+    }
+    // (the troop's monkeys only: those out in it now, not in an introcage
+    // or Sickbay, which are seen every day)
+    const troopSightings = session.sightings.filter((s) => byId[s.monkeyId] && !seenDaily(byId[s.monkeyId]));
+    const troopSeen = troopSightings.filter((s) => s.seen).length;
+    const notSeen = troopSightings.filter((s) => !s.seen).map((s) => byId[s.monkeyId].name);
     const facts = useTroopFacts(monkeys, open ? troop : null, sessions, staff, session, spots);
 
     useEffect(() => {
@@ -942,63 +965,101 @@ function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChang
 
     return (
         <li className="Monitoring-history">
+            {/* 📋 (lining the dates up with the sightings' 👁), the day, who and
+                how many of the troop were seen; the checks (computers: on the
+                right; phones: left out, to keep it to one line) */}
             <button type="button" className="Monitoring-historyLine" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-                <b>{longDate(session.date)}</b>
-                <span>
-                    {seenCount} / {session.sightings.length} seen
+                <IconClipboardList className="Monitoring-historyIcon" size={16} aria-hidden="true" />
+                <span className="Monitoring-historyWhat">
+                    <b>{longDate(session.date)}</b> by {session.startedByName ?? "Staff"}
+                    {troopSightings.length > 0 && (
+                        <>
+                            {" · "}
+                            <span className="Monitoring-historyCount">
+                                {troopSeen} / {troopSightings.length} seen
+                            </span>
+                        </>
+                    )}
                 </span>
-                <Check icon="⚡️" label="Fence" value={session.fence} good={ALL_GOOD.fence} words={FENCE} />
-                <Check icon="💧" label="Waters" value={session.waters} good={ALL_GOOD.waters} words={WATERS} />
-                <Check icon="🥗" label="Food" value={session.food} good={ALL_GOOD.food} words={FOOD_LEVELS} />
-                <IconChevronDown size={16} stroke={2.5} aria-hidden="true" />
+                <span className="Monitoring-historyChecks">
+                    <Check icon="⚡️" label="Fence" value={session.fence} good={ALL_GOOD.fence} words={FENCE} />
+                    <Check icon="💧" label="Waters" value={session.waters} good={ALL_GOOD.waters} words={WATERS} />
+                    <Check icon="🥗" label="Food" value={session.food} good={ALL_GOOD.food} words={FOOD_LEVELS} />
+                </span>
+                <IconChevronDown className="Monitoring-historyChevron" size={16} stroke={2.5} aria-hidden="true" />
             </button>
-            <p className="Monitoring-historySub">
-                By {session.startedByName ?? "Staff"}
-                {notSeen.length > 0 ? ` · Not seen: ${notSeen.join(", ")}` : " · All seen"}
-            </p>
+            {notSeen.length > 0 && <p className="Monitoring-historySub">Not seen: {notSeen.join(", ")}</p>}
             {open && (
                 <div className="Monitoring-historyMore">
                     {session.notes && <p className="Monitoring-note">📝 {session.notes}</p>}
                     {session.maintenance && <p className="Monitoring-note">🔧 {session.maintenance}</p>}
-                    {summary ? <WhatsAppSummary text={summary.text} /> : <p className="Monitoring-quiet">Loading…</p>}
+                    {summary ? (
+                        <WhatsAppSummary text={summary.text} showCopy={false} />
+                    ) : (
+                        <p className="Monitoring-quiet">Loading…</p>
+                    )}
                     {problem && (
                         <p className="RecordsPage-problem" role="alert">
                             {problem}
                         </p>
                     )}
-                    {canChange && (
-                        <div className="Monitoring-actions">
+                    {/* Edit (left); copy and delete as icons (right) */}
+                    <div className="Monitoring-historyActions">
+                        {canChange && (
                             <button type="button" className="Modal-edit is-soft" onClick={onChange}>
                                 <IconPencil size={16} aria-hidden="true" />
-                                Change
+                                Edit
                             </button>
-                            <span className="Monitoring-confirmHost">
-                                <button type="button" className="Modal-edit is-quiet" onClick={() => setDeleting(true)}>
-                                    <IconTrash size={16} aria-hidden="true" />
-                                    Delete
-                                </button>
-                                {deleting && (
-                                    <ConfirmBubble
-                                        question="Delete this session?"
-                                        danger
-                                        busy={busy}
-                                        onConfirm={async () => {
-                                            setBusy(true);
-                                            try {
-                                                await deleteMonitoringSession(session.id);
-                                                onDeleted();
-                                            } catch (error) {
-                                                setProblem(error.message);
-                                                setBusy(false);
-                                                setDeleting(false);
-                                            }
-                                        }}
-                                        onCancel={() => setDeleting(false)}
-                                    />
+                        )}
+                        <span className="Monitoring-historyIcons">
+                            <button
+                                type="button"
+                                className="Monitoring-icon"
+                                aria-label={copied ? "Copied" : "Copy for WhatsApp"}
+                                title={copied ? "Copied" : "Copy for WhatsApp"}
+                                disabled={!summary}
+                                onClick={copy}
+                            >
+                                {copied ? (
+                                    <IconCheck size={18} stroke={2.5} aria-hidden="true" />
+                                ) : (
+                                    <IconCopy size={18} aria-hidden="true" />
                                 )}
-                            </span>
-                        </div>
-                    )}
+                            </button>
+                            {canChange && (
+                                <span className="Monitoring-confirmHost">
+                                    <button
+                                        type="button"
+                                        className="Monitoring-icon is-danger"
+                                        aria-label="Delete"
+                                        title="Delete"
+                                        onClick={() => setDeleting(true)}
+                                    >
+                                        <IconTrash size={18} aria-hidden="true" />
+                                    </button>
+                                    {deleting && (
+                                        <ConfirmBubble
+                                            question="Delete this session?"
+                                            danger
+                                            busy={busy}
+                                            onConfirm={async () => {
+                                                setBusy(true);
+                                                try {
+                                                    await deleteMonitoringSession(session.id);
+                                                    onDeleted();
+                                                } catch (error) {
+                                                    setProblem(error.message);
+                                                    setBusy(false);
+                                                    setDeleting(false);
+                                                }
+                                            }}
+                                            onCancel={() => setDeleting(false)}
+                                        />
+                                    )}
+                                </span>
+                            )}
+                        </span>
+                    </div>
                 </div>
             )}
         </li>

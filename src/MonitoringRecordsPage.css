@@ -257,9 +257,8 @@
 
 .Monitoring-historyLine {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 4px 12px;
+    gap: 8px;
     width: 100%;
     padding: 0;
     font: inherit;
@@ -275,13 +274,48 @@
     color: var(--text-strong);
 }
 
-.Monitoring-historyLine svg {
-    margin-left: auto;
+/* 📋: where the sightings' 👁 is, so the dates line up */
+.Monitoring-historyIcon {
+    flex: none;
+    color: var(--text-3);
+}
+
+.Monitoring-historyWhat {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ("36 / 40 seen" kept together) */
+.Monitoring-historyCount {
+    white-space: nowrap;
+}
+
+/* The checks: on the right (computers; phones: left out, below) */
+.Monitoring-historyChecks {
+    display: flex;
+    flex: none;
+    gap: 12px;
+}
+
+/* The arrow: in a 32px-wide space, the same as a sighting's delete
+   button, so it lines up with those; a touch more room before it */
+.Monitoring-historyChevron {
+    flex: none;
+    box-sizing: content-box;
+    width: 16px;
+    padding: 0 8px;
+    margin-left: 4px;
     transition: transform 0.15s ease;
 }
 
-.Monitoring-historyLine[aria-expanded="true"] svg {
+.Monitoring-historyLine[aria-expanded="true"] .Monitoring-historyChevron {
     transform: rotate(180deg);
+}
+
+@media (max-width: 599px) {
+    .Monitoring-historyChecks {
+        display: none;
+    }
 }
 
 .Monitoring-historyLine:focus-visible {
@@ -304,8 +338,9 @@
     color: var(--danger);
 }
 
+/* (under the day, past the 📋) */
 .Monitoring-historySub {
-    margin: 3px 0 0;
+    margin: 3px 0 0 24px;
     font-size: 13px;
     color: var(--text-3);
 }
@@ -1012,4 +1047,45 @@
     .Monitoring-foldButton svg {
         transition: none;
     }
+}
+
+/* An opened History session: Edit on the left, copy and delete as icons
+   on the right, in one row */
+.Monitoring-historyActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Monitoring-historyIcons {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.Monitoring-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Monitoring-icon:hover:not(:disabled) {
+    color: var(--text-strong);
+}
+
+.Monitoring-icon.is-danger:hover:not(:disabled) {
+    color: var(--pink);
+    border-color: var(--pink);
+}
+
+.Monitoring-icon:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
