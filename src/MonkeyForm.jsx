@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fullName } from "./places";
 import { motion } from "motion/react";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import {
@@ -20,12 +20,11 @@ import { seasonOf } from "./ages";
 import useArrivalInfo from "./useArrivalInfo";
 import useMonitoring from "./useMonitoring";
 import { placeChoices } from "./enclosures";
-import { BABY_FEEDING, isBaby } from "./feeding";
+import { BABY_FEEDING, isBaby, summaryDate } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
-import StatusUpdate from "./StatusUpdate";
-import { ARCHIVE_STATUSES } from "./monkeyStatus";
+import { ARCHIVE_STATUSES, DETAILS_HINTS, MAX_STATUS_DETAILS, STATUS_WORDS, removeWarning } from "./monkeyStatus";
 import "./Modal.css"; // the Quick Actions form look (the new home)
 import "./MonkeyForm.css";
 import CloseButton from "./CloseButton";
@@ -64,8 +63,14 @@ function MonkeyForm({
 }) {
     const isNew = !monkey;
     const { isAdmin, isEditor } = useAuth();
-    // Status Update's form open (Deceased, Escaped, Missing: to the Monkey Archive)
-    const [statusOpen, setStatusOpen] = useState(false);
+    // Status (the Full Profile's Edit, admins): In Sanctuary, or Deceased,
+    // Escaped or Missing, with its date and details: saved with Save, when
+    // the monkey goes to the Monkey Archive (onStatusUpdate)
+    // (date: the day it's recorded; lastSeen: optional, put at the start of
+    // the details)
+    const [status, setStatus] = useState({ value: "sanctuary", date: "", lastSeen: "", details: "" });
+    const showStatus = Boolean(onStatusUpdate) && !isNew && !quick && isAdmin;
+    const leaving = showStatus && status.value !== "sanctuary";
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
@@ -218,6 +223,12 @@ function MonkeyForm({
     async function handleSave(event) {
         event.preventDefault();
         const { errors: found, values } = checkForm(form, choices);
+        // (a new status: its date and details, always: there's always context)
+        if (leaving) {
+            if (!status.date || status.date > todayText()) found.statusDate = "Please choose the date (not in the future).";
+            if (status.lastSeen > todayText()) found.statusLastSeen = "Not in the future, please.";
+            if (!status.details.trim()) found.statusDetails = "Please add the details: what happened.";
+        }
         setErrors(found);
         setProblem(null);
         if (Object.keys(found).length) {
@@ -262,6 +273,17 @@ function MonkeyForm({
             // but that aren't kept (only ones uploaded to our storage)
             const before = [...(monkey?.img ?? []), ...uploadedHere.current];
             deletePhotos(before.filter((url) => !saved.img.includes(url)));
+            // A new status: on to the Monkey Archive (its details are saved)
+            if (leaving) {
+                const [y, m, d] = status.lastSeen.split("-").map(Number);
+                const lastSeen = status.lastSeen ? `Last seen ${summaryDate(new Date(y, m - 1, d))}. ` : "";
+                await onStatusUpdate(saved, {
+                    status: status.value,
+                    date: status.date,
+                    details: `${lastSeen}${status.details.trim()}`,
+                });
+                return;
+            }
             onSaved(saved);
         } catch (error) {
             setProblem(error.message);
@@ -516,7 +538,8 @@ function MonkeyForm({
 
                         {/* (a new arrival has no chip yet: saved as No Chip, added later with Edit) */}
                         {!rescue && (
-                        <div className="MonkeyForm-row">
+                        // (with Status: side by side on phones too, as a pair)
+                        <div className={showStatus ? "MonkeyForm-row is-pair" : "MonkeyForm-row"}>
                             {/* While the box (or the button) has focus, the name
                                 has "Unknown?" beside it, or "Clear" once chosen
                                 (back to blank: no chip) */}
@@ -567,7 +590,84 @@ function MonkeyForm({
                                     </ul>
                                 ))}
                             </div>
+                            {/* Status (admins, the Full Profile's Edit), beside the chip */}
+                            {showStatus && (
+                                <label className="MonkeyForm-field">
+                                    <span>Status</span>
+                                    <select
+                                        value={status.value}
+                                        onChange={(e) =>
+                                            setStatus({
+                                                ...status,
+                                                value: e.target.value,
+                                                date: e.target.value === "sanctuary" ? "" : status.date || todayText(),
+                                            })
+                                        }
+                                    >
+                                        <option value="sanctuary">In Sanctuary</option>
+                                        {ARCHIVE_STATUSES.map((s) => (
+                                            <option key={s} value={s}>
+                                                {STATUS_WORDS[s]}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
                         </div>
+                        )}
+                        {/* Status (admins, the Full Profile's Edit): In
+                            Sanctuary, or no longer here (to the Monkey Archive,
+                            on Save: what that means, its date and details) */}
+                        {showStatus && status.value !== "sanctuary" && (
+                            // (in its own highlighted box: it takes the monkey out of the app)
+                            <div className="MonkeyForm-statusMore" role="group" aria-label="Status Update">
+                                <p className="StatusUpdate-warning">
+                                    <IconAlertTriangle size={18} aria-hidden="true" />
+                                    <span>{removeWarning(monkey.name)}</span>
+                                </p>
+                                <div className="MonkeyForm-row is-pair">
+                                    <div className="MonkeyForm-field">
+                                        <label htmlFor="MonkeyForm-statusDate">Date</label>
+                                        <input
+                                            id="MonkeyForm-statusDate"
+                                            type="date"
+                                            value={status.date}
+                                            max={todayText()}
+                                            aria-invalid={Boolean(errors.statusDate)}
+                                            aria-describedby={describedBy("statusDate")}
+                                            onChange={(e) => setStatus({ ...status, date: e.target.value })}
+                                        />
+                                        {errorFor("statusDate")}
+                                    </div>
+                                    <div className="MonkeyForm-field">
+                                        <label htmlFor="MonkeyForm-statusLastSeen">Last Seen (optional)</label>
+                                        <input
+                                            id="MonkeyForm-statusLastSeen"
+                                            type="date"
+                                            value={status.lastSeen}
+                                            max={todayText()}
+                                            aria-invalid={Boolean(errors.statusLastSeen)}
+                                            aria-describedby={describedBy("statusLastSeen")}
+                                            onChange={(e) => setStatus({ ...status, lastSeen: e.target.value })}
+                                        />
+                                        {errorFor("statusLastSeen")}
+                                    </div>
+                                </div>
+                                <div className="MonkeyForm-field">
+                                    <label htmlFor="MonkeyForm-statusDetails">Details</label>
+                                    <textarea
+                                        id="MonkeyForm-statusDetails"
+                                        rows={3}
+                                        value={status.details}
+                                        maxLength={MAX_STATUS_DETAILS}
+                                        placeholder={DETAILS_HINTS[status.value]}
+                                        aria-invalid={Boolean(errors.statusDetails)}
+                                        aria-describedby={describedBy("statusDetails")}
+                                        onChange={(e) => setStatus({ ...status, details: e.target.value })}
+                                    />
+                                    {errorFor("statusDetails")}
+                                </div>
+                            </div>
                         )}
                     </>
                     )}
@@ -747,39 +847,6 @@ function MonkeyForm({
                         </fieldset>
                     )}
 
-                    {/* Status (admins, the Full Profile's Edit only): Status
-                        Update, last (rare, and it takes the monkey to the
-                        Monkey Archive) */}
-                    {onStatusUpdate && !isNew && !quick && isAdmin && (
-                        <fieldset className="MonkeyForm-feeding MonkeyForm-status">
-                            <legend>Status</legend>
-                            {statusOpen ? (
-                                <StatusUpdate
-                                    name={monkey.name}
-                                    choices={ARCHIVE_STATUSES}
-                                    onSave={(values) => onStatusUpdate(monkey, values)}
-                                    onCancel={() => setStatusOpen(false)}
-                                />
-                            ) : (
-                                <>
-                                    <p className="MonkeyForm-hint">
-                                        In the sanctuary. A Status Update (Deceased, Escaped or Missing) moves{" "}
-                                        {monkey.name} to the Monkey Archive.
-                                    </p>
-                                    <div>
-                                        <button
-                                            type="button"
-                                            className="Modal-edit is-soft"
-                                            onClick={() => setStatusOpen(true)}
-                                            disabled={busy}
-                                        >
-                                            Status Update
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </fieldset>
-                    )}
                 </div>
 
                 <p className="MonkeyForm-problem" role="alert">
