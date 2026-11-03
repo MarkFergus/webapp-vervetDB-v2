@@ -71,3 +71,53 @@ test("editors see it too (monitoring-editors.sql)", async () => {
     expect(await screen.findByRole("group", { name: "Monitoring" })).toBeInTheDocument();
     expect(loadMonitoring).toHaveBeenCalledWith(NITA.id);
 });
+
+describe("Status (the Full Profile's Edit, admins): Status Update, to the Monkey Archive", () => {
+    const editWith = (onStatusUpdate, quick = false) =>
+        render(
+            <MonkeyForm
+                monkey={NITA} troops={["Goliath"]} troopIds={{ Goliath: 1 }} enclosures={BUILT_IN_DATA.enclosures}
+                enclosuresLive onClose={() => {}} onSaved={onSaved} onDeleted={() => {}} quick={quick}
+                onStatusUpdate={onStatusUpdate}
+            />
+        );
+
+    test("last in the form; saves through onStatusUpdate (Confirm, then the warning's Confirm)", async () => {
+        const user = userEvent.setup();
+        const onStatusUpdate = vi.fn().mockResolvedValue();
+        editWith(onStatusUpdate);
+        const status = screen.getByRole("group", { name: "Status" });
+        expect(status).toHaveTextContent("moves");
+        await user.click(within(status).getByRole("button", { name: "Status Update" }));
+        await user.selectOptions(within(status).getByLabelText("New Status"), "missing");
+        await user.type(within(status).getByLabelText("Status Details"), "Not seen at monitoring for 3 weeks");
+        await user.click(within(status).getByRole("button", { name: "Confirm" }));
+        await user.click(within(status).getByRole("button", { name: "Confirm" }));
+        await waitFor(() => expect(onStatusUpdate).toHaveBeenCalledTimes(1));
+        const [monkey, values] = onStatusUpdate.mock.calls[0];
+        expect(monkey.id).toBe(NITA.id);
+        expect(values).toMatchObject({ status: "missing", details: "Not seen at monitoring for 3 weeks" });
+        // (the monkey itself isn't saved by it)
+        expect(saveMonkey).not.toHaveBeenCalled();
+    });
+
+    test("Cancel closes it without saving", async () => {
+        const user = userEvent.setup();
+        const onStatusUpdate = vi.fn();
+        editWith(onStatusUpdate);
+        const status = screen.getByRole("group", { name: "Status" });
+        await user.click(within(status).getByRole("button", { name: "Status Update" }));
+        await user.click(within(status).getByRole("button", { name: "Cancel" }));
+        expect(onStatusUpdate).not.toHaveBeenCalled();
+        expect(within(status).queryByLabelText("New Status")).toBeNull();
+    });
+
+    test("not for editors, nor in the pop-up's quick Edit", () => {
+        const { unmount } = editWith(vi.fn(), true);
+        expect(screen.queryByRole("group", { name: "Status" })).toBeNull();
+        unmount();
+        useAuth.mockReturnValue(EDITOR);
+        editWith(vi.fn());
+        expect(screen.queryByRole("group", { name: "Status" })).toBeNull();
+    });
+});

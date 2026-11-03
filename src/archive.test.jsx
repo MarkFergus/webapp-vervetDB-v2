@@ -133,38 +133,12 @@ describe("Status Update's form", () => {
     });
 });
 
-describe("the pop-up's Status Update (admins)", () => {
-    const open = (onStatusUpdate) =>
-        render(<Modal isModalOpen monkey={MONKEY} onClose={() => {}} handlePrevNext={() => {}} onStatusUpdate={onStatusUpdate} />);
-
-    test("last in Quick Actions; saves through onStatusUpdate", async () => {
-        const onStatusUpdate = vi.fn().mockResolvedValue();
-        open(onStatusUpdate);
-        await userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
-        await userEvent.click(screen.getByRole("button", { name: "Status Update" }));
-        await userEvent.selectOptions(screen.getByLabelText("New Status"), "missing");
-        await userEvent.type(screen.getByLabelText("Status Details"), "Not seen at monitoring for 3 weeks");
-        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
-        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(onStatusUpdate).toHaveBeenCalledTimes(1));
-        const [monkey, values] = onStatusUpdate.mock.calls[0];
-        expect(monkey.id).toBe(1);
-        expect(values).toMatchObject({ status: "missing", details: "Not seen at monitoring for 3 weeks" });
-    });
-
-    test("Cancel closes it without saving", async () => {
-        const onStatusUpdate = vi.fn();
-        open(onStatusUpdate);
-        await userEvent.click(screen.getByRole("button", { name: "Quick Actions" }));
-        await userEvent.click(screen.getByRole("button", { name: "Status Update" }));
-        await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
-        expect(onStatusUpdate).not.toHaveBeenCalled();
-        expect(screen.queryByLabelText("New Status")).not.toBeInTheDocument();
-    });
-
-    test("not there unless it's given (admins only)", () => {
-        open(undefined);
-        expect(screen.queryByRole("button", { name: "Quick Actions" })).not.toBeInTheDocument();
+describe("the pop-up: no Status Update (it's in the Full Profile's Edit)", () => {
+    test("not in Quick Actions, even for admins", async () => {
+        render(<Modal isModalOpen monkey={MONKEY} onClose={() => {}} handlePrevNext={() => {}} staff={ADMIN} />);
+        const quick = await screen.findByRole("button", { name: "Quick Actions" });
+        await userEvent.click(quick);
+        expect(screen.queryByRole("button", { name: "Status Update" })).toBeNull();
     });
 });
 

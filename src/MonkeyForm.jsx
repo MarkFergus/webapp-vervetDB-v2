@@ -24,6 +24,8 @@ import { BABY_FEEDING, isBaby } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
+import StatusUpdate from "./StatusUpdate";
+import { ARCHIVE_STATUSES } from "./monkeyStatus";
 import "./Modal.css"; // the Quick Actions form look (the new home)
 import "./MonkeyForm.css";
 import CloseButton from "./CloseButton";
@@ -58,9 +60,12 @@ function birthYears(current) {
 // Edit, and Add New Monkey)
 function MonkeyForm({
     monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted, quick = false,
+    onStatusUpdate = null,
 }) {
     const isNew = !monkey;
     const { isAdmin, isEditor } = useAuth();
+    // Status Update's form open (Deceased, Escaped, Missing: to the Monkey Archive)
+    const [statusOpen, setStatusOpen] = useState(false);
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
     const careUnitsOnly = isNew && enclosuresLive;
@@ -739,6 +744,40 @@ function MonkeyForm({
                                     onChange={(e) => setMonitoring({ ...monitoring, notes: e.target.value })}
                                 />
                             </label>
+                        </fieldset>
+                    )}
+
+                    {/* Status (admins, the Full Profile's Edit only): Status
+                        Update, last (rare, and it takes the monkey to the
+                        Monkey Archive) */}
+                    {onStatusUpdate && !isNew && !quick && isAdmin && (
+                        <fieldset className="MonkeyForm-feeding MonkeyForm-status">
+                            <legend>Status</legend>
+                            {statusOpen ? (
+                                <StatusUpdate
+                                    name={monkey.name}
+                                    choices={ARCHIVE_STATUSES}
+                                    onSave={(values) => onStatusUpdate(monkey, values)}
+                                    onCancel={() => setStatusOpen(false)}
+                                />
+                            ) : (
+                                <>
+                                    <p className="MonkeyForm-hint">
+                                        In the sanctuary. A Status Update (Deceased, Escaped or Missing) moves{" "}
+                                        {monkey.name} to the Monkey Archive.
+                                    </p>
+                                    <div>
+                                        <button
+                                            type="button"
+                                            className="Modal-edit is-soft"
+                                            onClick={() => setStatusOpen(true)}
+                                            disabled={busy}
+                                        >
+                                            Status Update
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </fieldset>
                     )}
                 </div>

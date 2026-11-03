@@ -34,6 +34,8 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadSpotSightings: vi.fn(),
     addSpotSighting: vi.fn(),
     deleteSpotSighting: vi.fn(),
+    // (no moves on record)
+    loadLastMoves: vi.fn().mockResolvedValue({}),
 }));
 
 const place = (id, name, type, parentId = null) => ({ id, name, type, parentId, sortOrder: id });

@@ -22,7 +22,6 @@ import {
     IconCube,
     IconUserCircle,
     IconCpu,
-    IconRosetteDiscountCheck,
     IconHistory,
     IconEye,
 } from "@tabler/icons-react";
@@ -42,10 +41,8 @@ import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from ".
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import { addObservation } from "./monkeyData";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
-import StatusUpdate from "./StatusUpdate";
 import RecentEdits from "./RecentEdits";
 import { FavouriteStar } from "./MonkeyCard";
-import { ARCHIVE_STATUSES } from "./monkeyStatus";
 import "./Modal.css";
 import CloseButton from "./CloseButton";
 
@@ -79,9 +76,6 @@ function Modal({
     stayChoices = [],
     staff, // { canSee, canAdd, userId, isAdmin } for Injuries and Monitoring (staff only), or null
     onRelease, // editors, new arrivals only: Released, async (monkey, { date, details })
-    // admins: Status Update (Deceased, Escaped, Missing), async (monkey, {
-    // status, date, details }): it leaves the current records (monkeyStatus.js)
-    onStatusUpdate,
     position, // { number, total }: where this monkey is in the list (optional)
     placeHref, // the page of where it lives ("#enclosure/57"), or null
     onOpenPage, // Full Profile: opens the monkey's own page (MonkeyPage), (monkey)
@@ -169,8 +163,6 @@ function Modal({
     const [releaseForm, setReleaseForm] = useState(null);
     const [releaseBusy, setReleaseBusy] = useState(false);
     const [releaseProblem, setReleaseProblem] = useState(null);
-    // Status Update (admins): its little form open
-    const [statusForm, setStatusForm] = useState(false);
     // Injuries: New Injury's form, and the current list's fold
     const injuries = useInjuries(monkey?.id, staff);
     const [injuryForm, setInjuryForm] = useState(false);
@@ -246,7 +238,7 @@ function Modal({
         (form.to === "introcage" || (form.to === "return" && Boolean(form.introcageId)));
     // A tap outside Quick Actions closes it, unless one of its forms is open
     // (so a half-filled form isn't lost)
-    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || observationForm || statusForm);
+    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || observationForm);
     // Any form open in the pop-up (these, or one in a list: editing an
     // injury, adding an update…) holds it: no other monkey and no closing
     // until its Cancel or Confirm (formLock.js)
@@ -266,7 +258,6 @@ function Modal({
     }, [moreOpen, formOpen]);
     function resetSickbay() {
         setReleaseForm(null);
-        setStatusForm(false);
         setReleaseProblem(null);
         setMoreOpen(false);
         setInjuryForm(false);
@@ -412,7 +403,7 @@ function Modal({
                             {/* Quick Actions (editors): an icon top left (opposite
                                 close) that drops down the quick actions; each one's
                                 little form opens in the same drop-down */}
-                            {(canSickbay || canStay || (onWhereabouts && away) || onRelease || onStatusUpdate || injuries.canAdd) && (
+                            {(canSickbay || canStay || (onWhereabouts && away) || onRelease || injuries.canAdd) && (
                                 <div className="Modal-moreActions" ref={moreRef}>
                                     <button
                                         type="button"
@@ -502,17 +493,6 @@ function Modal({
                                                     Observation
                                                 </button>
                                             )}
-                                            {/* (the rare, final one last) */}
-                                            {onStatusUpdate && !formOpen && (
-                                                <button
-                                                    type="button"
-                                                    className="Modal-edit is-sickbay"
-                                                    onClick={() => setStatusForm(true)}
-                                                >
-                                                    <IconRosetteDiscountCheck size={18} aria-hidden="true" />
-                                                    Status Update
-                                                </button>
-                                            )}
                                             {observationForm && (
                                                 <InjuryForm
                                                     kind="observation"
@@ -543,14 +523,6 @@ function Modal({
                                                         setInjuryForm(false);
                                                         setMoreOpen(false);
                                                     }}
-                                                />
-                                            )}
-                                            {statusForm && (
-                                                <StatusUpdate
-                                                    name={monkey.name}
-                                                    choices={ARCHIVE_STATUSES}
-                                                    onSave={(values) => onStatusUpdate(monkey, values)}
-                                                    onCancel={resetSickbay}
                                                 />
                                             )}
                                             {releaseForm && (

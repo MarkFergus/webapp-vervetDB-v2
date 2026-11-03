@@ -903,10 +903,6 @@ function ShowPage({
                             ? handleRelease
                             : undefined
                     }
-                    // Status Update: admins, once the database has a status
-                    onStatusUpdate={
-                        canEdit && isAdmin && selectedMonkey?.status !== undefined ? handleStatusUpdate : undefined
-                    }
                     // (only once the database has Sickbay)
                     onWhereabouts={canEdit && selectedMonkey?.inSickbay !== undefined ? handleWhereabouts : undefined}
                     // (only once the database has stays: introcage-stays.sql)
@@ -1304,6 +1300,17 @@ function ShowPage({
                     onSaved={handleSaved}
                     onDeleted={handleDeleted}
                     quick={Boolean(editing.quick)}
+                    // Status Update (admins, once the database has a status): in
+                    // the Full Profile's Edit (not Quick Actions: too important,
+                    // and rare); the monkey goes to the Monkey Archive
+                    onStatusUpdate={
+                        isAdmin && editing.monkey?.status !== undefined
+                            ? async (monkey, values) => {
+                                  await handleStatusUpdate(monkey, values);
+                                  setEditing(null);
+                              }
+                            : null
+                    }
                 />
             )}
         </div>

@@ -15,6 +15,8 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadConditions: vi.fn(),
     loadMonitoring: vi.fn(),
     loadMonkeySightings: vi.fn(),
+    // (no moves on record)
+    loadLastMoves: vi.fn().mockResolvedValue({}),
     addSpotSighting: vi.fn(),
 }));
 
