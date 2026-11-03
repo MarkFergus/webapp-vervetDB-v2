@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.23.2",
+        date: "2026-11-03",
+        changes: ["Improved Status Update: now in the Full Profile's Edit, not Quick Actions"],
+    },
+    {
         version: "1.23.1",
         date: "2026-11-03",
         changes: [
