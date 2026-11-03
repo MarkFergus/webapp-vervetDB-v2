@@ -8,6 +8,11 @@
     margin-top: 20px;
 }
 
+/* "Deworming Lists", over the New button */
+.RecordsPage-subhead.Deworming-listsHead {
+    margin: 4px 0 10px;
+}
+
 .Modal-edit.Deworming-new {
     margin-bottom: 16px;
 }
@@ -137,6 +142,14 @@
     white-space: nowrap;
 }
 
+/* A Schedule row's tags, side by side */
+.Deworming-tags {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: 6px;
+}
+
 /* Where a sheet is up to, on the right of its row */
 .Deworming-item .Deworming-tag {
     flex-shrink: 0;
@@ -185,6 +198,15 @@
 
 .Deworming-instructions {
     margin-top: 12px;
+}
+
+/* A session that isn't what Outlook (or the cycle) expects: saving it is
+   the confirming */
+.Deworming-mismatch {
+    margin: 8px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--amber-text);
 }
 
 /* Set All To: a dewormer and dose for every ticked monkey */
@@ -1033,6 +1055,28 @@
     margin-top: 20px;
 }
 
+/* "Couldn't Read", with Show Naming Tips on its right */
+.Deworming-unreadHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.Deworming-unreadHead .RecordsPage-subhead {
+    margin: 0;
+}
+
+/* (only admins see it) */
+.Deworming-adminOnly {
+    font-weight: 400;
+    color: var(--text-3);
+}
+
+.RecordsPage-hint.Deworming-tips {
+    margin: 8px 0 0;
+}
+
 /* The Schedule's headings: Overdue, This Week, each month */
 .Deworming-bucket + .Deworming-bucket {
     margin-top: 18px;
@@ -1132,7 +1176,7 @@
         flex-basis: 100%;
     }
 
-    .Deworming-when .Deworming-tag {
+    .Deworming-when .Deworming-tags {
         grid-area: tag;
         justify-self: start;
     }

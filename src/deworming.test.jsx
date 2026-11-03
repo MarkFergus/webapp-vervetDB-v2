@@ -264,7 +264,7 @@ describe("the page", () => {
             "Overdue",
             "November 2026",
             "No Date Yet",
-            "Couldn't Read",
+            "Other Scheduled Dewormings (Admin only)",
         ]);
         expect(await bucket("Overdue")).toEqual(["MON2NOVGlobal Troop 3-Month DewormingYesterdayPrevious: none foundOverdue, date TBC"]);
         expect(await bucket("November 2026")).toEqual([
@@ -276,10 +276,14 @@ describe("the page", () => {
             "?Top Section ICs 6-Month DewormingNo past deworming foundNot in calendar",
         ]);
         expect(screen.getByText("From Outlook, checked 10 minutes ago")).toBeInTheDocument();
-        expect(screen.getByRole("region", { name: "Couldn't Read" })).toHaveTextContent("Tue 1 Dec Skrw 6m deworming");
-        expect(screen.getByRole("region", { name: "Couldn't Read" })).toHaveTextContent(
-            /^Couldn't ReadTip: write each title/
-        );
+        expect(screen.getByRole("region", { name: "Other Scheduled Dewormings" })).toHaveTextContent("Tue 1 Dec Skrw 6m deworming");
+        // (the naming tips: hidden until asked for)
+        const unreadList = within(screen.getByRole("region", { name: "Other Scheduled Dewormings" }));
+        expect(unreadList.queryByText(/Write each title/)).toBeNull();
+        await user.click(unreadList.getByRole("button", { name: "Show Naming Tips" }));
+        expect(unreadList.getByText(/^Write each title in Outlook/)).toBeInTheDocument();
+        await user.click(unreadList.getByRole("button", { name: "Hide Naming Tips" }));
+        expect(unreadList.queryByText(/Write each title/)).toBeNull();
         await user.click(screen.getByRole("button", { name: "Refresh Now" }));
         await waitFor(() => expect(refreshDewormingCalendar).toHaveBeenCalled());
         // (a list's row opens it)
@@ -304,7 +308,7 @@ describe("the page", () => {
         // (nothing in Outlook to read; every group's next has no date found)
         expect(await screen.findByRole("region", { name: "No Date Yet" })).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Refresh Now" })).toBeNull();
-        expect(screen.queryByRole("region", { name: "Couldn't Read" })).toBeNull();
+        expect(screen.queryByRole("region", { name: "Other Scheduled Dewormings" })).toBeNull();
         expect(screen.queryByText(/status 404/)).toBeNull();
         unmount();
 
@@ -331,7 +335,7 @@ describe("the page", () => {
         expect(screen.queryByRole("navigation", { name: "Breadcrumb" })).toBeNull();
         expect(screen.getByRole("button", { name: "Deworming Lists" })).toHaveClass("RecordsPage-back");
         expect(page.getByText(/prepared by Mark Fergus/)).toHaveTextContent(
-            "Starts Mon 2 Nov · 2 monkeys · Ready · prepared by Mark Fergus"
+            "Started on Mon 2 Nov · 2 monkeys · Ready · prepared by Mark Fergus"
         );
         // (by dewormer: Albendazole first)
         expect(
@@ -348,6 +352,16 @@ describe("the page", () => {
         const row = within(screen.getByRole("listitem"));
         expect(row.getByRole("button", { name: "Print" })).toBeInTheDocument();
         expect(row.queryByRole("button", { name: "Delete" })).toBeNull();
+    });
+
+    test("a list's start: Starts while it's ahead, Started on once it's passed", async () => {
+        loadDewormingSheets.mockResolvedValue([
+            sheet(1, "6_month", "2099-01-05", [line(1, "Albendazole", "1/4 tab")]),
+            sheet(2, "3_month", "2026-11-02", [line(1, "Albendazole", "1/4 tab")]),
+        ]);
+        open(ADMIN);
+        expect(await screen.findByRole("button", { name: /6-Month Deworming/ })).toHaveTextContent(/Starts Mon 5 Jan/);
+        expect(screen.getByRole("button", { name: /3-Month Deworming/ })).toHaveTextContent(/Started on Mon 2 Nov/);
     });
 
     test("Print Sheet: the paper sheet as a PDF", async () => {
@@ -436,6 +450,32 @@ describe("the page", () => {
         await user.selectOptions(form.getByLabelText("Group"), "Top Section ICs");
         expect(form.getByLabelText("Session")).toHaveDisplayValue("6-Month");
         expect(form.getByText("2 of 2 ticked")).toBeInTheDocument();
+    });
+
+    test("a new list starts as Outlook's deworming for it; another session's flagged, and saving it confirms", async () => {
+        const d = new Date();
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        loadDewormingCalendar.mockResolvedValue({
+            events: [{ uid: "a", title: "D&D 3m deworming", startsOn: today }],
+            sync: null,
+        });
+        const user = userEvent.setup();
+        open(ADMIN);
+        await user.click(await screen.findByRole("button", { name: "New Deworming List" }));
+        const form = within(screen.getByRole("region", { name: "New Deworming List" }));
+        await waitFor(() => expect(form.getByLabelText("Session")).toHaveDisplayValue("3-Month"));
+        expect(form.queryByRole("status")).toBeNull();
+        expect(form.getByRole("button", { name: "Save List" })).toBeInTheDocument();
+        // (a 6-Month instead: flagged once, and the button says so)
+        await user.selectOptions(form.getByLabelText("Session"), "6-Month");
+        expect(form.getByRole("status")).toHaveTextContent(
+            /^Outlook has D&D Troop 3-Month Deworming on .+\. This list is a 6-Month\. Please check before saving\.$/
+        );
+        await user.selectOptions(form.getByLabelText("Dewormer for all"), "Albendazole");
+        await user.click(form.getByRole("button", { name: "Apply To Ticked" }));
+        await user.click(form.getByRole("button", { name: "Save 6-Month Anyway" }));
+        await waitFor(() => expect(saveDewormingSheet).toHaveBeenCalled());
+        expect(saveDewormingSheet.mock.calls[0][0]).toMatchObject({ groupKey: "troop:1", session: "6_month" });
     });
 
     test("admins edit and delete a sheet (Delete asked first, in red)", async () => {

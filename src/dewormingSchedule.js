@@ -16,7 +16,7 @@
 // IC (a section's introcages; "Introcage(s)" too; on its own, every
 // section's: "Introcage 3m deworming"), 3m, 6m ("3-month", "6 Month" too). A title
 // without a session ("Bobo deworming": a special one) is left out; one
-// with a session that can't be read → Couldn't Read (for admins, never
+// with a session that can't be read → Other Scheduled Dewormings (for admins, never
 // guessed). The session can come after ("Goliath deworming due 3m"), and
 // other ways of writing it are read the same (tidyTitle: "follow up",
 // "Dino & Daniel", "and", "Gismo Troop", "Deworming - Gismo 3m"…), as
@@ -24,7 +24,7 @@
 // Other words after "deworming" ("due this week") don't matter, and a deworming entered over several days
 // counts once, from its first day.
 
-import { isFollowUp, sessionAfter } from "./dewormingRules";
+import { isFollowUp, nextSession, sessionAfter } from "./dewormingRules";
 
 // Deworming lists started in vervetDB on this day: dates before it were
 // done on paper, so never overdue
@@ -49,6 +49,10 @@ const IC_WORDS = /\s+(?:section(?:\s+(?:ic'?s?|introcages?))?|ic'?s?|introcages?
 // ("Introcage 3m deworming": every section's introcages)
 const ALL_ICS = /^(all\s+)?(ic'?s?|introcages?)$/i;
 const FU = /\bF\/?U\b/i;
+// An extra round ("Goliath extra 6m deworming", "Global 2nd 6m
+// deworming"), to catch monkeys missed: it gets its own F/U, but the next
+// main deworming still counts from the usual one
+const EXTRA = /\b(?:additional|extra|second|2nd|redo|repeat)\b/i;
 // ("Goliath deworming due 3m": the session after "deworming")
 const SESSION_AFTER = new RegExp(String.raw`^(.*?)(\s+F\/?U)?\s+deworm\w*\b.*?\b${SESSION}(\s*F\/?U)?`, "i");
 
@@ -100,11 +104,21 @@ const MAIN_MONTHS = 3;
 // part can't be read
 export function readEvent(title, groups) {
     const text = tidyTitle(title);
+    // ("Goliath extra 6m deworming": an extra round, each part)
+    const before = /^(.*?)\s+deworm/i.exec(text)?.[1] ?? "";
+    if (EXTRA.test(before)) {
+        const parts = readParts(text.replace(new RegExp(EXTRA.source, "gi"), " ").replace(/\s+/g, " "), groups);
+        return parts && parts.map((p) => ({ ...p, extra: true }));
+    }
+    return readParts(text, groups);
+}
+
+function readParts(text, groups) {
     // (the session after "deworming", none before: moved in front)
     const after = SESSION_AFTER.exec(text);
     if (after && !HAS_SESSION.test(after[1])) {
         const fu = after[2] || after[4] ? " F/U" : "";
-        return readEvent(`${after[1]} ${after[3]}m${fu} deworming`, groups);
+        return readParts(`${after[1]} ${after[3]}m${fu} deworming`, groups);
     }
     const head = /^(.*?)\s+deworm\w*(.*)$/i.exec(text);
     if (!head) return null;
@@ -141,23 +155,12 @@ export function tidyTitle(title) {
 // Days between two "YYYY-MM-DD" dates
 const daysApart = (a, b) => Math.round((Date.parse(a) - Date.parse(b)) / 86400000);
 
-// The Schedule: Outlook's dewormings, read, against vervetDB's lists
-//   events: [{ uid, title, startsOn }]; groups: dewormingGroups'; sheets:
-//   the deworming lists; today: "YYYY-MM-DD"
-//   → { due: [{ date, groupKey, groupName, session, sheet (its list, if
-//        prepared) }], soonest first;
-//       overdue: [{ date, groupKey, groupName, session }] (the date's
-//        passed, no list for it, and not put on a later date);
-//       unscheduled: [{ groupKey, groupName, session (next), date (when
-//        it's due, or null: no past deworming found), late (overdue) }];
-//       unread: [{ title, startsOn }] }
-export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_FROM) {
+// Outlook's events read into dewormings, one for each group: [{ date,
+// groupKey, groupName, session, extra }] by date (a group's same session
+// within a week of an earlier one: that one), and those that couldn't be
+// read: [{ title, startsOn }]
+function readEntries(events, groups) {
     const nameOf = Object.fromEntries(groups.map((g) => [g.key, g.name]));
-    const listFor = (groupKey, session, date) =>
-        sheets.find(
-            (s) =>
-                s.groupKey === groupKey && s.session === session && Math.abs(daysApart(s.startDate, date)) <= MATCH_DAYS
-        ) ?? null;
     const entries = [];
     const unread = [];
     for (const event of events) {
@@ -175,12 +178,11 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
                     groupKey,
                     groupName: nameOf[groupKey],
                     session: read.session,
+                    extra: Boolean(read.extra),
                 });
             }
         }
     }
-    const byDate = (a, b) => a.date.localeCompare(b.date) || a.groupName.localeCompare(b.groupName);
-    // (a group's same session within a week of an earlier one: that one)
     entries.sort(byDate);
     for (let i = entries.length - 1; i >= 0; i--) {
         const e = entries[i];
@@ -189,17 +191,83 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
                 j < i &&
                 x.groupKey === e.groupKey &&
                 x.session === e.session &&
+                x.extra === e.extra &&
                 daysApart(e.date, x.date) <= SAME_DEWORMING_DAYS
         );
         if (earlier) entries.splice(i, 1);
     }
+    return { entries, unread };
+}
+
+const byDate = (a, b) => a.date.localeCompare(b.date) || a.groupName.localeCompare(b.groupName);
+
+// Each Outlook date's list: each list counts for one date, the nearest
+// within 2 weeks of its session, or else of the same kind (a 3m done as a
+// 6m; a F/U only ever a F/U) → Map(entry → its list)
+function listsFor(entries, sheets) {
+    const pairs = [];
+    for (const sheet of sheets) {
+        for (const entry of entries) {
+            const apart = Math.abs(daysApart(sheet.startDate, entry.date));
+            if (sheet.groupKey !== entry.groupKey || apart > MATCH_DAYS) continue;
+            const same = sheet.session === entry.session;
+            if (!same && isFollowUp(sheet.session) !== isFollowUp(entry.session)) continue;
+            pairs.push({ sheet, entry, rank: same ? 0 : 1, apart });
+        }
+    }
+    pairs.sort((a, b) => a.rank - b.rank || a.apart - b.apart);
+    const found = new Map();
+    const used = new Set();
+    for (const { sheet, entry } of pairs) {
+        if (found.has(entry) || used.has(sheet)) continue;
+        found.set(entry, sheet);
+        used.add(sheet);
+    }
+    return found;
+}
+
+// What a new list for a group, starting on a day, is expected to be:
+// Outlook's deworming nearest it (within 2 weeks, not already another
+// list's), or else the next in the group's cycle
+//   → { session, extra, date (Outlook's, or null) }
+export function expectedSession(events, groups, sheets, groupKey, startDate) {
+    const { entries } = readEntries(events ?? [], groups);
+    const lists = listsFor(entries, sheets);
+    const [near] = entries
+        .filter(
+            (e) =>
+                e.groupKey === groupKey && !lists.has(e) && Math.abs(daysApart(e.date, startDate)) <= MATCH_DAYS
+        )
+        .sort((a, b) => Math.abs(daysApart(a.date, startDate)) - Math.abs(daysApart(b.date, startDate)));
+    if (near) return { session: near.session, extra: near.extra, date: near.date };
+    return { session: nextSession(sheets, groupKey), extra: false, date: null };
+}
+
+// The Schedule: Outlook's dewormings, read, against vervetDB's lists
+//   events: [{ uid, title, startsOn }]; groups: dewormingGroups'; sheets:
+//   the deworming lists; today: "YYYY-MM-DD"
+//   → { due: [{ date, groupKey, groupName, session, extra, sheet (its
+//        list, if prepared), doneAs (its list's session, if it's another:
+//        a 3m done as a 6m) }], soonest first;
+//       overdue: [{ date, groupKey, groupName, session, extra }] (the
+//        date's passed, no list for it, and not put on a later date);
+//       unscheduled: [{ groupKey, groupName, session (next), extra, date
+//        (when it's due, or null: no past deworming found), late }];
+//       unread: [{ title, startsOn }] }
+//   Each with previous: the main deworming before it.
+export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_FROM) {
+    const { entries, unread } = readEntries(events, groups);
+    const lists = listsFor(entries, sheets);
     const due = entries
         .filter((e) => e.date >= today)
-        .map((e) => ({ ...e, sheet: listFor(e.groupKey, e.session, e.date) }))
-        .sort(byDate);
+        .map((e) => {
+            const sheet = lists.get(e) ?? null;
+            return { ...e, sheet, ...(sheet && sheet.session !== e.session && { doneAs: sheet.session }) };
+        });
     // (passed, since lists started in vervetDB: the latest for each group
-    // and session, with no list for it
-    // or after it, and not moved to a later date (within 2 months) in Outlook)
+    // and session, with no list for it or from its day on (any session:
+    // it's moved on), and not moved to a later date (within 2 months) in
+    // Outlook)
     const same = (a) => (b) => a.groupKey === b.groupKey && a.session === b.session;
     const latest = new Map();
     for (const e of entries.filter((x) => x.date < today && x.date >= overdueFrom)) {
@@ -208,19 +276,16 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
     }
     const overdue = [...latest.values()].filter(
         (e) =>
-            !listFor(e.groupKey, e.session, e.date) &&
-            // (a later list for the group, any session: it's moved on)
-            !sheets.some((s) => s.groupKey === e.groupKey && s.startDate > e.date) &&
+            !lists.has(e) &&
+            !sheets.some((s) => s.groupKey === e.groupKey && s.startDate >= e.date) &&
             !due.some((x) => same(e)(x) && daysApart(x.date, e.date) <= RESCHEDULE_DAYS)
     );
 
-    // Unscheduled: a group with nothing coming up in Outlook, nothing
-    // overdue there, and no list in progress (not approved yet): its next
-    // session and when it's due, from its last deworming (a list, or a
-    // past Outlook date: those before vervetDB were done on paper)
-    // A group's dewormings: its lists, and Outlook's dates (those without a
-    // list: before vervetDB, on paper) → [{ session, start, lastDay }], newest first
+    // A group's dewormings: its lists (extra if Outlook's date for it is),
+    // and Outlook's dates without a list (before vervetDB, on paper)
+    //   → [{ session, extra, start, lastDay }], newest first
     //   upTo: only those before this day
+    const extraLists = new Set([...lists].filter(([e]) => e.extra).map(([, s]) => s));
     const historyOf = (key, upTo) =>
         [
             ...sheets
@@ -228,49 +293,79 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
                 .map((s) => {
                     const start = s.startedOn ?? s.startDate;
                     const days = s.lines?.some((l) => l.day4 === true) ? 4 : 3;
-                    return { session: s.session, start, lastDay: addTo(start, { days: days - 1 }) };
+                    return {
+                        session: s.session,
+                        extra: extraLists.has(s),
+                        start,
+                        lastDay: addTo(start, { days: days - 1 }),
+                    };
                 }),
-            // (an Outlook date with its list: the list's, its real first day)
             ...entries
-                .filter((e) => e.groupKey === key && !listFor(key, e.session, e.date))
-                .map((e) => ({ session: e.session, start: e.date, lastDay: addTo(e.date, { days: 2 }) })),
+                .filter((e) => e.groupKey === key && !lists.has(e))
+                .map((e) => ({ session: e.session, extra: e.extra, start: e.date, lastDay: addTo(e.date, { days: 2 }) })),
         ]
             .filter((h) => h.start < upTo)
             .sort((a, b) => b.start.localeCompare(a.start));
-    // The main deworming (3-Month or 6-Month) before one: { session, date
-    // (its first day) } or null (to check the dates add up). Not the same
-    // deworming's own list or date.
+    // The usual main deworming (3-Month or 6-Month, not an extra) before
+    // one: { session, date (its first day) } or null (to check the dates
+    // add up). Not the same deworming's own list or date.
     const previousMain = (key, item) => {
         const upTo = item.date ?? addTo(today, { days: 1 });
         const main = historyOf(key, upTo).find(
             (h) =>
+                !h.extra &&
                 !isFollowUp(h.session) &&
                 !(item.date && h.session === item.session && Math.abs(daysApart(h.start, item.date)) <= MATCH_DAYS)
         );
         return main ? { session: main.session, date: main.start } : null;
     };
 
+    // Unscheduled: a group with nothing coming up in Outlook, nothing
+    // overdue there, and no list in progress (not approved yet): what's
+    // next, from its past dewormings (lists, or past Outlook dates: those
+    // before vervetDB were done on paper). Each main deworming since the
+    // usual one (an extra too) needs its F/U, 14 days after its last day
+    // (each F/U goes with the earliest main before it still without one);
+    // then the next main, 3 months after the usual one started.
     const unscheduled = [];
     for (const group of groups) {
         const key = group.key;
         if (group.monkeys && !group.monkeys.length) continue;
         if (due.some((e) => e.groupKey === key) || overdue.some((e) => e.groupKey === key)) continue;
         if (sheets.some((s) => s.groupKey === key && s.status !== "approved")) continue;
-        // (each past deworming: its session, first and last day)
+        const add = (session, date, extra = false) =>
+            unscheduled.push({
+                groupKey: key,
+                groupName: group.name,
+                session,
+                ...(extra && { extra }),
+                date,
+                late: Boolean(date && date < today),
+            });
         const history = historyOf(key, today);
-        const last = history[0];
-        if (!last) {
-            unscheduled.push({ groupKey: key, groupName: group.name, session: "6_month", date: null, late: false });
+        const usual = history.find((h) => !h.extra && !isFollowUp(h.session));
+        if (!usual) {
+            const last = history[0];
+            if (!last) add("6_month", null);
+            else {
+                const session = sessionAfter(last.session);
+                add(session, isFollowUp(session) ? addTo(last.lastDay, { days: FOLLOW_UP_DAYS }) : null);
+            }
             continue;
         }
-        const session = sessionAfter(last.session);
-        let date = null;
-        if (isFollowUp(session)) date = addTo(last.lastDay, { days: FOLLOW_UP_DAYS });
-        else {
-            const main = history.find((h) => !isFollowUp(h.session));
-            if (main) date = addTo(main.start, { months: MAIN_MONTHS });
+        const waiting = [];
+        for (const h of history.filter((x) => x.start >= usual.start).reverse()) {
+            if (!isFollowUp(h.session)) waiting.push(h);
+            else {
+                const paired = waiting.findIndex((m) => m.start < h.start);
+                if (paired >= 0) waiting.splice(paired, 1);
+            }
         }
-        unscheduled.push({ groupKey: key, groupName: group.name, session, date, late: Boolean(date && date < today) });
+        if (waiting.length) {
+            for (const main of waiting) add(`${main.session}_fu`, addTo(main.lastDay, { days: FOLLOW_UP_DAYS }), main.extra);
+        } else {
+            add(usual.session === "6_month" ? "3_month" : "6_month", addTo(usual.start, { months: MAIN_MONTHS }));
+        }
     }
     // (overdue first, then soonest; no date last)
     unscheduled.sort(

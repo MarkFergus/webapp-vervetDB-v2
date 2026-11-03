@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     IconClipboardCheck,
     IconPencil,
@@ -16,7 +16,7 @@ import {
     saveDewormingResults,
     saveDewormingSheet,
 } from "./monkeyData";
-import { relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
+import { expectedSession, relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
 import { timeAgo } from "./savedData";
 import { summaryDate } from "./feeding";
 import {
@@ -128,6 +128,40 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
     const [problem, setProblem] = useState(null);
     const [busy, setBusy] = useState(false);
 
+    // What's expected (Outlook's deworming near the start date, or else the
+    // group's cycle): a new list starts as it; a different session is
+    // flagged, and saving it is the confirming
+    const [events, setEvents] = useState(null);
+    useEffect(() => {
+        let live = true;
+        Promise.resolve()
+            .then(loadDewormingCalendar)
+            .then((found) => live && setEvents(found?.events ?? []))
+            .catch(() => live && setEvents([]));
+        return () => {
+            live = false;
+        };
+    }, []);
+    const others = editing ? sheets.filter((s) => s.id !== editing.id) : sheets;
+    const expectedFor = (key) =>
+        events ? expectedSession(events, groups, others, key, startDate) : { session: nextSession(sheets, key) };
+    const expected = events && group ? expectedFor(group.key) : null;
+    // (editing: not flagged again unless something's changed)
+    const unchanged =
+        editing && session === editing.session && groupKey === editing.groupKey && startDate === editing.startDate;
+    const mismatch = expected && expected.session !== session && !unchanged ? expected : null;
+    // (Outlook's arrived before anything's chosen: start as it)
+    const touched = useRef(Boolean(editing));
+    useEffect(() => {
+        if (touched.current || !events || !group) return;
+        touched.current = true;
+        const s = expectedSession(events, groups, sheets, group.key, startDate).session;
+        if (s !== session) {
+            setSession(s);
+            setLines(fresh(group, s));
+        }
+    }, [events]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const rows = Object.keys(lines)
         .map(Number)
         .map((id) => ({ id, monkey: monkeys.find((m) => m.id === id) ?? null }))
@@ -139,6 +173,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
         setProblem(null);
     };
     const change = (id, values) => {
+        touched.current = true;
         setLines((ls) => ({ ...ls, [id]: { ...ls[id], ...values } }));
         setProblem(null);
         setUnusual(null);
@@ -233,7 +268,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                         value={groupKey}
                         onChange={(e) => {
                             const g = groups.find((x) => x.key === e.target.value);
-                            const s = editing ? session : nextSession(sheets, e.target.value);
+                            const s = editing ? session : expectedFor(e.target.value).session;
                             setGroupKey(e.target.value);
                             setSession(s);
                             restart(g, s);
@@ -251,6 +286,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                     <select
                         value={session}
                         onChange={(e) => {
+                            touched.current = true;
                             setSession(e.target.value);
                             restart(group, e.target.value);
                         }}
@@ -267,6 +303,14 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                 </label>
             </div>
+            {mismatch && (
+                <p className="Deworming-mismatch" role="status">
+                    {mismatch.date
+                        ? `Outlook has ${group.name} ${mismatch.extra ? "Extra " : ""}${SESSIONS[mismatch.session]} Deworming on ${longDay(mismatch.date)}.`
+                        : `The next in ${group.name}'s cycle is the ${SESSIONS[mismatch.session]}.`}{" "}
+                    This list is a {SESSIONS[session]}. Please check before saving.
+                </p>
+            )}
             <label className="IntegrationPage-choose Deworming-instructions">
                 <span>Instructions (printed under the title)</span>
                 <input
@@ -457,7 +501,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
             ) : (
                 <div className="Deworming-actions">
                     <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={() => save()}>
-                        {busy ? "Saving…" : "Save List"}
+                        {busy ? "Saving…" : mismatch ? `Save ${SESSIONS[session]} Anyway` : "Save List"}
                     </button>
                     <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                         Cancel
@@ -569,7 +613,7 @@ function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
                             <SheetTitle text={title} />
                         </b>
                         <span>
-                            Starts {dayLabel(sheet.startDate)} ·{" "}
+                            {startedText(sheet)} ·{" "}
                             {sheet.lines.length === 1 ? "1 monkey" : `${sheet.lines.length} monkeys`} · {status.text}
                         </span>
                     </span>
@@ -679,7 +723,7 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
         <section className="Deworming-sheet" aria-label={sheetTitle(sheet)}>
             {/* (the page's title is the sheet's: "H&B Troop 3-Month Deworming") */}
             <p className="Deworming-meta">
-                {sheet.startedOn ? `Started ${dayLabel(sheet.startedOn)}` : `Starts ${dayLabel(sheet.startDate)}`} ·{" "}
+                {startedText(sheet)} ·{" "}
                 {lines.length === 1 ? "1 monkey" : `${lines.length} monkeys`} ·{" "}
                 <span className={`Deworming-stage is-${sheet.status}`}>{stage}</span>
                 {sheet.preparedByName ? ` · prepared by ${sheet.preparedByName}` : ""}
@@ -821,6 +865,14 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
 }
 
 // "2026-09-10" → "10th Sep 2026"
+// A list's start: "Starts Mon 2 Nov", or once it's passed (or begun)
+// "Started on Mon 2 Nov" (the day it really began, if known)
+function startedText(sheet) {
+    if (sheet.startedOn) return `Started on ${dayLabel(sheet.startedOn)}`;
+    if (sheet.startDate < dayText(new Date())) return `Started on ${dayLabel(sheet.startDate)}`;
+    return `Starts ${dayLabel(sheet.startDate)}`;
+}
+
 function longDay(date) {
     const [y, m, d] = date.split("-").map(Number);
     return summaryDate(new Date(y, m - 1, d));
@@ -857,6 +909,8 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
     // null: loading; { problem }; false: not set up yet; or the calendar
     const [calendar, setCalendar] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    // (Other Scheduled Dewormings' naming tips, for the titles that couldn't be read: hidden until asked for)
+    const [tips, setTips] = useState(false);
     const [problem, setProblem] = useState(null);
     const load = useCallback(
         () =>
@@ -926,7 +980,9 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
                 <DateChip date={item.date} late={item.late} />
                 <span className="Deworming-itemText">
                     <b>
-                        <SheetTitle text={`${item.groupName} ${SESSIONS[item.session]} Deworming`} />
+                        <SheetTitle
+                            text={`${item.groupName} ${item.extra ? "Extra " : ""}${SESSIONS[item.session]} Deworming`}
+                        />
                     </b>
                     <span className="Deworming-whenText">{when}</span>
                     {/* (the main deworming before it: to check the dates add up) */}
@@ -939,7 +995,13 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
                         </span>
                     )}
                 </span>
-                {tag && <span className={`Deworming-tag is-${tag.tone}`}>{tag.text}</span>}
+                {(tag || item.doneAs) && (
+                    <span className="Deworming-tags">
+                        {/* (a 3m done as a 6m: to check it's meant) */}
+                        {item.doneAs && <span className="Deworming-tag is-todo">Done as {SESSIONS[item.doneAs]}</span>}
+                        {tag && <span className={`Deworming-tag is-${tag.tone}`}>{tag.text}</span>}
+                    </span>
+                )}
             </>
         );
         return (
@@ -962,7 +1024,7 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
     return (
         <div className="Deworming-schedule">
             <p className="RecordsPage-hint Deworming-hint">
-                Upcoming dewormings from the Outlook calendar, and any not in it yet (estimated).
+                Upcoming dewormings from the Outlook calendar, and estimated dates for the others.
             </p>
             {buckets.length === 0 ? (
                 <p className="RecordsPage-intro">No dewormings coming up.</p>
@@ -1006,14 +1068,28 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
                 </p>
             )}
             {canPrepare && unread.length > 0 && (
-                <section className="Deworming-unread" aria-label="Couldn't Read">
-                    <h3 className="RecordsPage-subhead">Couldn't Read</h3>
-                    <p className="RecordsPage-hint Deworming-hint">
-                        Tip: write each title in Outlook as the group, 3m or 6m (and F/U), then "deworming", e.g. "H&B
-                        3m deworming", "Top & Middle IC 6m F/U deworming" (or "Top/Middle IC"), "Global 3m + James 3m
-                        F/U deworming" (a "+" or a comma between groups with different sessions). Use full troop names,
-                        or D&D, H&B, Jala or IC. These couldn't be read:
-                    </p>
+                <section className="Deworming-unread" aria-label="Other Scheduled Dewormings">
+                    <div className="Deworming-unreadHead">
+                        <h3 className="RecordsPage-subhead">
+                            Other Scheduled Dewormings <span className="Deworming-adminOnly">(Admin only)</span>
+                        </h3>
+                        <button
+                            type="button"
+                            className="Modal-edit is-soft"
+                            aria-expanded={tips}
+                            onClick={() => setTips(!tips)}
+                        >
+                            {tips ? "Hide Naming Tips" : "Show Naming Tips"}
+                        </button>
+                    </div>
+                    {tips && (
+                        <p className="RecordsPage-hint Deworming-hint Deworming-tips">
+                            Write each title in Outlook as the group, 3m or 6m (and F/U), then "deworming", e.g. "H&B
+                            3m deworming", "Top & Middle IC 6m F/U deworming" (or "Top/Middle IC"), "Global 3m + James
+                            3m F/U deworming" (a "+" or a comma between groups with different sessions). Use full troop
+                            names, or D&D, H&B, Jala or IC. An extra round: "Goliath extra 6m deworming".
+                        </p>
+                    )}
                     <ul className="Deworming-recordList">
                         {unread.map((u) => (
                             <li key={`${u.title}-${u.startsOn}`}>
@@ -1140,6 +1216,7 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                 />
             ) : (
                 <>
+                    <h3 className="RecordsPage-subhead Deworming-listsHead">Deworming Lists</h3>
                     {canPrepare && (
                         <button
                             type="button"

@@ -1,6 +1,6 @@
 // Deworming's Schedule: Outlook's titles read into groups and sessions,
 // and what's due or overdue (dewormingSchedule.js)
-import { readEvent, readTitle, relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
+import { expectedSession, readEvent, readTitle, relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
 
 // (tests of overdue before vervetDB's lists started: from an earlier day)
 const EARLY = "2026-01-01";
@@ -352,4 +352,124 @@ test("each row: the main deworming before it (3-Month or 6-Month, its first day)
         ["3_month", { session: "6_month", date: "2026-08-20" }],
         ["3_month_fu", { session: "3_month", date: "2026-11-19" }],
     ]);
+});
+
+test("an extra round (extra, additional, 2nd…): its own F/U, but the 3-Month still counts from the usual 6-Month", () => {
+    expect(readEvent("Gismo extra 6m deworming", GROUPS)).toEqual([
+        { groupKeys: ["troop:4"], session: "6_month", extra: true },
+    ]);
+    for (const title of [
+        "Gismo additional 6m deworming",
+        "Gismo 2nd 6m deworming",
+        "Second Gismo 6m deworming",
+        "Gismo 6m redo deworming",
+        "Gismo repeat deworming due 6m",
+    ]) {
+        expect(readEvent(title, GROUPS)).toEqual([{ groupKeys: ["troop:4"], session: "6_month", extra: true }]);
+    }
+    // (words after "deworming" don't count: "due second week")
+    expect(readEvent("Gismo 6m deworming due second week", GROUPS)).toEqual([
+        { groupKeys: ["troop:4"], session: "6_month" },
+    ]);
+    const groups = [{ key: "troop:4", name: "Gismo Troop" }];
+    const events = [
+        { uid: "1", title: "Gismo 6m deworming", startsOn: "2026-11-01" },
+        { uid: "2", title: "Gismo 6m F/U deworming", startsOn: "2026-11-17" },
+        { uid: "3", title: "Gismo extra 6m deworming", startsOn: "2026-11-24" },
+    ];
+    const sheets = [
+        { id: 1, groupKey: "troop:4", session: "6_month", startDate: "2026-11-01", status: "approved" },
+        { id: 2, groupKey: "troop:4", session: "6_month_fu", startDate: "2026-11-17", status: "approved" },
+        // (made as a usual 6-Month list: Outlook's date says it's the extra)
+        { id: 3, groupKey: "troop:4", session: "6_month", startDate: "2026-11-24", status: "approved" },
+    ];
+    // (the extra's due: its own row, its list, the usual 6-Month as previous)
+    const before = scheduleOf(events, groups, sheets.slice(0, 2), "2026-11-20", "2026-01-01");
+    expect(before.due.map((e) => [e.date, e.session, e.extra, e.previous])).toEqual([
+        ["2026-11-24", "6_month", true, { session: "6_month", date: "2026-11-01" }],
+    ]);
+    // (done: its F/U next, then the 3-Month 3 months after the usual 6-Month)
+    const after = scheduleOf(events, groups, sheets, "2026-11-28", "2026-01-01");
+    expect(after.unscheduled.map((u) => [u.session, u.date, Boolean(u.extra)])).toEqual([
+        ["6_month_fu", "2026-12-10", true],
+    ]);
+    const fu = { id: 4, groupKey: "troop:4", session: "6_month_fu", startDate: "2026-12-10", status: "approved" };
+    const later = scheduleOf(events, groups, [...sheets, fu], "2026-12-20", "2026-01-01");
+    expect(later.unscheduled.map((u) => [u.session, u.date, u.previous])).toEqual([
+        ["3_month", "2027-02-01", { session: "6_month", date: "2026-11-01" }],
+    ]);
+    // (neither F/U done yet: one each, 14 days after each one's last day)
+    const both = scheduleOf(events.slice(0, 1).concat(events[2]), groups, [sheets[0], sheets[2]], "2026-12-20");
+    expect(both.unscheduled.map((u) => [u.session, u.date, Boolean(u.extra)])).toEqual([
+        ["6_month_fu", "2026-11-17", false],
+        ["6_month_fu", "2026-12-10", true],
+    ]);
+});
+
+test("each list counts for one Outlook date, the nearest; a 3m done as a 6m: Done as", () => {
+    const groups = [{ key: "troop:4", name: "Gismo Troop" }];
+    // (a redo 10 days after the first, its own list: each its own)
+    const events = [
+        { uid: "1", title: "Gismo 6m deworming", startsOn: "2026-11-10" },
+        { uid: "2", title: "Gismo extra 6m deworming", startsOn: "2026-11-20" },
+    ];
+    const first = { id: 1, groupKey: "troop:4", session: "6_month", startDate: "2026-11-10", status: "approved" };
+    const redo = { id: 2, groupKey: "troop:4", session: "6_month", startDate: "2026-11-20", status: "ready" };
+    expect(scheduleOf(events, groups, [first], "2026-11-05").due.map((e) => e.sheet?.id ?? null)).toEqual([1, null]);
+    expect(scheduleOf(events, groups, [first, redo], "2026-11-05").due.map((e) => e.sheet?.id)).toEqual([1, 2]);
+    // (Outlook's 3m, a 6-Month list for it: that list, Done as 6-Month)
+    const swapped = scheduleOf(
+        [{ uid: "3", title: "Gismo 3m deworming", startsOn: "2026-11-10" }],
+        groups,
+        [{ id: 3, groupKey: "troop:4", session: "6_month", startDate: "2026-11-12", status: "ready" }],
+        "2026-11-05"
+    );
+    expect(swapped.due.map((e) => [e.session, e.sheet.id, e.doneAs])).toEqual([["3_month", 3, "6_month"]]);
+    // (but never a main deworming's list for a F/U's date)
+    const fu = scheduleOf(
+        [{ uid: "4", title: "Gismo 6m F/U deworming", startsOn: "2026-11-10" }],
+        groups,
+        [{ id: 4, groupKey: "troop:4", session: "3_month", startDate: "2026-11-12", status: "ready" }],
+        "2026-11-05"
+    );
+    expect(fu.due.map((e) => e.sheet)).toEqual([null]);
+});
+
+test("overdue: not when another list started the same day", () => {
+    const events = [{ uid: "1", title: "Robert 3m F/U deworming", startsOn: "2026-11-03" }];
+    const sheets = [{ id: 1, groupKey: "troop:5", session: "6_month", startDate: "2026-11-03" }];
+    expect(scheduleOf(events, GROUPS, sheets, "2026-11-10", "2026-01-01").overdue).toEqual([]);
+});
+
+test("a new list's expected session: Outlook's nearest (not another list's), or else the cycle's next", () => {
+    const events = [
+        { uid: "1", title: "Gismo 3m deworming", startsOn: "2026-11-10" },
+        { uid: "2", title: "Gismo extra 6m deworming", startsOn: "2026-12-20" },
+    ];
+    const sheets = [{ id: 1, groupKey: "troop:4", session: "6_month_fu", startDate: "2026-08-20" }];
+    expect(expectedSession(events, GROUPS, sheets, "troop:4", "2026-11-08")).toEqual({
+        session: "3_month",
+        extra: false,
+        date: "2026-11-10",
+    });
+    expect(expectedSession(events, GROUPS, sheets, "troop:4", "2026-12-18")).toEqual({
+        session: "6_month",
+        extra: true,
+        date: "2026-12-20",
+    });
+    // (nothing in Outlook near it: the cycle's next, after the 6-Month F/U)
+    expect(expectedSession(events, GROUPS, sheets, "troop:4", "2026-10-01")).toEqual({
+        session: "3_month",
+        extra: false,
+        date: null,
+    });
+    // (Outlook's 3m already has its list: the cycle's next)
+    const done = [...sheets, { id: 2, groupKey: "troop:4", session: "3_month", startDate: "2026-11-10" }];
+    expect(expectedSession(events, GROUPS, done, "troop:4", "2026-11-12")).toEqual({
+        session: "3_month_fu",
+        extra: false,
+        date: null,
+    });
+    // (no calendar: the cycle's)
+    expect(expectedSession(null, GROUPS, [], "troop:4", "2026-11-12").session).toBe("6_month");
 });
