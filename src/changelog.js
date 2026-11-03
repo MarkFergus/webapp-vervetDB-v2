@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.23.1",
+        date: "2026-11-03",
+        changes: [
+            "Added Observation in Quick Actions: a quick note that also counts as seen",
+            "Improved Monitoring History: tidier rows, with how many of the troop were seen",
+            "Improved Monitoring summary: bold title, and Introcages & Perimeter checks",
+            "Improved Monitoring checklist: Sickbay monkeys ticked for you",
+        ],
+    },
+    {
         version: "1.23.0",
         date: "2026-11-03",
         changes: [
