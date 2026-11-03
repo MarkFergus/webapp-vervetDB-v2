@@ -28,6 +28,15 @@ test("titles as written in Outlook", () => {
         groupKeys: ["ics:Top", "ics:Middle"],
         session: "3_month",
     });
+    // ("Introcage(s)" in full, as well as IC)
+    expect(readTitle("Top & Middle Section Introcage 6-month deworming", GROUPS)).toEqual({
+        groupKeys: ["ics:Top", "ics:Middle"],
+        session: "6_month",
+    });
+    expect(readTitle("Top Section Introcages 3m F/U deworming", GROUPS)).toEqual({
+        groupKeys: ["ics:Top"],
+        session: "3_month_fu",
+    });
     expect(readTitle("H&B & Jala 6m deworming", GROUPS)).toEqual({
         groupKeys: ["troop:2", "troop:3"],
         session: "6_month",
@@ -183,7 +192,7 @@ test("unscheduled: each group with nothing in Outlook or in progress, its next a
 test("unscheduled: no past deworming found → its 6-Month, no date", () => {
     const { unscheduled } = scheduleOf([], [{ key: "troop:9", name: "Koko Troop" }], [], "2026-11-02");
     expect(unscheduled).toEqual([
-        { groupKey: "troop:9", groupName: "Koko Troop", session: "6_month", date: null, late: false },
+        { groupKey: "troop:9", groupName: "Koko Troop", session: "6_month", date: null, late: false, previous: null },
     ]);
 });
 
@@ -265,6 +274,50 @@ test('"+": together, each with its own session', () => {
         { groupKeys: ["troop:4"], session: "3_month" },
         { groupKeys: ["troop:5"], session: "6_month" },
     ]);
+    // (the session after "deworming")
+    expect(readEvent("Gismo deworming due 3m", GROUPS)).toEqual([{ groupKeys: ["troop:4"], session: "3_month" }]);
+    expect(readEvent("H&B & Jala deworming 6m F/U", GROUPS)).toEqual([
+        { groupKeys: ["troop:2", "troop:3"], session: "6_month_fu" },
+    ]);
+    expect(readEvent("Robert F/U deworming due 6-month", GROUPS)).toEqual([
+        { groupKeys: ["troop:5"], session: "6_month_fu" },
+    ]);
+    // (Introcage / IC on its own: every section's introcages)
+    expect(readEvent("Introcage 3m deworming", GROUPS)).toEqual([
+        { groupKeys: ["ics:Top", "ics:Middle", "ics:Bottom"], session: "3_month" },
+    ]);
+    expect(readEvent("ICs deworming due 6m", GROUPS)).toEqual([
+        { groupKeys: ["ics:Top", "ics:Middle", "ics:Bottom"], session: "6_month" },
+    ]);
+    expect(readEvent("Gismo & Introcages 3m deworming", GROUPS)).toEqual([
+        { groupKeys: ["troop:4", "ics:Top", "ics:Middle", "ics:Bottom"], session: "3_month" },
+    ]);
+    // (written by someone who doesn't know the usual way: the same)
+    const reads = (title) => readEvent(title, GROUPS);
+    expect(reads("Gismo 3m deworming (follow up)")).toEqual([{ groupKeys: ["troop:4"], session: "3_month_fu" }]);
+    expect(reads("Gismo 3m deworming F/U")).toEqual([{ groupKeys: ["troop:4"], session: "3_month_fu" }]);
+    expect(reads("Gismo 6m follow-up deworming")).toEqual([{ groupKeys: ["troop:4"], session: "6_month_fu" }]);
+    expect(reads("Gismo Troop 3m deworming")).toEqual([{ groupKeys: ["troop:4"], session: "3_month" }]);
+    expect(reads("Dino & Daniel 3m deworming")).toEqual([{ groupKeys: ["troop:1"], session: "3_month" }]);
+    expect(reads("Holt and Barrington & Jala 6m deworming")).toEqual([
+        { groupKeys: ["troop:2", "troop:3"], session: "6_month" },
+    ]);
+    expect(reads("Gismo and Global 3m deworming")).toEqual([
+        { groupKeys: ["troop:4", "enclosure:6"], session: "3_month" },
+    ]);
+    expect(reads("Deworming - Gismo 3m")).toEqual([{ groupKeys: ["troop:4"], session: "3_month" }]);
+    expect(reads("Deworming: Robert 6m F/U")).toEqual([{ groupKeys: ["troop:5"], session: "6_month_fu" }]);
+    expect(reads("Top Section IC's 3m deworming")).toEqual([{ groupKeys: ["ics:Top"], session: "3_month" }]);
+    expect(reads("Top & Middle Section 3m deworming")).toEqual([
+        { groupKeys: ["ics:Top", "ics:Middle"], session: "3_month" },
+    ]);
+    expect(reads("Gismo three month deworming")).toEqual([{ groupKeys: ["troop:4"], session: "3_month" }]);
+    expect(reads("Gismo Six-Month deworming")).toEqual([{ groupKeys: ["troop:4"], session: "6_month" }]);
+    // (never guessed: no "deworming", a misspelt troop, or a F/U after
+    // several sessions)
+    expect(reads("Gismo 3m")).toBeNull();
+    expect(reads("Gismoo 3m deworming")).toBeNull();
+    expect(reads("Gismo 3m + Robert 6m deworming F/U")).toBeNull();
     // (one part unreadable: the whole title's Couldn't Read)
     expect(readEvent("Global 3m + Jamess 3m F/U deworming", GROUPS)).toBeNull();
     const { due, unread } = scheduleOf(
@@ -281,4 +334,22 @@ test('"+": together, each with its own session', () => {
         ["2026-11-10", "James Troop", "3_month_fu"],
     ]);
     expect(unread.map((u) => u.title)).toEqual(["Global 3m + Jamess 3m F/U deworming"]);
+});
+
+test("each row: the main deworming before it (3-Month or 6-Month, its first day), to check the dates", () => {
+    const events = [
+        // (on paper: Gismo's 6-Month, then its F/U)
+        { uid: "1", title: "Gismo 6m deworming", startsOn: "2026-08-20" },
+        { uid: "2", title: "Gismo 6m F/U deworming", startsOn: "2026-09-05" },
+        // (coming up: its 3-Month, then that one's F/U)
+        { uid: "3", title: "Gismo 3m deworming", startsOn: "2026-11-20" },
+        { uid: "4", title: "Gismo 3m F/U deworming", startsOn: "2026-12-07" },
+    ];
+    // (the 3-Month's own list: not "previous" to it)
+    const sheets = [{ id: 1, groupKey: "troop:4", session: "3_month", startDate: "2026-11-19", status: "ready" }];
+    const { due } = scheduleOf(events, GROUPS, sheets, "2026-11-02");
+    expect(due.map((e) => [e.session, e.previous])).toEqual([
+        ["3_month", { session: "6_month", date: "2026-08-20" }],
+        ["3_month_fu", { session: "3_month", date: "2026-11-19" }],
+    ]);
 });

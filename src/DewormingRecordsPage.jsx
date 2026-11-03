@@ -18,6 +18,7 @@ import {
 } from "./monkeyData";
 import { relativeDay, scheduleBuckets, scheduleOf } from "./dewormingSchedule";
 import { timeAgo } from "./savedData";
+import { summaryDate } from "./feeding";
 import {
     AMOUNTS,
     DEFAULT_INSTRUCTIONS,
@@ -819,6 +820,12 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
     );
 }
 
+// "2026-09-10" → "10th Sep 2026"
+function longDay(date) {
+    const [y, m, d] = date.split("-").map(Number);
+    return summaryDate(new Date(y, m - 1, d));
+}
+
 // A date's block on the left of a Schedule row: "TUE", "10", "NOV"
 const CHIP_DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const CHIP_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -921,7 +928,16 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
                     <b>
                         <SheetTitle text={`${item.groupName} ${SESSIONS[item.session]} Deworming`} />
                     </b>
-                    <span>{when}</span>
+                    <span className="Deworming-whenText">{when}</span>
+                    {/* (the main deworming before it: to check the dates add up) */}
+                    {item.date && (
+                        <span className="Deworming-previous">
+                            Previous:{" "}
+                            {item.previous
+                                ? `${SESSIONS[item.previous.session]} Deworming ${longDay(item.previous.date)}`
+                                : "none found"}
+                        </span>
+                    )}
                 </span>
                 {tag && <span className={`Deworming-tag is-${tag.tone}`}>{tag.text}</span>}
             </>

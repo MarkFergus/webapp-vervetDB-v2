@@ -72,6 +72,31 @@ test("editors see it too (monitoring-editors.sql)", async () => {
     expect(loadMonitoring).toHaveBeenCalledWith(NITA.id);
 });
 
+test("admins: Mute Missing Alerts beside Priority Condition Check, saved with the monitoring", async () => {
+    const user = userEvent.setup();
+    edit();
+    const box = await screen.findByRole("group", { name: "Monitoring" });
+    const mute = await within(box).findByRole("checkbox", { name: "Mute Missing Alerts" });
+    expect(mute).not.toBeChecked();
+    await user.click(mute);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saveMonitoring).toHaveBeenCalled());
+    expect(saveMonitoring).toHaveBeenCalledWith(NITA.id, { conditionCheck: false, notes: "", alertsMuted: true });
+});
+
+test("Mute Missing Alerts: not for editors (the pop-up's quick Edit)", async () => {
+    useAuth.mockReturnValue(EDITOR);
+    render(
+        <MonkeyForm
+            monkey={NITA} troops={["Goliath"]} troopIds={{ Goliath: 1 }} enclosures={BUILT_IN_DATA.enclosures}
+            enclosuresLive onClose={() => {}} onSaved={onSaved} onDeleted={() => {}} quick
+        />
+    );
+    const box = await screen.findByRole("group", { name: "Monitoring" });
+    expect(within(box).getByRole("checkbox", { name: "Priority Condition Check" })).toBeInTheDocument();
+    expect(within(box).queryByRole("checkbox", { name: "Mute Missing Alerts" })).toBeNull();
+});
+
 describe("Status (the Full Profile's Edit, admins): a field like the others; a new one goes to the Monkey Archive on Save", () => {
     const editWith = (onStatusUpdate, quick = false) =>
         render(

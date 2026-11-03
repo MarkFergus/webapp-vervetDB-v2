@@ -1098,6 +1098,18 @@
     color: var(--text-2);
 }
 
+/* A Schedule row's words: the title with when beside it (computers), and
+   the deworming before it on the next line; phones: a line each */
+.Deworming-when .Deworming-itemText {
+    flex-flow: row wrap;
+    align-items: baseline;
+    column-gap: 10px;
+}
+
+.Deworming-when .Deworming-itemText > .Deworming-previous {
+    flex-basis: 100%;
+}
+
 /* A phone: the tag under the words, beside the date block */
 @media (max-width: 599px) {
     .Deworming-item.Deworming-when {
@@ -1114,6 +1126,10 @@
 
     .Deworming-when .Deworming-itemText {
         grid-area: text;
+    }
+
+    .Deworming-when .Deworming-itemText > * {
+        flex-basis: 100%;
     }
 
     .Deworming-when .Deworming-tag {

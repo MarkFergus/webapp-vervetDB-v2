@@ -693,7 +693,10 @@
    under it */
 .MonkeyForm-monitoring .MonkeyForm-checks {
     align-self: start;
-    grid-template-columns: auto;
+    /* (Priority Condition Check and Mute Missing Alerts: side by side) */
+    grid-template-columns: repeat(2, auto);
+    justify-content: start;
+    gap: 4px 20px;
     min-height: 0;
 }
 

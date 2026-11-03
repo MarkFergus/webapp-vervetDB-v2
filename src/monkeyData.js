@@ -1116,46 +1116,64 @@ export async function deleteInjuryUpdate(id) {
 // ---- Monitoring: Condition Check and Notes for Monitoring (staff only) ----
 
 // A monkey's monitoring, as the site uses it: { conditionCheck, notes ("" if
-// none), updatedByName, updatedAt }
-export const NO_MONITORING = { conditionCheck: false, notes: "", updatedByName: null, updatedAt: null };
+// none), alertsMuted (Mute Missing Alerts: monitoring-mute.sql),
+// updatedByName, updatedAt }
+export const NO_MONITORING = { conditionCheck: false, notes: "", alertsMuted: false, updatedByName: null, updatedAt: null };
 const toAppMonitoring = (row) =>
     row
         ? {
               conditionCheck: row.condition_check,
               notes: row.notes ?? "",
+              alertsMuted: Boolean(row.alerts_muted),
               updatedByName: row.updated_by_name,
               updatedAt: row.updated_at,
           }
         : NO_MONITORING;
-const MONITORING_COLUMNS = "monkey_id, condition_check, notes, updated_by_name, updated_at";
+const MONITORING_COLUMNS = "monkey_id, condition_check, notes, alerts_muted, updated_by_name, updated_at";
+// (before monitoring-mute.sql: without Mute)
+const OLDER_MONITORING_COLUMNS = "monkey_id, condition_check, notes, updated_by_name, updated_at";
+async function selectMonitoring(build) {
+    const result = await build(MONITORING_COLUMNS);
+    return isOlderDatabase(result.error) ? build(OLDER_MONITORING_COLUMNS) : result;
+}
 
 // A monkey's monitoring (NO_MONITORING if none). Throws if the database
 // hasn't got it yet (monitoring.sql), or this isn't staff.
 export async function loadMonitoring(monkeyId) {
-    const { data, error } = await supabase.from("monitoring").select(MONITORING_COLUMNS).eq("monkey_id", monkeyId).maybeSingle();
+    const { data, error } = await selectMonitoring((columns) =>
+        supabase.from("monitoring").select(columns).eq("monkey_id", monkeyId).maybeSingle()
+    );
     if (error) throw error;
     return toAppMonitoring(data);
 }
 
 // These monkeys' monitoring: monkey id → monitoring (only those that have
-// some). For the Monitoring Notes.
+// some). For the Monitoring Notes, and who's muted.
 export async function loadMonitoringFor(monkeyIds) {
     if (!monkeyIds.length) return {};
-    const { data, error } = await supabase.from("monitoring").select(MONITORING_COLUMNS).in("monkey_id", monkeyIds);
+    const { data, error } = await selectMonitoring((columns) =>
+        supabase.from("monitoring").select(columns).in("monkey_id", monkeyIds)
+    );
     if (error) throw error;
     return Object.fromEntries(data.map((row) => [row.monkey_id, toAppMonitoring(row)]));
 }
 
-// Saves it (admins): { conditionCheck, notes }. Nothing ticked or written
-// clears it. Returns what's saved.
-export async function saveMonitoring(monkeyId, { conditionCheck, notes }) {
+// Saves it: { conditionCheck, notes, alertsMuted (admins; left out: kept
+// as it is) }. Nothing ticked or written, and not muted, clears it.
+// Returns what's saved.
+export async function saveMonitoring(monkeyId, { conditionCheck, notes, alertsMuted }) {
     const text = notes.trim();
-    if (!conditionCheck && !text) {
+    // (alertsMuted left out: it may be muted, so kept, not cleared)
+    if (!conditionCheck && !text && alertsMuted === false) {
         const { error } = await supabase.from("monitoring").delete().eq("monkey_id", monkeyId);
         if (error) throw saveProblem(error);
         return NO_MONITORING;
     }
-    const row = { condition_check: conditionCheck, notes: text || null };
+    const row = {
+        condition_check: conditionCheck,
+        notes: text || null,
+        ...(alertsMuted === undefined ? {} : { alerts_muted: alertsMuted }),
+    };
     const updated = await supabase.from("monitoring").update(row).eq("monkey_id", monkeyId).select(MONITORING_COLUMNS);
     if (updated.error) throw saveProblem(updated.error);
     if (updated.data?.length) return toAppMonitoring(updated.data[0]);

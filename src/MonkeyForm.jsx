@@ -130,17 +130,22 @@ function MonkeyForm({
     // Notes for Monitoring, for the Troop Monitoring Notes. Kept apart
     // (staff only), like the Arrival Info.
     const monitoringInfo = useMonitoring(monkey?.id ?? null, !isNew && isEditor);
-    const [monitoring, setMonitoring] = useState({ conditionCheck: false, notes: "" });
-    const [monitoringSaved, setMonitoringSaved] = useState({ conditionCheck: false, notes: "" });
+    // (Mute Missing Alerts: admins, the Full Profile's Edit only; a long-term
+    // setting for a monkey that can't be told apart, e.g. at Camelot)
+    const showMute = isAdmin && !quick;
+    const [monitoring, setMonitoring] = useState({ conditionCheck: false, notes: "", alertsMuted: false });
+    const [monitoringSaved, setMonitoringSaved] = useState({ conditionCheck: false, notes: "", alertsMuted: false });
     useEffect(() => {
         if (monitoringInfo.available) {
-            const { conditionCheck, notes } = monitoringInfo.value;
-            setMonitoring({ conditionCheck, notes });
-            setMonitoringSaved({ conditionCheck, notes });
+            const { conditionCheck, notes, alertsMuted } = monitoringInfo.value;
+            setMonitoring({ conditionCheck, notes, alertsMuted });
+            setMonitoringSaved({ conditionCheck, notes, alertsMuted });
         }
     }, [monitoringInfo.available, monitoringInfo.value]);
     const monitoringChanged =
-        monitoring.conditionCheck !== monitoringSaved.conditionCheck || monitoring.notes.trim() !== monitoringSaved.notes.trim();
+        monitoring.conditionCheck !== monitoringSaved.conditionCheck ||
+        monitoring.notes.trim() !== monitoringSaved.notes.trim() ||
+        monitoring.alertsMuted !== monitoringSaved.alertsMuted;
     const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved || monitoringChanged;
     // Photos uploaded while this form is open (tidied up if not kept)
     const uploadedHere = useRef([]);
@@ -264,7 +269,15 @@ function MonkeyForm({
             // ...and so is the Monitoring
             if (monitoringInfo.available && monitoringChanged) {
                 try {
-                    await saveMonitoring(saved.id, monitoring);
+                    // (Mute only when it's changed, or all's cleared: the rest
+                    // keep it as it is, and older databases haven't got it)
+                    const cleared = !monitoring.conditionCheck && !monitoring.notes.trim() && !monitoring.alertsMuted;
+                    const mute = monitoring.alertsMuted !== monitoringSaved.alertsMuted || cleared;
+                    await saveMonitoring(saved.id, {
+                        conditionCheck: monitoring.conditionCheck,
+                        notes: monitoring.notes,
+                        ...(mute ? { alertsMuted: monitoring.alertsMuted } : {}),
+                    });
                 } catch (error) {
                     window.alert(`${saved.name} was saved, but the Monitoring wasn't: ${error.message} Please open Edit to add it again.`);
                 }
@@ -830,9 +843,22 @@ function MonkeyForm({
                                     />
                                     Priority Condition Check
                                 </label>
+                                {/* (beside it: admins, the Full Profile's Edit) */}
+                                {showMute && (
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={monitoring.alertsMuted}
+                                            onChange={(e) => setMonitoring({ ...monitoring, alertsMuted: e.target.checked })}
+                                        />
+                                        Mute Missing Alerts
+                                    </label>
+                                )}
                             </div>
                             <p className="MonkeyForm-hint">
-                                Listed under &ldquo;Priority Condition Checks&rdquo; on the Troop Monitoring Notes.
+                                Priority: listed under &ldquo;Priority Condition Checks&rdquo; on the Troop Monitoring Notes.
+                                {showMute &&
+                                    " Mute: never flagged as missing (e.g. hard to tell apart), still counted in sessions."}
                             </p>
                             <label className="MonkeyForm-field">
                                 <span>Notes for Monitoring</span>

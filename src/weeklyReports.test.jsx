@@ -167,8 +167,8 @@ describe("the settings", () => {
         for (const name of [/^Monitoring.+/, /^Baby Care.+/, /^Integration.+/, /^Maintenance.+/]) {
             expect(screen.getByRole("checkbox", { name })).toBeChecked();
         }
-        // (nothing to save until something changes)
-        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+        // (as saved: Saved!, until something changes)
+        expect(screen.getByRole("button", { name: "Saved!" })).toBeInTheDocument();
     });
 
     test("turned on, with your own week and time: saved, and the next email shown", async () => {
@@ -182,7 +182,7 @@ describe("the settings", () => {
         await user.click(screen.getByRole("checkbox", { name: /^Maintenance.+/ }));
         expect(screen.getByText(/^Next email: Tuesday \d+ \w+ at 06:00, covering Tue/)).toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Save" }));
-        expect(await screen.findByRole("status")).toHaveTextContent("Saved");
+        expect(await screen.findByRole("button", { name: "Saved!" })).toBeInTheDocument();
         expect(upserts).toEqual([
             {
                 user_id: ME.id,
@@ -193,7 +193,9 @@ describe("the settings", () => {
                 sections: ["monitoring", "baby_care", "integration"],
             },
         ]);
-        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+        // (a change: Save again)
+        await user.selectOptions(screen.getByLabelText("Send time"), "07:00");
+        expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
     });
 
     test("your saved settings", async () => {

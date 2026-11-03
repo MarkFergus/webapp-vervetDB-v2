@@ -337,7 +337,7 @@ function NewIntegration({ choices, onStart, onCancel }) {
                                 found.map((m) => (
                                     <li key={m.id}>
                                         <button type="button" onClick={() => setMonkeyId(m.id)}>
-                                            <BabyPhoto monkey={m} />
+                                            <BabyPhoto monkey={m} open={false} />
                                             <span className="RecordsPage-baby">
                                                 <span className="RecordsPage-name">{m.name}</span>
                                                 <span className="RecordsPage-place">{fullName(integrationPlace(m))}</span>

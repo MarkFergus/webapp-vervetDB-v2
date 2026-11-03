@@ -1,6 +1,8 @@
+import { useContext } from "react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
+import { OpenMonkeyContext } from "./openMonkey";
 import "./RecordsPage.css";
 
 // A page of choices, like the Records page's (pick a team, then a task) and
@@ -58,14 +60,26 @@ export function Choice({ href, Icon, title, sub }) {
 }
 
 // A row's small photo: its first one, as in the list view (none yet: an
-// empty circle)
-export function BabyPhoto({ monkey }) {
+// empty circle). Tapped: the monkey's pop-up (where there's one to open;
+// open: false inside something already tapped, e.g. a choice's button)
+export function BabyPhoto({ monkey, open = true }) {
+    const openMonkey = useContext(OpenMonkeyContext);
     const photo = Array.isArray(monkey.img) ? monkey.img[0] : monkey.img;
-    return (
-        <span className="RecordsPage-photo">
-            {typeof photo === "string" && photo && !isPlaceholderPhoto(photo) && (
-                <img src={thumbUrl(photo)} alt="" loading="lazy" onError={fallbackTo(photo)} />
-            )}
-        </span>
+    const img = typeof photo === "string" && photo && !isPlaceholderPhoto(photo) && (
+        <img src={thumbUrl(photo)} alt="" loading="lazy" onError={fallbackTo(photo)} />
     );
+    if (open && openMonkey) {
+        return (
+            <button
+                type="button"
+                className="RecordsPage-photo is-button"
+                aria-label={`Open ${monkey.name}`}
+                title={monkey.name}
+                onClick={() => openMonkey(monkey)}
+            >
+                {img}
+            </button>
+        );
+    }
+    return <span className="RecordsPage-photo">{img}</span>;
 }

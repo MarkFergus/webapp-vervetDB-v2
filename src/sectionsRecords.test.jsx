@@ -4,6 +4,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
+import { OpenMonkeyContext } from "./openMonkey";
 import { addInjury, addInjuryUpdate, loadCurrentInjuries, loadPastInjuries, setInjuryHealed } from "./monkeyData";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -41,6 +42,7 @@ const open = (staff) =>
 beforeEach(() => {
     vi.clearAllMocks();
     localStorage.removeItem("vervetdb-sections-troop");
+    localStorage.removeItem("vervetdb-injuries-all");
     loadCurrentInjuries.mockImplementation(async (ids) =>
         [injury(1, 1), injury(2, 2, { updates: [{ id: 5, date: "2026-10-22", details: "Healing well", loggedBy: "u-9" }] }), injury(3, 3)].filter(
             (e) => ids.includes(e.monkeyId)
@@ -67,6 +69,23 @@ test("a troop's current injuries, by monkey (its introcages too), with their upd
     expect(localStorage.getItem("vervetdb-sections-troop")).toBe("Skrow");
     // (troops only: no care units)
     expect(within(screen.getByLabelText("Troop")).queryByRole("option", { name: "Sickbay" })).toBeNull();
+});
+
+test("All Troops: every current injury, each monkey with where it lives; remembered apart from the troop", async () => {
+    open(EDITOR);
+    await screen.findByText("Cut 1");
+    const troop = screen.getByLabelText("Troop");
+    expect(within(troop).getAllByRole("option")[0]).toHaveTextContent("All Troops");
+    await userEvent.selectOptions(troop, "All Troops");
+    expect(await screen.findByText("Cut 3")).toBeInTheDocument();
+    expect(screen.getByText("Cut 1")).toBeInTheDocument();
+    expect(screen.getByText("3 current injuries · 3 monkeys")).toBeInTheDocument();
+    expect(localStorage.getItem("vervetdb-injuries-all")).toBe("1");
+    // (Monitoring shares the troop: it keeps one)
+    expect(localStorage.getItem("vervetdb-sections-troop")).toBeNull();
+    // (New Injury: an amber outline)
+    expect(screen.getByRole("button", { name: "New Injury" })).toHaveClass("Modal-edit", "SectionsPage-add");
+    expect(screen.getByRole("button", { name: "New Injury" })).not.toHaveClass("is-soft");
 });
 
 test("New Injury: the monkey, then the date and description; it joins the list", async () => {
@@ -166,4 +185,15 @@ test("Update Needed beside Add Update: no update (or, with none, added) for 14 d
     expect(within(item("Old cut, no updates")).getByText("Update Needed")).toBeInTheDocument();
     expect(within(item("Updated lately")).queryByText("Update Needed")).toBeNull();
     expect(within(item("Fresh bite")).queryByText("Update Needed")).toBeNull();
+});
+
+test("a monkey's photo opens its pop-up (where the page can open one)", async () => {
+    const openMonkey = vi.fn();
+    render(
+        <OpenMonkeyContext.Provider value={openMonkey}>
+            <RecordsPage route="records/sections/injuries" monkeys={MONKEYS} enclosures={ENCLOSURES} canEnter staff={EDITOR} />
+        </OpenMonkeyContext.Provider>
+    );
+    await userEvent.click(await screen.findByRole("button", { name: "Open Abby" }));
+    expect(openMonkey).toHaveBeenCalledWith(expect.objectContaining({ id: 2, name: "Abby" }));
 });

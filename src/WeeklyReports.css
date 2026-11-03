@@ -106,12 +106,6 @@
     margin-top: 12px;
 }
 
-.Weekly-saved {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--green);
-}
-
 /* ---- Past Reports ---- */
 
 .Weekly-actions {

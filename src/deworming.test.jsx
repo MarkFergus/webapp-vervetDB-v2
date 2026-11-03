@@ -266,10 +266,10 @@ describe("the page", () => {
             "No Date Yet",
             "Couldn't Read",
         ]);
-        expect(await bucket("Overdue")).toEqual(["MON2NOVGlobal Troop 3-Month DewormingYesterdayOverdue, date TBC"]);
+        expect(await bucket("Overdue")).toEqual(["MON2NOVGlobal Troop 3-Month DewormingYesterdayPrevious: none foundOverdue, date TBC"]);
         expect(await bucket("November 2026")).toEqual([
-            "TUE10NOVD&D Troop 6-Month DewormingIn 7 daysReady",
-            "FRI20NOVSkrow Troop 3-Month F/U DewormingIn 2 weeks · No list yet",
+            "TUE10NOVD&D Troop 6-Month DewormingIn 7 daysPrevious: none foundReady",
+            "FRI20NOVSkrow Troop 3-Month F/U DewormingIn 2 weeks · No list yetPrevious: 6-Month Deworming 20th Oct 2026",
         ]);
         expect(screen.getByText("Not in calendar")).toHaveClass("Deworming-tag", "is-todo");
         expect(await bucket("No Date Yet")).toEqual([

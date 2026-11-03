@@ -157,19 +157,15 @@ export default function WeeklyReports() {
                     </p>
                 )}
                 <div className="Weekly-actions">
+                    {/* Saved! while the settings are as saved; Save once anything changes */}
                     <button
                         type="button"
                         className="Modal-edit is-confirm"
-                        disabled={!changed || status === "saving"}
-                        onClick={save}
+                        disabled={status === "saving"}
+                        onClick={() => changed && save()}
                     >
-                        {status === "saving" ? "Saving…" : "Save"}
+                        {status === "saving" ? "Saving…" : changed ? "Save" : "Saved!"}
                     </button>
-                    {status === "saved" && !changed && (
-                        <span className="Weekly-saved" role="status">
-                            Saved
-                        </span>
-                    )}
                 </div>
             </section>
             {/* (your saved week: a new one starts the weeks again) */}

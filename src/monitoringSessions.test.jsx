@@ -497,3 +497,24 @@ test("the checklist goes by where monkeys are now; Sickbay's are ticked (seen th
     await waitFor(() => expect(screen.getByLabelText("WhatsApp summary").textContent).toContain("All seen"));
     expect(screen.getByLabelText("WhatsApp summary").textContent).not.toContain("Pip");
 });
+
+test("Mute Missing Alerts: never flagged or listed as missing, but still counted and named as not seen", async () => {
+    const user = userEvent.setup();
+    // (Malawi, missing the last 2 sessions, is muted: hard to tell apart)
+    loadMonitoringFor.mockImplementation(async (ids) => (ids.includes(1) ? { 1: { conditionCheck: false, notes: "", alertsMuted: true } } : {}));
+    const inProgress = { ...finished(32, "2026-10-30", {}, { startedBy: "u-1" }), status: "in_progress", finishedAt: null };
+    loadMonitoringSessions.mockResolvedValue([inProgress, ...PAST]);
+    open();
+    // (no Missing list for her; the History still counts her and names her)
+    const history = await screen.findByRole("list", { name: "History" });
+    await waitFor(() => expect(loadMonitoringFor).toHaveBeenCalled());
+    expect(screen.queryByRole("region", { name: "Missing" })).toBeNull();
+    expect(within(history).getAllByRole("listitem")[0]).toHaveTextContent("2 / 3 seen");
+    expect(within(history).getAllByRole("listitem")[0]).toHaveTextContent("Not seen: Malawi");
+    await user.click(screen.getByRole("button", { name: "Continue Session" }));
+    const briefing = await screen.findByRole("region", { name: "Briefing" });
+    expect(within(briefing).queryByText("Must See")).toBeNull();
+    const malawi = screen.getByRole("checkbox", { name: "Malawi seen" }).closest("li");
+    expect(malawi).toHaveTextContent("Muted");
+    expect(malawi).not.toHaveTextContent("Must See");
+});

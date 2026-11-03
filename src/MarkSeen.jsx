@@ -128,7 +128,7 @@ export function useMissing(monkey, enabled) {
 // it was between sessions; missing (not seen in its last session): why, in
 // red, with Mark As Seen (editors and admins)
 //   record: useMissing's (null: not on a checklist yet)
-export function LastSeen({ monkey, record, canMark, onMarked }) {
+export function LastSeen({ monkey, record, canMark, onMarked, muted = false }) {
     const [open, setOpen] = useState(false);
     if (!record) return <span className="Enclosures-unset">Not in a monitoring session yet</span>;
     const missed = record.missed === 1 ? "Not seen last session" : `Not seen in the last ${record.missed} sessions`;
@@ -143,6 +143,8 @@ export function LastSeen({ monkey, record, canMark, onMarked }) {
                         {record.spot.note ? ` · ${record.spot.note}` : ""}
                     </span>
                 )}
+                {/* (Mute Missing Alerts: why it's never shown as missing) */}
+                {muted && <span className="MarkSeen-by"> · Missing alerts muted</span>}
             </span>
             {record.missed > 0 && (
                 <div className="MarkSeen-line is-missing">

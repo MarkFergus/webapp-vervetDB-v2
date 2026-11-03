@@ -13,11 +13,15 @@
 //   "Global 3m + James 3m F/U deworming", "Gismo 3m, Royal 6m deworming"
 //                                  together, each its own session
 // The only short names: D&D, H&B (troops' own names), Jala (Jalamango),
-// IC (a section's introcages), 3m, 6m ("3-month", "6 Month" too). A title
+// IC (a section's introcages; "Introcage(s)" too; on its own, every
+// section's: "Introcage 3m deworming"), 3m, 6m ("3-month", "6 Month" too). A title
 // without a session ("Bobo deworming": a special one) is left out; one
 // with a session that can't be read → Couldn't Read (for admins, never
-// guessed). Words after "deworming" ("due
-// this week") don't matter, and a deworming entered over several days
+// guessed). The session can come after ("Goliath deworming due 3m"), and
+// other ways of writing it are read the same (tidyTitle: "follow up",
+// "Dino & Daniel", "and", "Gismo Troop", "Deworming - Gismo 3m"…), as
+// whoever's scheduling may not know the usual way.
+// Other words after "deworming" ("due this week") don't matter, and a deworming entered over several days
 // counts once, from its first day.
 
 import { isFollowUp, sessionAfter } from "./dewormingRules";
@@ -40,7 +44,13 @@ const SESSION = String.raw`([36])\s*-?\s*(?:m|months?)\b`;
 const TITLE = new RegExp(String.raw`^(.+?)\s+${SESSION}(\s*F\/?U)?\s+deworm`, "i");
 const HAS_SESSION = new RegExp(SESSION, "i");
 const ALIASES = { jala: "jalamango" };
-const IC_WORDS = /\s+(section\s+)?ics?$/i;
+// ("Top Section IC", "Top IC's", "Top Introcage", or just "Top Section")
+const IC_WORDS = /\s+(?:section(?:\s+(?:ic'?s?|introcages?))?|ic'?s?|introcages?)$/i;
+// ("Introcage 3m deworming": every section's introcages)
+const ALL_ICS = /^(all\s+)?(ic'?s?|introcages?)$/i;
+const FU = /\bF\/?U\b/i;
+// ("Goliath deworming due 3m": the session after "deworming")
+const SESSION_AFTER = new RegExp(String.raw`^(.*?)(\s+F\/?U)?\s+deworm\w*\b.*?\b${SESSION}(\s*F\/?U)?`, "i");
 
 // A title → { groupKeys, session }, or null (not read)
 //   groups: dewormingGroups' (key, name: "D&D Troop", "Top Section ICs")
@@ -54,7 +64,12 @@ export function readTitle(title, groups) {
     const introcages = IC_WORDS.test(parts.at(-1));
     const groupKeys = [];
     for (const part of parts) {
-        const name = part.replace(IC_WORDS, "").trim().toLowerCase();
+        if (ALL_ICS.test(part)) {
+            groupKeys.push(...groups.filter((g) => g.key.startsWith("ics:")).map((g) => g.key));
+            continue;
+        }
+        // ("Gismo Troop": the troop's name)
+        const name = part.replace(IC_WORDS, "").replace(/\s+troop$/i, "").trim().toLowerCase();
         const group = introcages
             ? groups.find((g) => g.key === `ics:${name.charAt(0).toUpperCase()}${name.slice(1)}`)
             : groups.find(
@@ -84,10 +99,43 @@ const MAIN_MONTHS = 3;
 // ("Global 3m + James 3m F/U deworming", "Gismo 3m, Royal 6m deworming") → [{ groupKeys, session }], or null if any
 // part can't be read
 export function readEvent(title, groups) {
-    const head = /^(.*?)\s+deworm/i.exec(title.trim());
+    const text = tidyTitle(title);
+    // (the session after "deworming", none before: moved in front)
+    const after = SESSION_AFTER.exec(text);
+    if (after && !HAS_SESSION.test(after[1])) {
+        const fu = after[2] || after[4] ? " F/U" : "";
+        return readEvent(`${after[1]} ${after[3]}m${fu} deworming`, groups);
+    }
+    const head = /^(.*?)\s+deworm\w*(.*)$/i.exec(text);
     if (!head) return null;
-    const parts = head[1].split(/\s*,\s*|\s+\+\s+/).map((part) => readTitle(`${part} deworming`, groups));
+    let before = head[1];
+    const split = /\s*,\s*|\s+\+\s+/;
+    // ("Gismo 3m deworming F/U": the F/U after, with the session; with
+    // several sessions, whose it is can't be told)
+    if (FU.test(head[2]) && !FU.test(before)) {
+        if (split.test(before)) return null;
+        before = before.replace(new RegExp(SESSION, "i"), "$& F/U");
+    }
+    const parts = before.split(split).map((part) => readTitle(`${part} deworming`, groups));
     return parts.every(Boolean) ? parts : null;
+}
+
+// Ways people write a title, the same as the usual one:
+//   "(follow up)", "follow-up" → F/U; "three month" → 3 month; "Dino &
+//   Daniel" → D&D, "Holt and Barrington" → H&B; "and" → &;
+//   "Deworming - Gismo 3m" → "Gismo 3m deworming"
+export function tidyTitle(title) {
+    const text = title
+        .replace(/[()]/g, " ")
+        .replace(/\bfollow[\s-]*up\b/gi, "F/U")
+        .replace(/\b(three|six)(?=\s*-?\s*months?\b)/gi, (w) => (w.toLowerCase() === "three" ? "3" : "6"))
+        .replace(/\bdino\s*(?:&|and)\s*daniel\b/gi, "D&D")
+        .replace(/\bholt\s*(?:&|and)\s*barrington\b/gi, "H&B")
+        .replace(/\s+and\s+/gi, " & ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const first = /^deworm\w*\s*[-–:]?\s*(.+)$/i.exec(text);
+    return first ? `${first[1]} deworming` : text;
 }
 
 // Days between two "YYYY-MM-DD" dates
@@ -114,7 +162,7 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
     const unread = [];
     for (const event of events) {
         // (no session: a special deworming, not the schedule's)
-        if (!HAS_SESSION.test(event.title)) continue;
+        if (!HAS_SESSION.test(tidyTitle(event.title))) continue;
         const parts = readEvent(event.title, groups);
         if (!parts) {
             unread.push({ title: event.title, startsOn: event.startsOn });
@@ -170,14 +218,11 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
     // overdue there, and no list in progress (not approved yet): its next
     // session and when it's due, from its last deworming (a list, or a
     // past Outlook date: those before vervetDB were done on paper)
-    const unscheduled = [];
-    for (const group of groups) {
-        const key = group.key;
-        if (group.monkeys && !group.monkeys.length) continue;
-        if (due.some((e) => e.groupKey === key) || overdue.some((e) => e.groupKey === key)) continue;
-        if (sheets.some((s) => s.groupKey === key && s.status !== "approved")) continue;
-        // (each past deworming: its session, first and last day)
-        const history = [
+    // A group's dewormings: its lists, and Outlook's dates (those without a
+    // list: before vervetDB, on paper) → [{ session, start, lastDay }], newest first
+    //   upTo: only those before this day
+    const historyOf = (key, upTo) =>
+        [
             ...sheets
                 .filter((s) => s.groupKey === key)
                 .map((s) => {
@@ -185,10 +230,34 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
                     const days = s.lines?.some((l) => l.day4 === true) ? 4 : 3;
                     return { session: s.session, start, lastDay: addTo(start, { days: days - 1 }) };
                 }),
+            // (an Outlook date with its list: the list's, its real first day)
             ...entries
-                .filter((e) => e.groupKey === key && e.date < today)
+                .filter((e) => e.groupKey === key && !listFor(key, e.session, e.date))
                 .map((e) => ({ session: e.session, start: e.date, lastDay: addTo(e.date, { days: 2 }) })),
-        ].sort((a, b) => b.start.localeCompare(a.start));
+        ]
+            .filter((h) => h.start < upTo)
+            .sort((a, b) => b.start.localeCompare(a.start));
+    // The main deworming (3-Month or 6-Month) before one: { session, date
+    // (its first day) } or null (to check the dates add up). Not the same
+    // deworming's own list or date.
+    const previousMain = (key, item) => {
+        const upTo = item.date ?? addTo(today, { days: 1 });
+        const main = historyOf(key, upTo).find(
+            (h) =>
+                !isFollowUp(h.session) &&
+                !(item.date && h.session === item.session && Math.abs(daysApart(h.start, item.date)) <= MATCH_DAYS)
+        );
+        return main ? { session: main.session, date: main.start } : null;
+    };
+
+    const unscheduled = [];
+    for (const group of groups) {
+        const key = group.key;
+        if (group.monkeys && !group.monkeys.length) continue;
+        if (due.some((e) => e.groupKey === key) || overdue.some((e) => e.groupKey === key)) continue;
+        if (sheets.some((s) => s.groupKey === key && s.status !== "approved")) continue;
+        // (each past deworming: its session, first and last day)
+        const history = historyOf(key, today);
         const last = history[0];
         if (!last) {
             unscheduled.push({ groupKey: key, groupName: group.name, session: "6_month", date: null, late: false });
@@ -211,10 +280,12 @@ export function scheduleOf(events, groups, sheets, today, overdueFrom = OVERDUE_
             a.groupName.localeCompare(b.groupName)
     );
 
+    // (each with the main deworming before it)
+    const withPrevious = (list) => list.map((item) => ({ ...item, previous: previousMain(item.groupKey, item) }));
     return {
-        due,
-        overdue: overdue.sort(byDate),
-        unscheduled,
+        due: withPrevious(due),
+        overdue: withPrevious(overdue.sort(byDate)),
+        unscheduled: withPrevious(unscheduled),
         unread: unread.sort((a, b) => a.startsOn.localeCompare(b.startsOn)),
     };
 }

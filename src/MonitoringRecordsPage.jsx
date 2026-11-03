@@ -226,8 +226,12 @@ function useTroopFacts(monkeys, troop, sessions, staff, session = null, spots = 
     const counted = spotsFor(spots, session);
     // (in an introcage or Sickbay: seen every day; moved back out: seen that day)
     const today = dayText(new Date());
+    // (Mute Missing Alerts: never flagged missing; still seen or not)
     const records = Object.fromEntries(
-        all.map((m) => [m.id, sightingRecord(past, m.id, counted, { daily: seenDaily(m), back: lastMoves[m.id], today })])
+        all.map((m) => {
+            const record = sightingRecord(past, m.id, counted, { daily: seenDaily(m), back: lastMoves[m.id], today });
+            return [m.id, priority[m.id]?.alertsMuted ? { ...record, missed: 0 } : record];
+        })
     );
     const current = Array.isArray(injuries.entries) ? injuries.entries : [];
     const latestCondition = {};
@@ -379,7 +383,8 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     const priority = facts.priority[monkey.id];
     const condition = facts.latestCondition[monkey.id];
     const isPriority = Boolean(priority?.conditionCheck || priority?.notes);
-    const hasFlags = Boolean(monkey.inSickbay) || record.missed > 0 || injuries.length > 0 || isPriority;
+    const muted = Boolean(priority?.alertsMuted);
+    const hasFlags = Boolean(monkey.inSickbay) || muted || record.missed > 0 || injuries.length > 0 || isPriority;
     const close = () => setMode(null);
 
     async function save(values) {
@@ -422,6 +427,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                     {hasFlags && (
                         <span className="Monitoring-flags">
                             {monkey.inSickbay && <Flag kind="sickbay">In Sickbay</Flag>}
+                            {muted && <Flag kind="muted">Muted</Flag>}
                             {record.missed >= MUST_SEE_AFTER && <Flag kind="danger">Must See</Flag>}
                             {record.missed === 1 && <Flag kind="warn">Not Seen Last Session</Flag>}
                             {injuries.length > 0 && <Flag kind="danger">Injury</Flag>}
@@ -1197,11 +1203,17 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     }, [reload]);
     // (the troop's monkeys' latest moves: back out to it, for their last seen)
     const [lastMoves, setLastMoves] = useState({});
+    // (and who's muted: Mute Missing Alerts)
+    const [mutedIds, setMutedIds] = useState(new Set());
     const memberKey = troopMonkeys(monkeys, troop)
         .all.map((m) => m.id)
         .join(",");
     useEffect(() => {
-        loadLastMoves(memberKey ? memberKey.split(",").map(Number) : []).then(setLastMoves);
+        const ids = memberKey ? memberKey.split(",").map(Number) : [];
+        loadLastMoves(ids).then(setLastMoves);
+        loadMonitoringFor(ids)
+            .then((found) => setMutedIds(new Set(ids.filter((id) => found[id]?.alertsMuted))))
+            .catch(() => setMutedIds(new Set()));
     }, [memberKey]);
 
     // The page's title: the troop's, while one of its sessions is open
@@ -1269,7 +1281,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
             monkey: m,
             record: sightingRecord(history, m.id, spots, { daily: seenDaily(m), back: lastMoves[m.id], today }),
         }))
-        .filter((m) => m.record.missed > 0);
+        .filter((m) => m.record.missed > 0 && !mutedIds.has(m.monkey.id));
     // The History: the sessions and the troop's sightings between them,
     // newest first (a sighting before a session on the same day)
     const memberIds = new Set(members.map((m) => m.id));

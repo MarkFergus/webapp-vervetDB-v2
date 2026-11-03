@@ -337,7 +337,11 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
             value: (
                 <LastSeen
                     monkey={monkey}
-                    record={missing.record}
+                    // (Mute Missing Alerts: never shown as missing)
+                    record={
+                        missing.record && monitoring.value.alertsMuted ? { ...missing.record, missed: 0 } : missing.record
+                    }
+                    muted={monitoring.value.alertsMuted}
                     canMark={Boolean(staff?.canAdd) && !staff?.readOnly}
                     onMarked={missing.reload}
                 />

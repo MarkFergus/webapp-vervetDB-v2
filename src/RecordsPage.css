@@ -318,6 +318,23 @@
     border-radius: 999px;
 }
 
+/* (tapped: the monkey's pop-up) */
+.RecordsPage-photo.is-button {
+    display: block;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+}
+
+.RecordsPage-photo.is-button:hover {
+    box-shadow: 0 0 0 2px var(--line-strong);
+}
+
+.RecordsPage-photo.is-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .RecordsPage-photo img {
     width: 100%;
     height: 100%;

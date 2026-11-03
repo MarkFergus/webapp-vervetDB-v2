@@ -18,6 +18,9 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadArchive: vi.fn(),
     loadRecords: vi.fn(),
     saveStatus: vi.fn(),
+    // (the pop-up's Injuries: none, without asking the database)
+    loadInjuries: vi.fn().mockResolvedValue([]),
+    loadIntegration: vi.fn().mockResolvedValue([]),
 }));
 beforeEach(() => {
     loadRecords.mockResolvedValue([]);

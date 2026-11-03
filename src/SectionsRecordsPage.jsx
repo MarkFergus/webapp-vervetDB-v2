@@ -10,8 +10,9 @@ import "./IntegrationReports.css"; // (the injuries' list, as in the pop-up)
 import "./IntegrationRecordsPage.css"; // (the troop picker and New Injury's panel)
 import "./SectionsRecordsPage.css";
 
-// Records → Sections → Injuries (staff): a troop's injuries (its
-// introcages too), by monkey, as in the monkey's pop-up.
+// Records → Sections → Injuries (staff): every troop's injuries (All
+// Troops), or a troop's (its introcages too), by monkey, as in the
+// monkey's pop-up.
 //   Current  each injury's date and description, its updates, Add Update
 //            and Healed? (it then moves to Past); New Injury: pick the
 //            monkey, then the date and description
@@ -22,6 +23,24 @@ import "./SectionsRecordsPage.css";
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly } (as the pop-up's)
 
 const TROOP_KEY = "vervetdb-sections-troop";
+// All Troops: remembered apart (Monitoring shares the troop: it always has one)
+const ALL = "all";
+const ALL_KEY = "vervetdb-injuries-all";
+function rememberedAll() {
+    try {
+        return localStorage.getItem(ALL_KEY) === "1";
+    } catch {
+        return false;
+    }
+}
+function rememberAll(all) {
+    try {
+        if (all) localStorage.setItem(ALL_KEY, "1");
+        else localStorage.removeItem(ALL_KEY);
+    } catch {
+        // Not remembered this time
+    }
+}
 const PAST_MONTHS = 6;
 
 // The day 6 months ago ("2026-04-30")
@@ -79,9 +98,13 @@ function NewInjury({ monkeys, injuries, today, onDone }) {
 
 export default function SectionsRecordsPage({ monkeys = [], enclosures = [], staff = null }) {
     const troops = enclosures.filter(hasTroop).sort((a, b) => fullName(a.name).localeCompare(fullName(b.name)));
-    const [chosen, setChosen] = useState(rememberedTroop);
-    const troop = troops.find((t) => t.name === chosen) ?? troops[0] ?? null;
-    const troopMonkeys = troop ? [...monkeysIn(monkeys, troop)].sort((a, b) => a.name.localeCompare(b.name)) : [];
+    const [chosen, setChosen] = useState(() => (rememberedAll() ? ALL : rememberedTroop()));
+    const all = chosen === ALL;
+    const troop = all ? null : (troops.find((t) => t.name === chosen) ?? troops[0] ?? null);
+    // (All Troops: every monkey at the sanctuary)
+    const troopMonkeys = [...(all ? monkeysIn(monkeys, null) : troop ? monkeysIn(monkeys, troop) : [])].sort((a, b) =>
+        a.name.localeCompare(b.name)
+    );
     const [tab, setTab] = useState("current");
     const past = tab === "past";
     const today = dayText(new Date());
@@ -91,7 +114,7 @@ export default function SectionsRecordsPage({ monkeys = [], enclosures = [], sta
         past ? pastSince() : null
     );
     const [adding, setAdding] = useState(false);
-    const troopName = troop ? `${fullName(troop.name)} Troop` : "this troop";
+    const troopName = all ? "any troop" : troop ? `${fullName(troop.name)} Troop` : "this troop";
 
     // The troop's monkeys with current injuries, by name
     const entries = Array.isArray(injuries.entries) ? injuries.entries : [];
@@ -127,13 +150,15 @@ export default function SectionsRecordsPage({ monkeys = [], enclosures = [], sta
                 <label className="IntegrationPage-choose SectionsPage-troop">
                     <span>Troop</span>
                     <select
-                        value={troop?.name ?? ""}
+                        value={all ? ALL : (troop?.name ?? "")}
                         onChange={(e) => {
                             setChosen(e.target.value);
-                            rememberTroop(e.target.value);
+                            rememberAll(e.target.value === ALL);
+                            if (e.target.value !== ALL) rememberTroop(e.target.value);
                             setAdding(false);
                         }}
                     >
+                        <option value={ALL}>All Troops</option>
                         {troops.map((t) => (
                             <option key={t.id} value={t.name}>
                                 {fullName(t.name)}
@@ -142,7 +167,7 @@ export default function SectionsRecordsPage({ monkeys = [], enclosures = [], sta
                     </select>
                 </label>
                 {!past && injuries.canAdd && !adding && (
-                    <button type="button" className="Modal-edit is-soft SectionsPage-add" onClick={() => setAdding(true)}>
+                    <button type="button" className="Modal-edit SectionsPage-add" onClick={() => setAdding(true)}>
                         <IconPlus size={18} aria-hidden="true" />
                         New Injury
                     </button>

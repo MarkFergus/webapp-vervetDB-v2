@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA, loadCurrentInjuries, loadMonitoringFor, saveRelease, saveStatus, saveWhereabouts, troopHome } from "./monkeyData";
 import { archivePageHash } from "./monkeyStatus";
+import { OpenMonkeyContext } from "./openMonkey";
 import { monitoringNotes } from "./monitoringNotes";
 import MonkeyCard from "./MonkeyCard";
 import MonkeyRow, { MonkeyListHeader } from "./MonkeyRow";
@@ -435,9 +436,9 @@ function ShowPage({
     const pageAddress = () => window.location.pathname + window.location.search;
 
     function showInAddress(m) {
-        // (on the Enclosures pages, a monkey's page and Latest News, the
-        // address stays on that page)
-        if (onEnclosures || onMonkeyPage || onNews) return;
+        // (on the Enclosures pages, a monkey's page, Latest News and Records,
+        // the address stays on that page)
+        if (onEnclosures || onMonkeyPage || onNews || onRecords) return;
         const hash = monkeyHash(m);
         if (window.location.hash === hash) return;
         if (isMonkeyHash(window.location.hash)) {
@@ -865,6 +866,8 @@ function ShowPage({
         Boolean(quickPhotos);
 
     return (
+        // (a monkey's photo anywhere inside: opens its pop-up, on its own)
+        <OpenMonkeyContext.Provider value={(m) => openModal(m, [m])}>
         <div className="ShowPage">
             <div className="ShowPage-modal">
                 <Modal
@@ -1314,6 +1317,7 @@ function ShowPage({
                 />
             )}
         </div>
+        </OpenMonkeyContext.Provider>
     );
 }
 
