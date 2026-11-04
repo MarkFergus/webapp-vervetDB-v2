@@ -187,6 +187,13 @@
     background-color: var(--text);
 }
 
+/* (the light themes: white and raised, like the Enter / View tabs) */
+:where(:root[data-theme="light"]) .ShowPage-view button[aria-pressed="true"] {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
 /* The filters in use, under the toolbar: tap one to remove it */
 .ShowPage-chips {
     display: flex;

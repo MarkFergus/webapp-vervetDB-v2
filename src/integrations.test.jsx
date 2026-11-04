@@ -35,6 +35,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     loadIntegrations.mockResolvedValue([]);
     loadLatestReportDates.mockResolvedValue({});
+    addIntegrationReports.mockResolvedValue(1);
 });
 
 const open = (route, { canEnter = true } = {}) => {
@@ -147,6 +148,7 @@ describe("Current Integrations", () => {
         expect([...select.options].map((o) => o.textContent)).toEqual(["Choose…", "On Hold", "Completed", "Cancelled"]);
         expect(within(dialog).getByRole("button", { name: "Confirm" })).toBeDisabled();
         await user.selectOptions(select, "on_hold");
+        await user.type(within(dialog).getByLabelText("Notes"), "Rudi is unwell");
         // (its date: today to start with, labelled by the status)
         const date = within(dialog).getByLabelText("Date On Hold");
         expect(date).toHaveValue(today());
@@ -163,17 +165,71 @@ describe("Current Integrations", () => {
         expect(screen.queryByRole("dialog")).toBeNull();
     });
 
-    test("Update → Cancelled: a red Confirm; it leaves the list", async () => {
+    test("Update → On Hold with notes: adds an entry to the integration record on that date", async () => {
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-20")]);
+        updateIntegrationStatus.mockResolvedValue({ ...active(10, 1, "2026-10-20"), status: "on_hold" });
+        addIntegrationReports.mockResolvedValue(1);
+        const { user } = open("records/integration/current");
+        await user.click(await screen.findByRole("button", { name: "Update, Poppy" }));
+        await user.selectOptions(screen.getByLabelText("New Status"), "on_hold");
+        const date = screen.getByLabelText("Date On Hold");
+        await user.clear(date);
+        await user.type(date, "2026-10-26");
+        expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
+        await user.type(screen.getByLabelText("Notes"), "  Rudi is unwell ");
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(screen.getByRole("dialog")).toHaveTextContent(`Adds "Integration on hold: Rudi is unwell" to Poppy's integration record.`);
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        await waitFor(() =>
+            expect(addIntegrationReports).toHaveBeenCalledWith([
+                { monkeyId: 1, from: "2026-10-26", to: "2026-10-26", report: "Integration on hold: Rudi is unwell" },
+            ])
+        );
+        expect(updateIntegrationStatus).toHaveBeenCalledWith(10, { status: "on_hold", date: "2026-10-26" });
+        expect(await screen.findByText("Poppy's integration is now On Hold.")).toBeInTheDocument();
+    });
+
+    test("Update → Completed without notes: just \"Integration completed\"; Active asks for no notes", async () => {
+        loadIntegrations.mockResolvedValue([{ ...active(10, 1, "2026-10-20"), status: "on_hold" }]);
+        updateIntegrationStatus.mockResolvedValue({ ...active(10, 1, "2026-10-20"), status: "completed" });
+        addIntegrationReports.mockResolvedValue(1);
+        const { user } = open("records/integration/current");
+        await user.click(await screen.findByRole("button", { name: "Update, Poppy" }));
+        await user.selectOptions(screen.getByLabelText("New Status"), "active");
+        expect(screen.queryByLabelText("Notes (optional)")).toBeNull();
+        await user.selectOptions(screen.getByLabelText("New Status"), "completed");
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        await waitFor(() => expect(addIntegrationReports).toHaveBeenCalledTimes(1));
+        expect(addIntegrationReports.mock.calls[0][0][0].report).toBe("Integration completed");
+    });
+
+    test("Update: if only the entry fails, the status stays saved and the message says so", async () => {
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-20")]);
+        updateIntegrationStatus.mockResolvedValue({ ...active(10, 1, "2026-10-20"), status: "on_hold" });
+        addIntegrationReports.mockRejectedValue(new Error("No connection."));
+        const { user } = open("records/integration/current");
+        await user.click(await screen.findByRole("button", { name: "Update, Poppy" }));
+        await user.selectOptions(screen.getByLabelText("New Status"), "on_hold");
+        await user.type(screen.getByLabelText("Notes"), "Rudi is unwell");
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(await screen.findByText(/now On Hold\. Its entry couldn't be added .*No connection\..*add it in Reports/)).toBeInTheDocument();
+        expect(screen.queryByRole("dialog")).toBeNull();
+    });
+
+    test("Update → Cancelled: needs a reason, a green Confirm; it leaves the list", async () => {
         loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-20"), active(11, 2, "2026-10-21")]);
         updateIntegrationStatus.mockResolvedValue({ ...active(10, 1, "2026-10-20"), status: "cancelled" });
         const { user } = open("records/integration/current");
         await user.click(await screen.findByRole("button", { name: "Update, Poppy" }));
         await user.selectOptions(screen.getByLabelText("New Status"), "cancelled");
+        await user.type(screen.getByLabelText("Notes"), "Not getting on");
         await user.click(screen.getByRole("button", { name: "Confirm" }));
         const ask = screen.getByRole("dialog", { name: "Mark Poppy's integration as Cancelled?" });
         expect(ask).toHaveTextContent(/will end on .* and leave Current Integrations/);
         const confirm = within(ask).getByRole("button", { name: "Confirm" });
-        expect(confirm).toHaveClass("is-danger");
+        expect(confirm).toHaveClass("is-confirm");
         await user.click(confirm);
         expect(await screen.findByText("Poppy's integration is now Cancelled.")).toBeInTheDocument();
         expect(screen.queryByRole("row", { name: /Poppy/ })).toBeNull();

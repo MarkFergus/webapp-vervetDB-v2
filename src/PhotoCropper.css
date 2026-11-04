@@ -95,29 +95,3 @@
     gap: 10px;
 }
 
-.PhotoCropper-button {
-    padding: 6px 14px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--bg);
-    background-color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.PhotoCropper-button:hover:not(:disabled) {
-    filter: brightness(1.15);
-}
-
-.PhotoCropper-button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-.PhotoCropper-button.is-quiet {
-    color: var(--text);
-    background: none;
-    border-color: var(--line-strong);
-}

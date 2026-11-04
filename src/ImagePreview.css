@@ -56,19 +56,3 @@
     -webkit-user-select: none;
     user-select: none;
 }
-
-.ImagePreview-done {
-    padding: 8px 22px;
-    font-family: var(--font-ui);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--bg);
-    background-color: var(--accent);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.ImagePreview-done:hover {
-    background-color: var(--accent-2);
-}

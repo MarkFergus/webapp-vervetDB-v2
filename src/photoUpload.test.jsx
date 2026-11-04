@@ -41,14 +41,14 @@ vi.mock("./auth", async (importOriginal) => ({
     useAuth: () => ({ isEditor: true, isAdmin: true }),
 }));
 
-// Stand-in crop screen: "Use photo" hands back a pretend cropped photo
+// Stand-in crop screen: "Use Photo" hands back a pretend cropped photo
 vi.mock("./PhotoCropper", () => ({
     default: ({ file, position, onUse, onCancel }) => (
         <div role="dialog" aria-label="Crop photo">
             <span>{position}</span>
             <span>{file.name}</span>
             <button type="button" onClick={() => onUse(new Blob(["cropped"], { type: "image/webp" }))}>
-                Use photo
+                Use Photo
             </button>
             <button type="button" onClick={onCancel}>Cancel</button>
         </div>
@@ -168,7 +168,7 @@ describe("Upload photo in the edit form", () => {
     // The photos listed in the form, in order (from their previews)
     const photoLinks = () =>
         screen.queryAllByRole("img", { name: /^Photo \d/ }).map((img) => img.getAttribute("src"));
-    const fileInput = () => screen.getByLabelText("Upload new photo");
+    const fileInput = () => screen.getByLabelText("Upload New Photo");
 
     function setup() {
         const user = userEvent.setup();
@@ -196,7 +196,7 @@ describe("Upload photo in the edit form", () => {
         expect(within(cropScreen()).getByText("Photo 1 of 2")).toBeInTheDocument();
         expect(within(cropScreen()).getByText("one.jpg")).toBeInTheDocument();
 
-        await user.click(within(cropScreen()).getByRole("button", { name: "Use photo" }));
+        await user.click(within(cropScreen()).getByRole("button", { name: "Use Photo" }));
         // The cropped photo (not the original file) is uploaded
         expect(uploadPhoto).toHaveBeenCalledWith(expect.any(Blob), { troop: "Goliath", name: "Nova" });
         expect(uploadPhoto.mock.calls[0][0]).not.toBeInstanceOf(File);
@@ -206,7 +206,7 @@ describe("Upload photo in the edit form", () => {
         finishUpload("https://x.supabase.co/monkey-photos/goliath/nova-1.webp");
         // Then the second photo's turn
         expect(await within(await screen.findByRole("dialog", { name: "Crop photo" })).findByText("Photo 2 of 2")).toBeInTheDocument();
-        await user.click(within(cropScreen()).getByRole("button", { name: "Use photo" }));
+        await user.click(within(cropScreen()).getByRole("button", { name: "Use Photo" }));
 
         await waitFor(() => expect(photoLinks()).toHaveLength(2));
         expect(photoLinks()).toEqual([
@@ -223,7 +223,7 @@ describe("Upload photo in the edit form", () => {
         await user.upload(fileInput(), [photo("one.jpg"), photo("two.jpg")]);
         await user.click(within(cropScreen()).getByRole("button", { name: "Cancel" }));
         expect(within(cropScreen()).getByText("Photo 2 of 2")).toBeInTheDocument();
-        await user.click(within(cropScreen()).getByRole("button", { name: "Use photo" }));
+        await user.click(within(cropScreen()).getByRole("button", { name: "Use Photo" }));
 
         await waitFor(() => expect(photoLinks()).toEqual(["https://x.supabase.co/monkey-photos/goliath/nova-2.webp"]));
         expect(uploadPhoto).toHaveBeenCalledTimes(1);
@@ -242,7 +242,7 @@ describe("Upload photo in the edit form", () => {
         uploadPhoto.mockRejectedValueOnce(new Error("Couldn't upload that photo. Please check your connection and try again."));
         const { user } = setup();
         await user.upload(fileInput(), photo("one.jpg"));
-        await user.click(within(cropScreen()).getByRole("button", { name: "Use photo" }));
+        await user.click(within(cropScreen()).getByRole("button", { name: "Use Photo" }));
         expect(await screen.findByText(/Couldn't upload that photo/)).toBeInTheDocument();
         expect(photoLinks()).toEqual([]);
     });
@@ -266,7 +266,7 @@ describe("the real crop screen", () => {
         expect(within(dialog).getByRole("slider", { name: "Zoom" })).toHaveValue("1");
         expect(dialog.querySelector("img")).toHaveAttribute("src", "blob:photo");
         // Not until the cropper has worked out the area
-        expect(within(dialog).getByRole("button", { name: "Use photo" })).toBeDisabled();
+        expect(within(dialog).getByRole("button", { name: "Use Photo" })).toBeDisabled();
     });
 });
 
@@ -323,8 +323,8 @@ describe("tidying up photos in storage", () => {
         }
         async function uploadOne(user, url) {
             uploadPhoto.mockResolvedValueOnce(url);
-            await user.upload(screen.getByLabelText("Upload new photo"), new File(["x"], "p.jpg", { type: "image/jpeg" }));
-            await user.click(within(screen.getByRole("dialog", { name: "Crop photo" })).getByRole("button", { name: "Use photo" }));
+            await user.upload(screen.getByLabelText("Upload New Photo"), new File(["x"], "p.jpg", { type: "image/jpeg" }));
+            await user.click(within(screen.getByRole("dialog", { name: "Crop photo" })).getByRole("button", { name: "Use Photo" }));
             await waitFor(() =>
                 expect(screen.queryAllByRole("img", { name: /^Photo \d/ }).map((i) => i.getAttribute("src"))).toContain(url)
             );
@@ -389,16 +389,16 @@ describe("photo limit in the edit form", () => {
     test("at 5 photos, adding is switched off until one is removed", async () => {
         const { user } = setup(withPhotos(5));
         expect(screen.getByText(/5 photos is the most a monkey can have/)).toBeInTheDocument();
-        expect(screen.getByLabelText("Upload new photo")).toBeDisabled();
+        expect(screen.getByLabelText("Upload New Photo")).toBeDisabled();
 
         await deletePhoto(user, 1);
         expect(screen.queryByText(/5 photos is the most/)).toBeNull();
-        expect(screen.getByLabelText("Upload new photo")).not.toBeDisabled();
+        expect(screen.getByLabelText("Upload New Photo")).not.toBeDisabled();
     });
 
     test("choosing more than fit: only the ones that fit go to the crop screen", async () => {
         const { user } = setup(withPhotos(3));
-        await user.upload(screen.getByLabelText("Upload new photo"), [photo("a.jpg"), photo("b.jpg"), photo("c.jpg"), photo("d.jpg")]);
+        await user.upload(screen.getByLabelText("Upload New Photo"), [photo("a.jpg"), photo("b.jpg"), photo("c.jpg"), photo("d.jpg")]);
         expect(screen.getByText("Only 2 more photos fit (5 is the most), so the first 2 will be used.")).toBeInTheDocument();
         const crop = screen.getByRole("dialog", { name: "Crop photo" });
         expect(within(crop).getByText("Photo 1 of 2")).toBeInTheDocument();
@@ -407,7 +407,7 @@ describe("photo limit in the edit form", () => {
 
     test("with one space left, it says so in words", async () => {
         const { user } = setup(withPhotos(4));
-        await user.upload(screen.getByLabelText("Upload new photo"), [photo("a.jpg"), photo("b.jpg")]);
+        await user.upload(screen.getByLabelText("Upload New Photo"), [photo("a.jpg"), photo("b.jpg")]);
         expect(screen.getByText("Only 1 more photo fit (5 is the most), so the first one will be used.")).toBeInTheDocument();
     });
 });

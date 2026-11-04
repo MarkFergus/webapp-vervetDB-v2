@@ -74,7 +74,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
         } else if (passwordSetup === "expired") {
             setView("main");
             setError(
-                "That link has expired or was already used. Use “Forgot password?” to get a new one."
+                "That link has expired or was already used. Use “Forgot Password?” to get a new one."
             );
         }
     }, [passwordSetup]);
@@ -262,13 +262,13 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     />
                 </label>
                 {messages}
-                <button type="submit" className="AccountModal-button" disabled={busy}>
-                    {busy ? "Saving…" : "Save password"}
+                <button type="submit" className="Modal-edit is-confirm AccountModal-button" disabled={busy}>
+                    {busy ? "Saving…" : "Save Password"}
                 </button>
                 {!passwordSetup && (
                     <button
                         type="button"
-                        className="AccountModal-link"
+                        className="Modal-edit is-cancel AccountModal-button"
                         onClick={() => show("main")}
                     >
                         Cancel
@@ -352,7 +352,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                 )}
                 <button
                     type="button"
-                    className="AccountModal-button"
+                    className="Modal-edit is-blue AccountModal-button"
                     ref={firstFieldRef}
                     onClick={handleClose}
                 >
@@ -360,7 +360,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                 </button>
                 {/* (phones only: computers have it in the account drop-down) */}
                 {canChangePhoto && (
-                    <button type="button" className="AccountModal-button is-quiet is-withIcon is-phoneOnly" onClick={() => show("changes")}>
+                    <button type="button" className="Modal-edit is-soft AccountModal-button is-phoneOnly" onClick={() => show("changes")}>
                         <IconHistory stroke={2} aria-hidden="true" />
                         Changelog
                     </button>
@@ -368,20 +368,20 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                 <div className="AccountModal-actions">
                     <button
                         type="button"
-                        className="AccountModal-button is-quiet"
+                        className="Modal-edit is-soft AccountModal-button"
                         onClick={() => show("newPassword")}
                     >
                         <IconKey stroke={2} aria-hidden="true" />
-                        Change password
+                        Change Password
                     </button>
                     <button
                         type="button"
-                        className="AccountModal-button is-signOut"
+                        className="Modal-edit is-soft AccountModal-button is-signOut"
                         onClick={handleSignOut}
                         disabled={busy}
                     >
                         <IconLogout stroke={2} aria-hidden="true" />
-                        {busy ? "Signing out…" : "Sign out"}
+                        {busy ? "Signing out…" : "Sign Out"}
                     </button>
                 </div>
             </div>
@@ -411,16 +411,16 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     />
                 </label>
                 {messages}
-                <button type="submit" className="AccountModal-button" disabled={busy}>
-                    {/* Once sent: "Send again", in case the email doesn't arrive */}
-                    {busy ? "Sending…" : notice ? "Send again" : "Send link"}
+                <button type="submit" className="Modal-edit is-confirm AccountModal-button" disabled={busy}>
+                    {/* Once sent: "Send Again", in case the email doesn't arrive */}
+                    {busy ? "Sending…" : notice ? "Send Again" : "Send Link"}
                 </button>
                 <button
                     type="button"
                     className="AccountModal-link"
                     onClick={() => show("main")}
                 >
-                    Back to sign in
+                    Back to Sign In
                 </button>
             </form>
         );
@@ -457,15 +457,15 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     />
                 </label>
                 {messages}
-                <button type="submit" className="AccountModal-button" disabled={busy}>
-                    {busy ? "Signing in…" : "Sign in"}
+                <button type="submit" className="Modal-edit is-confirm AccountModal-button" disabled={busy}>
+                    {busy ? "Signing in…" : "Sign In"}
                 </button>
                 <button
                     type="button"
                     className="AccountModal-link"
                     onClick={() => show("forgot")}
                 >
-                    Forgot password?
+                    Forgot Password?
                 </button>
                 <button
                     type="button"
@@ -473,7 +473,7 @@ function AccountModal({ isOpen, onClose, startView = null }) {
                     aria-expanded={showAccessHelp}
                     onClick={() => setShowAccessHelp((shown) => !shown)}
                 >
-                    Request access
+                    Request Access
                 </button>
                 {showAccessHelp && (
                     <p className="AccountModal-access" role="status">

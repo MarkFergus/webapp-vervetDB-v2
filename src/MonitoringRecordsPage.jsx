@@ -109,11 +109,15 @@ const firstName = (name) => (name ?? "Staff").trim().split(/\s+/)[0];
 
 // Choices as one squared group (one at a time; optional: none, and a
 // second tap takes it off). note: { value, onChange }: a short note beside
-// them ("North corner sagging")
+// them ("North corner sagging"); on phones (where it'd take a row of its
+// own) behind a grey + Note until it's wanted (open already if there's one)
 function Choices({ label, options, value, onChange, optional = false, note = null }) {
     const name = optional ? `${label} (optional)` : label;
+    const phone = usePhone();
+    const [noteOpen, setNoteOpen] = useState(() => Boolean(note?.value));
+    const noteShown = !phone || noteOpen;
     return (
-        <div className={`Monitoring-field${note ? " has-note" : ""}`}>
+        <div className={`Monitoring-field${note ? " has-note" : ""}${note && !noteShown ? " is-noteClosed" : ""}`}>
             <span className="Monitoring-fieldLabel">
                 {label}
                 {optional && <em> (optional)</em>}
@@ -130,17 +134,29 @@ function Choices({ label, options, value, onChange, optional = false, note = nul
                     </button>
                 ))}
             </div>
-            {note && (
-                <input
-                    type="text"
-                    className="Monitoring-checkNote"
-                    aria-label={`${label} note`}
-                    placeholder="Note (optional)"
-                    value={note.value}
-                    maxLength={CHECK_NOTE_MAX}
-                    onChange={(e) => note.onChange(e.target.value)}
-                />
-            )}
+            {note &&
+                (noteShown ? (
+                    <input
+                        type="text"
+                        className="Monitoring-checkNote"
+                        aria-label={`${label} note`}
+                        placeholder="Note (optional)"
+                        value={note.value}
+                        maxLength={CHECK_NOTE_MAX}
+                        autoFocus={phone && !note.value}
+                        onChange={(e) => note.onChange(e.target.value)}
+                    />
+                ) : (
+                    <button
+                        type="button"
+                        className="Modal-edit is-soft Monitoring-noteButton"
+                        aria-label={`Add ${label} note`}
+                        onClick={() => setNoteOpen(true)}
+                    >
+                        <IconPlus size={16} stroke={2.5} aria-hidden="true" />
+                        Note
+                    </button>
+                ))}
         </div>
     );
 }
@@ -771,7 +787,7 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                             <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={() => finish(true)}>
                                 Save Anyway
                             </button>
-                            <button type="button" className="Modal-edit is-quiet" onClick={() => setSameDay(false)}>
+                            <button type="button" className="Modal-edit is-blue-outline" onClick={() => setSameDay(false)}>
                                 Go Back
                             </button>
                         </div>
@@ -783,7 +799,7 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
                         </button>
                         {!finished && (
                             <span className="Monitoring-confirmHost">
-                                <button type="button" className="Modal-edit is-quiet" disabled={busy} onClick={() => setCancelling(true)}>
+                                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={() => setCancelling(true)}>
                                     Cancel Session
                                 </button>
                                 {cancelling && (
@@ -866,7 +882,7 @@ function WhatsAppSummary({ text, showCopy = true }) {
         <div className="Monitoring-whatsapp">
             <pre aria-label="WhatsApp summary">{text}</pre>
             {showCopy && (
-                <button type="button" className="Modal-edit is-confirm" onClick={copy}>
+                <button type="button" className="Modal-edit is-blue" onClick={copy}>
                     <IconCopy size={18} aria-hidden="true" />
                     {copied ? "Copied" : "Copy for WhatsApp"}
                 </button>
@@ -902,7 +918,7 @@ function SessionDone({ troop, summary, onDone }) {
             )}
             <WhatsAppSummary text={summary.text} />
             <div className="Monitoring-actions">
-                <button type="button" className="Modal-edit is-soft" onClick={onDone}>
+                <button type="button" className="Modal-edit is-blue-outline" onClick={onDone}>
                     Done
                 </button>
             </div>
@@ -1012,7 +1028,7 @@ function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChang
                     {/* Edit (left); copy and delete as icons (right) */}
                     <div className="Monitoring-historyActions">
                         {canChange && (
-                            <button type="button" className="Modal-edit is-soft" onClick={onChange}>
+                            <button type="button" className="Modal-edit is-blue-outline" onClick={onChange}>
                                 <IconPencil size={16} aria-hidden="true" />
                                 Edit
                             </button>
@@ -1416,7 +1432,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                             <span className="Monitoring-confirmHost">
                                 <button
                                     type="button"
-                                    className="Modal-edit is-quiet Monitoring-start"
+                                    className="Modal-edit is-cancel Monitoring-start"
                                     disabled={busy}
                                     onClick={() => setCancelling({ id: myOpen.id, where: "bar" })}
                                 >

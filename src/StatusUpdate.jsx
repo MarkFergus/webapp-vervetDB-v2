@@ -98,13 +98,13 @@ function StatusUpdate({ name, choices, home = null, onSave, onCancel }) {
                     <>
                         <button
                             type="button"
-                            className={`Modal-edit ${restoring ? "is-confirm" : "is-danger"}`}
+                            className="Modal-edit is-confirm"
                             disabled={busy}
                             onClick={save}
                         >
                             {busy ? "Saving…" : "Confirm"}
                         </button>
-                        <button type="button" className="Modal-edit is-quiet" disabled={busy} onClick={() => setChecking(false)}>
+                        <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={() => setChecking(false)}>
                             Back
                         </button>
                     </>
@@ -113,7 +113,7 @@ function StatusUpdate({ name, choices, home = null, onSave, onCancel }) {
                         <button type="button" className="Modal-edit is-confirm" disabled={!ready} onClick={() => setChecking(true)}>
                             Confirm
                         </button>
-                        <button type="button" className="Modal-edit is-quiet" onClick={onCancel}>
+                        <button type="button" className="Modal-edit is-cancel" onClick={onCancel}>
                             Cancel
                         </button>
                     </>

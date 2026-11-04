@@ -73,15 +73,12 @@
     height: 16px;
 }
 
-/* A full-width button with an icon (Changelog) */
-.AccountModal-button.is-withIcon {
-    display: flex;
+/* The buttons (Modal-edit's look): full width, the label centred */
+.AccountModal-button {
     justify-content: center;
-    align-items: center;
-    gap: 6px;
 }
 
-.AccountModal-button.is-withIcon svg {
+.AccountModal-button svg {
     width: 18px;
     height: 18px;
 }
@@ -264,29 +261,12 @@
 
 .AccountModal-actions .AccountModal-button {
     flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .AccountModal-actions svg {
     width: 16px;
     height: 16px;
-}
-
-/* Change password: grey outline, like Clear all in the Filters panel */
-.AccountModal-button.is-quiet {
-    color: var(--text);
-    background: none;
-    border-color: var(--line-strong);
-}
-
-.AccountModal-button.is-quiet:hover:not(:disabled) {
-    color: var(--text-strong);
-    background: none;
-    border-color: var(--text);
 }
 
 .AccountModal-field {
@@ -327,43 +307,7 @@
     text-align: center;
 }
 
-.AccountModal-button {
-    padding: 8px 14px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--bg);
-    background-color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.AccountModal-button:hover:not(:disabled) {
-    background-color: var(--accent-2);
-    border-color: var(--accent-2);
-}
-
-/* Sign out: the site's neon pink, outlined */
-.AccountModal-button.is-signOut {
-    color: var(--pink);
-    background: none;
-    border-color: var(--pink);
-}
-
-.AccountModal-button.is-signOut:hover:not(:disabled) {
-    color: var(--pink-2);
-    background: none;
-    border-color: var(--pink-2);
-    filter: none;
-}
-
-.AccountModal-button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-/* Quiet text buttons: Forgot password?, Change password, Back, Cancel */
+/* Quiet text buttons: Forgot password?, Request access, Back to sign in */
 .AccountModal-link {
     align-self: center;
     padding: 4px 8px;

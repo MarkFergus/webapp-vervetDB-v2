@@ -47,7 +47,7 @@ export default function ConfirmBubble({ question, busy, danger = false, onConfir
                 >
                     {busy ? "Saving…" : "Confirm"}
                 </button>
-                <button type="button" className="Modal-edit is-quiet" disabled={busy} onClick={onCancel}>
+                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                     Cancel
                 </button>
             </span>

@@ -1043,7 +1043,7 @@ function ShowPage({
             ) : (
             <>
             {/* Filters (pills, blue when active), sort (segmented control)
-                and, for editors, Add monkey */}
+                and, for editors, Add Monkey */}
             <div className="ShowPage-toolbar" ref={toolbarRef} inert={isAnyModalOpen}>
                 <div className="ShowPage-filtersWrap">
                     <button

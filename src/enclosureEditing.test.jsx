@@ -417,7 +417,7 @@ describe("enclosure photos", () => {
         await user.click(await screen.findByRole("button", { name: "Edit" }));
         const form = screen.getByRole("dialog", { name: "Edit Robert" });
         expect(within(form).getByText("Primary photo")).toBeInTheDocument();
-        expect(within(form).getByText(/Upload new photo/)).toBeInTheDocument();
+        expect(within(form).getByText(/Upload New Photo/)).toBeInTheDocument();
 
         await user.click(within(form).getByRole("button", { name: /Photo 2 options/ }));
         await user.click(screen.getByRole("menuitem", { name: /Make primary/i }));

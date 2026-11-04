@@ -84,7 +84,7 @@ export function MarkSeenForm({ name, onSave, onCancel }) {
 // The Mark As Seen button
 export function MarkSeenButton({ name, onClick }) {
     return (
-        <button type="button" className="Modal-edit is-soft MarkSeen-button" aria-label={`Mark ${name} As Seen`} onClick={onClick}>
+        <button type="button" className="Modal-edit is-sickbay MarkSeen-button" aria-label={`Mark ${name} As Seen`} onClick={onClick}>
             <IconEye size={16} aria-hidden="true" />
             Mark As Seen
         </button>

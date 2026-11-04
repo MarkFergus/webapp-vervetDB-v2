@@ -55,9 +55,9 @@
     width: 32px;
     height: 32px;
     padding: 0;
-    color: var(--pink);
+    color: var(--text-2);
     background: none;
-    border: 1px solid var(--pink);
+    border: 1px solid var(--line-strong);
     border-radius: 8px;
     cursor: pointer;
 }
@@ -96,6 +96,13 @@
 .MaintenancePage-types button[aria-pressed="true"] {
     color: var(--bg);
     background-color: var(--text);
+}
+
+/* (the light themes: white and raised, like the Enter / View tabs) */
+:where(:root[data-theme="light"]) .MaintenancePage-types button[aria-pressed="true"] {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 .MaintenancePage-types button:focus-visible {

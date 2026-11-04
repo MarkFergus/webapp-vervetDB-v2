@@ -70,9 +70,19 @@
     color: var(--text);
 }
 
+/* The chosen one: white, like the other selectors (the light themes:
+   white and raised) */
 .Archive-pill.is-active {
-    color: var(--accent);
-    border-color: var(--accent);
+    color: var(--bg);
+    background-color: var(--text);
+    border-color: var(--text);
+}
+
+:where(:root[data-theme="light"]) .Archive-pill.is-active {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    border-color: var(--line-strong);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 .Archive-pill:focus-visible {
@@ -83,6 +93,11 @@
 .Archive-pillCount {
     font-weight: 400;
     color: var(--text-3);
+}
+
+.Archive-pill.is-active .Archive-pillCount {
+    color: inherit;
+    opacity: 0.7;
 }
 
 /* ---- The list ---- */

@@ -193,14 +193,17 @@
     background-color: var(--surface-3);
 }
 
-/* Cancel in a form: a pink outline (the plan: every Cancel like this) */
-.Modal-edit.is-cancel {
-    color: var(--pink);
+/* Cancel in a form: a red outline (red: destructive, Cancel and Delete;
+   the plan: every Cancel like this) */
+.Modal-edit.is-cancel,
+.Modal-edit.is-danger-outline {
+    color: var(--danger);
     background: none;
-    border: 1px solid var(--pink);
+    box-shadow: inset 0 0 0 1.5px currentColor;
 }
 
-.Modal-edit.is-cancel:hover:not(:disabled) {
+.Modal-edit.is-cancel:hover:not(:disabled),
+.Modal-edit.is-danger-outline:hover:not(:disabled) {
     background-color: var(--surface-2);
 }
 
@@ -763,7 +766,8 @@
     }
 }
 
-/* The Sickbay button: a grey chip with amber text, like the In Sickbay chip */
+/* Quick Actions (and Add Photos, a quick action of its own): a grey chip
+   with amber text, like the In Sickbay chip, so a row of them isn't busy */
 .Modal-edit.is-sickbay {
     color: var(--amber-text);
     background-color: var(--surface-2);
@@ -831,6 +835,56 @@
 
 .Modal-edit.is-confirm:hover:not(:disabled) {
     background-color: var(--green-fill-2);
+}
+
+/* The buttons' colours (filled: the main one, the one expected to be
+   pressed; outlined: the other choices; grey is-soft / is-quiet: any extra
+   options):
+     green is-confirm   confirms: Save, Submit, Approve (is-confirm-outline)
+     blue  is-blue      neutral, or to another page: Edit, Enter Results, Copy
+     amber is-action    actions, adding something: New Deworming List, Add Monkey
+     red   is-danger    destructive: Delete (outlined: is-danger-outline, and
+                        is-cancel for Cancel) */
+.Modal-edit.is-blue {
+    color: var(--on-blue);
+    background-color: var(--blue);
+}
+
+.Modal-edit.is-blue:hover:not(:disabled) {
+    background-color: var(--blue-2);
+}
+
+.Modal-edit.is-blue-outline,
+.Modal-edit.is-action-outline,
+.Modal-edit.is-confirm-outline {
+    color: var(--accent);
+    background: none;
+    box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.Modal-edit.is-action-outline {
+    color: var(--amber-text);
+}
+
+/* (the green as text: darker than the fill in the light themes, so the
+   outline's easy to see) */
+.Modal-edit.is-confirm-outline {
+    color: var(--green);
+}
+
+.Modal-edit.is-blue-outline:hover:not(:disabled),
+.Modal-edit.is-action-outline:hover:not(:disabled),
+.Modal-edit.is-confirm-outline:hover:not(:disabled) {
+    background-color: var(--wash-soft);
+}
+
+.Modal-edit.is-action {
+    color: var(--on-status);
+    background-color: var(--amber);
+}
+
+.Modal-edit.is-action:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--amber) 85%, var(--text-strong));
 }
 
 /* Destructive (Delete): red, never green */

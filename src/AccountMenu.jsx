@@ -87,12 +87,12 @@ function AccountMenu({ onAccount, onChangelog }) {
                 ref={buttonRef}
                 className={user ? "Nav-account is-signed-in" : "Nav-account"}
                 onClick={user ? () => setOpen((isOpen) => !isOpen) : onAccount}
-                aria-label={user ? "Account (signed in)" : "Sign in"}
+                aria-label={user ? "Account (signed in)" : "Sign In"}
                 aria-haspopup={user ? "menu" : undefined}
                 aria-expanded={user ? open : undefined}
                 aria-controls={open ? "AccountMenu-menu" : undefined}
                 // (no hover label while the menu's showing)
-                data-tooltip={open ? undefined : user ? "Account" : "Sign in"}
+                data-tooltip={open ? undefined : user ? "Account" : "Sign In"}
                 data-tooltip-align="end"
             >
                 <span className="Nav-avatar" aria-hidden="true">

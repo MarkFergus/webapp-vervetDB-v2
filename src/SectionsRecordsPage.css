@@ -15,16 +15,9 @@
     flex: 0 1 280px;
 }
 
-/* New Injury: an amber outline (injuries' amber) */
+/* New Injury: amber outlined (is-action-outline), as tall as the troop box */
 .Modal-edit.SectionsPage-add {
     height: 40px;
-    color: var(--amber-text);
-    background: none;
-    border: 1px solid var(--amber-text);
-}
-
-.Modal-edit.SectionsPage-add:hover:not(:disabled) {
-    background-color: color-mix(in srgb, var(--amber-text) 12%, transparent);
 }
 
 .SectionsPage-count {

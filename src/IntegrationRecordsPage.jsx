@@ -15,13 +15,17 @@ import {
     INTEGRATION_KINDS,
     INTEGRATION_STATUSES,
     MAX_REPORT,
+    NOTE_STATUSES,
+    NOTES_REQUIRED,
     STATUS_DATE_LABELS,
+    STATUS_NOTE_HINTS,
     checkReports,
     integrationChoices,
     isCurrent,
     integrationPlace,
     matchesSearch,
     reportFrom,
+    statusReport,
 } from "./integrations";
 import { BabyPhoto } from "./PagePicker";
 import "./IntegrationRecordsPage.css";
@@ -272,7 +276,7 @@ function StartDialog({ monkey, busy, problem, onConfirm, onCancel }) {
                     <button type="button" className="Modal-edit is-confirm" onClick={onConfirm} disabled={busy}>
                         {busy ? "Starting…" : "Confirm"}
                     </button>
-                    <button type="button" className="Modal-edit is-soft" onClick={onCancel} disabled={busy} ref={cancelRef}>
+                    <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy} ref={cancelRef}>
                         Cancel
                     </button>
                 </div>
@@ -375,7 +379,7 @@ function NewIntegration({ choices, onStart, onCancel }) {
                 <button type="button" className="Modal-edit is-confirm" disabled={!ready} onClick={() => setAsking(true)}>
                     Start Integration
                 </button>
-                <button type="button" className="Modal-edit is-quiet" onClick={onCancel}>
+                <button type="button" className="Modal-edit is-cancel" onClick={onCancel}>
                     Cancel
                 </button>
             </div>
@@ -396,26 +400,30 @@ function NewIntegration({ choices, onStart, onCancel }) {
 }
 
 // Status Update for one integration: choose the new status and its date
-// (today to start with; not before it started), then Confirm shows what it
-// will do and asks again (Cancelled: red)
+// (today to start with; not before it started) and, for On Hold, Completed
+// and Cancelled, notes for the integration record; then Confirm shows what
+// it will do and asks again
 function StatusDialog({ integration, monkey, onSave, onCancel }) {
     const cancelRef = useRef(null);
     const choices = Object.keys(INTEGRATION_STATUSES).filter((s) => s !== integration.status);
     const [status, setStatus] = useState("");
     const [date, setDate] = useState(() => dayText(new Date()));
+    const [notes, setNotes] = useState("");
     const [checking, setChecking] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
     useDialog(true, cancelRef, { onClose: busy ? () => {} : onCancel });
     const word = INTEGRATION_STATUSES[status];
     const tooEarly = Boolean(date) && date < integration.startedOn;
-    const ready = Boolean(status && date && !tooEarly && date <= dayText(new Date()));
+    const withNotes = NOTE_STATUSES.includes(status);
+    const notesNeeded = NOTES_REQUIRED.includes(status);
+    const ready = Boolean(status && date && !tooEarly && date <= dayText(new Date()) && (!notesNeeded || notes.trim()));
 
     async function save() {
         setBusy(true);
         setProblem(null);
         try {
-            await onSave({ status, date });
+            await onSave({ status, date, notes: withNotes ? notes : "" });
         } catch (error) {
             setProblem(error.message);
             setBusy(false);
@@ -436,6 +444,7 @@ function StatusDialog({ integration, monkey, onSave, onCancel }) {
                             {isCurrent(status)
                                 ? `It stays in Current Integrations, as ${word} from ${longDate(date)}.`
                                 : `It will end on ${longDate(date)} and leave Current Integrations.`}
+                            {withNotes && ` Adds "${statusReport(status, notes)}" to ${monkey.name}'s integration record.`}
                         </span>
                     </p>
                 ) : (
@@ -470,6 +479,19 @@ function StatusDialog({ integration, monkey, onSave, onCancel }) {
                                 The date can't be before it started ({longDate(integration.startedOn)}).
                             </p>
                         )}
+                        {withNotes && (
+                            <label className="IntegrationPage-choose">
+                                <span>{notesNeeded ? "Notes" : "Notes (optional)"}</span>
+                                <textarea
+                                    className="IntegrationPage-report"
+                                    rows={3}
+                                    maxLength={MAX_REPORT - 30}
+                                    placeholder={STATUS_NOTE_HINTS[status]}
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                />
+                            </label>
+                        )}
                     </>
                 )}
                 {problem && (
@@ -482,13 +504,13 @@ function StatusDialog({ integration, monkey, onSave, onCancel }) {
                         <>
                             <button
                                 type="button"
-                                className={`Modal-edit ${status === "cancelled" ? "is-danger" : "is-confirm"}`}
+                                className="Modal-edit is-confirm"
                                 onClick={save}
                                 disabled={busy}
                             >
                                 {busy ? "Saving…" : "Confirm"}
                             </button>
-                            <button type="button" className="Modal-edit is-soft" onClick={() => setChecking(false)} disabled={busy} ref={cancelRef}>
+                            <button type="button" className="Modal-edit is-blue-outline" onClick={() => setChecking(false)} disabled={busy} ref={cancelRef}>
                                 Back
                             </button>
                         </>
@@ -497,7 +519,7 @@ function StatusDialog({ integration, monkey, onSave, onCancel }) {
                             <button type="button" className="Modal-edit is-confirm" onClick={() => setChecking(true)} disabled={!ready}>
                                 Confirm
                             </button>
-                            <button type="button" className="Modal-edit is-soft" onClick={onCancel} ref={cancelRef}>
+                            <button type="button" className="Modal-edit is-cancel" onClick={onCancel} ref={cancelRef}>
                                 Cancel
                             </button>
                         </>
@@ -525,11 +547,22 @@ function CurrentPage({ monkeys, canEnter }) {
         setDone(`Integration started for ${monkey.name}.`);
     }
 
-    async function changeStatus(integration, monkey, values) {
-        const saved = await updateIntegrationStatus(integration.id, values);
+    // The status, then (On Hold, Completed, Cancelled) its entry in the
+    // monkey's integration record: if only that fails, the status stays
+    // saved and the message says to add it in Reports
+    async function changeStatus(integration, monkey, { status, date, notes = "" }) {
+        const saved = await updateIntegrationStatus(integration.id, { status, date });
+        let entryProblem = "";
+        if (NOTE_STATUSES.includes(saved.status)) {
+            try {
+                await addIntegrationReports([{ monkeyId: monkey.id, from: date, to: date, report: statusReport(saved.status, notes) }]);
+            } catch (error) {
+                entryProblem = ` Its entry couldn't be added to the integration record (${error.message}), so please add it in Reports.`;
+            }
+        }
         setList((l) => (isCurrent(saved.status) ? l.map((i) => (i.id === saved.id ? saved : i)) : l.filter((i) => i.id !== saved.id)));
         setUpdating(null);
-        setDone(`${monkey.name}'s integration is now ${INTEGRATION_STATUSES[saved.status]}.`);
+        setDone(`${monkey.name}'s integration is now ${INTEGRATION_STATUSES[saved.status]}.${entryProblem}`);
     }
     const open = rows.find((r) => r.integration.id === updating);
 
@@ -544,7 +577,7 @@ function CurrentPage({ monkeys, canEnter }) {
                 ) : (
                     <button
                         type="button"
-                        className="Modal-edit is-soft IntegrationPage-add"
+                        className="Modal-edit is-action-outline IntegrationPage-add"
                         onClick={() => {
                             setAdding(true);
                             setDone(null);

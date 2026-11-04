@@ -118,9 +118,9 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                                                 home screen or taskbar.
                                             </p>
                                             {canInstall ? (
-                                                <button type="button" className="OfflineModal-button" onClick={install}>
+                                                <button type="button" className="Modal-edit is-action" onClick={install}>
                                                     <IconDownload size={18} aria-hidden="true" />
-                                                    Install app
+                                                    Install App
                                                 </button>
                                             ) : (
                                                 <ol className="OfflineModal-steps">
@@ -161,7 +161,7 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                                                     </span>
                                                     <button
                                                         type="button"
-                                                        className="OfflineModal-stop"
+                                                        className="Modal-edit is-cancel OfflineModal-stop"
                                                         onClick={() => stopper.current?.abort()}
                                                     >
                                                         Stop
@@ -178,19 +178,19 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                                                         Staff can download every photo ({aboutSize(status.bytesLeft)}) to
                                                         use without signal. Photos you open are saved anyway.
                                                     </p>
-                                                    <button type="button" className="OfflineModal-button" onClick={onSignIn}>
-                                                        Sign in to download all photos
+                                                    <button type="button" className="Modal-edit is-blue" onClick={onSignIn}>
+                                                        Sign In to Download All Photos
                                                     </button>
                                                 </>
                                             ) : (
                                                 <>
                                                     <button
                                                         type="button"
-                                                        className="OfflineModal-button"
+                                                        className="Modal-edit is-action"
                                                         onClick={downloadAll}
                                                     >
                                                         <IconDownload size={18} aria-hidden="true" />
-                                                        Download all photos ({aboutSize(status.bytesLeft)})
+                                                        Download All Photos ({aboutSize(status.bytesLeft)})
                                                     </button>
                                                     <p className="OfflineModal-hint">
                                                         Best on Wi-Fi. Photos you open are saved anyway.

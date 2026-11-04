@@ -406,7 +406,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                 </button>
                             )}
                             {onEdit && (
-                                <button type="button" className="Modal-edit is-icon Enclosures-edit" onClick={() => onEdit(monkey)} title="Edit">
+                                <button type="button" className="Modal-edit is-blue is-icon Enclosures-edit" onClick={() => onEdit(monkey)} title="Edit">
                                     <IconPencil size={18} aria-hidden="true" />
                                     <span className="Modal-editLabel">Edit</span>
                                 </button>

@@ -227,22 +227,22 @@ describe("entering a batch", () => {
             expect(dialog).toHaveTextContent("This baby already has a milk total for Sat 24 Oct:");
             expect(dialog).toHaveTextContent("Muse: 178 ml (Sam) → 180 ml");
             expect(saveBabyRecords).not.toHaveBeenCalled();
-            expect(within(dialog).getByRole("button", { name: "Replace Them" })).toHaveClass("is-danger");
+            expect(within(dialog).getByRole("button", { name: "Replace" })).toHaveClass("is-danger");
             expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
         });
 
-        test("Replace Them saves them all, replacing", async () => {
+        test("Replace saves them all, replacing", async () => {
             const { user, dialog } = await setup();
-            await user.click(within(dialog).getByRole("button", { name: "Replace Them" }));
+            await user.click(within(dialog).getByRole("button", { name: "Replace" }));
             expect(saveBabyRecords).toHaveBeenCalledWith("milk", expect.arrayContaining([expect.objectContaining({ monkeyId: 21, value: 180 })]), true);
             expect(await screen.findByRole("status")).toHaveTextContent("Saved 2 milk totals for Sat 24 Oct.");
             expect(screen.queryByRole("dialog")).toBeNull();
         });
 
-        test("Keep Old Values saves only the new ones", async () => {
+        test("Keep saves only the new ones", async () => {
             saveBabyRecords.mockResolvedValue(1);
             const { user, dialog } = await setup();
-            await user.click(within(dialog).getByRole("button", { name: "Keep Old Values" }));
+            await user.click(within(dialog).getByRole("button", { name: "Keep" }));
             expect(saveBabyRecords).toHaveBeenCalledWith("milk", expect.any(Array), false);
             expect(await screen.findByRole("status")).toHaveTextContent("Saved 1 milk total for Sat 24 Oct. Kept the old value.");
         });

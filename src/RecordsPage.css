@@ -245,6 +245,14 @@
     background-color: var(--text);
 }
 
+/* (the light themes: a white tab, raised, rather than a dark one; :where
+   keeps it no stronger than the plain rule) */
+:where(:root[data-theme="light"]) .RecordsPage-tabs button.is-on {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
 .RecordsPage-tabs button:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
@@ -578,15 +586,17 @@
     color: var(--text-3);
 }
 
+/* Replace, Keep, Cancel: one row, even on the smallest phones */
 .RecordsPage-dialogButtons {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
     margin-top: 14px;
 }
 
 .RecordsPage-dialogButtons .Modal-edit {
+    flex: 1;
     justify-content: center;
+    padding: 0 10px;
 }
 
 /* ---- View: a card for each baby ---- */
@@ -835,17 +845,9 @@
 
 /* ---- The weekly weights report (to copy into WhatsApp) ---- */
 
-/* Create Report: outlined in green (like the cards' blue Full Profile) */
+/* Create Report: blue outlined (it opens the report) */
 .Modal-edit.RecordsPage-reportButton {
     margin: 8px 0 4px;
-    color: var(--green);
-    font-weight: 600;
-    background: none;
-    box-shadow: inset 0 0 0 1.5px var(--green);
-}
-
-.Modal-edit.RecordsPage-reportButton:hover {
-    background-color: var(--green-wash);
 }
 
 .RecordsPage-report {

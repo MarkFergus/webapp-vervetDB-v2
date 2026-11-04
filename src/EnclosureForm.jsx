@@ -273,11 +273,11 @@ function EnclosureForm({ enclosure, onClose, onSaved, noSize = false, noTroopDoo
 
                 <div className="MonkeyForm-footer">
                     <span className="MonkeyForm-spacer" />
-                    <button type="button" className="MonkeyForm-button is-quiet" onClick={requestClose} disabled={busy}>
+                    <button type="button" className="Modal-edit is-cancel" onClick={requestClose} disabled={busy}>
                         Cancel
                     </button>
                     {/* Not while a photo is still uploading */}
-                    <button type="submit" className="MonkeyForm-button is-save" disabled={busy || uploading}>
+                    <button type="submit" className="Modal-edit is-confirm" disabled={busy || uploading}>
                         {busy ? "Saving…" : "Save"}
                     </button>
                 </div>

@@ -22,6 +22,21 @@ export const INTEGRATION_STATUSES = {
 };
 export const isCurrent = (status) => status === "active" || status === "on_hold";
 
+// The Status Updates that add an entry to the monkey's integration record,
+// with the notes typed in: "Integration on hold: <notes>"
+export const NOTE_STATUSES = ["on_hold", "completed", "cancelled"];
+// (On Hold and Cancelled need a reason; Completed's are optional)
+export const NOTES_REQUIRED = ["on_hold", "cancelled"];
+export const STATUS_NOTE_HINTS = {
+    on_hold: "Why it's on hold",
+    completed: "How it went",
+    cancelled: "Why it was cancelled",
+};
+export const statusReport = (status, notes = "") => {
+    const line = `Integration ${INTEGRATION_STATUSES[status].toLowerCase()}`;
+    return notes.trim() ? `${line}: ${notes.trim()}` : line;
+};
+
 // Status Update's date box, by the new status
 export const STATUS_DATE_LABELS = {
     active: "Date Resumed",

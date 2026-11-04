@@ -167,7 +167,7 @@ export default function SectionsRecordsPage({ monkeys = [], enclosures = [], sta
                     </select>
                 </label>
                 {!past && injuries.canAdd && !adding && (
-                    <button type="button" className="Modal-edit SectionsPage-add" onClick={() => setAdding(true)}>
+                    <button type="button" className="Modal-edit is-action-outline SectionsPage-add" onClick={() => setAdding(true)}>
                         <IconPlus size={18} aria-hidden="true" />
                         New Injury
                     </button>

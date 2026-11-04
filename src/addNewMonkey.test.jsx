@@ -68,7 +68,7 @@ describe("New Arrival (the first choice)", () => {
         await user.type(field("Name"), "Rescue One");
         await user.selectOptions(field("Care Unit"), `enclosure:${QUARANTINE.id}`);
         await user.type(screen.getByLabelText(/Arrival Info/), "Found by Sam Smith near the road");
-        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         const [values] = saveMonkey.mock.calls[0];
         expect(values).toMatchObject({ name: "Rescue One", chip: "", troop: null, introcageId: QUARANTINE_AREA.id, bio: "" });
@@ -106,13 +106,13 @@ describe("a new arrival's Arrival Date and Arrival Reason", () => {
         await user.type(field("Name"), "Rescue Two");
         await user.selectOptions(field("Care Unit"), `enclosure:${QUARANTINE.id}`);
         await user.clear(field("Arrival Date"));
-        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         expect(screen.getByText("Please enter the arrival date (not in the future).")).toBeInTheDocument();
         expect(screen.getByText("Please choose the arrival reason.")).toBeInTheDocument();
         expect(saveMonkey).not.toHaveBeenCalled();
         await user.type(field("Arrival Date"), "2026-10-20");
         await user.selectOptions(field("Arrival Reason"), "orphaned");
-        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalDate: "2026-10-20", arrivalReason: "orphaned" });
     });
@@ -191,7 +191,7 @@ describe("Other", () => {
         await user.type(field("Name"), "Wild One");
         await user.selectOptions(field("Enclosure"), "Bandits");
         expect(field("Location")).toHaveDisplayValue("Bandits Troop");
-        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         expect(saveMonkey.mock.calls[0][0]).toMatchObject({ name: "Wild One", troop: "Bandits", introcage: null });
         expect(saveArrivalInfo).not.toHaveBeenCalled();
@@ -203,7 +203,7 @@ describe("Other", () => {
         await user.click(kind("Other"));
         await user.type(field("Name"), "Late Record");
         await user.selectOptions(field("Enclosure"), "Goliath");
-        await user.click(screen.getByRole("button", { name: "Add monkey" }));
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         expect(saveMonkey.mock.calls[0][0]).toMatchObject({ name: "Late Record", troop: "Goliath" });
     });

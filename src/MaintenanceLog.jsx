@@ -112,10 +112,10 @@ export function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
                 </p>
             )}
             <div className="MaintenanceLog-buttons">
-                <button type="button" className="MaintenanceLog-button is-quiet" onClick={onCancel} disabled={busy}>
+                <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
                     Cancel
                 </button>
-                <button type="submit" className="MaintenanceLog-button is-save" disabled={busy}>
+                <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
                     {busy ? busyLabel : saveLabel}
                 </button>
             </div>
@@ -192,7 +192,7 @@ function MaintenanceLog({ enclosure, live, canAdd, me = {} }) {
                         busyLabel="Adding…"
                     />
                 ) : (
-                    <button type="button" className="MaintenanceLog-add" onClick={() => setAdding(true)}>
+                    <button type="button" className="Modal-edit is-action-outline MaintenanceLog-add" onClick={() => setAdding(true)}>
                         <IconPlus size={16} aria-hidden="true" />
                         Add Entry
                     </button>
@@ -237,8 +237,8 @@ function MaintenanceLog({ enclosure, live, canAdd, me = {} }) {
                                 (confirming === entry.id ? (
                                     <span className="MaintenanceLog-confirm">
                                         Delete this entry?
-                                        <button type="button" onClick={() => setConfirming(null)} disabled={busy}>
-                                            Keep
+                                        <button type="button" className="is-cancel" onClick={() => setConfirming(null)} disabled={busy}>
+                                            Cancel
                                         </button>
                                         <button
                                             type="button"

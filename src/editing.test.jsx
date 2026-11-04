@@ -147,7 +147,7 @@ describe("the pop-up's Edit: just what the pop-up shows", () => {
         for (const label of ["Name", "Enclosure", "Location", "Birth year", "Chip", "Sex"]) {
             expect(within(form()).queryByLabelText(label, { exact: false })).toBeNull();
         }
-        expect(within(form()).getByText(/Upload new photo/)).toBeInTheDocument();
+        expect(within(form()).getByText(/Upload New Photo/)).toBeInTheDocument();
         expect(within(form()).queryByLabelText(/Arrival Info/)).toBeNull();
         // (no Delete either)
         expect(within(form()).queryByRole("button", { name: "Delete" })).toBeNull();
@@ -351,7 +351,7 @@ test("adding a monkey: it appears in the list and its pop-up opens", async () =>
     expect(field("Location")).toHaveValue("troop");
     await user.selectOptions(field("Sex"), "female");
     await user.selectOptions(field("Birth year"), "2026");
-    await user.click(within(form()).getByRole("button", { name: "Add monkey" }));
+    await user.click(within(form()).getByRole("button", { name: "Add Monkey" }));
 
     await waitFor(() => expect(saved.inserts).toHaveLength(1));
     // No photo given: the placeholder is used
@@ -445,7 +445,7 @@ test("adding a monkey: a new arrival goes into a care unit (moved to its home la
     const area = byKind("area", "Quarantine");
     await user.selectOptions(field("Care Unit"), `enclosure:${byKind("care_unit", "Quarantine").id}`);
     expect(field("Location")).toHaveValue(String(area.id));
-    await user.click(within(form()).getByRole("button", { name: "Add monkey" }));
+    await user.click(within(form()).getByRole("button", { name: "Add Monkey" }));
     await waitFor(() => expect(saved.inserts).toHaveLength(1));
     expect(saved.inserts[0]).toMatchObject({ name: "Brand New", troop_id: null, introcage_id: area.id });
 });
@@ -535,7 +535,7 @@ test("deleting asks first, then removes the monkey", async () => {
     await user.click(within(form()).getByRole("button", { name: "Delete" }));
     expect(within(form()).getByText("Delete Aroha for good?")).toBeInTheDocument();
 
-    await user.click(within(form()).getByRole("button", { name: "Keep" }));
+    await user.click(within(form()).getByRole("button", { name: "Cancel" }));
     expect(saved.deletes).toHaveLength(0);
 
     await user.click(within(form()).getByRole("button", { name: "Delete" }));

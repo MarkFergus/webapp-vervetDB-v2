@@ -197,12 +197,6 @@
     outline-offset: 2px;
 }
 
-.QuickPhotos-more {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 /* ---- Saved ---- */
 .QuickPhotos-finished {
     display: flex;

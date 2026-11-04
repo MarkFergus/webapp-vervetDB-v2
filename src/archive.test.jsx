@@ -96,7 +96,7 @@ describe("Status Update's form", () => {
         expect(onSave).not.toHaveBeenCalled();
         expect(screen.getByRole("alert")).toHaveTextContent(removeWarning("Nita"));
         const confirm = screen.getByRole("button", { name: "Confirm" });
-        expect(confirm).toHaveClass("is-danger");
+        expect(confirm).toHaveClass("is-confirm");
         await userEvent.click(confirm);
         await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
         expect(onSave.mock.calls[0][0]).toEqual({

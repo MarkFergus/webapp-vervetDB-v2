@@ -490,7 +490,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                         </button>
                         <button
                             type="button"
-                            className="Modal-edit is-cancel"
+                            className="Modal-edit is-blue-outline"
                             disabled={busy}
                             onClick={() => setUnusual(null)}
                         >
@@ -807,7 +807,7 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
                 {canEnter && (
                     <button
                         type="button"
-                        className="Modal-edit Deworming-enter"
+                        className="Modal-edit is-blue"
                         disabled={busy}
                         onClick={() => setRecording(true)}
                     >
@@ -853,7 +853,7 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
                     </>
                 )}
                 {canPrepare && sheet.status === "ready" && !started && (
-                    <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={onEdit}>
+                    <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={onEdit}>
                         <IconPencil size={16} aria-hidden="true" />
                         Edit
                     </button>
@@ -1220,7 +1220,7 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                     {canPrepare && (
                         <button
                             type="button"
-                            className="Modal-edit is-confirm Deworming-new"
+                            className="Modal-edit is-action Deworming-new"
                             onClick={() => setOpen({ prepare: true })}
                         >
                             <IconPlus size={16} aria-hidden="true" />

@@ -24,6 +24,7 @@ import {
     IconCpu,
     IconHistory,
     IconEye,
+    IconAlertTriangle,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -546,8 +547,12 @@ function Modal({
                                                             onChange={(e) => setReleaseForm({ ...releaseForm, details: e.target.value })}
                                                         />
                                                     </label>
-                                                    <p className="Modal-releaseNote">
-                                                        {monkey.name} will no longer appear in the app. Their record stays on file.
+                                                    {/* (a one-way step: clear before Confirm) */}
+                                                    <p className="StatusUpdate-warning">
+                                                        <IconAlertTriangle size={18} aria-hidden="true" />
+                                                        <span>
+                                                            {monkey.name} will no longer appear in the app. Their record stays on file.
+                                                        </span>
                                                     </p>
                                                     {releaseProblem && (
                                                         <p className="Modal-sickbayProblem" role="alert">
@@ -565,7 +570,7 @@ function Modal({
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="Modal-edit is-quiet"
+                                                            className="Modal-edit is-cancel"
                                                             disabled={releaseBusy}
                                                             onClick={resetSickbay}
                                                         >
@@ -706,7 +711,7 @@ function Modal({
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="Modal-edit is-quiet"
+                                                            className="Modal-edit is-cancel"
                                                             disabled={sickbayBusy}
                                                             onClick={resetSickbay}
                                                         >
@@ -1025,7 +1030,7 @@ function Modal({
                                         {onEdit && (
                                             <button
                                                 type="button"
-                                                className="Modal-edit is-icon"
+                                                className="Modal-edit is-blue is-icon"
                                                 onClick={() => {
                                                     setCurrentIndex(0);
                                                     onEdit(monkey);
@@ -1039,7 +1044,7 @@ function Modal({
                                         {onAddPhotos && (
                                             <button
                                                 type="button"
-                                                className="Modal-edit is-soft is-icon"
+                                                className="Modal-edit is-sickbay is-icon"
                                                 onClick={() => onAddPhotos(monkey)}
                                                 aria-label={`Add photos of ${monkey.name}`}
                                                 title="Add Photos"

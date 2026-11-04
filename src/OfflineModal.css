@@ -60,26 +60,6 @@
     font-weight: 700;
 }
 
-/* Install app / Download all photos: the site's blue button */
-.OfflineModal-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--bg);
-    background-color: var(--accent);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.OfflineModal-button:hover {
-    background-color: var(--accent-2);
-}
-
 .OfflineModal-section .OfflineModal-hint {
     font-size: 13px;
     color: var(--text-3);
@@ -120,20 +100,11 @@
     border-radius: 999px;
 }
 
-.OfflineModal-stop {
+/* Stop: a small red outline (is-cancel), at the end of the bar */
+.Modal-edit.OfflineModal-stop {
+    flex-shrink: 0;
+    height: 30px;
     margin-left: auto;
-    padding: 4px 12px;
-    font-family: inherit;
+    padding: 0 12px;
     font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    background: none;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.OfflineModal-stop:hover {
-    color: var(--text-strong);
-    border-color: var(--text);
 }

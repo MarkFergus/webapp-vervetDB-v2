@@ -232,7 +232,7 @@ function DeleteDialog({ report, place, onConfirm, onCancel }) {
                     <button type="button" className="Modal-edit is-danger" onClick={confirm} disabled={busy}>
                         {busy ? "Deleting…" : "Delete"}
                     </button>
-                    <button type="button" className="Modal-edit is-soft" onClick={onCancel} disabled={busy} ref={cancelRef}>
+                    <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy} ref={cancelRef}>
                         Cancel
                     </button>
                 </div>

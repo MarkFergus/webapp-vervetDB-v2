@@ -8,7 +8,7 @@ import { MAX_PHOTOS } from "./monkeyFormChecks";
 
 // The Photos part of the monkey and enclosure forms (styles in
 // MonkeyForm.css): previews with a ⋮ menu each (make primary / delete), and
-// "Upload new photo", which frames each chosen photo in the crop screen
+// "Upload New Photo", which frames each chosen photo in the crop screen
 // before uploading it. The first photo is the primary one.
 //   photos:        the photos' web addresses, primary first
 //   onChange(update): update is a function (photos → new photos)
@@ -152,7 +152,7 @@ function PhotosField({ photos, onChange, uploadTo, uploadedHere, uploading, onUp
                             uploading || photosFull ? "MonkeyForm-addPhoto is-disabled" : "MonkeyForm-addPhoto"
                         }
                     >
-                        <IconUpload size={18} aria-hidden="true" /> Upload new photo
+                        <IconUpload size={18} aria-hidden="true" /> Upload New Photo
                         <input
                             type="file"
                             accept="image/*"

@@ -182,7 +182,7 @@ export default function PastReports({ weekStarts, sections: savedSections }) {
                 </p>
             )}
             <div className="Weekly-actions">
-                <button type="button" className="Modal-edit" disabled={busy || !sections.length} onClick={view}>
+                <button type="button" className="Modal-edit is-blue" disabled={busy || !sections.length} onClick={view}>
                     <IconEye size={16} aria-hidden="true" />
                     {state === "loading" ? "Loading…" : "View"}
                 </button>

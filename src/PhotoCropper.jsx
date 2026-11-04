@@ -89,17 +89,17 @@ function PhotoCropper({ file, position, onUse, onCancel, round = false }) {
                 )}
 
                 <div className="PhotoCropper-buttons">
-                    <button type="button" className="PhotoCropper-button is-quiet" onClick={onCancel} disabled={busy}>
+                    <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
                         Cancel
                     </button>
                     <button
                         type="button"
-                        className="PhotoCropper-button"
+                        className="Modal-edit is-confirm"
                         onClick={handleUse}
                         disabled={busy || !area}
                         autoFocus
                     >
-                        {busy ? "Preparing…" : "Use photo"}
+                        {busy ? "Preparing…" : "Use Photo"}
                     </button>
                 </div>
             </div>

@@ -11,12 +11,12 @@ const STAFF = { id: "staff-1", email: "sam@example.com" };
 const PHOTOS = `${SUPABASE_URL}/storage/v1/object/public/avatars/`;
 const OLD_PHOTO = `${PHOTOS}staff-1/1000.webp`;
 
-// Stand-in crop screen: "Use photo" hands back a pretend cropped photo
+// Stand-in crop screen: "Use Photo" hands back a pretend cropped photo
 vi.mock("./PhotoCropper", () => ({
     default: ({ round, onUse, onCancel }) => (
         <div role="dialog" aria-label="Crop photo" data-round={round}>
             <button type="button" onClick={() => onUse(new Blob(["cropped"], { type: "image/webp" }))}>
-                Use photo
+                Use Photo
             </button>
             <button type="button" onClick={onCancel}>Cancel</button>
         </div>
@@ -88,7 +88,7 @@ test("no photo yet: the person icon; tapping it lets staff add one, cropped roun
 
     await choosePhoto(user);
     expect(screen.getByRole("dialog", { name: "Crop photo" })).toHaveAttribute("data-round", "true");
-    await user.click(screen.getByRole("button", { name: "Use photo" }));
+    await user.click(screen.getByRole("button", { name: "Use Photo" }));
 
     await waitFor(() => expect(stored.upserts).toHaveLength(1));
     expect(stored.uploads).toEqual([{ path: expect.stringMatching(/^staff-1\/\d+\.webp$/), type: "image/webp" }]);
@@ -107,7 +107,7 @@ test("a photo already: shown everywhere; changing it removes the old file", asyn
 
     await user.click(within(dialog).getByRole("button", { name: "Change Photo" }));
     await choosePhoto(user);
-    await user.click(screen.getByRole("button", { name: "Use photo" }));
+    await user.click(screen.getByRole("button", { name: "Use Photo" }));
     await waitFor(() => expect(stored.removed).toEqual(["staff-1/1000.webp"]));
     expect(document.querySelectorAll(`img[src="${OLD_PHOTO}"]`)).toHaveLength(0);
 });
@@ -124,7 +124,7 @@ test("an upload that fails is explained, and nothing changes", async () => {
     const { user, dialog } = await openAccount({ uploadError: { message: "nope" } });
     vi.spyOn(console, "error").mockImplementation(() => {});
     await choosePhoto(user);
-    await user.click(screen.getByRole("button", { name: "Use photo" }));
+    await user.click(screen.getByRole("button", { name: "Use Photo" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Couldn't upload your photo");
     expect(stored.upserts).toHaveLength(0);
     expect(within(dialog).getByRole("button", { name: "Add Photo" })).toBeInTheDocument();

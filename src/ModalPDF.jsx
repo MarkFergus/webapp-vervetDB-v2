@@ -331,7 +331,7 @@ function ModalPDF({
                                     {ready ? (
                                         <button
                                             ref={saveButtonRef}
-                                            className="ModalPDF-createBtn is-save"
+                                            className="Modal-edit is-confirm"
                                             onClick={onSave}
                                         >
                                             <IconDownload size={18} aria-hidden="true" />
@@ -350,7 +350,7 @@ function ModalPDF({
                                                         ? monitoringCount === 0 || noParts
                                                         : monkeyCount === 0)
                                             }
-                                            className="ModalPDF-createBtn"
+                                            className="Modal-edit is-confirm"
                                             onClick={createPDF}
                                         >
                                             {isGeneratingPDF

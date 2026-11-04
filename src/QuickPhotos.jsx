@@ -397,7 +397,7 @@ function QuickPhotos({ files, monkeys, current = null, place = null, recent = []
                             {allDone ? (
                                 <>
                                     <span className="MonkeyForm-spacer" />
-                                    <button type="button" className="MonkeyForm-button is-save" onClick={onClose}>
+                                    <button type="button" className="Modal-edit is-confirm" onClick={onClose}>
                                         Done
                                     </button>
                                 </>
@@ -405,7 +405,7 @@ function QuickPhotos({ files, monkeys, current = null, place = null, recent = []
                                 <>
                                     <button
                                         type="button"
-                                        className="MonkeyForm-button is-quiet QuickPhotos-more"
+                                        className="Modal-edit is-action-outline"
                                         onClick={() => moreRef.current?.click()}
                                         disabled={busy || items.length >= MAX_BATCH}
                                     >
@@ -426,7 +426,7 @@ function QuickPhotos({ files, monkeys, current = null, place = null, recent = []
                                     <span className="MonkeyForm-spacer" />
                                     <button
                                         type="button"
-                                        className="MonkeyForm-button is-save"
+                                        className="Modal-edit is-confirm"
                                         onClick={upload}
                                         disabled={!ready || busy}
                                     >

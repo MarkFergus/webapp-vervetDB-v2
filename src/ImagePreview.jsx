@@ -42,7 +42,7 @@ function ImagePreview({ image, onClose }) {
                     Press and hold the picture, then choose <b>Save image</b>.
                 </p>
                 {src && <img src={src} alt="Picture to save" />}
-                <button type="button" className="ImagePreview-done" onClick={onClose} autoFocus>
+                <button type="button" className="Modal-edit is-blue" onClick={onClose} autoFocus>
                     Done
                 </button>
             </div>

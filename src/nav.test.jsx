@@ -36,7 +36,7 @@ function setup({ signedIn = false, admin = false } = {}) {
     const user = userEvent.setup();
     render(
         <AuthProvider>
-            {/* editable: live data, so editors get Add monkey */}
+            {/* editable: live data, so editors get Add Monkey */}
             <ShowPage editable />
         </AuthProvider>
     );
@@ -151,7 +151,7 @@ describe("phones: the bottom bar", () => {
     test("the account circle is in the top bar (phones too): signed out, it opens Sign in", async () => {
         const { user } = setup();
         expect(screen.queryByRole("button", { name: /^You/ })).toBeNull();
-        await user.click(screen.getByRole("button", { name: "Sign in" }));
+        await user.click(screen.getByRole("button", { name: "Sign In" }));
         expect(await screen.findByRole("dialog", { name: "Sign in" })).toBeInTheDocument();
     });
 });

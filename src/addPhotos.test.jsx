@@ -28,12 +28,12 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     saveMonkeyPhotos: vi.fn(),
 }));
-// Stand-in crop screen: "Use photo" hands back a pretend cropped photo
+// Stand-in crop screen: "Use Photo" hands back a pretend cropped photo
 vi.mock("./PhotoCropper", () => ({
     default: ({ onUse, onCancel }) => (
         <div role="dialog" aria-label="Crop photo">
             <button type="button" onClick={() => onUse(new Blob(["framed"], { type: "image/webp" }))}>
-                Use photo
+                Use Photo
             </button>
             <button type="button" onClick={onCancel}>Cancel</button>
         </div>
@@ -199,7 +199,7 @@ describe("Add Photos", () => {
         await user.click(screen.getByRole("button", { name: "Remove photo 3" }));
         expect(uploadButton()).toHaveTextContent("Upload 2 Photos");
         await user.click(within(screen.getByRole("listitem", { name: "Photo 1" })).getByRole("button", { name: "Crop" }));
-        await user.click(screen.getByRole("button", { name: "Use photo" }));
+        await user.click(screen.getByRole("button", { name: "Use Photo" }));
         expect(within(screen.getByRole("listitem", { name: "Photo 1" })).getByRole("button", { name: "Cropped" })).toBeInTheDocument();
         await user.click(uploadButton());
         await screen.findByRole("heading", { name: "Photos Added" });

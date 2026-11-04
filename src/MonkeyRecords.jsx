@@ -548,7 +548,7 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                         onCancel={() => setAdding(false)}
                     />
                 ) : (
-                    <button type="button" className="Modal-edit is-soft Records-new" onClick={() => setAdding(true)}>
+                    <button type="button" className="Modal-edit is-action-outline Records-new" onClick={() => setAdding(true)}>
                         <IconPlus size={18} aria-hidden="true" />
                         New {title} Record
                     </button>
@@ -640,7 +640,7 @@ export function IntegrationRecords({ integration }) {
                         />
                     </div>
                 ) : (
-                    <button type="button" className="Modal-edit is-soft Records-new" onClick={() => setAdding(true)}>
+                    <button type="button" className="Modal-edit is-action-outline Records-new" onClick={() => setAdding(true)}>
                         <IconPlus size={18} aria-hidden="true" />
                         New Integration Report
                     </button>

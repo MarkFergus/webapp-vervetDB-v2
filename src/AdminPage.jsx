@@ -123,7 +123,7 @@ function NoAdminBubble({ onClose }) {
         <span className="ConfirmBubble Admin-bubble" role="alertdialog" aria-label={NO_ADMIN_UPGRADE} ref={ref}>
             <span className="ConfirmBubble-question">{NO_ADMIN_UPGRADE}</span>
             <span className="ConfirmBubble-buttons">
-                <button type="button" className="Modal-edit is-quiet" onClick={onClose} ref={okRef}>
+                <button type="button" className="Modal-edit is-blue" onClick={onClose} ref={okRef}>
                     OK
                 </button>
             </span>

@@ -108,15 +108,15 @@ async function openAccountPage(user) {
 }
 
 async function signIn(user, email, password) {
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Sign In" }));
     await user.type(screen.getByLabelText("Email"), email);
     await user.type(screen.getByLabelText("Password"), password);
-    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Sign in" }));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Sign In" }));
 }
 
 test("the Sign in button opens a form, ready to type your email", async () => {
     const { user, dialog } = setup();
-    await user.click(await screen.findByRole("button", { name: "Sign in" }));
+    await user.click(await screen.findByRole("button", { name: "Sign In" }));
     expect(dialog()).toHaveAccessibleName("Sign in");
     expect(screen.getByLabelText("Email")).toHaveFocus();
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
@@ -129,7 +129,7 @@ test("a wrong password shows a clear message and keeps you signed out", async ()
         "That email and password don't match"
     );
     expect(screen.getByLabelText("Password")).toHaveValue(""); // cleared
-    expect(navAccountButton()).toHaveAccessibleName("Sign in");
+    expect(navAccountButton()).toHaveAccessibleName("Sign In");
 });
 
 test("the editor signs in: told they can edit, and the nav icon turns green", async () => {
@@ -227,10 +227,10 @@ test("an account that isn't an editor is told it can only view", async () => {
 test("signing out goes back to the Sign in form", async () => {
     const { user, dialog } = setup();
     await signIn(user, EDITOR.email, PASSWORD);
-    await user.click(await within(dialog()).findByRole("button", { name: "Sign out" }));
+    await user.click(await within(dialog()).findByRole("button", { name: "Sign Out" }));
 
     await waitFor(() => expect(dialog()).toHaveAccessibleName("Sign in"));
-    expect(navAccountButton()).toHaveAccessibleName("Sign in");
+    expect(navAccountButton()).toHaveAccessibleName("Sign In");
     expect(navAccountButton()).not.toHaveClass("is-signed-in");
 });
 
@@ -241,7 +241,7 @@ test("a sign-in from an earlier visit is remembered", async () => {
 
 test("Escape closes the pop-up", async () => {
     const { user } = setup();
-    await user.click(await screen.findByRole("button", { name: "Sign in" }));
+    await user.click(await screen.findByRole("button", { name: "Sign In" }));
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 });
@@ -256,9 +256,9 @@ test("after signing in, Continue (focused) closes the pop-up; Sign out is below 
     const buttons = within(dialog())
         .getAllByRole("button")
         .map((b) => b.textContent)
-        .filter((t) => t === "Continue" || t === "Sign out");
-    expect(buttons).toEqual(["Continue", "Sign out"]);
-    expect(within(dialog()).getByRole("button", { name: "Sign out" })).toHaveClass("is-signOut");
+        .filter((t) => t === "Continue" || t === "Sign Out");
+    expect(buttons).toEqual(["Continue", "Sign Out"]);
+    expect(within(dialog()).getByRole("button", { name: "Sign Out" })).toHaveClass("is-signOut");
 
     await user.keyboard("{Enter}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -267,8 +267,8 @@ test("after signing in, Continue (focused) closes the pop-up; Sign out is below 
 
 test("Request access shows who to email", async () => {
     const { user, dialog } = setup();
-    await user.click(await screen.findByRole("button", { name: "Sign in" }));
-    const button = within(dialog()).getByRole("button", { name: "Request access" });
+    await user.click(await screen.findByRole("button", { name: "Sign In" }));
+    const button = within(dialog()).getByRole("button", { name: "Request Access" });
     expect(button).toHaveAttribute("aria-expanded", "false");
 
     await user.click(button);
@@ -332,7 +332,7 @@ describe("the account menu (computers)", () => {
         await user.click(await screen.findByRole("button", { name: "Account (signed in)" }));
         await user.click(screen.getByRole("menuitem", { name: "Sign Out" }));
         expect(supabase.auth.signOut).toHaveBeenCalled();
-        await waitFor(() => expect(navAccountButton()).toHaveAccessibleName("Sign in"));
+        await waitFor(() => expect(navAccountButton()).toHaveAccessibleName("Sign In"));
         expect(screen.queryByRole("menu")).toBeNull();
         await user.click(navAccountButton());
         expect(dialog()).toHaveAccessibleName("Sign in");
@@ -388,41 +388,41 @@ describe("passwords", () => {
 
     test("Forgot password? emails a link back to this site", async () => {
         const { user, dialog } = setup();
-        await user.click(await screen.findByRole("button", { name: "Sign in" }));
-        await user.click(within(dialog()).getByRole("button", { name: "Forgot password?" }));
+        await user.click(await screen.findByRole("button", { name: "Sign In" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Forgot Password?" }));
 
         expect(screen.getByRole("dialog")).toHaveAccessibleName("Forgot password");
         const email = screen.getByLabelText("Email");
         expect(email).toHaveFocus();
         await user.type(email, " new@example.com ");
-        await user.click(screen.getByRole("button", { name: "Send link" }));
+        await user.click(screen.getByRole("button", { name: "Send Link" }));
 
         expect(await within(screen.getByRole("dialog")).findByRole("status")).toHaveTextContent(
             "If new@example.com has a vervetDB account, a link to choose a new password is on its way."
         );
         expect(resetEmails[0].email).toBe("new@example.com");
         // Sent: the button now offers to send it again
-        expect(screen.queryByRole("button", { name: "Send link" })).toBeNull();
-        await user.click(screen.getByRole("button", { name: "Send again" }));
+        expect(screen.queryByRole("button", { name: "Send Link" })).toBeNull();
+        await user.click(screen.getByRole("button", { name: "Send Again" }));
         await waitFor(() => expect(resetEmails).toHaveLength(2));
         expect(resetEmails[0].options.redirectTo).toBe(window.location.origin + import.meta.env.BASE_URL);
 
-        await user.click(screen.getByRole("button", { name: "Back to sign in" }));
+        await user.click(screen.getByRole("button", { name: "Back to Sign In" }));
         expect(screen.getByRole("dialog")).toHaveAccessibleName("Sign in");
     });
 
     test("too many reset emails: explains to wait", async () => {
         const { user, dialog } = setup({ resetError: { status: 429, message: "rate limit" } });
-        await user.click(await screen.findByRole("button", { name: "Sign in" }));
-        await user.click(within(dialog()).getByRole("button", { name: "Forgot password?" }));
+        await user.click(await screen.findByRole("button", { name: "Sign In" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Forgot Password?" }));
         await user.type(screen.getByLabelText("Email"), "new@example.com");
-        await user.click(screen.getByRole("button", { name: "Send link" }));
+        await user.click(screen.getByRole("button", { name: "Send Link" }));
         expect(await screen.findByText(/Too many emails have been sent recently/)).toBeInTheDocument();
     });
 
     test("the link in the email opens Choose a new password; saving it signs you in", async () => {
         const { user } = setup();
-        await screen.findByRole("button", { name: "Sign in" });
+        await screen.findByRole("button", { name: "Sign In" });
         // What Supabase does when someone arrives from the reset email
         authListener("PASSWORD_RECOVERY", { user: EDITOR });
         authListener("SIGNED_IN", { user: EDITOR });
@@ -435,7 +435,7 @@ describe("passwords", () => {
 
         await user.type(screen.getByLabelText("New password"), "a-new-password");
         await user.type(screen.getByLabelText("Type it again"), "a-new-password");
-        await user.click(screen.getByRole("button", { name: "Save password" }));
+        await user.click(screen.getByRole("button", { name: "Save Password" }));
 
         expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: "a-new-password" });
         // Signed in by the link: welcomed
@@ -446,17 +446,17 @@ describe("passwords", () => {
     test("Change password: checks the length and that both match", async () => {
         const { user, dialog } = setup({ savedUser: EDITOR });
         await openAccountPage(user);
-        await user.click(within(dialog()).getByRole("button", { name: "Change password" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Change Password" }));
         expect(screen.getByRole("dialog")).toHaveAccessibleName("Change password");
         await waitFor(() => expect(screen.getByLabelText("New password")).toHaveFocus());
 
         await user.type(screen.getByLabelText("New password"), "short");
         await user.type(screen.getByLabelText("Type it again"), "short");
-        await user.click(screen.getByRole("button", { name: "Save password" }));
+        await user.click(screen.getByRole("button", { name: "Save Password" }));
         expect(screen.getByRole("alert")).toHaveTextContent("Please use at least 8 characters.");
 
         await user.type(screen.getByLabelText("New password"), "-but-longer");
-        await user.click(screen.getByRole("button", { name: "Save password" }));
+        await user.click(screen.getByRole("button", { name: "Save Password" }));
         expect(screen.getByRole("alert")).toHaveTextContent("The two passwords don't match.");
         expect(supabase.auth.updateUser).not.toHaveBeenCalled();
 
@@ -471,10 +471,10 @@ describe("passwords", () => {
             updateError: { status: 422, code: "same_password", message: "same" },
         });
         await openAccountPage(user);
-        await user.click(within(dialog()).getByRole("button", { name: "Change password" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Change Password" }));
         await user.type(screen.getByLabelText("New password"), PASSWORD);
         await user.type(screen.getByLabelText("Type it again"), PASSWORD);
-        await user.click(screen.getByRole("button", { name: "Save password" }));
+        await user.click(screen.getByRole("button", { name: "Save Password" }));
         expect(await screen.findByText(/That's your current password/)).toBeInTheDocument();
         expect(screen.getByRole("dialog")).toHaveAccessibleName("Change password");
     });

@@ -85,15 +85,6 @@
 
 /* Enter Results: blue (the same blue as Awaiting Approval: the theme's), apart
    from Submit's green */
-.Modal-edit.Deworming-enter {
-    color: var(--on-blue);
-    background-color: var(--blue);
-}
-
-.Modal-edit.Deworming-enter:hover:not(:disabled) {
-    background-color: var(--blue-2);
-}
-
 /* Add Photo, until every day's complete */
 .Deworming-photoAdd.is-off {
     opacity: 0.35;
@@ -920,9 +911,14 @@
     margin-top: 12px;
 }
 
+/* Delete: red (destructive) */
+.Deworming-icon.is-danger,
 .Deworming-icon.is-danger:hover:not(:disabled) {
-    color: var(--pink);
-    border-color: var(--pink);
+    color: var(--danger);
+}
+
+.Deworming-icon.is-danger:hover:not(:disabled) {
+    border-color: var(--danger);
 }
 
 .Deworming-addDialog .RecordsPage-tabs,

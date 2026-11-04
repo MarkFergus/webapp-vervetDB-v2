@@ -941,7 +941,7 @@ function MonkeyForm({
                                         {busy ? "Saving…" : "Confirm"}
                                     </button>
                                     {/* Cancel: back to the form, nothing saved */}
-                                    <button type="button" className="Modal-edit is-soft" onClick={() => setMoveStep(null)} disabled={busy}>
+                                    <button type="button" className="Modal-edit is-cancel" onClick={() => setMoveStep(null)} disabled={busy}>
                                         Cancel
                                     </button>
                                 </div>
@@ -951,10 +951,10 @@ function MonkeyForm({
                     {confirmingDelete ? (
                         <>
                             <span className="MonkeyForm-confirm">Delete {monkey.name} for good?</span>
-                            <button type="button" className="MonkeyForm-button is-quiet" onClick={() => setConfirmingDelete(false)} disabled={busy}>
-                                Keep
+                            <button type="button" className="Modal-edit is-cancel" onClick={() => setConfirmingDelete(false)} disabled={busy}>
+                                Cancel
                             </button>
-                            <button type="button" className="MonkeyForm-button is-danger" onClick={handleDelete} disabled={busy}>
+                            <button type="button" className="Modal-edit is-danger" onClick={handleDelete} disabled={busy}>
                                 {busy ? "Deleting…" : "Delete"}
                             </button>
                         </>
@@ -965,7 +965,7 @@ function MonkeyForm({
                             {!isNew && isAdmin && !quick && (
                                 <button
                                     type="button"
-                                    className="MonkeyForm-button is-danger is-outline"
+                                    className="Modal-edit is-danger-outline"
                                     onClick={() => setConfirmingDelete(true)}
                                     disabled={busy}
                                 >
@@ -973,12 +973,12 @@ function MonkeyForm({
                                 </button>
                             )}
                             <span className="MonkeyForm-spacer" />
-                            <button type="button" className="MonkeyForm-button is-quiet" onClick={requestClose} disabled={busy}>
+                            <button type="button" className="Modal-edit is-cancel" onClick={requestClose} disabled={busy}>
                                 Cancel
                             </button>
                             {/* Not while a photo is still uploading */}
-                            <button type="submit" className="MonkeyForm-button is-save" disabled={busy || Boolean(uploading)}>
-                                {busy ? "Saving…" : isNew ? "Add monkey" : "Save"}
+                            <button type="submit" className="Modal-edit is-confirm" disabled={busy || Boolean(uploading)}>
+                                {busy ? "Saving…" : isNew ? "Add Monkey" : "Save"}
                             </button>
                         </>
                     )}

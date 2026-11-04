@@ -442,7 +442,7 @@
 /* The upload "button" is a label around a hidden file box: show the
    keyboard focus ring on the label */
 .MonkeyForm-addPhoto:focus-within {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--amber-text);
     outline-offset: 2px;
 }
 
@@ -465,11 +465,15 @@
     padding: 6px 10px;
     font-family: var(--font-ui);
     font-size: 14px;
-    color: var(--accent);
+    color: var(--amber-text);
     background: none;
-    border: 1px dashed var(--accent);
-    border-radius: 6px;
+    border: 1.5px dashed currentColor;
+    border-radius: 8px;
     cursor: pointer;
+}
+
+.MonkeyForm-addPhoto:not(.is-disabled):hover {
+    background-color: var(--wash-soft);
 }
 
 .MonkeyForm-problem {
@@ -557,78 +561,6 @@
     color: var(--text-strong);
 }
 
-.MonkeyForm-button {
-    padding: 6px 14px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--bg);
-    background-color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-/* Hover: a clearly lighter blue (the same as the site's other main buttons) */
-.MonkeyForm-button:hover:not(:disabled) {
-    background-color: var(--accent-2);
-    border-color: var(--accent-2);
-}
-
-.MonkeyForm-button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-/* Save / Add monkey: the site's green */
-.MonkeyForm-button.is-save {
-    color: var(--on-green);
-    background-color: var(--green-fill);
-    border-color: var(--green-fill);
-}
-
-.MonkeyForm-button.is-save:hover:not(:disabled) {
-    background-color: var(--green-fill-2);
-    border-color: var(--green-fill-2);
-}
-
-/* Cancel, Keep: quiet outlines that light up on hover */
-.MonkeyForm-button.is-quiet {
-    color: var(--text);
-    background: none;
-    border-color: var(--line-strong);
-}
-
-.MonkeyForm-button.is-quiet:hover:not(:disabled) {
-    color: var(--text-strong);
-    background: none;
-    border-color: var(--text);
-}
-
-.MonkeyForm-button.is-danger {
-    color: var(--bg);
-    background-color: var(--pink);
-    border-color: var(--pink);
-}
-
-.MonkeyForm-button.is-danger:hover:not(:disabled) {
-    background-color: var(--pink-2);
-    border-color: var(--pink-2);
-}
-
-/* Delete (before confirming): pink outline that fills pink on hover */
-.MonkeyForm-button.is-danger.is-outline {
-    color: var(--pink);
-    background: none;
-}
-
-.MonkeyForm-button.is-danger.is-outline:hover:not(:disabled) {
-    color: var(--bg);
-    background-color: var(--pink);
-    border-color: var(--pink);
-}
-
 @media (max-width: 420px) {
     .MonkeyForm-row:not(.is-pair) {
         grid-template-columns: 1fr;
@@ -661,7 +593,7 @@
     display: flex;
     overflow: hidden;
     border: 1px solid var(--line-strong);
-    border-radius: 999px;
+    border-radius: 8px;
 }
 
 .MonkeyForm-kind button {
@@ -684,9 +616,11 @@
     color: var(--text-strong);
 }
 
+/* The chosen type: a pink outline, a special touch (it decides the form) */
 .MonkeyForm-kind button[aria-pressed="true"] {
-    color: var(--green);
-    background-color: rgba(76, 212, 128, 0.16);
+    color: var(--pink);
+    background-color: color-mix(in srgb, var(--pink) 12%, transparent);
+    box-shadow: inset 0 0 0 1.5px var(--pink);
 }
 
 /* Monitoring: the Condition Check tick on its own line, its hint right

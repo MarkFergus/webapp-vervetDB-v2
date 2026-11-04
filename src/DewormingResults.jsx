@@ -1081,7 +1081,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
             {day <= 3 && (
                 <button
                     type="button"
-                    className="Modal-edit is-soft Deworming-addMonkey"
+                    className="Modal-edit is-action-outline Deworming-addMonkey"
                     onClick={() => setAdding(true)}
                 >
                     <IconPlus size={16} aria-hidden="true" />
@@ -1140,7 +1140,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                 <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={() => save()}>
                     {busy ? "Saving…" : saved ? "Saved!" : `Save Day ${day}`}
                 </button>
-                <button type="button" className="Modal-edit is-soft" disabled={busy || copying} onClick={copy}>
+                <button type="button" className="Modal-edit is-blue-outline" disabled={busy || copying} onClick={copy}>
                     {copying ? (
                         <IconLoader2 className="Deworming-spinner" size={16} stroke={2.5} aria-hidden="true" />
                     ) : (
@@ -1148,7 +1148,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                     )}
                     {copying ? "Copying…" : copied ? "Copied!" : `Copy Day ${day} Summary`}
                 </button>
-                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
+                <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={onCancel}>
                     Close
                 </button>
             </div>
@@ -1281,7 +1281,7 @@ export function Review({ sheet, lines, onDone }) {
                         <input type="text" maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} />
                     </label>
                     <div className="Deworming-actions">
-                        <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={sendBack}>
+                        <button type="button" className="Modal-edit is-danger" disabled={busy} onClick={sendBack}>
                             {busy ? "Sending…" : "Send Back"}
                         </button>
                         <button

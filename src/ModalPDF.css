@@ -158,31 +158,6 @@
     margin: 0 0 40px 0;
 }
 
-.ModalPDF-createBtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: transparent;
-    color: var(--pink);
-    border: 1px solid var(--pink);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.ModalPDF-createBtn:hover:not(:disabled) {
-    color: var(--pink-2);
-    border: 1px solid var(--pink-2);
-}
-
-.ModalPDF-createBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 .ModalPDF-warning,
 .ModalPDF-status,
 .ModalPDF-error {
@@ -193,17 +168,6 @@
 
 .ModalPDF-warning {
     color: var(--text-2);
-}
-
-/* Save PDF: filled pink, so the last step stands out */
-.ModalPDF-createBtn.is-save {
-    color: var(--bg);
-    background-color: var(--pink);
-}
-
-.ModalPDF-createBtn.is-save:hover {
-    color: var(--bg);
-    background-color: var(--pink-2);
 }
 
 /* "Your Profile Book is ready (1.2 MB)" */

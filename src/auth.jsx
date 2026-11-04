@@ -182,7 +182,7 @@ export function AuthProvider({ children }) {
             return "That password is too easy to guess. Please choose a longer one.";
         }
         if (error.status === 401 || error.code === "session_not_found") {
-            return "Your link has expired. Please use “Forgot password?” to get a new one.";
+            return "Your link has expired. Please use “Forgot Password?” to get a new one.";
         }
         return "Couldn't save your password right now. Please try again in a moment.";
     }

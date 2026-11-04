@@ -155,7 +155,7 @@ describe("the pop-up", () => {
         const user = userEvent.setup();
         render(<ShowPage monkeys={MONKEYS} />);
         await openFromMenu(user);
-        await user.click(within(dialog()).getByRole("button", { name: "Install app" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Install App" }));
         expect(prompt).toHaveBeenCalled();
         expect(await within(dialog()).findByText("You're using the installed app.")).toBeInTheDocument();
     });
@@ -166,9 +166,9 @@ describe("the pop-up", () => {
         render(<ShowPage monkeys={MONKEYS} />);
         await openFromMenu(user);
         expect(await within(dialog()).findAllByText("0 of 3")).toHaveLength(2);
-        expect(within(dialog()).queryByRole("button", { name: /Download all photos/ })).toBeNull();
+        expect(within(dialog()).queryByRole("button", { name: /^Download All Photos/ })).toBeNull();
         expect(within(dialog()).getByText(/Staff can download every photo \(under 1 MB\)/)).toBeInTheDocument();
-        await user.click(within(dialog()).getByRole("button", { name: "Sign in to download all photos" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Sign In to Download All Photos" }));
         expect(await screen.findByRole("dialog", { name: "Sign in" })).toBeInTheDocument();
     });
 
@@ -186,7 +186,7 @@ describe("the pop-up", () => {
         await openFromMenu(user);
         expect(await within(dialog()).findByText("0 of 3")).toBeInTheDocument();
         expect(within(dialog()).getByText("3 of 3")).toBeInTheDocument(); // thumbnails
-        await user.click(within(dialog()).getByRole("button", { name: "Download all photos (under 1 MB)" }));
+        await user.click(within(dialog()).getByRole("button", { name: "Download All Photos (under 1 MB)" }));
         expect(await within(dialog()).findByText("Every photo is saved on this device.")).toBeInTheDocument();
         await waitFor(() => expect(within(dialog()).getAllByText("3 of 3")).toHaveLength(2));
     });

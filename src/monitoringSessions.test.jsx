@@ -382,6 +382,13 @@ test("phones: D&D in the troop picker, and Continue / Cancel without \"Session\"
         expect(await screen.findByRole("button", { name: "Continue" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
         expect(within(screen.getByLabelText("New Monitoring Session")).getByRole("option", { name: /^D&D/ })).toBeInTheDocument();
+        // (the checks' notes: hidden until + Note, so they don't take a row each)
+        const user = userEvent.setup();
+        await user.click(screen.getByRole("button", { name: "Continue" }));
+        const checks = await screen.findByRole("region", { name: "Checks" });
+        expect(within(checks).queryByLabelText("Fence note")).toBeNull();
+        await user.click(within(checks).getByRole("button", { name: "Add Fence note" }));
+        expect(within(checks).getByLabelText("Fence note")).toHaveFocus();
     } finally {
         window.matchMedia = original;
     }

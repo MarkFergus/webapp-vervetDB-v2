@@ -7,28 +7,9 @@
     max-width: 940px;
 }
 
-/* "+ Add Entry": an outline button (the app's 6px corners, like the Edit
-   form's buttons) */
+/* Add Entry: amber outlined (is-action-outline) */
 .MaintenanceLog-add {
-    display: inline-flex;
     align-self: flex-start;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    font-family: inherit;
-    font-size: 14px;
-    color: var(--accent);
-    background: none;
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background-color 0.15s;
-}
-
-.MaintenanceLog-add:hover {
-    color: var(--accent-2);
-    border-color: var(--accent-2);
-    background-color: var(--surface-2);
 }
 
 /* Adding an entry: date, details, buttons */
@@ -113,46 +94,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-}
-
-/* Cancel and Add Entry: the Edit form's buttons (MonkeyForm.css) */
-.MaintenanceLog-button {
-    padding: 6px 14px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-/* Cancel: a quiet outline that lights up on hover */
-.MaintenanceLog-button.is-quiet {
-    color: var(--text);
-    background: none;
-    border: 1px solid var(--line-strong);
-}
-
-.MaintenanceLog-button.is-quiet:hover:not(:disabled) {
-    color: var(--text-strong);
-    border-color: var(--text);
-}
-
-/* Add Entry: the site's green, like Save */
-.MaintenanceLog-button.is-save {
-    color: var(--on-green);
-    background-color: var(--green-fill);
-    border: 1px solid var(--green);
-}
-
-.MaintenanceLog-button.is-save:hover:not(:disabled) {
-    background-color: var(--green-fill-2);
-    border-color: var(--green-fill-2);
-}
-
-.MaintenanceLog-button:disabled {
-    opacity: 0.6;
-    cursor: default;
 }
 
 .MaintenanceLog-problem {
@@ -287,6 +228,17 @@
 .MaintenanceLog-confirm button:hover:not(:disabled) {
     color: var(--text-strong);
     border-color: var(--text);
+}
+
+/* Cancel: red outlined, like every Cancel */
+.MaintenanceLog-confirm button.is-cancel,
+.MaintenanceLog-confirm button.is-cancel:hover:not(:disabled) {
+    color: var(--danger);
+    border-color: currentColor;
+}
+
+.MaintenanceLog-confirm button.is-cancel:hover:not(:disabled) {
+    background-color: var(--surface-2);
 }
 
 .MaintenanceLog-confirm button.is-danger {

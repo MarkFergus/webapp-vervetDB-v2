@@ -31,9 +31,6 @@
     gap: 6px;
 }
 
-.Modal-edit.MarkSeen-button {
-    border: 1px solid var(--text);
-}
 
 /* Phones: the button on its own row, bottom right */
 @media (max-width: 624px) {

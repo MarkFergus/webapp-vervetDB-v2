@@ -100,14 +100,15 @@ function AlreadySavedDialog({ kind, date, clashes, busy, onReplace, onKeep, onCa
                         </li>
                     ))}
                 </ul>
+                <p>Do you want to replace or keep the old values?</p>
                 <div className="RecordsPage-dialogButtons">
                     <button type="button" className="Modal-edit is-danger" onClick={onReplace} disabled={busy}>
-                        Replace Them
+                        Replace
                     </button>
-                    <button type="button" className="Modal-edit" onClick={onKeep} disabled={busy}>
-                        Keep Old Values
+                    <button type="button" className="Modal-edit is-blue-outline" onClick={onKeep} disabled={busy}>
+                        Keep
                     </button>
-                    <button type="button" className="Modal-edit is-soft" onClick={onCancel} disabled={busy} ref={cancelRef}>
+                    <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy} ref={cancelRef}>
                         Cancel
                     </button>
                 </div>
@@ -508,7 +509,7 @@ function WeeklyReport({ monkeys, records }) {
     };
     if (!open) {
         return (
-            <button type="button" className="Modal-edit RecordsPage-reportButton" onClick={() => setOpen(true)}>
+            <button type="button" className="Modal-edit is-blue-outline RecordsPage-reportButton" onClick={() => setOpen(true)}>
                 Create Report
             </button>
         );
@@ -540,11 +541,11 @@ function WeeklyReport({ monkeys, records }) {
                         {report.text}
                     </pre>
                     <div className="RecordsPage-actions">
-                        <button type="button" className="Modal-edit is-confirm" onClick={copy}>
+                        <button type="button" className="Modal-edit is-blue" onClick={copy}>
                             <IconCopy size={18} aria-hidden="true" />
                             {copied === "copied" ? "Copied!" : "Copy Report"}
                         </button>
-                        <button type="button" className="Modal-edit is-soft" onClick={() => setOpen(false)}>
+                        <button type="button" className="Modal-edit is-blue-outline" onClick={() => setOpen(false)}>
                             Close
                         </button>
                         {copied === "failed" && (
@@ -557,7 +558,7 @@ function WeeklyReport({ monkeys, records }) {
             ) : (
                 <>
                     <p className="RecordsPage-none">No weights that week.</p>
-                    <button type="button" className="Modal-edit is-soft" onClick={() => setOpen(false)}>
+                    <button type="button" className="Modal-edit is-blue-outline" onClick={() => setOpen(false)}>
                         Close
                     </button>
                 </>

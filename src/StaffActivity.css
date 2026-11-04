@@ -74,6 +74,13 @@
     background-color: var(--text);
 }
 
+/* (the light themes: white and raised, like the Enter / View tabs) */
+:where(:root[data-theme="light"]) .Activity-periods button[aria-pressed="true"] {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
 /* Custom: From and To, on their own line */
 .Activity-dates {
     display: flex;
