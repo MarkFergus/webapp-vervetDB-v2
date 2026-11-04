@@ -66,7 +66,7 @@ test("the Priority Checks: numbered in order, leaving out empty ones", () => {
     expect(priorityChecks(full)).toEqual([
         { title: "Check 2026 babies" },
         {
-            title: "Priority Condition Checks:",
+            title: "Priority Checks:",
             lines: [
                 { label: "Troop:", text: "Bliss" },
                 { label: "Introcages:", text: "Nita" },

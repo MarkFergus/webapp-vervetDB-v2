@@ -514,7 +514,7 @@
     background-color: rgba(245, 166, 35, 0.15);
 }
 
-/* Muted (Mute Missing Alerts): quiet grey */
+/* Muted (Mute Alerts): quiet grey */
 .Monitoring-flag.is-muted {
     color: var(--text-2);
     background-color: var(--surface-3);

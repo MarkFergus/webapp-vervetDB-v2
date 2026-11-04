@@ -56,7 +56,7 @@ export function priorityChecks(notes) {
     const { troop, introcages } = notes.condition;
     if (troop.length || introcages.length) {
         checks.push({
-            title: "Priority Condition Checks:",
+            title: "Priority Checks:",
             lines: [
                 ...(troop.length ? [{ label: "Troop:", text: troop.join(", ") }] : []),
                 ...(introcages.length ? [{ label: "Introcages:", text: introcages.join(", ") }] : []),

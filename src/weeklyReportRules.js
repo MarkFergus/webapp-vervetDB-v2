@@ -29,6 +29,11 @@ export const SECTIONS = [
         title: "Integration",
         sub: "Reports, new integrations and status changes",
     },
+    {
+        id: "deworming",
+        title: "Deworming",
+        sub: "Dewormings completed with any issues, in progress, and due in the next 2 weeks",
+    },
     { id: "maintenance", title: "Maintenance", sub: "All maintenance completed" },
 ];
 

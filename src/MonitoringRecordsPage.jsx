@@ -242,7 +242,7 @@ function useTroopFacts(monkeys, troop, sessions, staff, session = null, spots = 
     const counted = spotsFor(spots, session);
     // (in an introcage or Sickbay: seen every day; moved back out: seen that day)
     const today = dayText(new Date());
-    // (Mute Missing Alerts: never flagged missing; still seen or not)
+    // (Mute Alerts: never flagged missing; still seen or not)
     const records = Object.fromEntries(
         all.map((m) => {
             const record = sightingRecord(past, m.id, counted, { daily: seenDaily(m), back: lastMoves[m.id], today });
@@ -332,7 +332,7 @@ function Briefing({ facts, today }) {
                                     {priorities.map((m) => (
                                         <li key={m.id}>
                                             <b>{m.name}</b>
-                                            {priority[m.id].notes ? ` ${priority[m.id].notes}` : " Priority Condition Check"}
+                                            {priority[m.id].notes ? ` ${priority[m.id].notes}` : " Priority Check"}
                                         </li>
                                     ))}
                                 </ul>
@@ -1219,7 +1219,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     }, [reload]);
     // (the troop's monkeys' latest moves: back out to it, for their last seen)
     const [lastMoves, setLastMoves] = useState({});
-    // (and who's muted: Mute Missing Alerts)
+    // (and who's muted: Mute Alerts)
     const [mutedIds, setMutedIds] = useState(new Set());
     const memberKey = troopMonkeys(monkeys, troop)
         .all.map((m) => m.id)

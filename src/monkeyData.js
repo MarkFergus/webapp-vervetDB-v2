@@ -1116,7 +1116,7 @@ export async function deleteInjuryUpdate(id) {
 // ---- Monitoring: Condition Check and Notes for Monitoring (staff only) ----
 
 // A monkey's monitoring, as the site uses it: { conditionCheck, notes ("" if
-// none), alertsMuted (Mute Missing Alerts: monitoring-mute.sql),
+// none), alertsMuted (Mute Alerts: monitoring-mute.sql),
 // updatedByName, updatedAt }
 export const NO_MONITORING = { conditionCheck: false, notes: "", alertsMuted: false, updatedByName: null, updatedAt: null };
 const toAppMonitoring = (row) =>

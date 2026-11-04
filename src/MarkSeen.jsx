@@ -143,7 +143,7 @@ export function LastSeen({ monkey, record, canMark, onMarked, muted = false }) {
                         {record.spot.note ? ` · ${record.spot.note}` : ""}
                     </span>
                 )}
-                {/* (Mute Missing Alerts: why it's never shown as missing) */}
+                {/* (Mute Alerts: why it's never shown as missing) */}
                 {muted && <span className="MarkSeen-by"> · Missing alerts muted</span>}
             </span>
             {record.missed > 0 && (

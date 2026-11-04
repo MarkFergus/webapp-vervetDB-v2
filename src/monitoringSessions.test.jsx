@@ -505,7 +505,7 @@ test("the checklist goes by where monkeys are now; Sickbay's are ticked (seen th
     expect(screen.getByLabelText("WhatsApp summary").textContent).not.toContain("Pip");
 });
 
-test("Mute Missing Alerts: never flagged or listed as missing, but still counted and named as not seen", async () => {
+test("Mute Alerts: never flagged or listed as missing, but still counted and named as not seen", async () => {
     const user = userEvent.setup();
     // (Malawi, missing the last 2 sessions, is muted: hard to tell apart)
     loadMonitoringFor.mockImplementation(async (ids) => (ids.includes(1) ? { 1: { conditionCheck: false, notes: "", alertsMuted: true } } : {}));

@@ -57,6 +57,24 @@ const SECTION_LINES = {
         missing: ["Muse: no milk total Tue 27 Oct"],
     },
     integration: { id: "integration", title: "Integration", groups: [{ title: "Reports", lines: [] }], missing: [] },
+    deworming: {
+        id: "deworming",
+        title: "Deworming",
+        groups: [
+            {
+                title: "Completed",
+                lines: [
+                    {
+                        text: "Dino & Daniel Troop · 6-Month · Mon 26 Oct – Wed 28 Oct · Sam",
+                        sub: ["24 monkeys", "Issues:", "Bruno: Day 2 1/2 dose, Day 3 Skipped"],
+                    },
+                ],
+            },
+            { title: "In Progress", lines: [] },
+            { title: "Due in the Next 2 Weeks", lines: [{ text: "None due" }] },
+        ],
+        missing: [],
+    },
     maintenance: {
         id: "maintenance",
         title: "Maintenance",
@@ -164,7 +182,7 @@ describe("the settings", () => {
         expect(screen.getByLabelText("My Week Runs")).toHaveDisplayValue("Monday – Sunday");
         expect(screen.getByLabelText("Send day")).toHaveDisplayValue("Monday");
         expect(screen.getByLabelText("Send time")).toHaveDisplayValue("07:00");
-        for (const name of [/^Monitoring.+/, /^Baby Care.+/, /^Integration.+/, /^Maintenance.+/]) {
+        for (const name of [/^Monitoring.+/, /^Baby Care.+/, /^Integration.+/, /^Deworming.+/, /^Maintenance.+/]) {
             expect(screen.getByRole("checkbox", { name })).toBeChecked();
         }
         // (as saved: Saved!, until something changes)
@@ -190,7 +208,7 @@ describe("the settings", () => {
                 week_starts: 2,
                 send_day: 2,
                 send_hour: 6,
-                sections: ["monitoring", "baby_care", "integration"],
+                sections: ["monitoring", "baby_care", "integration", "deworming"],
             },
         ]);
         // (a change: Save again)
@@ -298,6 +316,11 @@ describe("Past Reports", () => {
         expect(within(report).getByRole("row", { name: /Muse/ })).toHaveTextContent("Muse190–190 ml");
         expect(within(report).getByText(/Must See/)).toHaveClass("is-alert");
         expect(within(report).getByText("Notes: Rainy")).toBeInTheDocument();
+        // (Deworming: what was completed, with its issues; nothing missing)
+        const deworming = within(report).getByRole("region", { name: "Deworming" });
+        expect(deworming).toHaveTextContent("24 monkeys");
+        expect(deworming).toHaveTextContent("Bruno: Day 2 1/2 dose, Day 3 Skipped");
+        expect(within(report).queryByRole("group", { name: "Deworming: Missing" })).not.toBeInTheDocument();
     });
 
     test("Email Me: sent to your sign-in email", async () => {
@@ -309,7 +332,7 @@ describe("Past Reports", () => {
         expect(await card.findByRole("status")).toHaveTextContent("Sent to me@example.com.");
         expect(supabase.rpc).toHaveBeenCalledWith("email_me_weekly_report", {
             week_from: pastWeeks(1)[1].from,
-            sections: ["monitoring", "baby_care", "integration", "maintenance"],
+            sections: ["monitoring", "baby_care", "integration", "deworming", "maintenance"],
         });
     });
 

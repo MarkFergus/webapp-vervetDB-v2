@@ -42,14 +42,14 @@ beforeEach(() => {
 test("admins: a Monitoring part with Condition Check and Notes for Monitoring, as saved", async () => {
     loadMonitoring.mockResolvedValue({ conditionCheck: true, notes: "Old lady", updatedByName: "Sam", updatedAt: null });
     edit();
-    await waitFor(() => expect(within(monitoring()).getByRole("checkbox", { name: "Priority Condition Check" })).toBeChecked());
+    await waitFor(() => expect(within(monitoring()).getByRole("checkbox", { name: "Priority Check" })).toBeChecked());
     expect(within(monitoring()).getByRole("textbox", { name: "Notes for Monitoring" })).toHaveValue("Old lady");
 });
 
 test("saving: the monitoring goes with the monkey, only when it's changed", async () => {
     const user = userEvent.setup();
     edit();
-    await user.click(await within(await screen.findByRole("group", { name: "Monitoring" })).findByRole("checkbox", { name: "Priority Condition Check" }));
+    await user.click(await within(await screen.findByRole("group", { name: "Monitoring" })).findByRole("checkbox", { name: "Priority Check" }));
     await user.type(within(monitoring()).getByRole("textbox", { name: "Notes for Monitoring" }), "Check she's eating ok");
     await user.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
@@ -72,11 +72,11 @@ test("editors see it too (monitoring-editors.sql)", async () => {
     expect(loadMonitoring).toHaveBeenCalledWith(NITA.id);
 });
 
-test("admins: Mute Missing Alerts beside Priority Condition Check, saved with the monitoring", async () => {
+test("admins: Mute Alerts beside Priority Check, saved with the monitoring", async () => {
     const user = userEvent.setup();
     edit();
     const box = await screen.findByRole("group", { name: "Monitoring" });
-    const mute = await within(box).findByRole("checkbox", { name: "Mute Missing Alerts" });
+    const mute = await within(box).findByRole("checkbox", { name: "Mute Alerts" });
     expect(mute).not.toBeChecked();
     await user.click(mute);
     await user.click(screen.getByRole("button", { name: "Save" }));
@@ -84,7 +84,7 @@ test("admins: Mute Missing Alerts beside Priority Condition Check, saved with th
     expect(saveMonitoring).toHaveBeenCalledWith(NITA.id, { conditionCheck: false, notes: "", alertsMuted: true });
 });
 
-test("Mute Missing Alerts: not for editors (the pop-up's quick Edit)", async () => {
+test("Mute Alerts: not for editors (the pop-up's quick Edit)", async () => {
     useAuth.mockReturnValue(EDITOR);
     render(
         <MonkeyForm
@@ -93,8 +93,8 @@ test("Mute Missing Alerts: not for editors (the pop-up's quick Edit)", async () 
         />
     );
     const box = await screen.findByRole("group", { name: "Monitoring" });
-    expect(within(box).getByRole("checkbox", { name: "Priority Condition Check" })).toBeInTheDocument();
-    expect(within(box).queryByRole("checkbox", { name: "Mute Missing Alerts" })).toBeNull();
+    expect(within(box).getByRole("checkbox", { name: "Priority Check" })).toBeInTheDocument();
+    expect(within(box).queryByRole("checkbox", { name: "Mute Alerts" })).toBeNull();
 });
 
 describe("Status (the Full Profile's Edit, admins): a field like the others; a new one goes to the Monkey Archive on Save", () => {

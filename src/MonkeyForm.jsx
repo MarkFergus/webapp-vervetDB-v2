@@ -130,7 +130,7 @@ function MonkeyForm({
     // Notes for Monitoring, for the Troop Monitoring Notes. Kept apart
     // (staff only), like the Arrival Info.
     const monitoringInfo = useMonitoring(monkey?.id ?? null, !isNew && isEditor);
-    // (Mute Missing Alerts: admins, the Full Profile's Edit only; a long-term
+    // (Mute Alerts: admins, the Full Profile's Edit only; a long-term
     // setting for a monkey that can't be told apart, e.g. at Camelot)
     const showMute = isAdmin && !quick;
     const [monitoring, setMonitoring] = useState({ conditionCheck: false, notes: "", alertsMuted: false });
@@ -841,7 +841,7 @@ function MonkeyForm({
                                         checked={monitoring.conditionCheck}
                                         onChange={(e) => setMonitoring({ ...monitoring, conditionCheck: e.target.checked })}
                                     />
-                                    Priority Condition Check
+                                    Priority Check
                                 </label>
                                 {/* (beside it: admins, the Full Profile's Edit) */}
                                 {showMute && (
@@ -851,12 +851,12 @@ function MonkeyForm({
                                             checked={monitoring.alertsMuted}
                                             onChange={(e) => setMonitoring({ ...monitoring, alertsMuted: e.target.checked })}
                                         />
-                                        Mute Missing Alerts
+                                        Mute Alerts
                                     </label>
                                 )}
                             </div>
                             <p className="MonkeyForm-hint">
-                                Priority: listed under &ldquo;Priority Condition Checks&rdquo; on the Troop Monitoring Notes.
+                                Priority: listed under &ldquo;Priority Checks&rdquo; on the Troop Monitoring Notes.
                                 {showMute &&
                                     " Mute: never flagged as missing (e.g. hard to tell apart), still counted in sessions."}
                             </p>

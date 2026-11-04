@@ -261,7 +261,10 @@
     opacity: 0.6;
 }
 
+/* (flex-basis, not the name's width: a long name wraps onto a second line
+   rather than pushing the dose onto its own row) */
 .Deworming-who {
+    flex: 1 1 100px;
     display: flex;
     align-items: center;
     gap: 10px;
