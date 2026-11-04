@@ -24,11 +24,11 @@ export const CHANGELOG = [
         version: "1.23.3",
         date: "2026-11-04",
         changes: [
-            "Added Mute Missing Alerts in the Full Profile's Edit, for monkeys that are hard to spot",
-            "Improved Deworming Schedule: previous deworming on each row, extra rounds, and Outlook titles read more flexibly",
+            "Added Mute Missing Alerts in the Full Profile's Edit",
+            "Improved Deworming Schedule: previous deworming on each row",
             "Improved Deworming Lists: a check when a list's session differs from the schedule",
             "Improved Injuries: All Troops view",
-            "Improved photos in Records: tap one to open the monkey",
+            "Improved photos in Records: tap one to open the monkey's card",
         ],
     },
     {
