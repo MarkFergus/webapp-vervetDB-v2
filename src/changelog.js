@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.24.0",
+        date: "2026-11-04",
+        changes: ["Improved buttons: colours all standardised across the app"],
+    },
+    {
         version: "1.23.3",
         date: "2026-11-04",
         changes: [
