@@ -22,3 +22,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# the Morning Brief function's bundle (npm run brief:build)
+/supabase/functions/morning-brief/bundle.js

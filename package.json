@@ -19,7 +19,9 @@
         "start": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest"
+        "test": "vitest",
+        "brief:build": "node scripts/buildMorningBrief.js",
+        "brief:deploy": "npm run brief:build && npx supabase functions deploy morning-brief --project-ref demlwtsrnlkiskcntbcc --no-verify-jwt"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.2",

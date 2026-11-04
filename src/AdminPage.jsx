@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconHistory, IconMail, IconMinus, IconUsers } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconHistory, IconMail, IconMinus, IconSun, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
 import { ArchiveList, useArchive } from "./MonkeyArchive";
 import MonkeyPage from "./MonkeyPage";
 import StaffActivity from "./StaffActivity";
+import MorningBrief from "./MorningBrief";
 import WeeklyReports from "./WeeklyReports";
 import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
@@ -229,6 +230,7 @@ const PARTS = [
     { id: "activity", title: "Staff Activity", sub: "What each staff member has added, changed or deleted", Icon: IconHistory },
     { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
     { id: "reports", title: "Weekly Reports", sub: "Your weekly report email: when it comes and what's in it", Icon: IconMail },
+    { id: "brief", title: "Morning Brief", sub: "Today's brief: what needs doing, as the 06:50 email has it", Icon: IconSun },
 ];
 
 // "admin" → no part (the choices); "admin/staff"; "admin/archive" and an
@@ -314,6 +316,11 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false, p
                 </>
             ) : part.id === "activity" ? (
                 <StaffActivity />
+            ) : part.id === "brief" ? (
+                <>
+                    <p className="Admin-intro">Being tried out: emailed every day at 06:50.</p>
+                    <MorningBrief />
+                </>
             ) : part.id === "reports" ? (
                 <>
                     <p className="Admin-intro">Your own weekly summary, by email. Off until you turn it on.</p>

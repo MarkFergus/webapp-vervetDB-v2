@@ -186,6 +186,12 @@
     line-height: 1.4;
 }
 
+/* (the Morning Brief's To Do) */
+.Weekly-lines li.is-toDo {
+    color: var(--amber-text);
+    font-weight: 700;
+}
+
 .Weekly-lines li.is-alert {
     color: var(--danger);
 }
