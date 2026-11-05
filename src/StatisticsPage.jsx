@@ -907,7 +907,7 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
                         {spaces.length > 0 && (
                             <Card
                                 title="Space per monkey"
-                                headline="Each troop monkey's share of its troop enclosure. Tap one for its stats."
+                                headline="Each troop monkey's share of their troop enclosure. Tap one for its stats."
                                 wide
                                 sort={sortProps("space")}
                                 table={{

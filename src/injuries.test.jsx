@@ -2,7 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
-import { addInjury, addInjuryUpdate, addObservation, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
+import { addCondition, addInjury, addInjuryUpdate, addObservation, recordSeen, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -20,6 +20,8 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     deleteInjuryUpdate: vi.fn(),
     loadMonitoring: vi.fn(),
     addObservation: vi.fn(),
+    addCondition: vi.fn(),
+    recordSeen: vi.fn(),
 }));
 
 const MONKEY = {
@@ -57,6 +59,7 @@ test("New Injury asks the date (today) and a description, then lists it under In
     await userEvent.type(screen.getByLabelText("Description"), "  Bite on left arm ");
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
     expect(addInjury).toHaveBeenCalledWith(7, { date: date.value, description: "Bite on left arm" });
+    expect(recordSeen).toHaveBeenCalledWith(7, { date: date.value, description: "Bite on left arm" });
     expect(await screen.findByRole("button", { name: /Injuries \(1\)/ })).toBeInTheDocument();
     expect(screen.getByText("Bite on left arm")).toBeInTheDocument();
 });
@@ -241,6 +244,24 @@ describe("an open form holds the pop-up until its Cancel", () => {
         expect(handlePrevNext).not.toHaveBeenCalled();
         expect(onClose).not.toHaveBeenCalled();
     });
+});
+
+test("New Condition (Quick Actions): below New Injury, saved to the monkey's conditions, and counts as seen", async () => {
+    addCondition.mockResolvedValue();
+    open({ ...ADMIN, isAdmin: false });
+    await screen.findByRole("button", { name: "Quick Actions" });
+    await quickActions();
+    const names = screen.getAllByRole("button").map((b) => b.textContent);
+    expect(names.indexOf("New Condition")).toBe(names.indexOf("New Injury") + 1);
+    await userEvent.click(screen.getByRole("button", { name: "New Condition" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Please describe the condition.");
+    const date = screen.getByLabelText("Date");
+    await userEvent.type(screen.getByLabelText("Condition"), "Looking thin");
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(addCondition).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
+    expect(recordSeen).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
+    expect(screen.queryByLabelText("Condition")).toBeNull();
 });
 
 test("Observation (Quick Actions): a quick note on how it's doing, saved for the day (and as seen)", async () => {

@@ -1188,7 +1188,7 @@ export function Review({ sheet, lines, onDone }) {
     async function approve() {
         setApproving(false);
         if (lines.some((l) => !texts[l.id]?.trim()))
-            return setProblem("Every monkey needs its record before approving.");
+            return setProblem("Every monkey needs their record before approving.");
         setBusy(true);
         setProblem(null);
         try {

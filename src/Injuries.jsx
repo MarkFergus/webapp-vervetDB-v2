@@ -199,7 +199,7 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
         update: { label: "Details", placeholder: "How is it looking now?", missing: "Please write the update." },
         condition: {
             label: "Condition",
-            placeholder: "How does it look? e.g. Looking thin, scruffy coat",
+            placeholder: "How is their general health? Coat, weight, dirty bum, etc.",
             missing: "Please describe the condition.",
         },
         observation: {

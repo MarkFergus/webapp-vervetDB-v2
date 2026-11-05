@@ -1402,6 +1402,17 @@ export async function addSpotSighting(monkeyId, { date, note = "" }) {
     return toAppSpot(data);
 }
 
+// A record that shows a monkey was seen that day (Quick Actions' New Injury
+// and New Condition): a sighting too, so it counts for their last seen. The
+// record's already saved by now, so a problem here doesn't undo or repeat it.
+export async function recordSeen(monkeyId, { date, description }) {
+    try {
+        await addSpotSighting(monkeyId, { date, note: description });
+    } catch (error) {
+        console.error("Recording the sighting failed:", error);
+    }
+}
+
 // Deletes a sighting (admins, or whoever added it)
 export async function deleteSpotSighting(id) {
     const { data, error } = await supabase.from("monkey_sightings").delete().eq("id", id).select("id");
