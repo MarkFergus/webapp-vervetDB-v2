@@ -1,8 +1,8 @@
 // The Records page (#records): the teams, what they record, entering a
 // batch (and what to do about ones already saved), and each baby's history
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
+import { loadBabyRecords, loadMoves, saveBabyRecords } from "./monkeyData";
 import RecordsPage from "./RecordsPage";
 import {
     RECORD_KINDS,
@@ -18,9 +18,10 @@ import {
     mondayOf,
     startDay,
     weightReport,
+    babiesOn,
 } from "./babyRecords";
 
-vi.mock("./monkeyData", () => ({ loadBabyRecords: vi.fn(), saveBabyRecords: vi.fn() }));
+vi.mock("./monkeyData", () => ({ loadBabyRecords: vi.fn(), saveBabyRecords: vi.fn(), loadMoves: vi.fn(async () => []) }));
 
 const MILK = RECORD_KINDS.milk;
 const WEIGHTS = RECORD_KINDS.weights;
@@ -382,5 +383,57 @@ describe("viewing", () => {
         vi.spyOn(console, "error").mockImplementation(() => {});
         open("records/baby-care/milk");
         expect(await screen.findByText(/Couldn't load the milk totals/)).toBeInTheDocument();
+    });
+});
+
+describe("who was in Baby Care on a past day", () => {
+    const ENCLOSURES_NOW = [BABY_CARE, DREAMLAND];
+    const left = { id: 40, name: "Left", troop: "Goliath", introcage: "Goliath A", enclosure: "Goliath", img: [] };
+    const cameLater = { ...baby(41, "Later"), arrivalDate: "2026-11-04" };
+    const movedIn = baby(42, "Moved In");
+    const staying = { ...baby(43, "Staying"), stay: { introcage: "Gismo A", enclosure: "Gismo" } };
+    const MOVES = [
+        { monkeyId: 40, date: "2026-11-03", kind: "move", fromId: 10, toId: 77 },
+        { monkeyId: 42, date: "2026-11-04", kind: "move", fromId: 78, toId: 10 },
+        { monkeyId: 43, date: "2026-11-01", kind: "move", fromId: 10, toId: 79 },
+        { monkeyId: 30, date: "2026-10-01", kind: "move", fromId: 78, toId: 77 },
+    ];
+    const all = [MUSE, left, cameLater, movedIn, staying, GROWN];
+    const names = (day) => babiesOn(all, ENCLOSURES_NOW, MOVES, day).map((m) => m.name);
+
+    test("before a baby left: still listed; not the day they moved (a partial total), or afterwards", () => {
+        expect(names("2026-11-02")).toContain("Left");
+        expect(names("2026-11-03")).not.toContain("Left");
+        expect(names("2026-11-04")).not.toContain("Left");
+    });
+
+    test("a stay, then their home changed (as Muse): Baby Care's until the home changed", () => {
+        const muse = { id: 50, name: "Muse", troop: null, introcage: "Koko A", enclosure: "Koko", img: [], arrivalDate: "2026-10-18" };
+        const records = [
+            { monkeyId: 50, date: "2026-10-28", kind: "move", fromId: 10, toId: 80 },
+            { monkeyId: 50, date: "2026-11-03", kind: "home", fromId: 10, toId: 80 },
+        ];
+        const shown = (day) => babiesOn([muse], ENCLOSURES_NOW, records, day).map((m) => m.name);
+        expect(shown("2026-10-17")).toEqual([]);
+        expect(shown("2026-11-02")).toEqual(["Muse"]);
+        expect(shown("2026-11-03")).toEqual([]);
+        expect(shown("2026-11-04")).toEqual([]);
+    });
+
+    test("before a baby came (arrival or a move in): not listed; from that day: listed", () => {
+        expect(names("2026-11-03")).toEqual(["Muse", "Staying"]);
+        expect(names("2026-11-04")).toEqual(["Later", "Moved In", "Muse", "Staying"]);
+    });
+
+    test("in the form: the list follows the date", async () => {
+        loadBabyRecords.mockResolvedValue([]);
+        loadMoves.mockResolvedValue(MOVES);
+        render(<RecordsPage route="records/baby-care/milk" monkeys={all} enclosures={ENCLOSURES_NOW} canEnter />);
+        const date = await screen.findByLabelText("Date");
+        fireEvent.change(date, { target: { value: "2026-11-02" } });
+        expect(await screen.findByText("Left")).toBeInTheDocument();
+        fireEvent.change(date, { target: { value: "2026-11-04" } });
+        expect(screen.queryByText("Left")).toBeNull();
+        loadMoves.mockResolvedValue([]);
     });
 });

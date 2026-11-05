@@ -18,10 +18,10 @@ import "./MarkSeen.css";
 export const NOTE_MAX = 200;
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
-// Why it's missing: "Not seen in the last 2 sessions · last seen 12th Oct
+// Why it's missing: "Not seen last 2 sessions · last seen 12th Oct
 // 2026" (never: "not seen in a session yet")
 export function missingText(record) {
-    const sessions = record.missed === 1 ? "Not seen last session" : `Not seen in the last ${record.missed} sessions`;
+    const sessions = record.missed === 1 ? "Not seen last session" : `Not seen last ${record.missed} sessions`;
     return `${sessions} · ${record.lastSeen ? `last seen ${longDate(record.lastSeen)}` : "not seen in a session yet"}`;
 }
 
@@ -131,7 +131,7 @@ export function useMissing(monkey, enabled) {
 export function LastSeen({ monkey, record, canMark, onMarked, muted = false }) {
     const [open, setOpen] = useState(false);
     if (!record) return <span className="Enclosures-unset">Not in a monitoring session yet</span>;
-    const missed = record.missed === 1 ? "Not seen last session" : `Not seen in the last ${record.missed} sessions`;
+    const missed = record.missed === 1 ? "Not seen last session" : `Not seen last ${record.missed} sessions`;
     return (
         <div className="MarkSeen-lastSeen">
             <span>

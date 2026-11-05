@@ -48,6 +48,22 @@
     text-overflow: ellipsis;
 }
 
+/* Troops not monitored for 5 days or more: a red outline */
+.Monitoring-overdue {
+    margin: 12px 0;
+    padding: 10px 12px;
+    border: 1.5px solid var(--danger);
+    border-radius: 8px;
+}
+
+.Monitoring-overdue h2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0;
+    color: var(--danger);
+}
+
 /* Before each: amber in progress, a green tick when finished */
 .Monitoring-stateIcon {
     flex: none;

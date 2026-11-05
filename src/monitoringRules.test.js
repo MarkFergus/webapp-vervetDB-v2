@@ -55,11 +55,11 @@ test("Mark As Seen: a sighting between sessions counts as seen; only the session
     expect(sightingRecord(past, 1, [spot("2026-10-27")]).spot).toBeNull();
 });
 
-test("overdue: no session yet, or the last over a week ago", () => {
+test("overdue: no session yet, or the last 5 or more days ago", () => {
     const latest = latestSessionDays(SESSIONS);
     expect(latest.get(1)).toBe("2026-10-26");
-    expect(isOverdue(latest.get(1), "2026-11-02")).toBe(false);
-    expect(isOverdue(latest.get(1), "2026-11-03")).toBe(true);
+    expect(isOverdue(latest.get(1), "2026-10-30")).toBe(false);
+    expect(isOverdue(latest.get(1), "2026-10-31")).toBe(true);
     expect(isOverdue(undefined, "2026-11-03")).toBe(true);
 });
 
@@ -183,8 +183,8 @@ test("the alerts after a session", () => {
             checkNotes: { fence: "Top wire sagging" },
         })
     ).toEqual([
-        { level: "danger", text: "Hermes has not been seen since 14/10, missing on the last 2 sessions" },
-        { level: "danger", text: "Pip has not been seen in the last 3 sessions" },
+        { level: "danger", text: "Hermes not seen last 2 sessions, last seen 14/10" },
+        { level: "danger", text: "Pip not seen last 3 sessions" },
         { level: "warn", text: "Jacob's injury has not been updated since 10/10" },
         { level: "danger", check: true, text: "Fence: Low (Top wire sagging)" },
         { level: "danger", check: true, text: "Food: Too Much" },

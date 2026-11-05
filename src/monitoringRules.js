@@ -13,9 +13,8 @@ export const ALL_GOOD = { fence: "good", waters: "good", food: "good" };
 // A check's short note ("North corner sagging"): this long at most
 export const CHECK_NOTE_MAX = 50;
 
-// A troop needs a session at least once a week: more than this many days
-// since its last one, it's overdue
-export const OVERDUE_DAYS = 7;
+// This many days or more since a troop's last session: it's overdue
+export const OVERDUE_DAYS = 5;
 // Missed this many sessions in a row: Must See
 export const MUST_SEE_AFTER = 2;
 
@@ -101,8 +100,8 @@ export function latestSessionDays(sessions) {
     return latest;
 }
 
-// Whether a troop's due a session (none yet, or the last over a week ago)
-export const isOverdue = (lastDay, today) => !lastDay || daysBetween(lastDay, today) > OVERDUE_DAYS;
+// Whether a troop's overdue a session (none yet, or the last too long ago)
+export const isOverdue = (lastDay, today) => !lastDay || daysBetween(lastDay, today) >= OVERDUE_DAYS;
 
 // "Malawi", "Malawi and Daisy Mae", "Malawi, Rox and Daisy Mae"
 export function joinNames(names) {
@@ -214,8 +213,8 @@ export function sessionAlerts({ mustSee = [], staleInjuries = [], fence, waters,
     const alerts = mustSee.map((m) => ({
         level: "danger",
         text: m.lastSeen
-            ? `${m.name} has not been seen since ${slashDate(m.lastSeen)}, missing on the last ${m.missed} sessions`
-            : `${m.name} has not been seen in the last ${m.missed} sessions`,
+            ? `${m.name} not seen last ${m.missed} sessions, last seen ${slashDate(m.lastSeen)}`
+            : `${m.name} not seen last ${m.missed} sessions`,
     }));
     for (const i of staleInjuries) {
         alerts.push({ level: "warn", text: `${i.name}'s injury has not been updated since ${slashDate(i.since)}` });

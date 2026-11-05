@@ -3,6 +3,7 @@ import {
     IconAlertTriangle,
     IconCheck,
     IconChevronDown,
+    IconCalendarExclamation,
     IconCircleCheckFilled,
     IconClipboardList,
     IconCopy,
@@ -33,6 +34,7 @@ import {
     startMonitoringSession,
 } from "./monkeyData";
 import { hasTroop } from "./enclosures";
+import { MONITORED_SECTIONS } from "./monitoring";
 import { monkeysIn } from "./stats";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
@@ -45,6 +47,7 @@ import {
     FOOD_LEVELS,
     MUST_SEE_AFTER,
     WATERS,
+    daysBetween,
     isOverdue,
     latestSessionDays,
     sessionAlerts,
@@ -95,6 +98,17 @@ function usePhone() {
 
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
 const timeText = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+// Recently Monitored: when it was, in one line. Entered on another day: the
+// session's own date, so it doesn't look more recent than it was ("2nd Nov ·
+// entered today")
+function recentWhen(session) {
+    if (session.date === dayText(new Date(session.finishedAt))) {
+        return `${dayWord(session.finishedAt)} · ${timeText(session.finishedAt)}`;
+    }
+    const day = summaryDate(new Date(`${session.date}T00:00:00`)).replace(/ \d{4}$/, "");
+    return `${day} · entered ${dayWord(session.finishedAt).toLowerCase()}`;
+}
+
 // Recently Monitored: "Today", "Yesterday" or (48 hours can reach the day
 // before) "30th Oct", and "Sam" from "Sam Smith"
 function dayWord(at) {
@@ -291,7 +305,7 @@ function Briefing({ facts, today }) {
                                 <ul>
                                     {mustSee.map((m) => (
                                         <li key={m.id}>
-                                            <b>{m.name}</b> missing on the last {records[m.id].missed} sessions, {seenText(m)}
+                                            <b>{m.name}</b> not seen last {records[m.id].missed} sessions, {seenText(m)}
                                         </li>
                                     ))}
                                 </ul>
@@ -383,7 +397,9 @@ function Briefing({ facts, today }) {
 
 // What the + adds, the likeliest first (Update: only with a current injury,
 // and then it's where the box starts)
-const ADD_KINDS = { update: "Update", injury: "Injury", condition: "Condition" };
+const ADD_KINDS = { update: "Update", healed: "Healed", injury: "Injury", condition: "Condition" };
+// (these need a current injury to be on)
+const ON_AN_INJURY = ["update", "healed"];
 
 // One monkey (no photo: a tight list): its Seen tick, flags, last seen,
 // and a +: an injury, an update on one, or a condition (saved straight
@@ -392,10 +408,13 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     // (in Sickbay: seen and checked there, so ticked and locked. In an
     // introcage: ticked off by hand, as its check, though it's never missing)
     const daily = Boolean(monkey.inSickbay);
-    const [mode, setMode] = useState(null); // "injury", "update" or "condition"
+    const [mode, setMode] = useState(null); // "injury", "update", "healed" or "condition"
     const record = facts.records[monkey.id];
     const injuries = facts.current.filter((i) => i.monkeyId === monkey.id);
     const [injuryId, setInjuryId] = useState(null);
+    // The injury chosen (more than one: the drop-down; once that one's healed,
+    // the next)
+    const chosenInjury = injuries.find((i) => i.id === injuryId) ?? injuries[0];
     const priority = facts.priority[monkey.id];
     const condition = facts.latestCondition[monkey.id];
     const isPriority = Boolean(priority?.conditionCheck || priority?.notes);
@@ -406,11 +425,21 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
     async function save(values) {
         if (mode === "injury") await facts.injuries.add(monkey.id, { ...values, sessionId: session.id });
         else if (mode === "update")
-            await facts.injuries.addUpdate(injuryId ?? injuries[0].id, {
+            await facts.injuries.addUpdate(chosenInjury.id, {
                 date: values.date,
                 details: values.description,
                 sessionId: session.id,
             });
+        else if (mode === "healed") {
+            // (a last update first, so it's in the session's summary and the
+            // injury's history; then it moves to their past injuries)
+            await facts.injuries.addUpdate(chosenInjury.id, {
+                date: values.date,
+                details: values.description ? `Healed: ${values.description}` : "Healed",
+                sessionId: session.id,
+            });
+            await facts.injuries.setHealed(chosenInjury.id, true, values.date);
+        }
         else {
             await addCondition(monkey.id, { ...values, sessionId: session.id });
             await facts.reloadConditions();
@@ -444,9 +473,11 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                         <span className="Monitoring-flags">
                             {monkey.inSickbay && <Flag kind="sickbay">In Sickbay</Flag>}
                             {muted && <Flag kind="muted">Muted</Flag>}
-                            {record.missed >= MUST_SEE_AFTER && <Flag kind="danger">Must See</Flag>}
+                            {record.missed >= MUST_SEE_AFTER && <Flag kind="danger">Not Seen Last {record.missed} Sessions</Flag>}
                             {record.missed === 1 && <Flag kind="warn">Not Seen Last Session</Flag>}
-                            {injuries.length > 0 && <Flag kind="danger">Injury</Flag>}
+                            {injuries.length > 0 && (
+                                <Flag kind="danger">{injuries.length > 1 ? `${injuries.length} Injuries` : "Injury"}</Flag>
+                            )}
                             {isPriority && <Flag kind="warn">Priority</Flag>}
                         </span>
                     )}
@@ -484,22 +515,22 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                     <h4 className="Monitoring-formTitle">
                         Add <span>· {monkey.name}</span>
                     </h4>
-                    {/* Injury, Update (with a current injury) or Condition */}
+                    {/* Update and Healed (with a current injury), Injury or Condition */}
                     <div className="Monitoring-choices" role="group" aria-label="What to add">
                         {Object.entries(ADD_KINDS)
-                            .filter(([id]) => id !== "update" || injuries.length > 0)
+                            .filter(([id]) => !ON_AN_INJURY.includes(id) || injuries.length > 0)
                             .map(([id, word]) => (
                                 <button key={id} type="button" aria-pressed={mode === id} onClick={() => setMode(id)}>
                                     {word}
                                 </button>
                             ))}
                     </div>
-                    {/* An update: the injury it's on (more than one: choose) */}
-                    {mode === "update" &&
+                    {/* An update or healed: the injury it's on (more than one: choose) */}
+                    {ON_AN_INJURY.includes(mode) &&
                         (injuries.length > 1 ? (
                             <label className="IntegrationPage-choose">
                                 <span>Injury</span>
-                                <select value={injuryId ?? injuries[0].id} onChange={(e) => setInjuryId(Number(e.target.value))}>
+                                <select value={chosenInjury.id} onChange={(e) => setInjuryId(Number(e.target.value))}>
                                     {injuries.map((i) => (
                                         <option key={i.id} value={i.id}>
                                             {i.description} ({longDate(i.date)})
@@ -509,7 +540,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                             </label>
                         ) : (
                             <p className="Monitoring-updating">
-                                <span>Updating</span> {injuries[0].description} · {longDate(injuries[0].date)}
+                                <span>{mode === "healed" ? "Healed" : "Updating"}</span> {injuries[0].description} · {longDate(injuries[0].date)}
                             </p>
                         ))}
                     <InjuryForm
@@ -1287,6 +1318,12 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     const recent = sessions
         .filter((s) => s.status === "finished" && s.finishedAt && Date.now() - new Date(s.finishedAt) < 2 * 86400000)
         .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)));
+    // Overdue, longest first (never monitored: first of all; not the Bandits:
+    // a wild troop, not monitored)
+    const sinceLast = (t) => (latest.has(t.id) ? daysBetween(latest.get(t.id), today) : Infinity);
+    const overdueTroops = troops
+        .filter((t) => MONITORED_SECTIONS.includes(t.section) && isOverdue(latest.get(t.id), today))
+        .sort((a, b) => sinceLast(b) - sinceLast(a));
     const history = troop ? troopSessions(sessions, troop.id) : [];
     // The troop's monkeys, and who's missing (not seen in their last
     // session, nor since)
@@ -1351,7 +1388,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
             {/* Who's monitoring now, and what's been done in the last day:
                 every troop, a list to look at (Continue and Cancel Session:
                 by the troop picker) */}
-            {(inProgress.length > 0 || recent.length > 0) && (
+            {(inProgress.length > 0 || overdueTroops.length > 0 || recent.length > 0) && (
                 <section className="Monitoring-inProgress" aria-label="In Progress">
                     {inProgress.length > 0 && (
                         <>
@@ -1369,6 +1406,26 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                             </ul>
                         </>
                     )}
+                    {overdueTroops.length > 0 && (
+                        <div className="Monitoring-overdue">
+                            <h2 className="RecordsPage-subhead">
+                                <IconCalendarExclamation size={18} aria-hidden="true" />
+                                Overdue
+                            </h2>
+                            <ul aria-label="Overdue">
+                                {overdueTroops.map((t) => (
+                                    <li key={t.id}>
+                                        <span>
+                                            <b>{phone ? t.name : fullName(t.name)}</b> ·{" "}
+                                            {latest.has(t.id)
+                                                ? `${sinceLast(t)} days since monitored`
+                                                : "No sessions yet"}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     {recent.length > 0 && (
                         <>
                             <h2 className="RecordsPage-subhead">
@@ -1378,10 +1435,10 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                                 {recent.map((s) => (
                                     <li key={s.id} className="Monitoring-recent">
                                         <IconCircleCheckFilled size={18} className="Monitoring-stateIcon is-done" aria-hidden="true" />
-                                        {/* (one line: troop · Today · time · first name; phones: D&D, H&B) */}
+                                        {/* (one line: troop · when · first name; phones: D&D, H&B) */}
                                         <span>
                                             <b>{phone ? troopById[s.enclosureId]?.name ?? "A troop" : fullName(troopById[s.enclosureId]?.name ?? "A troop")}</b>{" "}
-                                            · {dayWord(s.finishedAt)} · {timeText(s.finishedAt)} · {firstName(s.startedByName)}
+                                            · {recentWhen(s)} · {firstName(s.startedByName)}
                                         </span>
                                     </li>
                                 ))}
@@ -1410,7 +1467,11 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                             <option key={t.id} value={t.name}>
                                 {/* (phones: D&D, H&B) */}
                                 {phone ? t.name : fullName(t.name)}
-                                {isOverdue(latest.get(t.id), today) ? " (Overdue)" : ""}
+                                {isOverdue(latest.get(t.id), today)
+                                    ? latest.get(t.id)
+                                        ? ` (Overdue: ${sinceLast(t)} days)`
+                                        : " (Overdue)"
+                                    : ""}
                             </option>
                         ))}
                     </select>
@@ -1457,7 +1518,8 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                     {latest.get(troop.id)
                         ? `Last session ${longDate(latest.get(troop.id))}`
                         : "No sessions yet"}
-                    {isOverdue(latest.get(troop.id), today) && " · Overdue: due at least once a week"}
+                    {isOverdue(latest.get(troop.id), today) &&
+                        (latest.get(troop.id) ? ` · Overdue: ${sinceLast(troop)} days since monitored` : " · Overdue")}
                 </p>
             )}
             {problem && (

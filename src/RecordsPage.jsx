@@ -20,12 +20,13 @@ import {
     IconTrees,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
-import { loadBabyRecords, saveBabyRecords } from "./monkeyData";
+import { loadBabyRecords, loadMoves, saveBabyRecords } from "./monkeyData";
 import { placeName } from "./places";
 import {
     RECORD_KINDS,
     TEAMS,
     alreadySaved,
+    babiesOn,
     babyCareBabies,
     batchFrom,
     changeText,
@@ -119,8 +120,11 @@ function AlreadySavedDialog({ kind, date, clashes, busy, onReplace, onKeep, onCa
 
 // ---- Enter: the date, then each baby's value (empty: skipped) ----
 
-function EnterForm({ kind, babies, records, reload }) {
+//   babies: who's in Baby Care now; monkeys, enclosures, moves: for who was
+//   there on the date chosen
+function EnterForm({ kind, babies: babiesNow, monkeys, enclosures, moves, records, reload }) {
     const [date, setDate] = useState(() => startDay(kind));
+    const babies = date ? babiesOn(monkeys, enclosures, moves, date) : babiesNow;
     // monkeyId → { text, notes }
     const [typed, setTyped] = useState({});
     const [errors, setErrors] = useState({});
@@ -224,7 +228,11 @@ function EnterForm({ kind, babies, records, reload }) {
                 />
             </label>
             {babies.length === 0 ? (
-                <p className="RecordsPage-none">There are no babies in {TEAMS[0].name} at the moment.</p>
+                <p className="RecordsPage-none">
+                    {babiesNow.length
+                        ? `There were no babies in ${TEAMS[0].name} on that date.`
+                        : `There are no babies in ${TEAMS[0].name} at the moment.`}
+                </p>
             ) : (
                 <ul className="RecordsPage-rows">
                     {babies.map((monkey) => {
@@ -636,6 +644,18 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
         });
     }, [reload]);
     const babies = babyCareBabies(monkeys, enclosures);
+    // Everyone's moves, for who was in Baby Care on a past day (none loaded:
+    // today's babies)
+    const [moves, setMoves] = useState([]);
+    useEffect(() => {
+        let cancelled = false;
+        loadMoves()
+            .then((list) => !cancelled && setMoves(list))
+            .catch((error) => console.error("Loading moves failed:", error));
+        return () => {
+            cancelled = true;
+        };
+    }, []);
     const shownTab = canEnter ? tab : "view";
     return (
         <>
@@ -678,7 +698,7 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
             ) : records === "failed" ? (
                 <p className="RecordsPage-problem">Couldn't load the {kind.whats}. Please check your connection and try again.</p>
             ) : shownTab === "enter" ? (
-                <EnterForm kind={kind} babies={babies} records={records} reload={reload} />
+                <EnterForm kind={kind} babies={babies} monkeys={monkeys} enclosures={enclosures} moves={moves} records={records} reload={reload} />
             ) : (
                 <div className={charts ? "" : "RecordsPage-noCharts"}>
                     <ViewList kind={kind} babies={babies} monkeys={monkeys} records={records} />

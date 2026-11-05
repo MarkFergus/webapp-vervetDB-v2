@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.26.0",
+        date: "2026-11-05",
+        changes: [
+            "Added Overdue troops to Monitoring",
+            "Added Healed to injuries in Monitoring",
+            "Fixed Baby Care records not showing babies for past records",
+        ],
+    },
+    {
         version: "1.25.0",
         date: "2026-11-05",
         changes: ["Added New Condition to Quick Actions", "Added Tagged to Quick Filters"],

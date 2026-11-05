@@ -117,6 +117,40 @@ export function babyCareBabies(monkeys, enclosures) {
     return unit ? [...monkeysIn(monkeys, unit)].sort((a, b) => a.name.localeCompare(b.name)) : [];
 }
 
+// Who was in Baby Care on a day, for entering a past day's records: it goes by
+// their move records, so a baby who's left since
+// is still listed for their full days, and one who came after isn't.
+//   moves: every monkey's [{ monkeyId, date, kind, fromId, toId }], oldest first
+export function babiesOn(monkeys, enclosures, moves, day) {
+    const unit = enclosures.find((e) => isCareUnit(e) && e.name === BABY_CARE);
+    if (!unit) return [];
+    const areas = new Set(enclosures.filter((e) => e.parentId === unit.id).map((e) => e.id));
+    const hereNow = new Set(babyCareBabies(monkeys, enclosures).map((m) => m.id));
+    const wasThere = (monkey) => {
+        if (monkey.arrivalDate && monkey.arrivalDate > day) return false;
+        const all = moves
+            .filter((m) => m.monkeyId === monkey.id)
+            .map((m) => ({ date: m.date, home: m.kind === "home", out: areas.has(m.fromId), into: areas.has(m.toId) }))
+            .filter((e) => e.out || e.into);
+        // (moved out, but their home only changed later: it was just a stay,
+        // and they counted as Baby Care's until then)
+        const homeLeft = all.filter((e) => e.home && e.out && !e.into).at(-1);
+        const events = all.filter((e) => !(homeLeft && !e.home && e.out && !e.into && e.date <= homeLeft.date));
+        // (their home's Baby Care: a stay in an introcage doesn't count as
+        // leaving, as they're on today's list too)
+        if (hereNow.has(monkey.id) && !(events[0]?.into && !events[0].out && events[0].date > day)) return true;
+        // (moved that day: moving in, listed; moving out, that day's total
+        // would be incomplete, so the day before was their last)
+        const thatDay = events.filter((e) => e.date === day).at(-1);
+        if (thatDay) return thatDay.into;
+        const before = events.filter((e) => e.date < day).at(-1);
+        if (before) return before.into;
+        // (no move before that day: the first one after shows where they were)
+        return events.length ? events[0].out : hereNow.has(monkey.id);
+    };
+    return monkeysIn(monkeys).filter(wasThere).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // What's typed in a box: null (empty: skipped), { value }, or { error }
 export function checkValue(text, kind) {
     const typed = String(text ?? "").trim();

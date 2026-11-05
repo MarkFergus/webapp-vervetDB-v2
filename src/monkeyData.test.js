@@ -1,7 +1,7 @@
 // Checks the real data loader (setupTests.js replaces it everywhere else)
 import { supabase } from "./supabase";
 
-const { loadMonkeyData, saveWhereabouts, toAppMonkey, toDatabaseRow, BUILT_IN_DATA } = await vi.importActual("./monkeyData");
+const { fetchAll, loadMonkeyData, saveWhereabouts, toAppMonkey, toDatabaseRow, BUILT_IN_DATA } = await vi.importActual("./monkeyData");
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -48,10 +48,13 @@ function fakeDatabase(results) {
             order: () => {
                 const answer = typeof results[table] === "function" ? results[table](columns) : results[table];
                 // (can be filtered further: .eq, the monkeys at the sanctuary)
+                // (and fetched in batches: .range)
+                const range = () => answer;
                 return Object.assign(Promise.resolve(answer), {
+                    range,
                     eq: (...filter) => {
                         filters.push([table, ...filter]);
-                        return answer;
+                        return { range };
                     },
                 });
             },
@@ -227,3 +230,41 @@ test("species: read and saved once the database has it (species.sql)", () => {
     expect(toDatabaseRow(toAppMonkey(row), { Camelot: 1 })).not.toHaveProperty("species");
 });
 
+describe("fetchAll: lists past the database's 1,000 rows at a time", () => {
+    const rows = (n) => Array.from({ length: n }, (_, id) => ({ id }));
+    const pretend = (total, error = null) => {
+        const asked = [];
+        const makeQuery = () => ({
+            range: async (from, to) => {
+                asked.push([from, to]);
+                return error ? { data: null, error } : { data: rows(total).slice(from, to + 1), error: null };
+            },
+        });
+        return { asked, makeQuery };
+    };
+
+    test("under 1,000: one request", async () => {
+        const { asked, makeQuery } = pretend(716);
+        const { data } = await fetchAll(makeQuery);
+        expect(data).toHaveLength(716);
+        expect(asked).toEqual([[0, 999]]);
+    });
+
+    test("over 1,000: every row, in order, none missed or repeated", async () => {
+        const { asked, makeQuery } = pretend(2500);
+        const { data } = await fetchAll(makeQuery);
+        expect(data.map((r) => r.id)).toEqual(rows(2500).map((r) => r.id));
+        expect(asked).toEqual([[0, 999], [1000, 1999], [2000, 2999]]);
+    });
+
+    test("exactly 1,000: checks there's no more", async () => {
+        const { asked, makeQuery } = pretend(1000);
+        expect((await fetchAll(makeQuery)).data).toHaveLength(1000);
+        expect(asked).toHaveLength(2);
+    });
+
+    test("a problem is passed on, not a part list", async () => {
+        const problem = { code: "42703" };
+        expect(await fetchAll(pretend(5, problem).makeQuery)).toEqual({ data: null, error: problem });
+    });
+});

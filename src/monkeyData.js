@@ -234,6 +234,21 @@ const introcageDetails = (row) => ({
 // a missing table, column or link
 const isOlderDatabase = (error) => ["42703", "42P01", "PGRST200", "PGRST204", "PGRST205"].includes(error?.code);
 
+// The database sends 1,000 rows at most, and says nothing about any left
+// over: so a list that can grow past that is fetched 1,000 at a time, until
+// there's no more. → { data, error }, as a single request gives.
+//   makeQuery(): a new request, in an order that can't change between batches
+const BATCH = 1000;
+export async function fetchAll(makeQuery) {
+    const rows = [];
+    for (let from = 0; ; from += BATCH) {
+        const { data, error } = await makeQuery().range(from, from + BATCH - 1);
+        if (error) return { data: null, error };
+        rows.push(...data);
+        if (data.length < BATCH) return { data: rows, error: null };
+    }
+}
+
 function throwIfError(...results) {
     for (const r of results) if (r.error) throw r.error;
 }
@@ -243,14 +258,16 @@ function throwIfError(...results) {
 async function loadMonkeys() {
     let result;
     for (const columns of COLUMN_SETS) {
-        const query = supabase.from("monkeys").select(columns).order("id");
         // Monkeys no longer at the sanctuary stay on file but don't appear
         // in the app (admins can read them: the Monkey Archive)
         const hasStatus = COLUMN_SETS.indexOf(columns) <= COLUMN_SETS.indexOf(STATUS_MONKEY_COLUMNS);
-        result = await (hasStatus ? query.eq("status", "sanctuary") : query);
+        result = await fetchAll(() => {
+            const query = supabase.from("monkeys").select(columns).order("id");
+            return hasStatus ? query.eq("status", "sanctuary") : query;
+        });
         if (result.error?.code !== "42703") return { result, columns };
     }
-    return { result: await supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id"), columns: NEW_MONKEY_COLUMNS };
+    return { result: await fetchAll(() => supabase.from("monkeys").select(NEW_MONKEY_COLUMNS).order("id")), columns: NEW_MONKEY_COLUMNS };
 }
 
 async function loadWithEnclosures() {
@@ -286,7 +303,7 @@ async function loadWithEnclosures() {
 async function loadWithoutEnclosures() {
     const [troops, monkeys] = await Promise.all([
         supabase.from("troops").select("id, name").order("sort_order"),
-        supabase.from("monkeys").select(OLD_MONKEY_COLUMNS).order("id"),
+        fetchAll(() => supabase.from("monkeys").select(OLD_MONKEY_COLUMNS).order("id")),
     ]);
     throwIfError(troops, monkeys);
     monkeyColumns = OLD_MONKEY_COLUMNS;
@@ -622,11 +639,13 @@ export async function loadMaintenance(enclosureId) {
 // its enclosureId)
 export async function loadAllMaintenance() {
     const query = (columns) =>
-        supabase
-            .from("maintenance")
-            .select(`${columns}, enclosure_id`)
-            .order("done_on", { ascending: false })
-            .order("id", { ascending: false });
+        fetchAll(() =>
+            supabase
+                .from("maintenance")
+                .select(`${columns}, enclosure_id`)
+                .order("done_on", { ascending: false })
+                .order("id", { ascending: false })
+        );
     let { data, error } = await query(entryColumns());
     // (before maintenance-kind.sql: without them)
     if (error?.code === "42703" && hasMaintenanceKind !== false) {
@@ -874,12 +893,17 @@ export async function loadRecords(monkeyId) {
     return data.map(toAppRecord);
 }
 
-// Adds a record ({ section, date, category, details }); who and when are
-// filled in by the database. Returns the saved record.
-export async function addRecord(monkeyId, { section, date, category, details }) {
+// A Movement's where from and to, from the form (none: not sent, so other
+// records aren't touched): the database finds the places (movement-places.sql)
+const movePlaces = ({ fromPlace, toPlace }) =>
+    fromPlace || toPlace ? { move_kind: "move", from_place: fromPlace, to_place: toPlace } : {};
+
+// Adds a record ({ section, date, category, details, fromPlace?, toPlace? });
+// who and when are filled in by the database. Returns the saved record.
+export async function addRecord(monkeyId, { section, date, category, details, fromPlace, toPlace }) {
     const { data, error } = await supabase
         .from("monkey_records")
-        .insert({ monkey_id: monkeyId, section, record_date: date, category, details })
+        .insert({ monkey_id: monkeyId, section, record_date: date, category, details, ...movePlaces({ fromPlace, toPlace }) })
         .select(RECORD_COLUMNS)
         .single();
     if (error) {
@@ -890,10 +914,10 @@ export async function addRecord(monkeyId, { section, date, category, details }) 
 }
 
 // Changes a record's date, category or details (admins, or whoever wrote it)
-export async function saveRecord(id, { date, category, details }) {
+export async function saveRecord(id, { date, category, details, fromPlace, toPlace }) {
     const { data, error } = await supabase
         .from("monkey_records")
-        .update({ record_date: date, category, details })
+        .update({ record_date: date, category, details, ...movePlaces({ fromPlace, toPlace }) })
         .eq("id", id)
         .select(RECORD_COLUMNS)
         .single();
@@ -1052,8 +1076,13 @@ export async function saveInjury(id, { date, description }) {
 }
 
 // Healed (or back to current): today, in the name of whoever marks it
-export async function setInjuryHealed(id, healed) {
-    const { data, error } = await supabase.rpc("set_injury_healed", { injury_id: id, healed });
+//   onDate: the day it healed (a session entered late); none: today
+export async function setInjuryHealed(id, healed, onDate = null) {
+    const { data, error } = await supabase.rpc("set_injury_healed", {
+        injury_id: id,
+        healed,
+        ...(onDate && { on_date: onDate }),
+    });
     if (error) {
         console.error("Marking an injury healed failed:", error);
         throw saveProblem(error);
@@ -1236,12 +1265,15 @@ function sessionProblem(error) {
 // (for missing monkeys, last seen and the History). Throws a message to show.
 export async function loadMonitoringSessions() {
     const since = new Date(Date.now() - 366 * 86400000).toISOString().slice(0, 10);
-    const { data, error } = await supabase
-        .from("monitoring_sessions")
-        .select(SESSION_WITH_SIGHTINGS)
-        .gte("session_date", since)
-        .order("session_date", { ascending: false })
-        .order("started_at", { ascending: false });
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from("monitoring_sessions")
+            .select(SESSION_WITH_SIGHTINGS)
+            .gte("session_date", since)
+            .order("session_date", { ascending: false })
+            .order("started_at", { ascending: false })
+            .order("id", { ascending: false })
+    );
     if (error) throw sessionProblem(error);
     return data.map(toAppSession);
 }
@@ -1378,9 +1410,13 @@ const toAppSpot = (row) => ({
 // monkey-sightings.sql has run: none.
 export async function loadSpotSightings(monkeyIds = null) {
     const since = new Date(Date.now() - 366 * 86400000).toISOString().slice(0, 10);
-    let query = supabase.from("monkey_sightings").select(SPOT_COLUMNS).gte("seen_on", since);
-    if (monkeyIds) query = query.in("monkey_id", monkeyIds);
-    const { data, error } = await query.order("seen_on", { ascending: false }).order("logged_at", { ascending: false });
+    const { data, error } = await fetchAll(() => {
+        const query = supabase.from("monkey_sightings").select(SPOT_COLUMNS).gte("seen_on", since);
+        return (monkeyIds ? query.in("monkey_id", monkeyIds) : query)
+            .order("seen_on", { ascending: false })
+            .order("logged_at", { ascending: false })
+            .order("id", { ascending: false });
+    });
     if (error) {
         if (isOlderDatabase(error)) return [];
         throw sessionProblem(error);
@@ -1502,10 +1538,13 @@ export async function loadSessionNotes(sessionId) {
 // Every baby's daily milk totals, oldest first: [{ monkeyId, date, ml,
 // notes }]. Throws if the database hasn't got them yet, or can't be reached.
 export async function loadMilkTotals() {
-    const { data, error } = await supabase
-        .from("milk_totals")
-        .select("monkey_id, milk_date, total_ml, notes")
-        .order("milk_date");
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from("milk_totals")
+            .select("monkey_id, milk_date, total_ml, notes")
+            .order("milk_date")
+            .order("monkey_id")
+    );
     if (error) throw error;
     return data.map((row) => ({ monkeyId: row.monkey_id, date: row.milk_date, ml: row.total_ml, notes: row.notes ?? null }));
 }
@@ -1629,10 +1668,13 @@ const BABY_TABLES = {
 // hasn't got them yet, or can't be reached.
 export async function loadBabyRecords(kindId) {
     const t = BABY_TABLES[kindId];
-    const { data, error } = await supabase
-        .from(t.table)
-        .select(`monkey_id, ${t.date}, ${t.value}, notes, logged_by_name`)
-        .order(t.date);
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from(t.table)
+            .select(`monkey_id, ${t.date}, ${t.value}, notes, logged_by_name`)
+            .order(t.date)
+            .order("monkey_id")
+    );
     if (error) throw error;
     return data.map((row) => ({
         monkeyId: row.monkey_id,
@@ -1665,6 +1707,22 @@ export async function loadMonkeyWeights(monkeyId) {
 // grams }]
 export async function loadWeights() {
     return (await loadBabyRecords("weights")).map((r) => ({ monkeyId: r.monkeyId, date: r.date, grams: r.value }));
+}
+
+// Every monkey's moves, oldest first: [{ monkeyId, date, kind ("move" or
+// "home"), fromId, toId }] (movement-places.sql; who was in Baby Care on a
+// past day)
+export async function loadMoves() {
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from("monkey_records")
+            .select("monkey_id, record_date, move_kind, from_place_id, to_place_id")
+            .eq("category", "movement")
+            .order("record_date")
+            .order("id")
+    );
+    if (error) throw error;
+    return data.map((r) => ({ monkeyId: r.monkey_id, date: r.record_date, kind: r.move_kind, fromId: r.from_place_id, toId: r.to_place_id }));
 }
 
 // Save All: a batch of milk totals or weights ([{ monkeyId, date, value,

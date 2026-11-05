@@ -101,8 +101,8 @@ export function useInjuries(monkeyId, staff) {
         async update(id, values) {
             replace(await saveInjury(id, values));
         },
-        async setHealed(id, healed) {
-            replace(await setInjuryHealed(id, healed));
+        async setHealed(id, healed, onDate = null) {
+            replace(await setInjuryHealed(id, healed, ...(onDate ? [onDate] : [])));
         },
         async remove(id) {
             await deleteInjury(id);
@@ -177,8 +177,8 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
         async update(id, values) {
             replace(await saveInjury(id, values));
         },
-        async setHealed(id, healed) {
-            replace(await setInjuryHealed(id, healed));
+        async setHealed(id, healed, onDate = null) {
+            replace(await setInjuryHealed(id, healed, ...(onDate ? [onDate] : [])));
         },
         async remove(id) {
             await deleteInjury(id);
@@ -202,6 +202,8 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
             placeholder: "How is their general health? Coat, weight, dirty bum, etc.",
             missing: "Please describe the condition.",
         },
+        // (notes optional: "healed" says enough)
+        healed: { label: "Notes (optional)", placeholder: "e.g. Fully closed up, moving well", missing: null },
         observation: {
             label: "Observation",
             placeholder: "e.g. Seen eating and moving around ok",
@@ -220,7 +222,7 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
 
     async function confirm() {
         if (!values.date) return setProblem("Please choose the date.");
-        if (!description) return setProblem(words.missing);
+        if (!description && words.missing) return setProblem(words.missing);
         setBusy(true);
         setProblem(null);
         try {

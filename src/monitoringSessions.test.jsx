@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
 import {
     addInjuryUpdate,
+    setInjuryHealed,
     addSpotSighting,
     loadSpotSightings,
     deleteMonitoringSession,
@@ -31,6 +32,7 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadCurrentInjuries: vi.fn(),
     injuryUpdatesAvailable: () => true,
     addInjuryUpdate: vi.fn(),
+    setInjuryHealed: vi.fn(),
     loadSpotSightings: vi.fn(),
     addSpotSighting: vi.fn(),
     deleteSpotSighting: vi.fn(),
@@ -138,7 +140,7 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     // The briefing: Must See, priority checks, injuries (Update Needed), conditions
     const briefing = await screen.findByRole("region", { name: "Briefing" });
     expect(within(briefing).getByText("Must See")).toBeInTheDocument();
-    expect(within(briefing).getByText(/missing on the last 2 sessions, last seen 12th Oct 2026/)).toBeInTheDocument();
+    expect(within(briefing).getByText(/not seen last 2 sessions, last seen 12th Oct 2026/)).toBeInTheDocument();
     expect(within(briefing).getByText(/Check her weight/)).toBeInTheDocument();
     expect(await within(briefing).findByText(/Eye infection/)).toBeInTheDocument();
     expect(within(briefing).getByText("Update Needed")).toBeInTheDocument();
@@ -164,6 +166,10 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(within(used).getByRole("button", { name: "Seeds" })).toHaveAttribute("aria-pressed", "true");
     expect(within(used).getByRole("button", { name: "Corn" })).toHaveAttribute("aria-pressed", "false");
 
+    // (the checklist's tag: how many sessions, in red)
+    const missedTag = within(screen.getByLabelText("Malawi seen").closest("li")).getByText("Not Seen Last 2 Sessions");
+    expect(missedTag).toHaveClass("is-danger");
+
     // …the checklist (introcage monkeys under their introcage), Tick All, untick the missing
     expect(screen.getByRole("heading", { name: "Skunkey B2" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Tick All" }));
@@ -181,7 +187,7 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(within(paradise).getByRole("heading", { name: "Add · Paradise" })).toBeInTheDocument();
     // Update · Injury · Condition (Update first, and chosen: she has an injury); it says which injury
     const what = within(paradise).getByRole("group", { name: "What to add" });
-    expect(within(what).getAllByRole("button").map((b) => b.textContent)).toEqual(["Update", "Injury", "Condition"]);
+    expect(within(what).getAllByRole("button").map((b) => b.textContent)).toEqual(["Update", "Healed", "Injury", "Condition"]);
     expect(within(what).getByRole("button", { name: "Update" })).toHaveAttribute("aria-pressed", "true");
     expect(within(paradise).getByText(/Eye infection · 1st Sep 2026/)).toBeInTheDocument();
     await user.type(within(paradise).getByLabelText("Details"), "eye almost back to normal");
@@ -205,7 +211,7 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     // The alerts, then the summary to copy
     expect(await screen.findByRole("heading", { name: "Monitoring Summary" })).toBeInTheDocument();
     const alerts = screen.getByRole("list", { name: "Alerts" });
-    expect(within(alerts).getByText("Malawi has not been seen since 12/10, missing on the last 3 sessions")).toBeInTheDocument();
+    expect(within(alerts).getByText("Malawi not seen last 3 sessions, last seen 12/10")).toBeInTheDocument();
     // (Paradise's injury had an update just now: no alert for it)
     expect(within(alerts).queryByText(/Paradise's injury/)).toBeNull();
     const text = screen.getByLabelText("WhatsApp summary").textContent;
@@ -294,6 +300,90 @@ test("the top: In Progress and Recently Monitored (48 hours), every troop, just 
     open({ canSee: true, canAdd: false, userId: "u-2", isAdmin: false });
     await screen.findByRole("list", { name: "History" });
     expect(screen.queryByRole("button", { name: "Start Session" })).toBeNull();
+});
+
+test("Overdue: troops not monitored for 5 days or more, longest first, above Recently Monitored", async () => {
+    const dayAgo = (n) => {
+        const d = new Date();
+        d.setDate(d.getDate() - n);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    loadMonitoringSessions.mockResolvedValue([
+        { ...finished(40, dayAgo(4), {}), enclosureId: 1 },
+        { ...finished(41, dayAgo(5), {}), enclosureId: 3 },
+        { ...finished(42, dayAgo(9), {}), enclosureId: 4 },
+    ]);
+    const inTop = (e) => ({ ...e, section: "Top" });
+    render(
+        <RecordsPage
+            route="records/sections/monitoring"
+            monkeys={MONKEYS}
+            enclosures={[
+                inTop(place(1, "Skunkey", "troop")),
+                inTop(place(3, "Goliath", "troop")),
+                inTop(place(4, "Royal", "troop")),
+                inTop(place(5, "Gismo", "troop")),
+                { ...place(6, "Bandits", "troop"), section: "Wild" },
+            ]}
+            staff={EDITOR}
+        />
+    );
+    const list = await screen.findByRole("list", { name: "Overdue" });
+    expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+        "Gismo · No sessions yet",
+        "Royal · 9 days since monitored",
+        "Goliath · 5 days since monitored",
+    ]);
+    const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(headings).toContain("Overdue");
+});
+
+test("two injuries: choose which to update or mark Healed; healed leaves the list, with a note in the session", async () => {
+    const user = userEvent.setup();
+    const injury = (id, description) => ({ id, monkeyId: 3, date: "2026-09-01", description, updates: [], healedOn: null });
+    loadCurrentInjuries.mockResolvedValue([injury(5, "Eye infection"), injury(6, "Cut on left arm")]);
+    loadMonitoringSessions.mockResolvedValue([{ ...finished(20, today(), {}), status: "in_progress", finishedAt: null, startedBy: "u-1" }, ...PAST]);
+    addInjuryUpdate.mockImplementation(async (_id, { date, details }) => ({ id: 8, date, details, loggedBy: "u-1" }));
+    setInjuryHealed.mockImplementation(async (id) => ({ ...injury(id, "Cut on left arm"), healedOn: today() }));
+    open();
+    await user.click(await screen.findByRole("button", { name: /^Continue/ }));
+    const row = () => screen.getByLabelText("Paradise seen").closest("li");
+    expect(await within(row()).findByText("2 Injuries")).toBeInTheDocument();
+    await user.click(within(row()).getByRole("button", { name: "Add for Paradise" }));
+
+    // Update: on the one chosen
+    await user.selectOptions(within(row()).getByLabelText("Injury"), "6");
+    await user.type(within(row()).getByLabelText("Details"), "Looking better");
+    await user.click(within(row()).getByRole("button", { name: "Confirm" }));
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, { date: today(), details: "Looking better", sessionId: 20 });
+
+    // Healed: notes optional, and that injury only
+    await user.click(within(row()).getByRole("button", { name: "Add for Paradise" }));
+    await user.click(within(row()).getByRole("button", { name: "Healed" }));
+    await user.selectOptions(within(row()).getByLabelText("Injury"), "6");
+    await user.click(within(row()).getByRole("button", { name: "Confirm" }));
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, { date: today(), details: "Healed", sessionId: 20 });
+    expect(setInjuryHealed).toHaveBeenCalledWith(6, true, today());
+    expect(await within(row()).findByText("Injury")).toBeInTheDocument();
+
+    // The last one: with a note, and no drop-down now
+    setInjuryHealed.mockImplementation(async (id) => ({ ...injury(id, "Eye infection"), healedOn: today() }));
+    await user.click(within(row()).getByRole("button", { name: "Add for Paradise" }));
+    await user.click(within(row()).getByRole("button", { name: "Healed" }));
+    expect(within(row()).queryByLabelText("Injury")).toBeNull();
+    await user.type(within(row()).getByLabelText("Notes (optional)"), "All clear");
+    await user.click(within(row()).getByRole("button", { name: "Confirm" }));
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(5, { date: today(), details: "Healed: All clear", sessionId: 20 });
+    await waitFor(() => expect(within(row()).queryByText("Injury")).toBeNull());
+});
+
+test("Recently Monitored: a session entered late shows its own date, and when it was entered", async () => {
+    loadMonitoringSessions.mockResolvedValue([
+        finished(31, "2026-10-02", { 1: true }, { finishedAt: new Date().toISOString(), startedByName: "Sam" }),
+    ]);
+    open();
+    const list = await screen.findByRole("list", { name: "Recently Monitored" });
+    expect(list).toHaveTextContent(/^Skunkey · 2nd Oct · entered today · Sam$/);
 });
 
 test("the History: tap a session for its summary again", async () => {
@@ -426,7 +516,7 @@ test("Missing: Mark As Seen ticks a monkey off between sessions; it shows in the
     open();
     // (Malawi: missed the last 2 sessions)
     const missing = await screen.findByRole("region", { name: "Missing" });
-    expect(within(missing).getByText(/Not seen in the last 2 sessions · last seen 12th Oct 2026/)).toBeInTheDocument();
+    expect(within(missing).getByText(/Not seen last 2 sessions · last seen 12th Oct 2026/)).toBeInTheDocument();
     await user.click(within(missing).getByRole("button", { name: "Mark Malawi As Seen" }));
     const form = within(missing).getByRole("group", { name: "Mark Malawi As Seen" });
     expect(within(form).getByLabelText("Seen On")).toHaveValue(today());
@@ -483,7 +573,7 @@ test("the checklist goes by where monkeys are now; Sickbay's are ticked (seen th
     expect(malawi).toBeChecked();
     expect(malawi).toBeDisabled();
     expect(malawi.closest("li")).toHaveTextContent("In Sickbay");
-    expect(malawi.closest("li")).not.toHaveTextContent("Must See");
+    expect(malawi.closest("li")).not.toHaveTextContent(/Not Seen Last \d+ Sessions/);
     for (const name of ["Daisy Mae", "Pip"]) {
         const tick = screen.getByRole("checkbox", { name: `${name} seen` });
         expect(tick).not.toBeChecked();
@@ -523,5 +613,5 @@ test("Mute Alerts: never flagged or listed as missing, but still counted and nam
     expect(within(briefing).queryByText("Must See")).toBeNull();
     const malawi = screen.getByRole("checkbox", { name: "Malawi seen" }).closest("li");
     expect(malawi).toHaveTextContent("Muted");
-    expect(malawi).not.toHaveTextContent("Must See");
+    expect(malawi).not.toHaveTextContent(/Not Seen Last \d+ Sessions/);
 });

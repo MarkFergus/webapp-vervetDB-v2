@@ -426,12 +426,14 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
         if (!values.date) return setProblem("Please choose the date.");
         if (!values.category) return setProblem("Please choose a category.");
         let details = values.details.trim();
+        let movePlaces = {};
         if (movement) {
             const from = placeOf(values.from, values.fromOther);
             const to = placeOf(values.to, values.toOther);
             if (!from) return setProblem("Please choose where it moved from.");
             if (!to) return setProblem("Please choose where it moved to.");
             details = movementText({ from, to, reason: values.reason });
+            movePlaces = { fromPlace: from, toPlace: to };
             if (details.length > MAX_RECORD) return setProblem(`Please shorten the reason (${MAX_RECORD} characters in all).`);
         } else if (!details) {
             return setProblem("Please write the details.");
@@ -441,7 +443,7 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
         setBusy(true);
         setProblem(null);
         try {
-            await onSave({ date: values.date, category: values.category, details });
+            await onSave({ date: values.date, category: values.category, details, ...movePlaces });
         } catch (err) {
             setProblem(err.message);
             setBusy(false);

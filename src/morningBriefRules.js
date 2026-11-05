@@ -15,8 +15,6 @@ import { MUST_SEE_AFTER, OVERDUE_DAYS, FENCE, FOOD_LEVELS, ALL_GOOD, daysBetween
 import { fullName } from "./places";
 import { monkeysIn } from "./stats";
 
-// A troop not monitored for this many days: a reminder, before it's overdue
-export const MONITOR_REMINDER_DAYS = 5;
 // Dewormings coming up: those in the next this many days
 export const DUE_SOON_DAYS = 7;
 // Groups missing from the calendar: those due within this many days
@@ -56,7 +54,6 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
     const largeTroop = [];
     const notSeen = [];
     const overdue = [];
-    const reminder = [];
     // (each problem from a troop's latest session → its troops)
     const problems = new Map();
     // (not the Bandits: a wild troop, not monitored)
@@ -86,12 +83,9 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
         const latest = history[0];
         const days = latest ? daysBetween(latest.date, today) : null;
         if (!latest) monitor.push({ days: Infinity, text: `${name}: no sessions yet` });
-        else if (days >= MONITOR_REMINDER_DAYS) {
-            monitor.push({ days, text: `${name}: ${plural(days, "day")} since last session${days > OVERDUE_DAYS ? ", overdue" : ""}` });
-        }
+        else if (days >= OVERDUE_DAYS) monitor.push({ days, text: `${name}: ${plural(days, "day")} since last session` });
         if (!latest) overdue.push(line(`${name}: no sessions yet`, true));
-        else if (days > OVERDUE_DAYS) overdue.push(line(`${name}: ${lastMonitored(days)}`, true));
-        else if (days >= MONITOR_REMINDER_DAYS) reminder.push(line(`${name}: ${lastMonitored(days)}`, true));
+        else if (days >= OVERDUE_DAYS) overdue.push(line(`${name}: ${lastMonitored(days)}`, true));
         if (latest) {
             // (waters: only useful at the time of reporting)
             const note = (label) => problems.get(label)?.push(name) ?? problems.set(label, [name]);
@@ -107,7 +101,6 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
         { title: "Must See", lines: mustSee },
         { title: "Not Seen Last Session", lines: notSeen },
         { title: "Overdue", lines: overdue },
-        { title: `Not Monitored in ${MONITOR_REMINDER_DAYS}+ Days`, lines: reminder },
         {
             title: "Problems",
             lines: [...problems].sort(([a], [b]) => a.localeCompare(b)).map(([problem, troops]) => line(`${problem}: ${troops.join(", ")}`)),

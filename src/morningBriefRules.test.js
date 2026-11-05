@@ -46,17 +46,16 @@ describe("Morning Brief", () => {
         expect(email.text).toContain("All clear ✓");
     });
 
-    test("troops: fine up to 4 days, red at 5 to 7, overdue from 8; the Bandits aren't monitored", () => {
-        const names = ["Four", "Five", "Seven", "Eight"];
+    test("troops: fine up to 4 days, overdue in red from 5; the Bandits aren't monitored", () => {
+        const names = ["Four", "Five", "Eight"];
         const b = brief({
             enclosures: [...names.map((n, i) => troop(i + 1, n)), troop(9, "Bandits", "Wild")],
-            sessions: [session(1, 1, 4), session(2, 2, 5), session(3, 3, 7), session(4, 4, 8)],
+            sessions: [session(1, 1, 4), session(2, 2, 5), session(3, 3, 8)],
         });
-        expect(group(b, "monitoring", "Not Monitored in 5+ Days")).toEqual([
+        expect(group(b, "monitoring", "Overdue")).toEqual([
             { text: "Five: last monitored 5 days ago", alert: true },
-            { text: "Seven: last monitored 7 days ago", alert: true },
+            { text: "Eight: last monitored 8 days ago", alert: true },
         ]);
-        expect(group(b, "monitoring", "Overdue")).toEqual([{ text: "Eight: last monitored 8 days ago", alert: true }]);
     });
 
     test("Must See and Not Seen Last Session; muted monkeys left out", () => {
@@ -191,7 +190,7 @@ describe("Morning Brief", () => {
             { text: `Malawi (Gismo): not seen in 2 sessions, last seen ${briefDay(daysAgo(5))} (5 days ago)`, toDo: true },
         ]);
         expect(group(b, "to_do", "Monitor")).toEqual([
-            { text: "Skunkey: 9 days since last session, overdue", toDo: true },
+            { text: "Skunkey: 9 days since last session", toDo: true },
             { text: "Royal: 6 days since last session", toDo: true },
         ]);
         expect(group(b, "to_do", "Prep Deworming Sheets")).toEqual([

@@ -68,7 +68,7 @@ test("missing: why, in red, with Mark As Seen; once marked, the day and who saw 
     const user = userEvent.setup();
     loadMonkeySightings.mockResolvedValueOnce({ sessions: MISSED_TWO, spots: [] });
     open(EDITOR);
-    await waitFor(() => expect(row("Last Seen")).toHaveTextContent("12th Oct 2026Not seen in the last 2 sessions"));
+    await waitFor(() => expect(row("Last Seen")).toHaveTextContent("12th Oct 2026Not seen last 2 sessions"));
     await user.click(screen.getByRole("button", { name: "Mark Nita As Seen" }));
     const form = screen.getByRole("group", { name: "Mark Nita As Seen" });
     const date = within(form).getByLabelText("Seen On").value;
@@ -86,7 +86,7 @@ test("missing: why, in red, with Mark As Seen; once marked, the day and who saw 
 test("maintenance staff see missing, without Mark As Seen; not in a session yet says so", async () => {
     loadMonkeySightings.mockResolvedValueOnce({ sessions: MISSED_TWO, spots: [] });
     const { unmount } = open(MAINTENANCE);
-    await waitFor(() => expect(row("Last Seen")).toHaveTextContent("Not seen in the last 2 sessions"));
+    await waitFor(() => expect(row("Last Seen")).toHaveTextContent("Not seen last 2 sessions"));
     expect(screen.queryByRole("button", { name: "Mark Nita As Seen" })).toBeNull();
     unmount();
     loadMonkeySightings.mockResolvedValueOnce({ sessions: [], spots: [] });
