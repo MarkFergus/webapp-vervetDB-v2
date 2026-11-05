@@ -7,7 +7,6 @@ import ShowPage from "./ShowPage";
 import monkeysArr from "./monkeysArr";
 import { ageInYears } from "./ages";
 import { SECTIONS } from "./sections";
-import { currentBabySeason } from "./ages";
 
 const filtersButton = () => screen.getByRole("button", { name: /^Filters/ });
 const panel = () => screen.getByRole("dialog", { name: "Filters" });
@@ -304,7 +303,7 @@ describe("Location", () => {
     const TOP = ["Goliath", "Gismo", "D&D", "Royal"];
     const SICKBAY = ["James", "Global"];
 
-    test("Quick Filters: the sections, the Bandits, the care units and this season's babies, no \"All\" pill", async () => {
+    test("Quick Filters: the sections, the Bandits, the care units, favourites and tagged, no \"All\" pill", async () => {
         const { user } = setup();
         await user.click(filtersButton());
         const names = within(screen.getByRole("group", { name: "Quick Filters" }))
@@ -312,7 +311,7 @@ describe("Location", () => {
             .map((b) => b.textContent);
         expect(names).toEqual([
             "Top Section", "Middle Section", "Bottom Section", "Sickbay Section", "Bandits",
-            "Baby Care", "Sickbay", "Favourites", `Babies ${currentBabySeason()}`,
+            "Baby Care", "Sickbay", "Favourites", "Tagged",
         ]);
     });
 
@@ -386,21 +385,25 @@ describe("Location", () => {
         expect(troopList()).toEqual(["All Enclosures"]);
     });
 
-    test("Babies: this season's sanctuary babies from every troop, not the Bandits'", async () => {
+    test("Tagged: anyone with a tag on their card", async () => {
         const user = userEvent.setup();
-        const season = currentBabySeason();
-        const base = { sex: "female", chip: "", img: ["x.jpg"], bio: "", desc: "" };
+        const base = { sex: "female", chip: "", img: ["x.jpg"], bio: "", desc: "", year: 2020 };
+        const today = new Date();
+        const daysAgo = (n) => new Date(today.getFullYear(), today.getMonth(), today.getDate() - n, 12).toISOString().slice(0, 10);
+        const area = (name, days) => ({ ...base, name, troop: null, introcage: "Sickbay", introcageType: "area", enclosure: "Sickbay", arrivalDate: daysAgo(days) });
         const monkeys = [
-            { ...base, id: 1, name: "Tiny", year: season, troop: "Goliath", introcage: null, enclosure: "Goliath" },
-            { ...base, id: 2, name: "Pip", year: season, troop: null, introcage: "Baby Care", introcageType: "area", enclosure: "Baby Care" },
-            { ...base, id: 3, name: "Wildling", year: season, troop: "Bandits", introcage: null, enclosure: null },
-            { ...base, id: 4, name: "Older", year: season - 1, troop: "Goliath", introcage: null, enclosure: "Goliath" },
+            { ...base, id: 1, name: "Plain", troop: "Goliath", introcage: null, enclosure: "Goliath" },
+            { ...base, id: 2, name: "Lives In Cage", troop: "Goliath", introcage: "Goliath A", enclosure: "Goliath" },
+            { ...base, id: 3, name: "Unwell", troop: "Goliath", introcage: null, enclosure: "Goliath", inSickbay: true },
+            { ...base, id: 4, name: "Visiting", troop: "Goliath", introcage: null, enclosure: "Goliath", stay: { introcage: "Royal A", enclosure: "Royal" } },
+            { ...area("Newbie", 2), id: 5 },
+            { ...area("Rescue", 30), id: 6 },
         ];
         render(<ShowPage monkeys={monkeys} />);
         await user.click(filtersButton());
-        await user.click(quickPill(`Babies ${season}`));
-        expect(shownNames().sort()).toEqual(["Pip", "Tiny"]);
-        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual([`Babies ${season}`]);
+        await user.click(quickPill("Tagged"));
+        expect(shownNames().sort()).toEqual(["Newbie", "Rescue", "Unwell", "Visiting"]);
+        expect([...document.querySelectorAll(".ShowPage-chip")].map((c) => c.textContent)).toEqual(["Tagged"]);
     });
 
     test("every troop is in a section", () => {

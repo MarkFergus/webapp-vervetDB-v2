@@ -145,6 +145,29 @@ describe("Morning Brief", () => {
         expect(group(b, "deworming", "Awaiting Approval")).toEqual([{ text: "Dino & Daniel Troop 6-Month F/U" }]);
     });
 
+    test("Camelot's missing monkeys: apart at the bottom of Monitoring, plain, and not in To Do", () => {
+        const seen = (id, was) => ({ monkeyId: id, seen: was });
+        const b = brief({
+            monkeys: [monkey(1, "Arthur", "Camelot"), monkey(2, "Merlin", "Camelot"), monkey(3, "Malawi", "Gismo")],
+            enclosures: [troop(1, "Camelot"), troop(2, "Gismo")],
+            sessions: [
+                session(1, 1, 1, [seen(1, false), seen(2, false)]),
+                session(2, 1, 3, [seen(1, true), seen(2, false)]),
+                session(3, 2, 1, [seen(3, false)]),
+                session(4, 2, 3, [seen(3, false)]),
+            ],
+        });
+        const monitoring = b.sections.find((s) => s.id === "monitoring").groups;
+        expect(monitoring.at(-1).title).toBe("Camelot: Not Seen");
+        expect(monitoring.at(-1).lines).toEqual([
+            { text: "Merlin: not seen in 2 sessions, not seen before" },
+            { text: `Arthur: not seen in 1 session, last seen ${briefDay(daysAgo(3))}` },
+        ]);
+        expect(group(b, "monitoring", "Must See").map((l) => l.text)[0]).toMatch(/^Malawi/);
+        expect(group(b, "monitoring", "Must See")).toHaveLength(1);
+        expect(group(b, "to_do", "Check On").map((l) => l.text).join()).not.toContain("Merlin");
+    });
+
     test("To Do first: who to check on, troops to monitor, deworming sheets to prepare", () => {
         const on = (n) => new Date(Date.UTC(2026, 10, 5 + n)).toISOString().slice(0, 10);
         const seen = (id, was) => ({ monkeyId: id, seen: was });
@@ -200,8 +223,8 @@ describe("Morning Brief", () => {
         expect(ids.indexOf("baby_care")).toBeGreaterThan(-1);
         expect(group(b, "baby_care", `Milk Totals (${briefDay(daysAgo(1))})`)).toEqual([
             { text: "Bean: 520 ml (+20 ml)" },
-            { text: `Kiko: no total for yesterday, last entered ${briefDay(daysAgo(3))}`, alert: true },
-            { text: "Nala: no total for yesterday, none entered yet", alert: true },
+            { text: `Kiko: no total for yesterday, last entered ${briefDay(daysAgo(3))}` },
+            { text: "Nala: no total for yesterday, none entered yet" },
         ]);
         expect(group(b, "baby_care", "Weights")).toEqual([
             { text: "Bean: 1,235 g (+35 g)" },

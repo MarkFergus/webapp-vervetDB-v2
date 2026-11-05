@@ -106,8 +106,8 @@ function PairPills({ label, options, value, onChange, hideLabel = false }) {
     );
 }
 
-// The Filters panel: Quick Filters (sections, care units, this season's
-// babies), location (troop or introcage, enclosure), birth year, age group
+// The Filters panel: Quick Filters (sections, care units, favourites,
+// tagged), location (troop or introcage, enclosure), birth year, age group
 // and sex. The list behind it updates straight away;
 // "Show N monkeys" just closes it.
 //   filters: { quick, location, troop, year, age, sex }; onChange(field, value)

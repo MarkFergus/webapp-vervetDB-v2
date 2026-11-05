@@ -24,6 +24,10 @@ export const NOT_IN_CALENDAR_DAYS = 30;
 // A baby's weighed at least once a week: longer than this, it's missing
 export const WEIGHT_DUE_DAYS = 7;
 
+// So large there are always some not seen: listed apart at the bottom of
+// Monitoring, not in To Do or in red, so they don't crowd out the others
+export const LARGE_TROOP = "Camelot";
+
 const SITE = "https://vervetdb.com/";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -49,6 +53,7 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
     const mustSee = [];
     const checkOn = [];
     const monitor = [];
+    const largeTroop = [];
     const notSeen = [];
     const overdue = [];
     const reminder = [];
@@ -66,7 +71,9 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
                 today,
             });
             const seen = lastSeen ? `last seen ${briefDay(lastSeen)}` : "not seen before";
-            if (missed >= MUST_SEE_AFTER) {
+            if (missed > 0 && troop.name === LARGE_TROOP) {
+                largeTroop.push({ missed, text: `${m.name}: not seen in ${plural(missed, "session")}, ${seen}` });
+            } else if (missed >= MUST_SEE_AFTER) {
                 mustSee.push(line(`${m.name} (${name}): not seen in ${missed} sessions, ${seen}`, true));
                 checkOn.push({
                     missed,
@@ -106,6 +113,10 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
             lines: [...problems].sort(([a], [b]) => a.localeCompare(b)).map(([problem, troops]) => line(`${problem}: ${troops.join(", ")}`)),
         },
         { title: "Still In Progress", lines: stillOpen },
+        {
+            title: `${LARGE_TROOP}: Not Seen`,
+            lines: largeTroop.sort((a, b) => b.missed - a.missed).map((m) => line(m.text)),
+        },
     ];
     return { groups, checkOn, monitor };
 }
@@ -197,7 +208,8 @@ function babyPart({ monkeys, enclosures, milk, weights, today }) {
         milkLines.push(
             total
                 ? line(`${baby.name}: ${total}`)
-                : line(`${baby.name}: no total for yesterday, ${entered(lastEntry(milkRecords, baby.id))}`, true)
+                : // (not in red: often entered in batches)
+                  line(`${baby.name}: no total for yesterday, ${entered(lastEntry(milkRecords, baby.id))}`)
         );
         const weight = babyRecord(weightRecords, baby.id, yesterday, "g");
         const last = lastEntry(weightRecords, baby.id);

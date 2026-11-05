@@ -101,6 +101,10 @@ export function showsInjuredRescue(monkey, today = new Date()) {
     return isNewArrival(monkey) && homeName(monkey) === SICKBAY_UNIT && !monkey.stay && !showsNewArrival(monkey, today);
 }
 
+// Does a monkey have a tag on their card? (a stay: "In Gismo A")
+export const hasTag = (monkey, today = new Date()) =>
+    showsNewArrival(monkey, today) || showsInjuredRescue(monkey, today) || Boolean(monkey.inSickbay || monkey.stay);
+
 // Sickbay (the care unit; once called "Sickbay Care Unit", to tell it apart
 // from the Sickbay section) also lists the monkeys who are in Sickbay for
 // now from elsewhere (their In Sickbay flag), next to its own new arrivals.

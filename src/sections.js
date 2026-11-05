@@ -1,5 +1,4 @@
-import { currentBabySeason } from "./ages";
-import { SICKBAY_UNIT } from "./enclosures";
+import { SICKBAY_UNIT, hasTag } from "./enclosures";
 import { homeName } from "./places";
 
 // The sanctuary's sections and the troops in each, and the enclosures
@@ -55,14 +54,9 @@ export const QUICK_FILTERS = [
     { id: "sickbayCare", label: () => "Sickbay", test: (m) => homeName(m) === SICKBAY_UNIT || Boolean(m.inSickbay) },
     // The ★ ones (favourites.js: a Set of their ids)
     { id: "favourites", label: () => "Favourites", test: (m, today, favourites) => Boolean(favourites?.has(m.id)) },
-    // This season's sanctuary babies (born this baby season or since: the
-    // year changes on 1 October), not the Bandits' wild-born babies
-    {
-        id: "babies",
-        label: (today = new Date()) => `Babies ${currentBabySeason(today)}`,
-        test: (m, today = new Date()) =>
-            Boolean(m.year) && Number(m.year) >= currentBabySeason(today) && m.troop !== "Bandits",
-    },
+    // Anyone with a tag on their card (New Arrival, Injured Rescue, In
+    // Sickbay, or in an introcage for now)
+    { id: "tagged", label: () => "Tagged", test: (m, today = new Date()) => hasTag(m, today) },
 ];
 
 // Is this monkey in any of the chosen Quick Filters? ([] = every monkey)
