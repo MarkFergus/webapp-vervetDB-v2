@@ -177,6 +177,7 @@ function ShowPage({
     enclosuresLive = false,
     onEnclosureSaved = () => {},
     editable = false,
+    fieldWork = false,
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
 }) {
@@ -240,7 +241,12 @@ function ShowPage({
     // Introcage, Released, New Injury, Healed?; Integration Reports) and
     // change their own (admins: anyone's)
     // (limited accounts: see it all, change nothing, not even their own)
-    const staff = role && editable ? { canSee: true, canAdd: canEdit, userId: user?.id, isAdmin, readOnly: role === "limited" } : null;
+    // No signal: they still see what's saved on this phone, changing nothing
+    // (canAdd), except Monitoring (canEnterOffline)
+    const staff =
+        role && (editable || fieldWork)
+            ? { canSee: true, canAdd: canEdit, canEnterOffline: isEditor && fieldWork, offline: !editable, userId: user?.id, isAdmin, readOnly: role === "limited" }
+            : null;
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -977,6 +983,7 @@ function ShowPage({
                     showAdmin={isAdmin}
                     showRecords={Boolean(role)}
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
+                    recordsCircle={isEditor && fieldWork}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
                     page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onNews ? "news" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}

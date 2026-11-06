@@ -193,7 +193,7 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     expect(within(paradise).getByText(/Eye infection · 1st Sep 2026/)).toBeInTheDocument();
     await user.type(within(paradise).getByLabelText("Details"), "eye almost back to normal");
     await user.click(within(paradise).getByRole("button", { name: "Confirm" }));
-    expect(addInjuryUpdate).toHaveBeenCalledWith(5, { date: today(), details: "eye almost back to normal", sessionId: 20 });
+    expect(addInjuryUpdate).toHaveBeenCalledWith(5, expect.objectContaining({ date: today(), details: "eye almost back to normal", sessionId: 20 }));
     expect(await within(paradise).findByText("eye almost back to normal")).toBeInTheDocument();
 
     await user.type(screen.getByLabelText("General Notes"), "Raining");
@@ -356,14 +356,14 @@ test("two injuries: choose which to update or mark Healed; healed leaves the lis
     await user.selectOptions(within(row()).getByLabelText("Injury"), "6");
     await user.type(within(row()).getByLabelText("Details"), "Looking better");
     await user.click(within(row()).getByRole("button", { name: "Confirm" }));
-    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, { date: today(), details: "Looking better", sessionId: 20 });
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, expect.objectContaining({ date: today(), details: "Looking better", sessionId: 20 }));
 
     // Healed: notes optional, and that injury only
     await user.click(within(row()).getByRole("button", { name: "Add for Paradise" }));
     await user.click(within(row()).getByRole("button", { name: "Healed" }));
     await user.selectOptions(within(row()).getByLabelText("Injury"), "6");
     await user.click(within(row()).getByRole("button", { name: "Confirm" }));
-    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, { date: today(), details: "Healed", sessionId: 20 });
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(6, expect.objectContaining({ date: today(), details: "Healed", sessionId: 20 }));
     expect(setInjuryHealed).toHaveBeenCalledWith(6, true, today());
     expect(await within(row()).findByText("Injury")).toBeInTheDocument();
 
@@ -374,7 +374,7 @@ test("two injuries: choose which to update or mark Healed; healed leaves the lis
     expect(within(row()).queryByLabelText("Injury")).toBeNull();
     await user.type(within(row()).getByLabelText("Notes (optional)"), "All clear");
     await user.click(within(row()).getByRole("button", { name: "Confirm" }));
-    expect(addInjuryUpdate).toHaveBeenLastCalledWith(5, { date: today(), details: "Healed: All clear", sessionId: 20 });
+    expect(addInjuryUpdate).toHaveBeenLastCalledWith(5, expect.objectContaining({ date: today(), details: "Healed: All clear", sessionId: 20 }));
     await waitFor(() => expect(within(row()).queryByText("Injury")).toBeNull());
 });
 

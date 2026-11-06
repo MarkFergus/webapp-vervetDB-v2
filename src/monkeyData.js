@@ -1,5 +1,19 @@
 import { microchipText } from "./chipRules";
 import { supabase } from "./supabase";
+import {
+    displayId,
+    dropEntries,
+    editEntries,
+    isLocalId,
+    newLocalId,
+    newRef,
+    outboxEntries,
+    outboxUser,
+    registerSender,
+    resolveId,
+    submit,
+} from "./outbox";
+import { lastContact } from "./offlineFetch";
 import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
 import enclosuresArr, { SECTION_NAMES } from "./enclosuresArr";
@@ -1014,6 +1028,29 @@ const INJURY_WITH_UPDATES = `${INJURY_COLUMNS}, injury_updates (${UPDATE_COLUMNS
 // Whether the database has injury updates: null until known
 let hasInjuryUpdates = null;
 
+// What's on this phone and may not be in the database's answer yet (saved
+// with no signal, or the answer's from before it was sent)
+const sameId = (a, b) => resolveId(a) === resolveId(b);
+function withOutboxInjuries(list, monkeyIds) {
+    let out = list;
+    for (const { payload, optimistic } of outboxEntries("injury-add")) {
+        if (monkeyIds.includes(payload.monkeyId) && !out.some((i) => sameId(i.id, payload.localId))) out = [...out, optimistic];
+    }
+    for (const { payload, optimistic } of outboxEntries("injury-update")) {
+        out = out.map((i) =>
+            sameId(i.id, payload.injuryId) && !(i.updates ?? []).some((u) => sameId(u.id, payload.localId))
+                ? { ...i, updates: [...(i.updates ?? []), optimistic] }
+                : i
+        );
+    }
+    for (const { payload, optimistic, status } of outboxEntries("injury-healed")) {
+        out = out.map((i) =>
+            sameId(i.id, payload.injuryId) && (status !== "sent" || !i.healedOn) ? { ...i, healedOn: optimistic.healedOn, healedByName: optimistic.healedByName } : i
+        );
+    }
+    return out;
+}
+
 // Injuries, with their updates if the database has them (falling back to
 // just the injuries before monitoring.sql has run). query(columns) → a
 // Supabase query.
@@ -1038,7 +1075,7 @@ export const injuryUpdatesAvailable = () => hasInjuryUpdates === true;
 // A monkey's injuries (current and healed), newest first. Throws if the
 // database hasn't got them yet (injuries.sql) or can't be reached.
 export async function loadInjuries(monkeyId) {
-    return selectInjuries((columns) =>
+    const list = await selectInjuries((columns) =>
         supabase
             .from("injuries")
             .select(columns)
@@ -1046,6 +1083,7 @@ export async function loadInjuries(monkeyId) {
             .order("injury_date", { ascending: false })
             .order("id", { ascending: false })
     );
+    return withOutboxInjuries(list, [monkeyId]);
 }
 
 // The current (not healed) injuries of these monkeys, with their updates,
@@ -1053,7 +1091,7 @@ export async function loadInjuries(monkeyId) {
 // reached, or this isn't staff.
 export async function loadCurrentInjuries(monkeyIds) {
     if (!monkeyIds.length) return [];
-    return selectInjuries((columns) =>
+    const list = await selectInjuries((columns) =>
         supabase
             .from("injuries")
             .select(columns)
@@ -1062,6 +1100,7 @@ export async function loadCurrentInjuries(monkeyIds) {
             .order("injury_date")
             .order("id")
     );
+    return withOutboxInjuries(list, monkeyIds).filter((i) => !i.healedOn);
 }
 
 // The injuries of these monkeys healed on or since a day ("2026-04-30"),
@@ -1084,17 +1123,50 @@ export async function loadPastInjuries(monkeyIds, since) {
 // database. Returns the saved injury.
 //   sessionId: added during a monitoring session (its WhatsApp summary)
 export async function addInjury(monkeyId, { date, description, sessionId = null }) {
-    const { data, error } = await supabase
-        .from("injuries")
-        .insert({ monkey_id: monkeyId, injury_date: date, description, ...(sessionId && { session_id: sessionId }) })
-        .select(INJURY_COLUMNS)
-        .single();
-    if (error) {
-        console.error("Adding an injury failed:", error);
-        throw saveProblem(error);
-    }
-    return toAppInjury(data);
+    const me = outboxUser();
+    const localId = newLocalId();
+    const payload = { ref: newRef(), localId, monkeyId, date, description, sessionId };
+    const optimistic = {
+        id: localId,
+        monkeyId,
+        date,
+        description,
+        loggedBy: me?.id ?? null,
+        loggedByName: me?.name ?? null,
+        loggedAt: new Date().toISOString(),
+        healedOn: null,
+        healedByName: null,
+        updates: [],
+    };
+    const { result } = await submit("injury-add", payload, optimistic, { needs: [sessionId] });
+    return { ...result, id: localId };
 }
+
+// A row added from the outbox; sent twice (the signal dropped before the
+// answer came back): the one already saved
+async function insertOnce(table, row, columns) {
+    const { data, error } = await supabase.from(table).insert(row).select(columns).single();
+    if (!error) return data;
+    if (error.code !== "23505") throw error;
+    const again = await supabase.from(table).select(columns).eq("client_ref", row.client_ref).single();
+    if (again.error) throw again.error;
+    return again.data;
+}
+
+registerSender(
+    "injury-add",
+    async ({ ref, monkeyId, date, description, sessionId }) => {
+        const sessionNow = resolveId(sessionId);
+        return toAppInjury(
+            await insertOnce(
+                "injuries",
+                { client_ref: ref, monkey_id: monkeyId, injury_date: date, description, ...(sessionNow && { session_id: sessionNow }) },
+                INJURY_COLUMNS
+            )
+        );
+    },
+    (error) => saveProblem(error).message
+);
 
 // Changes an injury's date or description (admins, or whoever added it).
 // (its updates aren't sent back: the caller keeps them)
@@ -1115,18 +1187,50 @@ export async function saveInjury(id, { date, description }) {
 // Healed (or back to current): today, in the name of whoever marks it
 //   onDate: the day it healed (a session entered late); none: today
 export async function setInjuryHealed(id, healed, onDate = null) {
-    const { data, error } = await supabase.rpc("set_injury_healed", {
-        injury_id: id,
-        healed,
-        ...(onDate && { on_date: onDate }),
-    });
-    if (error) {
-        console.error("Marking an injury healed failed:", error);
-        throw saveProblem(error);
+    const send = async () => {
+        const { data, error } = await supabase.rpc("set_injury_healed", {
+            injury_id: resolveId(id),
+            healed,
+            ...(onDate && { on_date: onDate }),
+        });
+        if (error) throw error;
+        if (!data?.length) throw { code: "42501" };
+        return toAppInjury(data[0]);
+    };
+    // (Restore needs the database: it's never offline work)
+    if (!healed) {
+        try {
+            return await send();
+        } catch (error) {
+            console.error("Marking an injury healed failed:", error);
+            throw saveProblem(error);
+        }
     }
-    if (!data?.length) throw new Error("The database didn't allow this.");
-    return toAppInjury(data[0]);
+    const me = outboxUser();
+    const healedOn = onDate ?? new Date().toISOString().slice(0, 10);
+    const { result } = await submit(
+        "injury-healed",
+        { injuryId: id, onDate },
+        { id, healedOn, healedByName: me?.name ?? null },
+        { needs: [id] }
+    );
+    return { ...result, id };
 }
+
+registerSender(
+    "injury-healed",
+    async ({ injuryId, onDate }) => {
+        const { data, error } = await supabase.rpc("set_injury_healed", {
+            injury_id: resolveId(injuryId),
+            healed: true,
+            ...(onDate && { on_date: onDate }),
+        });
+        if (error) throw error;
+        if (!data?.length) throw { code: "42501" };
+        return toAppInjury(data[0]);
+    },
+    (error) => saveProblem(error).message
+);
 
 // Deletes an injury (admins, or whoever added it)
 export async function deleteInjury(id) {
@@ -1141,18 +1245,41 @@ export async function deleteInjury(id) {
 // An update on an injury ({ date, details }); who and when are filled in by
 // the database. Returns the saved update.
 //   sessionId: added during a monitoring session (its WhatsApp summary)
-export async function addInjuryUpdate(injuryId, { date, details, sessionId = null }) {
-    const { data, error } = await supabase
-        .from("injury_updates")
-        .insert({ injury_id: injuryId, update_date: date, details, ...(sessionId && { session_id: sessionId }) })
-        .select(UPDATE_COLUMNS)
-        .single();
-    if (error) {
-        console.error("Adding an injury update failed:", error);
-        throw saveProblem(error);
-    }
-    return toAppUpdate(data);
+//   monkeyId: whose it is (for the session's summary, before it's sent)
+export async function addInjuryUpdate(injuryId, { date, details, sessionId = null, monkeyId = null }) {
+    const me = outboxUser();
+    const localId = newLocalId();
+    const optimistic = {
+        id: localId,
+        date,
+        details,
+        loggedBy: me?.id ?? null,
+        loggedByName: me?.name ?? null,
+        loggedAt: new Date().toISOString(),
+    };
+    const { result } = await submit(
+        "injury-update",
+        { ref: newRef(), localId, injuryId, monkeyId, date, details, sessionId },
+        optimistic,
+        { needs: [injuryId, sessionId] }
+    );
+    return { ...result, id: localId };
 }
+
+registerSender(
+    "injury-update",
+    async ({ ref, injuryId, date, details, sessionId }) => {
+        const sessionNow = resolveId(sessionId);
+        return toAppUpdate(
+            await insertOnce(
+                "injury_updates",
+                { client_ref: ref, injury_id: resolveId(injuryId), update_date: date, details, ...(sessionNow && { session_id: sessionNow }) },
+                UPDATE_COLUMNS
+            )
+        );
+    },
+    (error) => saveProblem(error).message
+);
 
 // Changes an update's date or details (admins, or whoever added it)
 export async function saveInjuryUpdate(id, { date, details }) {
@@ -1311,65 +1438,169 @@ export async function loadMonitoringSessions() {
             .order("started_at", { ascending: false })
             .order("id", { ascending: false })
     );
-    if (error) throw sessionProblem(error);
-    return data.map(toAppSession);
+    if (error) {
+        // (no signal, and nothing saved on this phone yet: what's in the outbox,
+        // so a session can still be started and finished)
+        if (!error.code || isOffline(error)) return withOutboxSessions([]);
+        throw sessionProblem(error);
+    }
+    return withOutboxSessions(data.map(toAppSession));
 }
 
-// Start Session: in progress, in the signed-in person's name
-export async function startMonitoringSession(enclosureId, date) {
-    const { data, error } = await supabase
-        .from("monitoring_sessions")
-        .insert({ enclosure_id: enclosureId, session_date: date })
-        .select(SESSION_COLUMNS)
-        .single();
-    if (error) throw sessionProblem(error);
-    return toAppSession(data);
+// Sessions from this phone keep their local id for good (so an open one's
+// draft and page carry on, whenever it's sent), with what hasn't reached the
+// database's answer yet added on top. pending: still waiting to send.
+export function withOutboxSessions(list) {
+    let out = list.map((s) => ({ ...s, id: displayId(s.id) }));
+    for (const { payload, optimistic, status } of outboxEntries("session-start")) {
+        if (!out.some((s) => s.id === payload.localId)) out.push({ ...optimistic, pending: status !== "sent" });
+    }
+    for (const { payload, optimistic, status } of outboxEntries("session-finish")) {
+        const id = displayId(resolveId(payload.sessionId));
+        out = out.map((s) =>
+            s.id === id && (status !== "sent" || !s.finishedAt) ? { ...s, ...optimistic, id, pending: status !== "sent" } : s
+        );
+    }
+    const deleted = outboxEntries("session-delete").map((e) => displayId(resolveId(e.payload.sessionId)));
+    return out
+        .filter((s) => !deleted.includes(s.id))
+        .sort((a, b) => b.date.localeCompare(a.date) || String(b.startedAt).localeCompare(String(a.startedAt)));
 }
+
+// How long a phone can go without reaching the database and still start new
+// sessions: past this, what it knows is too old to go by. (A session already
+// started can always be finished.)
+export const OFFLINE_LIMIT_MS = 48 * 3600000;
+export const tooLongOffline = (now = Date.now()) => {
+    const last = lastContact();
+    return Boolean(last) && navigator.onLine === false && now - last > OFFLINE_LIMIT_MS;
+};
+
+// Start Session: in progress, in the signed-in person's name (no signal: on
+// this phone for now)
+export async function startMonitoringSession(enclosureId, date) {
+    if (tooLongOffline()) {
+        throw new Error("This phone hasn't reached the database for over 2 days, so what it knows may be out of date. Please connect before starting a new session.");
+    }
+    const me = outboxUser();
+    const localId = newLocalId();
+    const optimistic = toAppSession({
+        id: localId,
+        enclosure_id: enclosureId,
+        session_date: date,
+        status: "in_progress",
+        started_by: me?.id ?? null,
+        started_by_name: me?.name ?? null,
+        started_at: new Date().toISOString(),
+    });
+    const { result, sent } = await submit("session-start", { ref: newRef(), localId, enclosureId, date }, optimistic);
+    return { ...result, id: localId, pending: !sent };
+}
+
+registerSender(
+    "session-start",
+    async ({ ref, enclosureId, date }) =>
+        toAppSession(await insertOnce("monitoring_sessions", { client_ref: ref, enclosure_id: enclosureId, session_date: date }, SESSION_COLUMNS)),
+    (error) => sessionProblem(error).message
+);
 
 // Finish Session (or change a finished one): { date, foodUsed, fence,
 // waters, food, fenceNote, watersNote, foodNote, introcagesChecked,
 // perimeterChecked, notes, maintenance, seen: [ids], notSeen: [ids] }.
 // Returns it, finished.
 export async function finishMonitoringSession(id, details) {
-    const { date, foodUsed, fence, waters, food, notes, seen, notSeen } = details;
-    const text = (value) => value?.trim() || null;
-    const { data, error } = await supabase.rpc("finish_monitoring_session", {
-        session: id,
-        on_date: date,
-        food_used: foodUsed || null,
-        fence,
-        waters,
-        food,
-        notes: text(notes),
-        seen,
-        not_seen: notSeen,
-        fence_note: text(details.fenceNote),
-        waters_note: text(details.watersNote),
-        food_note: text(details.foodNote),
-        introcages_checked: Boolean(details.introcagesChecked),
-        perimeter_checked: Boolean(details.perimeterChecked),
+    const text = (value) => value?.trim() ?? "";
+    const sightings = [
+        ...details.seen.map((monkeyId) => ({ monkeyId, seen: true })),
+        ...details.notSeen.map((monkeyId) => ({ monkeyId, seen: false })),
+    ];
+    const optimistic = {
+        id,
+        date: details.date,
+        status: "finished",
+        foodUsed: details.foodUsed || null,
+        fence: details.fence,
+        waters: details.waters,
+        food: details.food,
+        fenceNote: text(details.fenceNote),
+        watersNote: text(details.watersNote),
+        foodNote: text(details.foodNote),
+        introcagesChecked: Boolean(details.introcagesChecked),
+        perimeterChecked: Boolean(details.perimeterChecked),
+        notes: text(details.notes),
         maintenance: text(details.maintenance),
-    });
-    if (error) {
-        if (error.code === "P0001") throw new Error(error.message);
-        throw sessionProblem(error);
-    }
-    const row = Array.isArray(data) ? data[0] : data;
-    return toAppSession({
-        ...row,
-        monitoring_sightings: [
-            ...seen.map((m) => ({ monkey_id: m, seen: true })),
-            ...notSeen.map((m) => ({ monkey_id: m, seen: false })),
-        ],
-    });
+        finishedAt: new Date().toISOString(),
+        sightings,
+    };
+    const { result, sent } = await submit("session-finish", { sessionId: id, details }, optimistic, { needs: [id] });
+    return { ...result, id, pending: !sent };
 }
 
-// Cancel Session (in progress) or Delete (finished): whoever started it, or an admin
+registerSender(
+    "session-finish",
+    async ({ sessionId, details }) => {
+        const { date, foodUsed, fence, waters, food, notes, seen, notSeen } = details;
+        const text = (value) => value?.trim() || null;
+        const { data, error } = await supabase.rpc("finish_monitoring_session", {
+            session: resolveId(sessionId),
+            on_date: date,
+            food_used: foodUsed || null,
+            fence,
+            waters,
+            food,
+            notes: text(notes),
+            seen,
+            not_seen: notSeen,
+            fence_note: text(details.fenceNote),
+            waters_note: text(details.watersNote),
+            food_note: text(details.foodNote),
+            introcages_checked: Boolean(details.introcagesChecked),
+            perimeter_checked: Boolean(details.perimeterChecked),
+            maintenance: text(details.maintenance),
+        });
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        return toAppSession({
+            ...row,
+            monitoring_sightings: [
+                ...seen.map((m) => ({ monkey_id: m, seen: true })),
+                ...notSeen.map((m) => ({ monkey_id: m, seen: false })),
+            ],
+        });
+    },
+    // (its own words: "Only whoever started this session…")
+    (error) => (error.code === "P0001" ? error.message : sessionProblem(error).message)
+);
+
+// Cancel Session (in progress) or Delete (finished): whoever started it, or
+// an admin. One that never left this phone just goes, and anything added
+// during it stays on record, without the session.
 export async function deleteMonitoringSession(id) {
-    const { data, error } = await supabase.from("monitoring_sessions").delete().eq("id", id).select("id");
-    if (error) throw sessionProblem(error);
-    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+    if (isLocalId(resolveId(id))) {
+        dropEntries((e) => (e.kind === "session-start" && e.payload.localId === id) || (e.kind === "session-finish" && e.payload.sessionId === id));
+        editEntries((e) =>
+            e.payload?.sessionId === id ? { ...e, payload: { ...e.payload, sessionId: null }, needs: (e.needs ?? []).filter((n) => n !== id) } : e
+        );
+        return;
+    }
+    await submit("session-delete", { sessionId: id }, { id });
 }
+
+registerSender(
+    "session-delete",
+    async ({ sessionId }) => {
+        const session = resolveId(sessionId);
+        const { data, error } = await supabase.from("monitoring_sessions").delete().eq("id", session).select("id");
+        if (error) throw error;
+        if (data?.length) return { id: session };
+        // (nothing deleted: already gone, as when sent twice; or not allowed)
+        const still = await supabase.from("monitoring_sessions").select("id").eq("id", session);
+        if (still.error) throw still.error;
+        if (still.data?.length) throw { code: "42501" };
+        return { id: session };
+    },
+    (error) => saveProblem(error).message
+);
 
 // A condition, as the site uses it: { id, monkeyId, date, description,
 // sessionId, loggedBy, loggedByName, loggedAt }
@@ -1396,19 +1627,45 @@ export async function loadConditions(monkeyIds) {
         .order("condition_date", { ascending: false })
         .order("id", { ascending: false });
     if (error) throw error;
-    return data.map(toAppCondition);
+    const saved = data.map(toAppCondition);
+    const added = outboxEntries("condition-add")
+        .filter(({ payload }) => monkeyIds.includes(payload.monkeyId) && !saved.some((c) => sameId(c.id, payload.localId)))
+        .map((e) => e.optimistic);
+    return [...added, ...saved].sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // A new condition ({ date, description, sessionId })
 export async function addCondition(monkeyId, { date, description, sessionId = null }) {
-    const { data, error } = await supabase
-        .from("monkey_conditions")
-        .insert({ monkey_id: monkeyId, condition_date: date, description, session_id: sessionId })
-        .select(CONDITION_COLUMNS)
-        .single();
-    if (error) throw sessionProblem(error);
-    return toAppCondition(data);
+    const me = outboxUser();
+    const localId = newLocalId();
+    const optimistic = {
+        id: localId,
+        monkeyId,
+        date,
+        description,
+        sessionId,
+        loggedBy: me?.id ?? null,
+        loggedByName: me?.name ?? null,
+        loggedAt: new Date().toISOString(),
+    };
+    const { result } = await submit("condition-add", { ref: newRef(), localId, monkeyId, date, description, sessionId }, optimistic, {
+        needs: [sessionId],
+    });
+    return { ...result, id: localId };
 }
+
+registerSender(
+    "condition-add",
+    async ({ ref, monkeyId, date, description, sessionId }) =>
+        toAppCondition(
+            await insertOnce(
+                "monkey_conditions",
+                { client_ref: ref, monkey_id: monkeyId, condition_date: date, description, session_id: resolveId(sessionId) },
+                CONDITION_COLUMNS
+            )
+        ),
+    (error) => sessionProblem(error).message
+);
 
 // Changes a condition's date or description (admins, or whoever added it)
 export async function saveCondition(id, { date, description }) {
@@ -1588,16 +1845,28 @@ export async function loadMonkeyIntegrations(monkeyId) {
 // What was added during a session, oldest first: [{ monkeyId, text, kind
 // ("injury" / "update" / "condition"), at }] (its WhatsApp 🐒 lines)
 export async function loadSessionNotes(sessionId) {
-    const [injuries, updates, conditions] = await Promise.all([
-        supabase.from("injuries").select("monkey_id, description, logged_at").eq("session_id", sessionId),
-        supabase.from("injury_updates").select("details, logged_at, injuries (monkey_id)").eq("session_id", sessionId),
-        supabase.from("monkey_conditions").select("monkey_id, description, logged_at").eq("session_id", sessionId),
-    ]);
+    const session = resolveId(sessionId);
+    // (never sent yet: just what's on this phone)
+    const none = { data: [] };
+    const [injuries, updates, conditions] = isLocalId(session)
+        ? [none, none, none]
+        : await Promise.all([
+              supabase.from("injuries").select("id, monkey_id, description, logged_at").eq("session_id", session),
+              supabase.from("injury_updates").select("id, details, logged_at, injuries (monkey_id)").eq("session_id", session),
+              supabase.from("monkey_conditions").select("id, monkey_id, description, logged_at").eq("session_id", session),
+          ]);
     throwIfError(injuries, updates, conditions);
+    const here = (kind, rows) =>
+        outboxEntries(kind).filter(
+            ({ payload }) => payload.sessionId != null && sameId(payload.sessionId, sessionId) && !rows.some((r) => sameId(r.id, payload.localId))
+        );
     return [
         ...injuries.data.map((r) => ({ monkeyId: r.monkey_id, text: r.description, kind: "injury", at: r.logged_at })),
         ...updates.data.map((r) => ({ monkeyId: r.injuries?.monkey_id, text: r.details, kind: "update", at: r.logged_at })),
         ...conditions.data.map((r) => ({ monkeyId: r.monkey_id, text: r.description, kind: "condition", at: r.logged_at })),
+        ...here("injury-add", injuries.data).map(({ payload, optimistic }) => ({ monkeyId: payload.monkeyId, text: payload.description, kind: "injury", at: optimistic.loggedAt })),
+        ...here("injury-update", updates.data).map(({ payload, optimistic }) => ({ monkeyId: payload.monkeyId, text: payload.details, kind: "update", at: optimistic.loggedAt })),
+        ...here("condition-add", conditions.data).map(({ payload, optimistic }) => ({ monkeyId: payload.monkeyId, text: payload.description, kind: "condition", at: optimistic.loggedAt })),
     ].sort((a, b) => a.at.localeCompare(b.at));
 }
 

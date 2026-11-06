@@ -1181,3 +1181,9 @@
     opacity: 0.35;
     cursor: default;
 }
+
+/* Saved on this phone, not sent yet */
+.Monitoring-pendingTag {
+    color: var(--amber-text);
+    font-weight: 600;
+}

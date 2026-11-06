@@ -61,7 +61,7 @@ export function useInjuries(monkeyId, staff) {
     const change = (fn) => setState((s) => ({ ...s, entries: sorted(fn(s.entries)) }));
     // (a saved injury comes back without its updates: it keeps the ones it had)
     const replace = (saved) =>
-        change((list) => list.map((e) => (e.id === saved.id ? { ...saved, updates: e.updates ?? [] } : e)));
+        change((list) => list.map((e) => (e.id === saved.id ? { ...e, ...saved, updates: e.updates ?? [] } : e)));
     // An injury's updates, changed (oldest first)
     const changeUpdates = (injuryId, fn) =>
         change((list) =>
@@ -139,7 +139,7 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
         change((list) =>
             Boolean(saved.healedOn) !== past
                 ? list.filter((e) => e.id !== saved.id)
-                : list.map((e) => (e.id === saved.id ? { ...saved, updates: e.updates ?? [] } : e))
+                : list.map((e) => (e.id === saved.id ? { ...e, ...saved, updates: e.updates ?? [] } : e))
         );
     const changeUpdates = (injuryId, fn) =>
         change((list) =>

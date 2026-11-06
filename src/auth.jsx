@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
+import { clearSavedRecords } from "./offlineFetch";
+import { setOutboxUser } from "./outbox";
 import { loadAvatar } from "./accountPhoto";
 
 // Who's signed in, shared with every page through <AuthProvider>.
@@ -113,6 +115,8 @@ export function AuthProvider({ children }) {
             const nextUser = session?.user ?? null;
             const nextRoles = await checkRole(nextUser);
             if (cancelled) return;
+            // (kept for the outbox, for when there's no signal)
+            setOutboxUser(nextUser ? { id: nextUser.id, name: nextRoles.name ?? null } : null);
             setUser(nextUser);
             setRoles(nextRoles);
             setReady(true);
@@ -149,6 +153,7 @@ export function AuthProvider({ children }) {
 
     async function signOut() {
         await supabase.auth.signOut();
+        await clearSavedRecords();
     }
 
     // Emails a link for choosing a new password. Returns an error message to

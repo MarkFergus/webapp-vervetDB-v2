@@ -21,6 +21,14 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.29.0",
+        date: "2026-11-06",
+        changes: [
+            "New offline Monitoring: entries are kept on the phone and sent when there's signal",
+            "New Microchip records in Medical and on the Timeline, added with + in Edit",
+        ],
+    },
+    {
         version: "1.28.0",
         date: "2026-11-06",
         changes: [

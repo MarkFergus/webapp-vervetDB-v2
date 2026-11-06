@@ -160,7 +160,9 @@ export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, 
 //   everyone else:     Map in the circle, then Scan QR Code, then Documents
 //                      (staff) or Game
 //   onAddPhotos: editors / admins; onProfileBook: staff (any role)
-export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isGeneratingPDF, onScan, inert }) {
+//   recordsCircle: Records in the middle (editors, with no signal too, when
+//   there's no Add Photos: Monitoring still works)
+export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = false, onProfileBook, isGeneratingPDF, onScan, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -185,7 +187,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
                 out (no label: its name is read out). Editors / admins: the
                 Records page; everyone else: the Interactive Map (the whole
                 sanctuary map) */}
-            {onAddPhotos ? (
+            {onAddPhotos || recordsCircle ? (
                 <a
                     className="BottomBar-map"
                     href="#records"
@@ -208,7 +210,7 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, onProfileBook, isG
                   button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} />, "Photos", { "aria-label": "Add Photos" })
                 : // Everyone else: an Introcage Sign's QR code → its page
                   button(onScan, <IconScan stroke={1.75} size={24} />, "Scan", { "aria-label": "Scan QR Code" })}
-            {onAddPhotos
+            {onAddPhotos || recordsCircle
                 ? // Editors / admins: the Interactive Map (Documents: in ☰)
                   button(onMap, <IconMap2 stroke={1.75} size={24} />, "Map", { "aria-label": "Interactive Map" })
                 : onProfileBook

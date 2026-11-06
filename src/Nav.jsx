@@ -65,6 +65,7 @@ function Nav({
     showAdmin = false, // admins only: the Admin Dashboard, under Add New Monkey
     showRecords = false, // staff (any role): the Records page
     onAddPhotos, // staff (editors / admins): Add Photos, in Map's place on phones
+    recordsCircle = false, // editors, with no signal too: Records in the phone bar's middle
     onHome, // the logo: back to the top, search and filters cleared
     page = "monkeys", // the page showing: "monkeys", "enclosures", "game", "statistics", "admin"…
     showSearch = true, // false: no search box (the game)
@@ -240,6 +241,7 @@ function Nav({
                         inert={barsInert || anyPopUp}
                     />
                     <BottomBar
+                        recordsCircle={recordsCircle}
                         page={page}
                         onHome={onHome}
                         onMap={showMap}

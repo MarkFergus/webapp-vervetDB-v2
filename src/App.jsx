@@ -8,6 +8,7 @@ import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
 import useOnline from "./useOnline";
 import { saveThumbnails } from "./offlinePhotos";
+import OfflineSync, { WaitingNotice } from "./OfflineSync";
 import { isInstalledApp } from "./installApp";
 import { timeAgo } from "./savedData";
 import "./App.css";
@@ -58,12 +59,12 @@ function App() {
     let notice = null;
     if (status === "saved") {
         notice = online
-            ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Editing is off for now.`
-            : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Editing is off until you're back online.`;
+            ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Monitoring still works; other editing is off for now.`
+            : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Monitoring still works; other editing is off until you're back online.`;
     } else if (status === "built-in") {
         notice = "Couldn't reach the database, so this is a saved copy of the monkeys and may be out of date.";
     } else if (!online) {
-        notice = "You're offline. Photos you haven't opened before may not show, and editing is off until you're back online.";
+        notice = "You're offline. Monitoring still works. Photos you haven't opened before may not show, and other editing is off until you're back online.";
     }
 
     return (
@@ -75,6 +76,7 @@ function App() {
                         {notice}
                     </p>
                 )}
+                <WaitingNotice />
                 {/* Every page (the monkeys, the enclosures, the game) under
                     the same top bar */}
                 <ShowPage
@@ -89,11 +91,15 @@ function App() {
                     // Editing only when the data is live from the database
                     // and there's a connection to save changes
                     editable={status === "live" && online}
+                    // Monitoring carries on with no signal, from the copy
+                    // saved on this phone (the built-in one's too old to use)
+                    fieldWork={status === "live" || status === "saved"}
                     onMonkeySaved={monkeySaved}
                     onMonkeyDeleted={monkeyDeleted}
                 />
                 <UpdatePrompt />
                 <SaveThumbnails live={status === "live"} monkeys={monkeys} />
+                <OfflineSync live={status === "live"} monkeys={monkeys} enclosures={enclosures} />
             </div>
         </AuthProvider>
     );

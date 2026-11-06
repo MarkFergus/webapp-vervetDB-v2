@@ -10,6 +10,8 @@ import { loadSavedCopy, saveCopy } from "./savedData";
 // When the connection comes back, it tries the database again.
 // monkeySaved / monkeyDeleted update the list after an edit, without
 // reloading everything.
+const SAVED_COPY_AFTER_MS = 4000;
+const RETRY_EVERY_MS = 60000;
 function fallbackData() {
     const saved = loadSavedCopy();
     // (a copy saved before enclosures existed: the built-in ones)
@@ -40,14 +42,25 @@ export default function useMonkeyData() {
                 });
         }
         if (navigator.onLine !== false) load();
+        // Wifi that's connected but going nowhere: what's on this phone before
+        // long, rather than a loading screen (the database can still catch up)
+        const waited = setTimeout(() => {
+            if (!cancelled && loadSavedCopy()) setData((d) => (d.status === "loading" ? fallbackData() : d));
+        }, SAVED_COPY_AFTER_MS);
 
         // Back online: try the database again, unless it's already live
         function retry() {
             if (status.current !== "live") load();
         }
         window.addEventListener("online", retry);
+        // (and now and then: phones don't always know when signal's back)
+        const again = setInterval(() => {
+            if (navigator.onLine !== false) retry();
+        }, RETRY_EVERY_MS);
         return () => {
             cancelled = true;
+            clearTimeout(waited);
+            clearInterval(again);
             window.removeEventListener("online", retry);
         };
     }, []);

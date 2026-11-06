@@ -35,7 +35,8 @@ import {
 } from "./monkeyData";
 import { hasTroop } from "./enclosures";
 import { MONITORED_SECTIONS } from "./monitoring";
-import { monkeysIn } from "./stats";
+import { troopMonkeys } from "./offlinePrefill";
+import { discardEntry, outboxProblems, retryEntry, subscribeOutbox } from "./outbox";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
@@ -194,16 +195,6 @@ function Flag({ kind, children }) {
 
 // A troop's monkeys: { inTroop, inIntrocages, all } (troop first, by
 // name, then each introcage's)
-function troopMonkeys(monkeys, troop) {
-    const inTroop = troop ? [...monkeysIn(monkeys, troop, "troop")].sort((a, b) => a.name.localeCompare(b.name)) : [];
-    const inIntrocages = troop
-        ? [...monkeysIn(monkeys, troop, "introcages")].sort(
-              (a, b) => (a.introcage ?? "").localeCompare(b.introcage ?? "") || a.name.localeCompare(b.name)
-          )
-        : [];
-    return { inTroop, inIntrocages, all: [...inTroop, ...inIntrocages] };
-}
-
 // The sightings between sessions that count for a session: one in
 // progress (or none: the list), all of them; a finished one, those before
 // its day
@@ -429,6 +420,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                 date: values.date,
                 details: values.description,
                 sessionId: session.id,
+                monkeyId: monkey.id,
             });
         else if (mode === "healed") {
             // (a last update first, so it's in the session's summary and the
@@ -437,6 +429,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                 date: values.date,
                 details: values.description ? `Healed: ${values.description}` : "Healed",
                 sessionId: session.id,
+                monkeyId: monkey.id,
             });
             await facts.injuries.setHealed(chosenInjury.id, true, values.date);
         }
@@ -660,11 +653,14 @@ function SessionPage({ session, troop, monkeys, sessions, spots, staff, onFinish
         setSameDay(false);
         setBusy(true);
         try {
-            const saved = await finishMonitoringSession(session.id, {
-                ...form,
-                seen: facts.all.filter(isSeen).map((m) => m.id),
-                notSeen: facts.all.filter((m) => !isSeen(m)).map((m) => m.id),
-            });
+            const saved = {
+                ...session,
+                ...(await finishMonitoringSession(session.id, {
+                    ...form,
+                    seen: facts.all.filter(isSeen).map((m) => m.id),
+                    notSeen: facts.all.filter((m) => !isSeen(m)).map((m) => m.id),
+                })),
+            };
             clearDraft(session.id);
             onFinished(saved, summaryFor(saved, troop, facts, notes, today));
         } catch (error) {
@@ -923,11 +919,12 @@ function WhatsAppSummary({ text, showCopy = true }) {
 }
 
 // After Finish Session: the alerts, then the summary to copy
-function SessionDone({ troop, summary, onDone }) {
+function SessionDone({ troop, summary, pending, onDone }) {
     return (
         <div className="Monitoring-session">
             <p className="Monitoring-started is-saved">
-                <IconCheck size={18} aria-hidden="true" /> Session saved
+                <IconCheck size={18} aria-hidden="true" />{" "}
+                {pending ? "Session saved on this phone. It will send when there's signal." : "Session saved"}
             </p>
             <h2 className="Monitoring-sessionTitle">Monitoring Summary</h2>
             {summary.alerts.length > 0 ? (
@@ -1025,6 +1022,7 @@ function HistoryItem({ session, troop, monkeys, sessions, spots, staff, canChang
                 <IconClipboardList className="Monitoring-historyIcon" size={16} aria-hidden="true" />
                 <span className="Monitoring-historyWhat">
                     <b>{longDate(session.date)}</b> by {session.startedByName ?? "Staff"}
+                    {session.pending && <span className="Monitoring-pendingTag"> · Waiting to send</span>}
                     {troopSightings.length > 0 && (
                         <>
                             {" · "}
@@ -1207,7 +1205,46 @@ function SpotItem({ spot, name, canDelete, onDeleted }) {
 
 // onTitle(title, back): the page's title while a session's open ("Skunkey
 // Monitoring"; null: back to "Monitoring")
-export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], staff = null, onTitle = () => {} }) {
+// Entries the database refused: never lost without someone saying so
+function OutboxProblems({ onChange }) {
+    const problems = outboxProblems();
+    if (!problems.length) return null;
+    return (
+        <section className="Monitoring-warning" role="alert" aria-label="Needs Attention">
+            <h2 className="RecordsPage-subhead">Needs Attention</h2>
+            <p>These were saved on this phone but the database refused them.</p>
+            <ul>
+                {problems.map((entry) => (
+                    <li key={entry.id}>
+                        {entry.problem}{" "}
+                        <button type="button" className="Modal-edit is-blue-outline" onClick={() => retryEntry(entry.id).then(onChange)}>
+                            Try Again
+                        </button>{" "}
+                        <button
+                            type="button"
+                            className="Modal-edit is-cancel"
+                            onClick={() => {
+                                discardEntry(entry.id);
+                                onChange();
+                            }}
+                        >
+                            Discard
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], staff: givenStaff = null, onTitle = () => {} }) {
+    // (Monitoring carries on with no signal: entries wait in the outbox)
+    const staff = useMemo(
+        () => (givenStaff?.canEnterOffline && !givenStaff.canAdd ? { ...givenStaff, canAdd: true } : givenStaff),
+        [givenStaff]
+    );
+    // (Mark As Seen isn't offline work yet)
+    const needsSignal = Boolean(givenStaff?.offline);
     const today = dayText(new Date());
     const troops = useMemo(
         () => enclosures.filter(hasTroop).sort((a, b) => fullName(a.name).localeCompare(fullName(b.name))),
@@ -1248,6 +1285,8 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     useEffect(() => {
         reload();
     }, [reload]);
+    // Something's been sent, or refused: the list catches up
+    useEffect(() => subscribeOutbox(() => reload()), [reload]);
     // (the troop's monkeys' latest moves: back out to it, for their last seen)
     const [lastMoves, setLastMoves] = useState({});
     // (and who's muted: Mute Alerts)
@@ -1282,7 +1321,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
     const troopById = Object.fromEntries(troops.map((t) => [t.id, t]));
     if (view?.done) {
-        return <SessionDone troop={troopById[view.troopId]} summary={view.done} onDone={() => setView(null)} />;
+        return <SessionDone troop={troopById[view.troopId]} summary={view.done} pending={view.pending} onDone={() => setView(null)} />;
     }
     const open = view?.id ? sessions.find((s) => s.id === view.id) : null;
     if (open && troopById[open.enclosureId]) {
@@ -1302,7 +1341,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                 }}
                 onFinished={(saved, summary) => {
                     setSessions((list) => list.map((s) => (s.id === saved.id ? saved : s)));
-                    setView({ done: summary, troopId: saved.enclosureId });
+                    setView({ done: summary, troopId: saved.enclosureId, pending: Boolean(saved.pending) });
                     reload();
                 }}
             />
@@ -1346,7 +1385,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
         (a, b) =>
             b.date.localeCompare(a.date) || (a.kind === b.kind ? String(b.at).localeCompare(String(a.at)) : a.kind === "spot" ? -1 : 1)
     );
-    const canDeleteSpot = (s) => canEnter && Boolean(staff?.isAdmin || s.loggedBy === staff?.userId);
+    const canDeleteSpot = (s) => canEnter && !needsSignal && Boolean(staff?.isAdmin || s.loggedBy === staff?.userId);
 
     async function markSeen(monkeyId, values) {
         const spot = await addSpotSighting(monkeyId, values);
@@ -1385,6 +1424,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
     return (
         <div className="Monitoring">
+            <OutboxProblems onChange={reload} />
             {/* Who's monitoring now, and what's been done in the last day:
                 every troop, a list to look at (Continue and Cancel Session:
                 by the troop picker) */}
@@ -1538,7 +1578,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                                 key={monkey.id}
                                 monkey={monkey}
                                 record={record}
-                                canMark={canEnter}
+                                canMark={canEnter && !needsSignal}
                                 onMark={(values) => markSeen(monkey.id, values)}
                             />
                         ))}
