@@ -24,7 +24,7 @@ describe("a monkey's feeding", () => {
     });
 
     test("AM food and PM food in words", () => {
-        const elf = monkey("Elf", "Goliath B", { amPlates: 2, amCutSmall: true, amFruit: true, amMetalPlate: true, pmCutSmall: true });
+        const elf = monkey("Elf", "Goliath B", { amPlates: 2, amCutSmall: true, amFruit: true, amMetalPlate: true });
         expect(amText(elf, TODAY)).toBe("2 plates, cut small + fruit, metal plate");
         expect(pmText(elf)).toBe("1 bowl, cut small");
         expect(amText(monkey("Kesie", "Goliath B", { amCutSmall: true }), TODAY)).toBe("1 plate, cut small");

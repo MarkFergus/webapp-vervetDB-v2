@@ -869,6 +869,7 @@ function ShowPage({
         <div className="ShowPage">
             <div className="ShowPage-modal">
                 <Modal
+                    allMonkeys={monkeys}
                     onClose={closeModal}
                     isModalOpen={isModalOpen}
                     monkey={selectedMonkey}
@@ -996,6 +997,7 @@ function ShowPage({
                             monkeys={monkeys}
                             enclosures={enclosures}
                             canEnter={canEdit}
+                            onEnclosureSaved={onEnclosureSaved}
                             maintenance={{
                                 live: enclosureEditing.live,
                                 canLog: enclosureEditing.canLog,
@@ -1290,6 +1292,7 @@ function ShowPage({
                 <MonkeyForm
                     // key: a fresh form for each monkey
                     key={editing.monkey?.id ?? "new"}
+                    allMonkeys={monkeys}
                     monkey={editing.monkey}
                     troops={troops.filter((t) => t !== "All Troops")}
                     troopIds={troopIds}

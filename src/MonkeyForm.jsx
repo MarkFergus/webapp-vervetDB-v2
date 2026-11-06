@@ -20,7 +20,7 @@ import { seasonOf } from "./ages";
 import useArrivalInfo from "./useArrivalInfo";
 import useMonitoring from "./useMonitoring";
 import { placeChoices } from "./enclosures";
-import { BABY_FEEDING, isBaby, summaryDate } from "./feeding";
+import { BABY_FEEDING, cageHasBaby, isBaby, summaryDate } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import { useAuth } from "./auth";
@@ -59,7 +59,7 @@ function birthYears(current) {
 // Edit, and Add New Monkey)
 function MonkeyForm({
     monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted, quick = false,
-    onStatusUpdate = null,
+    onStatusUpdate = null, allMonkeys = [],
 }) {
     const isNew = !monkey;
     const { isAdmin, isEditor } = useAuth();
@@ -208,6 +208,11 @@ function MonkeyForm({
     const setFeeding = (field, value) => setForm({ ...form, feeding: { ...form.feeding, [field]: value } });
     // Babies' plates are always cut small with fruit
     const baby = isBaby({ year: form.year });
+    // ...and so is everyone's in with a baby (only while they are: what's saved
+    // stays as set, for when the baby's gone)
+    const withBaby =
+        !baby && cageHasBaby(monkey?.stay?.introcage ?? chosenIntrocage(form, choices)?.name, allMonkeys, new Date(), monkey?.id ?? null);
+    const lockedPlate = baby || withBaby;
     // The hints say "he" / "she" (or "they", sex unknown)
     const he = { male: "he", female: "she" }[form.sex] ?? "they";
     const his = { male: "his", female: "her" }[form.sex] ?? "their";
@@ -776,8 +781,8 @@ function MonkeyForm({
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={baby || form.feeding.amCutSmall}
-                                                    disabled={baby}
+                                                    checked={lockedPlate || form.feeding.amCutSmall}
+                                                    disabled={lockedPlate}
                                                     onChange={(e) => setFeeding("amCutSmall", e.target.checked)}
                                                 />
                                                 Cut Small
@@ -785,8 +790,8 @@ function MonkeyForm({
                                             <label>
                                                 <input
                                                     type="checkbox"
-                                                    checked={baby || form.feeding.amFruit}
-                                                    disabled={baby}
+                                                    checked={lockedPlate || form.feeding.amFruit}
+                                                    disabled={lockedPlate}
                                                     onChange={(e) => setFeeding("amFruit", e.target.checked)}
                                                 />
                                                 Add Fruit
@@ -801,6 +806,9 @@ function MonkeyForm({
                                             </label>
                                         </div>
                                     </div>
+                                    {withBaby && (
+                                        <p className="MonkeyForm-hint">Cut small + fruit while in with a baby.</p>
+                                    )}
                                     <div className="MonkeyForm-row MonkeyForm-feedRow">
                                         <label className="MonkeyForm-field">
                                             <span>PM Bowls</span>
@@ -813,17 +821,6 @@ function MonkeyForm({
                                                 <option value={2}>2 Bowls</option>
                                             </select>
                                         </label>
-                                        <div className="MonkeyForm-checks" role="group" aria-label="PM bowl extras">
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={baby || form.feeding.pmCutSmall}
-                                                    disabled={baby}
-                                                    onChange={(e) => setFeeding("pmCutSmall", e.target.checked)}
-                                                />
-                                                Cut Small
-                                            </label>
-                                        </div>
                                     </div>
                                 </>
                             )}

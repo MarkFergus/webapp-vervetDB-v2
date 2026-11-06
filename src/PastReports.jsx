@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { IconDownload, IconEye, IconMail } from "@tabler/icons-react";
+import { IconEye, IconMail } from "@tabler/icons-react";
 import { emailMeWeeklyReport, loadWeeklyReport } from "./monkeyData";
-import { downloadBlob } from "./canvasHelpers";
 import { SECTIONS, pastWeeks } from "./weeklyReportRules";
 
 // Past Reports (Admin Dashboard → Weekly Reports): any week's report, the
-// sections ticked: View (on the page), Download PDF (WeeklyReportPDF.jsx) or
+// sections ticked: View (on the page) or
 // Email Me (to your sign-in email, now: one a minute at most).
 // The weeks run as your own do (My Week Runs, as saved).
 //   weekStarts / sections: your saved settings (to start with)
@@ -91,7 +90,7 @@ export default function PastReports({ weekStarts, sections: savedSections }) {
     // (last week to start with: the latest that's over)
     const [from, setFrom] = useState(weeks[1].from);
     const [sections, setSections] = useState(savedSections.length ? savedSections : SECTIONS.map((s) => s.id));
-    // null, "loading", "pdf", "emailing", { report } (to show), { sentTo } or
+    // null, "loading", "emailing", { report } (to show), { sentTo } or
     // { problem }
     const [state, setState] = useState(null);
 
@@ -111,28 +110,6 @@ export default function PastReports({ weekStarts, sections: savedSections }) {
         }
     }
 
-    async function download() {
-        setState("pdf");
-        let report;
-        try {
-            report = await loadWeeklyReport(from, sections);
-        } catch (error) {
-            return setState({ problem: error.message });
-        }
-        try {
-            const [{ pdf }, { default: WeeklyReportPDF }] = await Promise.all([
-                import("@react-pdf/renderer"),
-                import("./WeeklyReportPDF"),
-            ]);
-            const blob = await pdf(<WeeklyReportPDF report={report} />).toBlob();
-            downloadBlob(blob, `weekly_report_${from}.pdf`);
-            setState({ report });
-        } catch (error) {
-            console.error(error);
-            setState({ problem: "Couldn't create the PDF. Check your internet connection, then try again." });
-        }
-    }
-
     async function emailMe() {
         setState("emailing");
         try {
@@ -142,7 +119,7 @@ export default function PastReports({ weekStarts, sections: savedSections }) {
         }
     }
 
-    const busy = state === "loading" || state === "pdf" || state === "emailing";
+    const busy = state === "loading" || state === "emailing";
     return (
         <section className="Admin-card Weekly" aria-labelledby="Past-title">
             <h2 id="Past-title">Past Reports</h2>
@@ -185,15 +162,6 @@ export default function PastReports({ weekStarts, sections: savedSections }) {
                 <button type="button" className="Modal-edit is-blue" disabled={busy || !sections.length} onClick={view}>
                     <IconEye size={16} aria-hidden="true" />
                     {state === "loading" ? "Loading…" : "View"}
-                </button>
-                <button
-                    type="button"
-                    className="Modal-edit is-soft"
-                    disabled={busy || !sections.length}
-                    onClick={download}
-                >
-                    <IconDownload size={16} aria-hidden="true" />
-                    {state === "pdf" ? "Creating PDF…" : "Download PDF"}
                 </button>
                 <button
                     type="button"

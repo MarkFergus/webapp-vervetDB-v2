@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.28.0",
+        date: "2026-11-06",
+        changes: [
+            "New Feeding page in Records, with the AM Plates List and Troop PM Bowls",
+            "Added arrival location to the Timeline",
+            "Improved Deworming sheets: introcages listed separately at the bottom",
+            "Improved feeding: PM bowls cut small with the AM plate, and cut small + fruit for anyone in with a baby",
+        ],
+    },
+    {
         version: "1.27.1",
         date: "2026-11-06",
         changes: ["Added Mark As Seen to Quick Actions"],

@@ -47,6 +47,15 @@ const lastMonitored = (days) => `last monitored ${plural(days, "day")} ago`;
 const groupLabel = (name) => (name ?? "").replace(/^(D&D|H&B)\b/, (short) => fullName(short));
 const dewormingLabel = (item) => `${groupLabel(item.groupName)} ${SESSIONS[item.session]}`;
 
+// "Not seen in 2 sessions: Holly, Jasper", the most sessions first
+function byMissed(monkeys) {
+    const counts = [...new Set(monkeys.map((m) => m.missed))].sort((a, b) => b - a);
+    return counts.map((missed) => {
+        const names = monkeys.filter((m) => m.missed === missed).map((m) => m.name).sort((a, b) => a.localeCompare(b));
+        return line(`Not seen in ${plural(missed, "session")}: ${names.join(", ")}`);
+    });
+}
+
 function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monitoring, today }) {
     const mustSee = [];
     const checkOn = [];
@@ -69,7 +78,7 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
             });
             const seen = lastSeen ? `last seen ${briefDay(lastSeen)}` : "not seen before";
             if (missed > 0 && troop.name === LARGE_TROOP) {
-                largeTroop.push({ missed, text: `${m.name}: not seen in ${plural(missed, "session")}, ${seen}` });
+                largeTroop.push({ missed, name: m.name });
             } else if (missed >= MUST_SEE_AFTER) {
                 mustSee.push(line(`${m.name} (${name}): not seen in ${missed} sessions, ${seen}`, true));
                 checkOn.push({
@@ -108,7 +117,7 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
         { title: "Still In Progress", lines: stillOpen },
         {
             title: `${LARGE_TROOP}: Not Seen`,
-            lines: largeTroop.sort((a, b) => b.missed - a.missed).map((m) => line(m.text)),
+            lines: byMissed(largeTroop),
         },
     ];
     return { groups, checkOn, monitor };
@@ -271,10 +280,10 @@ export function briefEmail(brief) {
     let html = brief.allClear ? '<p style="margin:0 0 12px;font-weight:700;color:#1b7a3d">All clear ✓</p>' : "";
     let text = brief.allClear ? "All clear ✓\n\n" : "";
     for (const section of brief.sections) {
-        html += `<h2 style="margin:24px 0 4px;padding-bottom:4px;font-size:18px;border-bottom:2px solid #222">${esc(section.title)}</h2>`;
+        html += `<h2 style="margin:28px 0 8px;padding:8px 12px;font-size:17px;color:#ffffff;background-color:#2b3a33;border-radius:4px">${esc(section.title)}</h2>`;
         text += `${section.title.toUpperCase()}\n`;
         for (const group of section.groups) {
-            html += `<h3 style="margin:14px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:#666">${esc(group.title)}</h3><ul style="margin:0;padding-left:18px">`;
+            html += `<h3 style="margin:16px 0 4px;font-size:15px;font-weight:700;color:#111111">${esc(group.title)}</h3><ul style="margin:0;padding-left:18px">`;
             text += `\n${group.title}\n`;
             for (const l of group.lines) {
                 html += `<li style="margin:2px 0;${l.alert ? "color:#b3261e" : l.toDo ? "color:#b26a00;font-weight:700" : ""}">${esc(l.text)}</li>`;

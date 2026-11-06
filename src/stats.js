@@ -161,11 +161,11 @@ export function sexByTroop(monkeys, enclosures) {
 // The AM plates, by monkey (introcage monkeys, and troop monkeys staying
 // in an introcage, as on the AM Plates List): how many Mainfeed feed and
 // how many Sickbay do; and of Mainfeed's, how many have each kind
-// of plate (a baby's: cut small + fruit) and how many a metal plate
+// of plate (a baby's, and those in with them: cut small + fruit) and how many a metal plate
 //   → { localTeam, sickbay, normal, cutSmall, cutSmallFruit, fruit, metal }
 export function amPlatesFor(monkeys, today = new Date()) {
     const fed = monkeys.filter(hasFeeding);
-    const local = fed.filter((m) => fedBy(m) !== "sickbay").map((m) => amPlate(m, today));
+    const local = fed.filter((m) => fedBy(m) !== "sickbay").map((m) => amPlate(m, today, fed));
     const count = (test) => local.filter(test).length;
     return {
         localTeam: local.length,

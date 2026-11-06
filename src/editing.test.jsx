@@ -623,16 +623,18 @@ describe("feeding (introcage monkeys)", () => {
         await user.selectOptions(within(feeding()).getByLabelText("Fed By"), "Mainfeed");
         await user.selectOptions(within(feeding()).getByLabelText("AM Plates"), "2 Plates");
         await user.click(within(feeding()).getByRole("checkbox", { name: "Metal Plate" }));
-        await user.click(within(within(feeding()).getByRole("group", { name: "PM bowl extras" })).getByRole("checkbox", { name: "Cut Small" }));
+        // (the PM bowl: cut small with the plate, no box of its own)
+        expect(within(feeding()).getAllByRole("checkbox", { name: "Cut Small" })).toHaveLength(1);
+        await user.click(within(feeding()).getByRole("checkbox", { name: "Cut Small" }));
         await user.click(within(form()).getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saved.updates).toHaveLength(1));
         expect(saved.updates[0].row).toMatchObject({
-            introcage_id: HB_C1.id, fed_by: "local_team", am_plates: 2, am_cut_small: false, am_fruit: false,
+            introcage_id: HB_C1.id, fed_by: "local_team", am_plates: 2, am_cut_small: true, am_fruit: false,
             am_metal_plate: true, pm_bowls: 1, pm_cut_small: true,
         });
         // Its pop-up: what it's fed
         const dialog = await screen.findByRole("dialog", { name: "Aroha" });
-        expect(within(dialog).getByText("2 plates, metal plate")).toBeInTheDocument();
+        expect(within(dialog).getByText("2 plates, cut small, metal plate")).toBeInTheDocument();
         expect(within(dialog).getByText("1 bowl, cut small")).toBeInTheDocument();
     });
 
@@ -673,7 +675,6 @@ describe("feeding (introcage monkeys)", () => {
         const { user } = setup({ enclosuresLive: true, start: withAroha });
         await openEditFor(user, "Aroha");
         const amExtras = () => within(feeding()).getByRole("group", { name: "AM plate extras" });
-        const pmExtras = () => within(feeding()).getByRole("group", { name: "PM bowl extras" });
         await user.selectOptions(field("Birth year"), String(currentBabySeason()));
         expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toBeDisabled();
         expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toHaveDisplayValue("1 Plate");
@@ -683,13 +684,38 @@ describe("feeding (introcage monkeys)", () => {
         }
         expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toBeDisabled();
         expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toHaveDisplayValue("1 Bowl");
-        expect(within(pmExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeChecked();
-        expect(within(pmExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeDisabled();
         // A grown-up again: their own settings
         await user.selectOptions(field("Birth year"), "2015");
         expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toBeEnabled();
         expect(within(feeding()).getByRole("combobox", { name: "PM Bowls" })).toBeEnabled();
         expect(within(amExtras()).getByRole("checkbox", { name: "Cut Small" })).toBeEnabled();
+    });
+
+    test("in with a baby: cut small + fruit locked, and what's saved stays as set", async () => {
+        const start = () => {
+            const list = withAroha();
+            const other = list.findIndex((m) => m.name !== "Aroha");
+            list[other] = {
+                ...list[other], troop: null, introcage: "H&B C1", introcageId: HB_C1.id, introcageType: "introcage",
+                enclosure: "H&B", year: currentBabySeason(), feeding: { ...DEFAULT_FEEDING },
+            };
+            return list;
+        };
+        const { user } = setup({ enclosuresLive: true, start });
+        await openEditFor(user, "Aroha");
+        const amExtras = within(within(feeding()).getByRole("group", { name: "AM plate extras" }));
+        for (const name of ["Cut Small", "Add Fruit"]) {
+            expect(amExtras.getByRole("checkbox", { name })).toBeChecked();
+            expect(amExtras.getByRole("checkbox", { name })).toBeDisabled();
+        }
+        // (their own plate count isn't locked, nor the metal plate)
+        expect(within(feeding()).getByRole("combobox", { name: "AM Plates" })).toBeEnabled();
+        expect(amExtras.getByRole("checkbox", { name: "Metal Plate" })).toBeEnabled();
+        expect(within(feeding()).getByText("Cut small + fruit while in with a baby.")).toBeInTheDocument();
+        await user.selectOptions(within(feeding()).getByLabelText("AM Plates"), "2 Plates");
+        await user.click(within(form()).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row).toMatchObject({ am_plates: 2, am_cut_small: false, am_fruit: false });
     });
 });
 

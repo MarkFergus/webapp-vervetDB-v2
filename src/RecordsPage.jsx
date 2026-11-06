@@ -4,6 +4,7 @@ import {
     IconBabyCarriage,
     IconBinoculars,
     IconBottle,
+    IconBowl,
     IconChartLine,
     IconChevronDown,
     IconCopy,
@@ -41,6 +42,7 @@ import {
 import { BabyPhoto, Choice, Crumbs } from "./PagePicker";
 import IntegrationRecordsPage from "./IntegrationRecordsPage";
 import MaintenanceRecordsPage from "./MaintenanceRecordsPage";
+import FeedingRecordsPage from "./FeedingRecordsPage";
 import SectionsRecordsPage from "./SectionsRecordsPage";
 import DewormingRecordsPage from "./DewormingRecordsPage";
 import MonitoringRecordsPage from "./MonitoringRecordsPage";
@@ -75,6 +77,7 @@ const KIND_ICONS = {
     injuries: IconReportMedical,
     monitoring: IconBinoculars,
     deworming: IconPill,
+    feeding: IconBowl,
 };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
@@ -721,6 +724,7 @@ function RecordsPage({
     maintenance = {},
     staff = null,
     inert = false,
+    onEnclosureSaved = () => {},
 }) {
     const { team, kind } = parseRecordsRoute(route);
     // A part's own title and way back, while something in it is open (in
@@ -795,6 +799,8 @@ function RecordsPage({
                         <MonitoringRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
                     ) : kind.id === "deworming" ? (
                         <DewormingRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onTitle={setPartTitle} />
+                    ) : kind.id === "feeding" ? (
+                        <FeedingRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} onEnclosureSaved={onEnclosureSaved} />
                     ) : (
                         <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     )

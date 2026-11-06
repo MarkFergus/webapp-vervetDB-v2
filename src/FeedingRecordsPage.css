@@ -1,0 +1,162 @@
+/* Records → Sections → Feeding (FeedingRecordsPage.jsx) */
+
+.Feeding-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 12px;
+    margin: 14px 0 8px;
+}
+
+.Modal-edit.Feeding-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.Feeding-show {
+    margin-top: 10px;
+}
+
+.Feeding-group {
+    margin-top: 22px;
+}
+
+.Feeding-groupHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line-strong);
+}
+
+.Feeding-groupHead h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Feeding-counts {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.Feeding-place h3 {
+    margin: 14px 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Feeding-note {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: var(--amber-text);
+}
+
+.Feeding-place ul,
+.Feeding-bowls {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Feeding-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.Feeding-rowText {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Feeding-rowText b {
+    color: var(--text);
+}
+
+.Feeding-name {
+    flex-basis: 100%;
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-strong);
+    background: none;
+    border: 0;
+}
+
+button.Feeding-name {
+    cursor: pointer;
+}
+
+button.Feeding-name:hover {
+    text-decoration: underline;
+}
+
+button.Feeding-name:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.Feeding-sickbay {
+    color: var(--amber-text);
+}
+
+.Feeding-bowls li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 34px;
+    padding: 4px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+/* Editing: the troop, then a small box per size, under their names */
+.Feeding-bowls.is-editing li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(3, 58px);
+    gap: 6px;
+}
+
+.Feeding-bowlSizes span {
+    font-size: 12px;
+    text-align: center;
+    color: var(--text-2);
+}
+
+.Feeding-bowls input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 34px;
+    padding: 0 8px;
+    font: inherit;
+    color: inherit;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+}
+
+.Feeding-unset {
+    color: var(--text-3);
+}
+
+.Feeding-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}

@@ -144,14 +144,20 @@ describe("Morning Brief", () => {
         expect(group(b, "deworming", "Awaiting Approval")).toEqual([{ text: "Dino & Daniel Troop 6-Month F/U" }]);
     });
 
-    test("Camelot's missing monkeys: apart at the bottom of Monitoring, plain, and not in To Do", () => {
+    test("Camelot's missing monkeys: apart at the bottom of Monitoring, listed by sessions missed, plain, and not in To Do", () => {
         const seen = (id, was) => ({ monkeyId: id, seen: was });
         const b = brief({
-            monkeys: [monkey(1, "Arthur", "Camelot"), monkey(2, "Merlin", "Camelot"), monkey(3, "Malawi", "Gismo")],
+            monkeys: [
+                monkey(1, "Arthur", "Camelot"),
+                monkey(2, "Merlin", "Camelot"),
+                monkey(3, "Malawi", "Gismo"),
+                monkey(4, "Gawain", "Camelot"),
+                monkey(5, "Lancelot", "Camelot"),
+            ],
             enclosures: [troop(1, "Camelot"), troop(2, "Gismo")],
             sessions: [
-                session(1, 1, 1, [seen(1, false), seen(2, false)]),
-                session(2, 1, 3, [seen(1, true), seen(2, false)]),
+                session(1, 1, 1, [seen(1, false), seen(2, false), seen(4, false), seen(5, true)]),
+                session(2, 1, 3, [seen(1, true), seen(2, false), seen(4, false), seen(5, true)]),
                 session(3, 2, 1, [seen(3, false)]),
                 session(4, 2, 3, [seen(3, false)]),
             ],
@@ -159,8 +165,8 @@ describe("Morning Brief", () => {
         const monitoring = b.sections.find((s) => s.id === "monitoring").groups;
         expect(monitoring.at(-1).title).toBe("Camelot: Not Seen");
         expect(monitoring.at(-1).lines).toEqual([
-            { text: "Merlin: not seen in 2 sessions, not seen before" },
-            { text: `Arthur: not seen in 1 session, last seen ${briefDay(daysAgo(3))}` },
+            { text: "Not seen in 2 sessions: Gawain, Merlin" },
+            { text: "Not seen in 1 session: Arthur" },
         ]);
         expect(group(b, "monitoring", "Must See").map((l) => l.text)[0]).toMatch(/^Malawi/);
         expect(group(b, "monitoring", "Must See")).toHaveLength(1);

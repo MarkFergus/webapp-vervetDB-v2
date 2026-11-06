@@ -156,19 +156,15 @@ export function startingLines(group, session, sheets, today = new Date()) {
     return lines;
 }
 
-// A printed sheet's order: by dewormer (the list's order, others after),
-// then name; the monkeys staff added at the end (added, then accidental)
+// A sheet's order, on paper and on screen: the troop's monkeys, then those
+// living in introcages; each by name, with the monkeys staff added at the end
+// of their part (added, then accidental)
 const KIND_ORDER = ["list", "added", "accidental"];
 export function printOrder(lines) {
-    const rank = (m) => {
-        const i = DEWORMERS.findIndex((d) => d.name === m);
-        return i === -1 ? DEWORMERS.length : i;
-    };
     return [...lines].sort(
         (a, b) =>
+            Number(Boolean(a.introcage)) - Number(Boolean(b.introcage)) ||
             KIND_ORDER.indexOf(a.kind ?? "list") - KIND_ORDER.indexOf(b.kind ?? "list") ||
-            rank(a.medication) - rank(b.medication) ||
-            a.medication.localeCompare(b.medication) ||
             a.name.localeCompare(b.name)
     );
 }

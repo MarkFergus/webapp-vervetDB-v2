@@ -1,7 +1,6 @@
 // Weekly Reports (Admin Dashboard → Weekly Reports, #admin/reports): each
 // admin's own weekly report email settings (weekly-reports.sql), and Past
-// Reports: any week's report (weekly-report-contents.sql) to View or
-// Download PDF
+// Reports: any week's report (weekly-report-contents.sql) to View or Email Me
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { supabase } from "./supabase";
@@ -289,21 +288,12 @@ describe("Past Reports", () => {
         expect(within(report).getAllByText("None this week").length).toBeGreaterThan(0);
     });
 
-    test("Download PDF: the report as a PDF, named by its week", async () => {
+    test("no PDF to download", async () => {
         fakeSupabase();
-        URL.createObjectURL = vi.fn(() => "blob:test");
-        URL.revokeObjectURL = vi.fn();
-        const names = [];
-        vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function () {
-            names.push(this.download);
-        });
-        const user = userEvent.setup();
         renderPage();
         const card = within(await screen.findByRole("region", { name: "Past Reports" }));
-        await user.selectOptions(card.getByLabelText("Week"), pastWeeks(1)[2].label);
-        await user.click(card.getByRole("button", { name: "Download PDF" }));
-        expect(await card.findByRole("article")).toBeInTheDocument();
-        expect(names).toEqual([`weekly_report_${pastWeeks(1)[2].from}.pdf`]);
+        expect(card.getByRole("button", { name: "View" })).toBeInTheDocument();
+        expect(card.queryByRole("button", { name: /PDF/ })).toBeNull();
     });
 
     test("View: the milk totals' table, and a Must See in red", async () => {

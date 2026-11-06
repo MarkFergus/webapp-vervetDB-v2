@@ -7,13 +7,14 @@ import { sheetTitle } from "./dewormingRules";
 // line under it (the sheet's instructions), Staff Member(s) and Date
 // Started to write in, then a row per monkey: Day 1–3 boxes and its dose
 // and dewormer. A 1-day dewormer (Milbeworm): N/A in Day 2 and Day 3.
-// Blank rows at the end, for anyone added on the day (and the monkeys
-// staff added, if printed again: marked, at the end).
+// Blank rows after the troop's monkeys, for anyone added on the day, then
+// those in introcages under their own heading (the monkeys staff added, if
+// printed again: marked, at the end of their part).
 //   sheet: a deworming sheet; lines: its monkeys with their names, in
-//   printOrder (by dewormer, then name)
+//   printOrder
 
 const LINE = "0.75pt solid #000";
-const BLANK_ROWS = 5;
+const BLANK_ROWS = 4;
 
 const styles = StyleSheet.create({
     page: {
@@ -73,6 +74,12 @@ const styles = StyleSheet.create({
     details: {
         width: "25%",
     },
+    band: {
+        width: "100%",
+        textAlign: "center",
+        backgroundColor: "#cccccc",
+        fontWeight: "bold",
+    },
 });
 
 function Row({ cells, head = false }) {
@@ -88,8 +95,32 @@ function Row({ cells, head = false }) {
     );
 }
 
+function MonkeyRow({ line: l }) {
+    return (
+        <Row
+            cells={[
+                l.name,
+                "",
+                l.days === 1 ? "N/A" : "",
+                l.days === 1 ? "N/A" : "",
+                `${l.dose} ${l.medication}${
+                    l.kind === "accidental"
+                        ? ` (accidental, Day ${l.fromDay})`
+                        : l.kind === "added"
+                          ? ` (added Day ${l.fromDay})`
+                          : ""
+                }`,
+            ]}
+        />
+    );
+}
+
 export default function DewormingSheetPDF({ sheet, lines }) {
     const title = sheetTitle(sheet);
+    const troop = lines.filter((l) => !l.introcage);
+    const introcages = lines.filter((l) => l.introcage);
+    // (a group that's all introcages: no heading, it would head the whole list)
+    const parts = troop.length ? [troop, introcages] : [introcages, []];
     return (
         <Document title={title}>
             <Page size="A4" style={styles.page}>
@@ -101,26 +132,19 @@ export default function DewormingSheetPDF({ sheet, lines }) {
                 </View>
                 <View style={styles.table}>
                     <Row head cells={["Name", "Day 1", "Day 2", "Day 3", "Details"]} />
-                    {lines.map((l) => (
-                        <Row
-                            key={l.monkeyId}
-                            cells={[
-                                l.name,
-                                "",
-                                l.days === 1 ? "N/A" : "",
-                                l.days === 1 ? "N/A" : "",
-                                `${l.dose} ${l.medication}${
-                                    l.kind === "accidental"
-                                        ? ` (accidental, Day ${l.fromDay})`
-                                        : l.kind === "added"
-                                          ? ` (added Day ${l.fromDay})`
-                                          : ""
-                                }`,
-                            ]}
-                        />
+                    {parts[0].map((l) => (
+                        <MonkeyRow key={l.monkeyId} line={l} />
                     ))}
                     {Array.from({ length: BLANK_ROWS }, (_, i) => (
                         <Row key={`blank-${i}`} cells={["", "", "", "", ""]} />
+                    ))}
+                    {parts[1].length > 0 && (
+                        <View style={styles.row} wrap={false}>
+                            <Text style={[styles.cell, styles.band]}>Introcages</Text>
+                        </View>
+                    )}
+                    {parts[1].map((l) => (
+                        <MonkeyRow key={l.monkeyId} line={l} />
                     ))}
                 </View>
             </Page>

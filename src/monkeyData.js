@@ -105,7 +105,6 @@ export function toAppMonkey(row) {
             amFruit: row.am_fruit,
             amMetalPlate: row.am_metal_plate,
             pmBowls: row.pm_bowls,
-            pmCutSmall: row.pm_cut_small,
         };
     }
     // Once the database has Sickbay (see sickbay.sql)
@@ -199,11 +198,16 @@ export function toDatabaseRow(monkey, troopIds) {
             am_fruit: f.amFruit,
             am_metal_plate: f.amMetalPlate,
             pm_bowls: f.pmBowls,
-            pm_cut_small: f.pmCutSmall,
+            // (no setting of its own: as the AM plate, feeding.js. Still stored
+            // for the summary email)
+            pm_cut_small: f.amCutSmall,
         });
     }
     return row;
 }
+
+// How many of each size of bowl a troop gets (0: none)
+const troopBowls = (row) => ({ small: row.bowls_small ?? 0, medium: row.bowls_medium ?? 0, large: row.bowls_large ?? 0 });
 
 // A database enclosure → the site's shape (see enclosuresArr.js)
 function toAppEnclosure(row, sectionNames) {
@@ -222,6 +226,8 @@ function toAppEnclosure(row, sectionNames) {
         photos: row.photos,
         sortOrder: row.sort_order,
     };
+    // A troop's PM bowls by size, once troop-bowls.sql has run
+    if ("bowls_small" in row) enclosure.bowls = troopBowls(row);
     // Introcages and areas, once introcage-fields.sql has run (until then
     // the form leaves these out)
     if ((row.type === "introcage" || row.type === "area") && "troop_door" in row) {
@@ -572,6 +578,11 @@ export async function saveEnclosure(enclosure, changes) {
     if ("troopDoor" in changes) row.troop_door = changes.troopDoor;
     if ("plateSlot" in changes) row.plate_slot = changes.plateSlot;
     if ("sleepingPerches" in changes) row.sleeping_perches = changes.sleepingPerches;
+    if ("bowls" in changes) {
+        row.bowls_small = changes.bowls.small;
+        row.bowls_medium = changes.bowls.medium;
+        row.bowls_large = changes.bowls.large;
+    }
     // stored as the 1st of the month
     if ("established" in changes) row.established = changes.established ? `${changes.established}-01` : null;
     const { data, error } = await supabase
@@ -590,6 +601,7 @@ export async function saveEnclosure(enclosure, changes) {
         features: data.features,
         size: data.size == null ? null : Number(data.size),
         established: data.established ? data.established.slice(0, 7) : null,
+        ...("bowls_small" in data && { bowls: troopBowls(data) }),
         photos: data.photos ?? enclosure.photos,
         ...("troop_door" in data && introcageDetails(data)),
     };

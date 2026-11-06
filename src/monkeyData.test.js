@@ -166,7 +166,7 @@ test("feeding: read and saved once the database has it, left out until then", as
         am_metal_plate: true, pm_bowls: 1, pm_cut_small: true };
     const monkey = toAppMonkey(fed);
     expect(monkey.feeding).toEqual({
-        fedBy: "sickbay", amPlates: 2, amCutSmall: true, amFruit: false, amMetalPlate: true, pmBowls: 1, pmCutSmall: true,
+        fedBy: "sickbay", amPlates: 2, amCutSmall: true, amFruit: false, amMetalPlate: true, pmBowls: 1,
     });
     expect(toDatabaseRow(monkey, {})).toMatchObject({
         fed_by: "sickbay", am_plates: 2, am_cut_small: true, am_fruit: false, am_metal_plate: true, pm_bowls: 1, pm_cut_small: true,

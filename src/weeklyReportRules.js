@@ -6,7 +6,7 @@
 //   sendDay / sendHour   when it's emailed: it covers the latest full week
 //                before then
 //   sections     what's in it (SECTIONS' ids)
-// (A week's report itself, its lines worded for the page, the PDF and the
+// (A week's report itself, its lines worded for the page and the
 // email alike: weekly-report-email.sql's weekly_report_view.)
 import { dayText } from "./babyRecords";
 

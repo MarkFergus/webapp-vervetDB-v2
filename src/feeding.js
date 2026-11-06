@@ -2,7 +2,8 @@
 // AM Plates List worked out from it.
 // A monkey's feeding (once the database has it):
 //   { fedBy: "localTeam" | "sickbay", amPlates (1–2), amCutSmall, amFruit,
-//     amMetalPlate, pmBowls (1–2), pmCutSmall }
+//     amMetalPlate, pmBowls (1–2) }
+// Their PM bowl is cut small when their AM plate is (no setting of its own).
 // Only for monkeys in an introcage (not a troop, or a care unit's area),
 // living there or staying there for now (places.js).
 import { ageInYears } from "./ages";
@@ -16,7 +17,6 @@ export const DEFAULT_FEEDING = {
     amFruit: false,
     amMetalPlate: false,
     pmBowls: 1,
-    pmCutSmall: false,
 };
 
 // Does this monkey's feeding show (an introcage monkey, or a troop monkey
@@ -32,11 +32,35 @@ export const isBaby = (monkey, today = new Date()) => ageInYears(monkey.year, to
 
 // A baby's feed is fixed, whatever is recorded: 1 AM plate, cut small + fruit,
 // and 1 PM bowl, cut small (babies in a cage share one plate: see amSummary)
-export const BABY_FEEDING = { amPlates: 1, amCutSmall: true, amFruit: true, pmBowls: 1, pmCutSmall: true };
+export const BABY_FEEDING = { amPlates: 1, amCutSmall: true, amFruit: true, pmBowls: 1 };
+
+// Is there a baby in this introcage (fed here, not by Sickbay)? Everyone with
+// them gets cut small + fruit, whatever's recorded, so their own settings come
+// back once the baby's gone. exceptId: not counting this monkey.
+export function cageHasBaby(introcage, monkeys, today = new Date(), exceptId = null) {
+    if (!introcage) return false;
+    return monkeys.some(
+        (m) =>
+            m.id !== exceptId &&
+            hasFeeding(m) &&
+            currentIntrocage(m) === introcage &&
+            fedBy(m) !== "sickbay" &&
+            isBaby(m, today)
+    );
+}
+
+// What they really get: a baby's fixed feed; with a baby, cut small + fruit.
+//   monkeys: everyone, to see who's in their cage
+function feedingOf(monkey, today, monkeys) {
+    if (isBaby(monkey, today)) return { ...monkey.feeding, ...BABY_FEEDING };
+    return cageHasBaby(currentIntrocage(monkey), monkeys, today, monkey.id)
+        ? { ...monkey.feeding, amCutSmall: true, amFruit: true }
+        : monkey.feeding;
+}
 
 // The AM plate as it's made
-export function amPlate(monkey, today = new Date()) {
-    const f = isBaby(monkey, today) ? { ...monkey.feeding, ...BABY_FEEDING } : monkey.feeding;
+export function amPlate(monkey, today = new Date(), monkeys = []) {
+    const f = feedingOf(monkey, today, monkeys);
     return {
         plates: f.amPlates,
         cutSmall: f.amCutSmall,
@@ -56,17 +80,17 @@ function extrasText(cutSmall, fruit) {
 }
 
 // "2 plates, cut small + fruit, metal plate"
-export function amText(monkey, today = new Date()) {
-    const p = amPlate(monkey, today);
+export function amText(monkey, today = new Date(), monkeys = []) {
+    const p = amPlate(monkey, today, monkeys);
     return [plural(p.plates, "plate"), extrasText(p.cutSmall, p.fruit), p.metal && "metal plate"]
         .filter(Boolean)
         .join(", ");
 }
 
 // "1 bowl, cut small"
-export function pmText(monkey, today = new Date()) {
-    const f = isBaby(monkey, today) ? { ...monkey.feeding, ...BABY_FEEDING } : monkey.feeding;
-    return [plural(f.pmBowls, "bowl"), f.pmCutSmall && "cut small"].filter(Boolean).join(", ");
+export function pmText(monkey, today = new Date(), monkeys = []) {
+    const f = feedingOf(monkey, today, monkeys);
+    return [plural(f.pmBowls, "bowl"), f.amCutSmall && "cut small"].filter(Boolean).join(", ");
 }
 
 // ---- The AM Plates List ----
@@ -137,6 +161,18 @@ function rowText(introcage, monkeys, plates, babyGroup = false) {
     return `${label}${count}${extras.length ? ` (${extras.join(", ")})` : ""}`;
 }
 
+// Introcages in the enclosures' order, then their own
+function introcagesInOrder(enclosures) {
+    const byId = Object.fromEntries(enclosures.map((e) => [e.id, e]));
+    return enclosures
+        .filter((e) => e.type === "introcage")
+        .sort((a, b) => {
+            const pa = byId[a.parentId];
+            const pb = byId[b.parentId];
+            return (pa?.sortOrder ?? 0) - (pb?.sortOrder ?? 0) || (pa?.id ?? 0) - (pb?.id ?? 0) || a.sortOrder - b.sortOrder;
+        });
+}
+
 // The summary, group by group:
 // [{ title, note, plates, cutSmall (how many of them, with or without
 //    fruit), monkeys (Mainfeed's: the plates are for),
@@ -148,24 +184,22 @@ function rowText(introcage, monkeys, plates, babyGroup = false) {
 // From every introcage monkey (enclosures: the site's list, for the
 // introcages and their order).
 export function amSummary(monkeys, enclosures, today = new Date()) {
+    return plateSummary(monkeys, enclosures, AM_GROUPS, (introcage, parent, group) => groupOf(introcage, parent) === group, today);
+}
+
+// The summary above, for any groups. inGroup(introcage, parent, group)
+function plateSummary(monkeys, enclosures, groups, inGroup, today) {
     const byId = Object.fromEntries(enclosures.map((e) => [e.id, e]));
-    // Introcages in the enclosures' order, then their own
-    const inOrder = enclosures
-        .filter((e) => e.type === "introcage")
-        .sort((a, b) => {
-            const pa = byId[a.parentId];
-            const pb = byId[b.parentId];
-            return (pa?.sortOrder ?? 0) - (pb?.sortOrder ?? 0) || (pa?.id ?? 0) - (pb?.id ?? 0) || a.sortOrder - b.sortOrder;
-        });
+    const inOrder = introcagesInOrder(enclosures);
     const fed = monkeys.filter(hasFeeding);
-    return AM_GROUPS.map((group) => {
+    return groups.map((group) => {
         const rows = [];
         const babyRows = [];
         const sickbay = [];
         const allPlates = [];
         let monkeyCount = 0;
         for (const introcage of inOrder) {
-            if (groupOf(introcage, byId[introcage.parentId]) !== group) continue;
+            if (!inGroup(introcage, byId[introcage.parentId], group)) continue;
             // (who's in it now: a monkey staying elsewhere is fed there)
             const here = fed
                 .filter((m) => currentIntrocage(m) === introcage.name)
@@ -210,6 +244,64 @@ export function amSummary(monkeys, enclosures, today = new Date()) {
             sickbay: namesText(sickbay),
         };
     });
+}
+
+// The sections, as everywhere but the AM Plates List (its groups follow how the
+// plates are delivered). Not the care units: they make their own food.
+const FEEDING_SECTIONS = ["Top", "Middle", "Bottom", "Sickbay"].map((section) => ({ section, title: `${section} Section` }));
+
+// The Feeding page (FeedingRecordsPage.jsx): every monkey with feeding, by
+// section, and each section's plates, worked out as on the list:
+// [{ title, plates, counts, places: [{ id, name, babies (the cage's babies
+//    share a plate), monkeys: [{ monkey, sickbay, am, pm }] }] }]
+// show: "all", "localTeam" or "sickbay" (places and sections left empty go)
+export function feedingList(monkeys, enclosures, show = "all", today = new Date()) {
+    const byId = Object.fromEntries(enclosures.map((e) => [e.id, e]));
+    const inSection = (introcage, parent, group) => parent?.section === group.section;
+    const fed = monkeys.filter(hasFeeding);
+    const summary = plateSummary(monkeys, enclosures, FEEDING_SECTIONS, inSection, today);
+    const inOrder = introcagesInOrder(enclosures);
+    return FEEDING_SECTIONS.map((group, i) => {
+        const places = [];
+        for (const introcage of inOrder) {
+            if (!inSection(introcage, byId[introcage.parentId], group)) continue;
+            const here = fed
+                .filter((m) => currentIntrocage(m) === introcage.name)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((monkey) => ({
+                    monkey,
+                    sickbay: fedBy(monkey) === "sickbay",
+                    am: amText(monkey, today, fed),
+                    pm: pmText(monkey, today, fed),
+                }));
+            const shown = here.filter((row) => show === "all" || row.sickbay === (show === "sickbay"));
+            if (!shown.length) continue;
+            places.push({
+                id: introcage.id,
+                name: introcage.name,
+                babies: here.some((row) => !row.sickbay && isBaby(row.monkey, today)),
+                monkeys: shown,
+            });
+        }
+        return { title: group.title, plates: summary[i].plates, counts: summary[i].counts, places };
+    }).filter((group) => group.places.length);
+}
+
+// A troop's PM bowls, the one feed they get: "2 small, 2 medium", or null if
+// none are entered. bowls: { small, medium, large }
+export const BOWL_SIZES = ["small", "medium", "large"];
+export function bowlsText(bowls) {
+    const sizes = BOWL_SIZES.filter((size) => bowls?.[size] > 0).map((size) => `${bowls[size]} ${size}`);
+    return sizes.length ? sizes.join(", ") : null;
+}
+
+// Troop PM Bowls on the Feeding page: the troops by section (not the Bandits:
+// a wild troop, not fed), in their own order
+export function troopBowlsList(enclosures) {
+    const rank = (troop) => FEEDING_SECTIONS.findIndex((g) => g.section === troop.section);
+    return enclosures
+        .filter((e) => e.type === "troop" && rank(e) !== -1)
+        .sort((a, b) => rank(a) - rank(b) || (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 }
 
 // "10th Oct 2026" (the browser's own short months can be "Sept")

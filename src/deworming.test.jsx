@@ -214,14 +214,16 @@ describe("a new sheet's starting point", () => {
         expect(lastDose(sheets, 1)).toEqual({ medication: "Panacur", dose: "1/2 tsp", days: 3 });
     });
 
-    test("printed by dewormer (Albendazole, Panacur, Milbeworm, Pyrantel, then others), then name", () => {
+    test("the sheet's order: the troop by name, then introcages by name; added monkeys last in their part", () => {
         const lines = [
-            { ...line(1, "Milbeworm", "1/2 tab", 1), name: "Zed" },
+            { ...line(1, "Milbeworm", "1/2 tab", 1), name: "Zed", introcage: true },
             { ...line(2, "Milbemax", "1/2 tab", 1), name: "Abe" },
             { ...line(3, "Albendazole", "1/4 tab"), name: "Mo" },
-            { ...line(4, "Albendazole", "1/4 tab"), name: "Al" },
+            { ...line(4, "Albendazole", "1/4 tab"), name: "Bo", introcage: true },
+            { ...line(5, "Panacur", "1/2 tsp"), name: "Al", kind: "added" },
+            { ...line(6, "Panacur", "1/2 tsp"), name: "Cy", introcage: true, kind: "accidental" },
         ];
-        expect(printOrder(lines).map((l) => l.name)).toEqual(["Al", "Mo", "Zed", "Abe"]);
+        expect(printOrder(lines).map((l) => l.name)).toEqual(["Abe", "Mo", "Al", "Bo", "Zed", "Cy"]);
         expect(sheetTitle(sheet(1, "6_month_fu", "2026-05-20", []))).toBe("D&D Troop 6-Month F/U Deworming");
     });
 });
@@ -348,9 +350,9 @@ describe("the page", () => {
         await user.click(screen.getByRole("button", { name: "Deworming Lists" }));
         expect(screen.getByRole("heading", { level: 1, name: "Deworming" })).toBeInTheDocument();
         expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
-        // (on the list: Print for everyone, Delete for admins only)
+        // (on the list: Download PDF for everyone, Delete for admins only)
         const row = within(screen.getByRole("listitem"));
-        expect(row.getByRole("button", { name: "Print" })).toBeInTheDocument();
+        expect(row.getByRole("button", { name: "Download PDF" })).toBeInTheDocument();
         expect(row.queryByRole("button", { name: "Delete" })).toBeNull();
     });
 
@@ -364,7 +366,7 @@ describe("the page", () => {
         expect(screen.getByRole("button", { name: /3-Month Deworming/ })).toHaveTextContent(/Started on Mon 2 Nov/);
     });
 
-    test("Print Sheet: the paper sheet as a PDF", async () => {
+    test("Download PDF: the paper sheet", async () => {
         loadDewormingSheets.mockResolvedValue([
             sheet(1, "6_month_fu", "2026-11-20", [line(1, "Albendazole", "1/4 tab")]),
         ]);
@@ -377,7 +379,7 @@ describe("the page", () => {
         const user = userEvent.setup();
         open(EDITOR);
         // (from the list, without opening it)
-        await user.click(await screen.findByRole("button", { name: "Print" }));
+        await user.click(await screen.findByRole("button", { name: "Download PDF" }));
         await waitFor(() => expect(names).toEqual(["deworming_D_D_Troop_6_Month_F_U_2026-11-20.pdf"]));
     });
 
@@ -1258,11 +1260,11 @@ describe("monkeys added while completing a list, and Day 4", () => {
         await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
         const saved = saveDewormingResults.mock.calls[0][1];
         expect(saved.daysDone).toEqual([1, 2, 3]);
-        // (in the list's order: Albendazole, Panacur, Milbeworm)
+        // (in the sheet's order: by name)
         expect(saved.lines.map((l) => [l.name, l.day4])).toEqual([
             ["Ash", false],
-            ["Sybil", true],
             ["Meggy", null],
+            ["Sybil", true],
         ]);
         // (Day 4: only Sybil, on her 3rd dose)
         await user.click(await form.findByRole("tab", { name: "Day 4" }));

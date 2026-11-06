@@ -63,6 +63,7 @@ const homeWord = (monkey) =>
 const homeText = (monkey) => (monkey.introcage ? fullName(monkey.introcage) : `${fullName(monkey.troop)} Troop`);
 
 function Modal({
+    allMonkeys = [],
     isModalOpen,
     monkey,
     onClose,
@@ -1009,8 +1010,8 @@ function Modal({
                                                 </p>
                                             ) : (
                                                 <p className="Modal-feeding">
-                                                    <span><b>AM food:</b> {amText(monkey)}</span>
-                                                    <span><b>PM food:</b> {pmText(monkey)}</span>
+                                                    <span><b>AM food:</b> {amText(monkey, undefined, allMonkeys)}</span>
+                                                    <span><b>PM food:</b> {pmText(monkey, undefined, allMonkeys)}</span>
                                                 </p>
                                             )}
                                         </section>

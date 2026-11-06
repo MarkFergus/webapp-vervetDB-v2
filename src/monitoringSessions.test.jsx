@@ -102,7 +102,7 @@ test("no troop chosen yet: Choose Troop, and no History until there is", async (
     expect(screen.getByRole("button", { name: "Start Session" })).toBeInTheDocument();
 });
 
-test("Sections: Monitoring, Injuries, then Deworming", () => {
+test("Sections: Monitoring, Injuries, Deworming, then Feeding", () => {
     render(<RecordsPage route="records/sections" monkeys={MONKEYS} enclosures={ENCLOSURES} staff={EDITOR} />);
     const links = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
     expect(links).toEqual([
@@ -110,6 +110,7 @@ test("Sections: Monitoring, Injuries, then Deworming", () => {
         "#records/sections/monitoring",
         "#records/sections/injuries",
         "#records/sections/deworming",
+        "#records/sections/feeding",
     ]);
 });
 

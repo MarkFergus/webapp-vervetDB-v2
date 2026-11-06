@@ -64,6 +64,11 @@ export const RECORD_KINDS = {
         title: "Deworming",
         hint: "Deworming lists: who's dewormed with what, ready to print and complete.",
     },
+    feeding: {
+        id: "feeding",
+        title: "Feeding",
+        hint: "See every introcage monkey's feeding on one page, and download the AM Plates List.",
+    },
 };
 
 // The teams (in alphabetical order), and what each records. page: its own page, no kinds to
@@ -74,7 +79,7 @@ export const TEAMS = [
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
     { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
-    { id: "sections", name: "Sections", kinds: ["monitoring", "injuries", "deworming"] },
+    { id: "sections", name: "Sections", kinds: ["monitoring", "injuries", "deworming", "feeding"] },
 ];
 
 // "records" → {}; "records/baby-care" → { team }; "records/baby-care/milk"

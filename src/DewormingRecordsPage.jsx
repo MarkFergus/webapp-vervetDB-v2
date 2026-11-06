@@ -3,7 +3,7 @@ import {
     IconClipboardCheck,
     IconPencil,
     IconPlus,
-    IconPrinter,
+    IconFileTypePdf,
     IconRefresh,
     IconSend,
     IconTrash,
@@ -53,7 +53,7 @@ import "./IntegrationRecordsPage.css"; // (the pickers' look)
 import "./DewormingRecordsPage.css";
 
 // Records → Sections → Deworming: the deworming sheets.
-//   the list     every sheet, newest first, with where it's up to; Print
+//   the list     every sheet, newest first, with where it's up to; Download PDF
 //                (the paper sheet, as before) and (admins) Delete icons;
 //                staff open one to see who's on it
 //   Prepare Sheet (admins)   a deworming group and session (the next in
@@ -73,7 +73,10 @@ const OTHER = "other";
 // The sheet's monkeys by name, with their names (a monkey no longer in the
 // list: "Unknown")
 function namedLines(sheet, monkeys) {
-    return sheet.lines.map((l) => ({ ...l, name: monkeys.find((m) => m.id === l.monkeyId)?.name ?? "Unknown" }));
+    return sheet.lines.map((l) => {
+        const monkey = monkeys.find((m) => m.id === l.monkeyId);
+        return { ...l, name: monkey?.name ?? "Unknown", introcage: Boolean(monkey?.introcage) };
+    });
 }
 
 // One monkey's choice in the form → its dewormer's name ("" if not chosen)
@@ -553,7 +556,7 @@ export function listStatus(sheet) {
     return { text: day ? `Day ${day}` : "Ready to Submit", tag: "In Progress", tone: "progress" };
 }
 
-// Print: the paper sheet as a PDF, downloaded. Throws a message to show.
+// Download PDF: the paper sheet as a PDF. Throws a message to show.
 async function printSheet(sheet, monkeys) {
     try {
         const [{ pdf }, { default: DewormingSheetPDF }] = await Promise.all([
@@ -571,7 +574,7 @@ async function printSheet(sheet, monkeys) {
 }
 
 // A sheet in the list: its title and where it's up to (opens it), then
-// Print and (admins) Delete, as icons
+// Download PDF and (admins) Delete, as icons
 function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
     const [deleting, setDeleting] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -623,12 +626,12 @@ function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
                     <button
                         type="button"
                         className="Deworming-icon"
-                        aria-label="Print"
-                        title="Print"
+                        aria-label="Download PDF"
+                        title="Download PDF"
                         disabled={busy}
                         onClick={print}
                     >
-                        <IconPrinter size={18} aria-hidden="true" />
+                        <IconFileTypePdf size={18} aria-hidden="true" />
                     </button>
                     {canPrepare && (
                         <span className="Deworming-confirmHost">
