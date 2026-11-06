@@ -276,6 +276,7 @@ function ArchivedMonkey({ archive, id, staff, onRestored, inert, places }) {
             inert={inert}
             statusChoices={choices}
             places={places}
+            onChipChanged={() => archive.reload()}
             onStatusUpdate={async (m, values) => {
                 const restored = await saveStatus(m.id, values);
                 await archive.reload();

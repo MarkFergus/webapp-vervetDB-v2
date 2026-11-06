@@ -117,6 +117,9 @@ afterEach(() => {
 const card = (name) => screen.getByRole("button", { name: new RegExp(`^${name},`) });
 const form = () => screen.getByRole("dialog", { name: /^(Edit|Add)/ });
 const field = (label) => within(form()).getByLabelText(label, { exact: false });
+// The chip's box (editing a monkey: opened with the pencil)
+const chipBox = () => within(form()).getByRole("textbox", { name: "Chip" });
+const correctChip = (user) => user.click(within(form()).getByRole("button", { name: "Correct Number" }));
 // Its Full Profile (where the full Edit is), once it's showing
 const profile = async (name) => (await screen.findByRole("heading", { level: 1, name })).closest(".MonkeyPage");
 const profileRow = (page, label) => within(page).getByText(label, { selector: "dt, dt *" }).closest("div");
@@ -223,12 +226,13 @@ test("editing: the form is filled in, and saving shows the new details", async (
     // The database here has no introcages yet: the troop is the only choice
     expect(within(field("Location")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Holt & Barrington Troop"]);
     expect(field("Birth year")).toHaveValue("2016");
-    expect(field("Chip")).toHaveValue("19806");
+    expect(chipBox()).toHaveValue("19806");
 
     await user.clear(field("Bio"));
     await user.type(field("Bio"), "Arrived as an orphan in  2016. Loves  grapes. ");
-    await user.clear(field("Chip"));
-    await user.type(field("Chip"), "19806 1234");
+    await correctChip(user);
+    await user.clear(chipBox());
+    await user.type(chipBox(), "19806 1234");
     await user.click(within(form()).getByRole("button", { name: "Save" }));
 
     // Saved (tidied), and its Full Profile shows the new details
@@ -250,10 +254,13 @@ test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chi
     await openEditFor(user, "Aroha");
     const unknown = () => within(form()).queryByRole("button", { name: "Unknown?" });
     expect(unknown()).not.toBeInTheDocument();
-
     expect(within(form()).queryByText("Leave blank if no chip")).not.toBeInTheDocument();
 
-    await user.click(field("Chip"));
+    // (the box is read only until the pencil opens it)
+    await user.click(chipBox());
+    expect(unknown()).not.toBeInTheDocument();
+    await correctChip(user);
+    await user.click(chipBox());
     expect(unknown()).toBeInTheDocument();
     expect(within(form()).getByText("Leave blank if no chip")).toBeInTheDocument();
     await user.click(field("Name"));
@@ -261,11 +268,11 @@ test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chi
     expect(within(form()).queryByText("Leave blank if no chip")).not.toBeInTheDocument();
 
     // Chosen: the box empties and shows "Unknown"; "Clear" takes its place
-    await user.click(field("Chip"));
+    await user.click(chipBox());
     await user.click(unknown());
-    expect(field("Chip")).toHaveValue("");
-    expect(field("Chip")).toHaveAttribute("placeholder", "Unknown");
-    await user.click(field("Chip"));
+    expect(chipBox()).toHaveValue("");
+    expect(chipBox()).toHaveAttribute("placeholder", "Unknown");
+    await user.click(chipBox());
     expect(unknown()).not.toBeInTheDocument();
     expect(within(form()).getByRole("button", { name: "Clear" })).toBeInTheDocument();
     expect(within(form()).getByText("Press Clear if no chip")).toBeInTheDocument();
@@ -281,12 +288,13 @@ test("chip: \"Unknown?\" shows while the box has focus, and saves an unknown chi
 test("chip: \"Clear\" undoes Unknown, back to no chip", async () => {
     const { user } = setup();
     await openEditFor(user, "Aroha");
-    await user.click(field("Chip"));
+    await correctChip(user);
+    await user.click(chipBox());
     await user.click(within(form()).getByRole("button", { name: "Unknown?" }));
-    await user.click(field("Chip"));
+    await user.click(chipBox());
     await user.click(within(form()).getByRole("button", { name: "Clear" }));
-    expect(field("Chip")).toHaveAttribute("placeholder", "No Chip");
-    expect(field("Chip")).not.toHaveFocus();
+    expect(chipBox()).toHaveAttribute("placeholder", "No Chip");
+    expect(chipBox()).not.toHaveFocus();
     expect(within(form()).queryByRole("button", { name: /Unknown|Clear/ })).not.toBeInTheDocument();
 
     await user.click(within(form()).getByRole("button", { name: "Save" }));
@@ -297,12 +305,27 @@ test("chip: \"Clear\" undoes Unknown, back to no chip", async () => {
 test("chip: typing a number undoes Unknown", async () => {
     const { user } = setup();
     await openEditFor(user, "Aroha");
-    await user.click(field("Chip"));
+    await correctChip(user);
+    await user.click(chipBox());
     await user.click(within(form()).getByRole("button", { name: "Unknown?" }));
-    expect(field("Chip")).toHaveAttribute("placeholder", "Unknown");
-    await user.type(field("Chip"), "1011,1604");
-    expect(field("Chip")).toHaveAttribute("placeholder", "No Chip");
+    expect(chipBox()).toHaveAttribute("placeholder", "Unknown");
+    await user.type(chipBox(), "1011,1604");
+    expect(chipBox()).toHaveAttribute("placeholder", "No Chip");
     expect(within(form()).getByRole("button", { name: "Unknown?" })).toBeInTheDocument();
+});
+
+test("chip: the box is read only until the pencil; + opens Add Chip, and Save waits", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    expect(chipBox()).toHaveAttribute("readonly");
+    await user.click(within(form()).getByRole("button", { name: "Add New Microchip" }));
+    expect(within(form()).getByLabelText("Chip Number")).toBeInTheDocument();
+    expect(within(form()).getByRole("button", { name: "Save" })).toBeDisabled();
+    await user.click(within(within(form()).getByRole("group", { name: "New Microchip" })).getByRole("button", { name: "Cancel" }));
+    expect(within(form()).getByRole("button", { name: "Save" })).toBeEnabled();
+    await correctChip(user);
+    expect(chipBox()).not.toHaveAttribute("readonly");
+    expect(within(form()).queryByRole("button", { name: "Add New Microchip" })).not.toBeInTheDocument();
 });
 
 test("problems are explained and nothing is saved until they're fixed", async () => {

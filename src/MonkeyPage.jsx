@@ -1,3 +1,4 @@
+import { loadChip } from "./monkeyData";
 import { useEffect, useRef, useState } from "react";
 import {
     IconCalendar,
@@ -148,7 +149,7 @@ function Tabs({ tab, onTab, counts = {} }) {
 // the archive (back: { href, label }), a banner with its status, and
 // Status Update (onStatusUpdate(monkey, { status, date, details }), async;
 // statusChoices: the statuses it can change to)
-function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices, places = [], timelineHref = null }) {
+function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices, places = [], timelineHref = null, onChipChanged, recordsVersion = 0 }) {
     // (a new page starts at the top)
     useEffect(() => {
         window.scrollTo?.(0, 0);
@@ -167,6 +168,8 @@ function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUp
             key={monkey.id ?? monkey.name}
             monkey={monkey}
             timelineHref={timelineHref}
+            onChipChanged={onChipChanged}
+            recordsVersion={recordsVersion}
             staff={staff}
             onEdit={onEdit}
             onOpenCard={onOpenCard}
@@ -197,7 +200,7 @@ function StatusBanner({ monkey }) {
     );
 }
 
-function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [], places, timelineHref }) {
+function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [], places, timelineHref, onChipChanged, recordsVersion }) {
     const isStaff = Boolean(staff?.canSee);
     const integration = useIntegration(monkey.id, staff);
     const injuries = useInjuries(monkey.id, staff);
@@ -230,7 +233,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const archived = isArchived(monkey);
     // (admins add them, an archived monkey's too: e.g. what's found out
     // afterwards)
-    const records = useRecords(monkey.id, staff);
+    const records = useRecords(monkey.id, staff, recordsVersion);
     // The Records tab showing
     const [tab, setTab] = useState("rehabilitation");
     // Status Update's form open (archived monkeys, admins)
@@ -554,6 +557,8 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     // added and changed where the pop-up's and
                                     // Monitoring's are)
                                     elsewhere={records.canAdd && tab === "medical" ? keptElsewhere : {}}
+                                    // (a Microchip record: the number's on the monkey now)
+                                    onChipAdded={() => loadChip(monkey.id).then((chip) => onChipChanged?.(monkey, chip)).catch(() => {})}
                                 />
                             )}
                         </div>

@@ -1,3 +1,4 @@
+import { microchipText } from "./chipRules";
 import { supabase } from "./supabase";
 import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
@@ -957,6 +958,21 @@ export async function deleteRecord(id) {
         throw saveProblem(error);
     }
     if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it, can delete it.");
+}
+
+// A monkey's chip as it is now ("1011 & 1604"; "" no chip; null unknown)
+export async function loadChip(monkeyId) {
+    const { data, error } = await supabase.from("monkeys").select("chip").eq("id", monkeyId).single();
+    if (error) throw saveProblem(error);
+    return data.chip;
+}
+
+// Adds a Microchip record ({ number, date, note }), and with it the number to
+// the monkey (the database does both: microchip-records.sql). Returns the
+// monkey's chip now.
+export async function addMicrochip(monkeyId, { number, date, note }) {
+    await addRecord(monkeyId, { section: "medical", date, category: "microchip", details: microchipText({ number, note }) });
+    return loadChip(monkeyId);
 }
 
 // ---- Injuries: a monkey's injuries (current and healed) ----

@@ -114,6 +114,7 @@ describe("checking the form", () => {
         ["1011/1604", "1011 & 1604"],
         ["1011.1604", "1011 & 1604"],
         ["1011-1604", "1011 & 1604"],
+        ["1011,1604,2020", "1011 & 1604 & 2020"],
     ])("chip %j is saved as %j", (chip, saved) => {
         const { errors, values } = check({ chip });
         expect(errors.chip).toBeUndefined();
@@ -126,9 +127,8 @@ describe("checking the form", () => {
         expect(values.chip).toBeNull();
     });
 
-    test("chips with letters, or more than two, are refused", () => {
+    test("chips with letters are refused", () => {
         expect(check({ chip: "12a4" }).errors.chip).toMatch(/digits/);
-        expect(check({ chip: "1 2 3" }).errors.chip).toMatch(/two/);
     });
 
     test("no photos: the placeholder is used", () => {

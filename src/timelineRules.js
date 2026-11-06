@@ -7,6 +7,7 @@ import { seenDaily, sightingRecord } from "./monitoringRules";
 import { fullName, placeLabel } from "./places";
 import { ARRIVAL_REASONS } from "./arrival";
 import { isPlaceholderPhoto } from "./photoPaths";
+import { parseMicrochip } from "./chipRules";
 
 // A photo's file name has its upload time ("maggie-1759240000000.webp"), but
 // those before this day were all moved over in bulk, so their times don't say
@@ -61,6 +62,17 @@ function recordEntry(r) {
         };
     }
     if (r.category === "status") return { ...base, kind: "status", label: "Status Change", filters: ["milestones"] };
+    if (r.category === "microchip") {
+        const chip = parseMicrochip(r.details);
+        return {
+            ...base,
+            kind: "microchip",
+            label: "Microchip",
+            filters: ["medical"],
+            text: chip ? `Microchipped ${chip.number}` : r.details,
+            note: chip?.note || null,
+        };
+    }
     if (r.category === "deworming") return { ...base, kind: "deworming", label: "Deworming", filters: ["medical"] };
     if (r.category === "observation") {
         return { ...base, kind: "observation", label: "Observation", filters: r.section === "medical" ? ["medical"] : ["seen"] };

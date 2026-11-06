@@ -139,7 +139,7 @@ test("+ New Medical Record: date, category and details, then Confirm", async () 
     const records = fakeRecords();
     render(<RecordList section="medical" records={records} others={[]} />);
     await user.click(screen.getByRole("button", { name: "New Medical Record" }));
-    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Deworming", "Observation"]);
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Deworming", "Microchip", "Observation"]);
     // (Cancel: the pink outline)
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("is-cancel");
     await user.click(screen.getByRole("button", { name: "Confirm" }));
@@ -153,6 +153,40 @@ test("+ New Medical Record: date, category and details, then Confirm", async () 
         expect.objectContaining({ section: "medical", category: "food_monitoring", details: "Ate half the plate" })
     );
     expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
+});
+
+test("Microchip: a chip number and optional details; saved as its words, and the monkey told", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords();
+    const onChipAdded = vi.fn();
+    render(<RecordList section="medical" records={records} others={[]} onChipAdded={onChipAdded} />);
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    await user.selectOptions(screen.getByLabelText("Category"), "microchip");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("enter the chip number");
+    expect(records.add).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText("Chip Number"), "12345");
+    await user.type(screen.getByLabelText("Details (optional)"), "Left shoulder");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(records.add).toHaveBeenCalledWith(expect.objectContaining({ category: "microchip", details: "Microchipped 12345: Left shoulder" }));
+    await waitFor(() => expect(onChipAdded).toHaveBeenCalled());
+});
+
+test("Microchip, edited: stays one, its number and note split out; others can't become one", async () => {
+    const user = userEvent.setup();
+    const chip = { id: 1, section: "medical", date: "2026-01-01", category: "microchip", details: "Microchipped 12345: Left", loggedByName: "A" };
+    const other = { id: 2, section: "medical", date: "2026-01-02", category: "observation", details: "Fine", loggedByName: "A" };
+    const records = fakeRecords([chip, other]);
+    render(<RecordList section="medical" records={records} others={[]} />);
+    const edits = screen.getAllByRole("button", { name: "Edit" });
+    await user.click(edits[1]);
+    expect(screen.getByLabelText("Category")).toBeDisabled();
+    expect(screen.getByLabelText("Chip Number")).toHaveValue("12345");
+    expect(screen.getByLabelText("Details (optional)")).toHaveValue("Left");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getAllByRole("button", { name: "Edit" })[0]);
+    expect(screen.queryByRole("option", { name: "Microchip" })).not.toBeInTheDocument();
 });
 
 test("rehabilitation's categories; no button without permission to add", () => {
@@ -180,7 +214,7 @@ test("Medical: Injury and Condition too, saved in their own tables (Current Inju
     const condition = { add: vi.fn(async () => {}) };
     render(<RecordList section="medical" records={records} others={[]} elsewhere={{ injury, condition }} />);
     await user.click(screen.getByRole("button", { name: "New Medical Record" }));
-    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Injury", "Condition", "Deworming", "Observation"]);
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Choose…", "Food Monitoring", "Injury", "Condition", "Deworming", "Microchip", "Observation"]);
     await user.selectOptions(screen.getByLabelText("Category"), "injury");
     expect(screen.getByLabelText("Details")).toHaveAttribute("maxLength", "500");
     await user.type(screen.getByLabelText("Details"), "Cut on left hand");

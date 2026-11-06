@@ -251,6 +251,8 @@ function ShowPage({
     }, [passwordSetup]);
     // The edit / add form: null when closed, else { monkey } (null = adding)
     const [editing, setEditing] = useState(null);
+    // Goes up with each new chip, so an open Full Profile lists its new record
+    const [chipRecords, setChipRecords] = useState(0);
     // Add Photos (staff): null when closed, else { files, current, place }
     // (see QuickPhotos). The photo picker is here, always on the page, so
     // the chosen photos arrive even after the menu that opened it has gone.
@@ -559,6 +561,13 @@ function ShowPage({
             return;
         }
         openModal(saved, modalList && modalList.map((m) => (m.id === saved.id ? saved : m)));
+    }
+    // A new chip (Edit's + or a Microchip record): saved straight away, so the
+    // list and its Medical records catch up, whatever Edit does next
+    function handleChipChanged(monkey, chip) {
+        onMonkeySaved({ ...monkey, chip });
+        setEditing((open) => open && (open.monkey?.id === monkey.id ? { ...open, monkey: { ...open.monkey, chip } } : open));
+        setChipRecords((n) => n + 1);
     }
     // Move to Sickbay / Move to Introcage / Return: saved straight away, and
     // the pop-up stays open
@@ -1033,6 +1042,8 @@ function ShowPage({
                         onOpenCard={(m) => openModal(m, [m])}
                         inert={isAnyModalOpen}
                         places={recordPlaces}
+                        onChipChanged={handleChipChanged}
+                        recordsVersion={chipRecords}
                     />
                 )
             ) : onEnclosures ? (
@@ -1302,6 +1313,7 @@ function ShowPage({
                     onClose={() => setEditing(null)}
                     onSaved={handleSaved}
                     onDeleted={handleDeleted}
+                    onChipChanged={handleChipChanged}
                     quick={Boolean(editing.quick)}
                     // Status Update (admins, once the database has a status): in
                     // the Full Profile's Edit (not Quick Actions: too important,

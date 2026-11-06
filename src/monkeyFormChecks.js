@@ -76,18 +76,18 @@ export function chosenIntrocage(form, choices) {
 // Spaces at the ends removed, runs of spaces made single
 const tidy = (text) => text.trim().replace(/ {2,}/g, " ");
 
-// "1011,1604", "1011.1604", "1011 1604", "1011 & 1604" → "1011 & 1604"
+// "1011,1604", "1011.1604", "1011 1604", "1011 & 1604" → "1011 & 1604" (any
+// number of chips)
 function tidyChip(chip) {
     const text = chip.trim();
     if (text === "") return { chip: "" };
-    // Allowed: digits, plus spaces , . - & / + or "and" between two numbers
+    // Allowed: digits, plus spaces , . - & / + or "and" between the numbers
     // (phone number pads have no space key, but have , or .)
     if (/[^\d\s,.\-&/+]/.test(text.replace(/and/gi, " "))) {
         return { error: "Chip numbers can only contain digits." };
     }
     const numbers = text.match(/\d+/g) ?? [];
     if (numbers.length === 0) return { error: "Chip numbers can only contain digits." };
-    if (numbers.length > 2) return { error: "At most two chip numbers." };
     return { chip: numbers.join(" & ") };
 }
 

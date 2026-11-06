@@ -15,6 +15,19 @@ test("weights: grams up to 1 kg, then kg to 2 decimals", () => {
 });
 
 describe("the story", () => {
+    test("a Microchip record: its number, then the note, under Medical", () => {
+        const [plain, noted] = entriesOf(
+            timelineMonths(DAISY, {
+                records: [
+                    { id: 1, section: "medical", category: "microchip", date: "2026-03-02", details: "Microchipped 12345" },
+                    { id: 2, section: "medical", category: "microchip", date: "2026-03-01", details: "Microchipped 678: Old chip not reading" },
+                ],
+            })
+        );
+        expect(plain).toMatchObject({ kind: "microchip", label: "Microchip", text: "Microchipped 12345", note: null, filters: ["medical"] });
+        expect(noted).toMatchObject({ text: "Microchipped 678", note: "Old chip not reading" });
+    });
+
     test("newest first, by month, with moves worded by place", () => {
         const months = timelineMonths(DAISY, {
             records: [

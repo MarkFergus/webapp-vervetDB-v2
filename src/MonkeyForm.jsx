@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fullName } from "./places";
 import { motion } from "motion/react";
-import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
+import { IconAlertCircle, IconAlertTriangle, IconPencil, IconPlus } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import {
@@ -23,6 +23,7 @@ import { placeChoices } from "./enclosures";
 import { BABY_FEEDING, cageHasBaby, isBaby, summaryDate } from "./feeding";
 import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
+import AddChip from "./AddChip";
 import { useAuth } from "./auth";
 import { ARCHIVE_STATUSES, DETAILS_HINTS, MAX_STATUS_DETAILS, STATUS_WORDS, removeWarning } from "./monkeyStatus";
 import "./Modal.css"; // the Quick Actions form look (the new home)
@@ -59,7 +60,7 @@ function birthYears(current) {
 // Edit, and Add New Monkey)
 function MonkeyForm({
     monkey, troops, troopIds, enclosures = [], enclosuresLive = false, defaultTroop, onClose, onSaved, onDeleted, quick = false,
-    onStatusUpdate = null, allMonkeys = [],
+    onStatusUpdate = null, allMonkeys = [], onChipChanged = null,
 }) {
     const isNew = !monkey;
     const { isAdmin, isEditor } = useAuth();
@@ -83,7 +84,7 @@ function MonkeyForm({
     const [careChoices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive, careUnitsOnly));
     const [allChoices] = useState(() => placeChoices(troops, enclosures, troopHome, enclosuresLive));
     const choices = other ? allChoices : careChoices;
-    const [initial] = useState(() =>
+    const [initial, setInitial] = useState(() =>
         isNew
             ? {
                   ...emptyForm(!careUnitsOnly && troops.includes(defaultTroop) ? defaultTroop : ""),
@@ -160,7 +161,9 @@ function MonkeyForm({
         onClose();
     }
     // (Escape with the new home's form open: just that closes)
-    useDialog(true, nameRef, { onClose: () => (moveStep ? setMoveStep(null) : requestClose()) });
+    useDialog(true, nameRef, {
+        onClose: () => (moveStep ? setMoveStep(null) : addingChip ? setAddingChip(false) : requestClose()),
+    });
 
     const set = (field) => (event) => setForm({ ...form, [field]: event.target.value });
     // A troop monkey moved into an introcage here (its new home): fed by
@@ -228,6 +231,27 @@ function MonkeyForm({
     function clearChipUnknown() {
         setForm({ ...form, chipUnknown: false });
         chipRef.current?.blur();
+    }
+    // Editing a monkey: new chips come in through + (a Microchip record, saved
+    // straight away); the box only opens, with the pencil, to correct it or
+    // say No Chip / Unknown. (A monkey being added: the box, there's no record
+    // to put a chip on yet.)
+    const [correctingChip, setCorrectingChip] = useState(false);
+    const [addingChip, setAddingChip] = useState(false);
+    const chipLocked = !isNew && !correctingChip;
+    function correctChip() {
+        setCorrectingChip(true);
+        setAddingChip(false);
+        // (after it's opened)
+        setTimeout(() => chipRef.current?.focus());
+    }
+    function chipAdded(chip) {
+        // (no change left to save: it's saved)
+        const chipFields = { chip: chip ?? "", chipUnknown: chip === null };
+        setForm((f) => ({ ...f, ...chipFields }));
+        setInitial((i) => ({ ...i, ...chipFields }));
+        setAddingChip(false);
+        onChipChanged?.(monkey, chip);
     }
 
     async function handleSave(event) {
@@ -572,7 +596,17 @@ function MonkeyForm({
                             >
                                 <span className="MonkeyForm-labelRow">
                                     <label htmlFor="MonkeyForm-chip">Chip</label>
-                                    {chipFocused && (
+                                    {chipLocked && !addingChip && (
+                                        <span className="MonkeyForm-chipIcons">
+                                            <button type="button" className="MonkeyForm-chipIcon" aria-label="Correct Number" title="Correct Number" onClick={correctChip}>
+                                                <IconPencil size={16} aria-hidden="true" />
+                                            </button>
+                                            <button type="button" className="MonkeyForm-chipIcon is-add" aria-label="Add New Microchip" title="Add New Microchip" onClick={() => setAddingChip(true)}>
+                                                <IconPlus size={16} aria-hidden="true" />
+                                            </button>
+                                        </span>
+                                    )}
+                                    {!chipLocked && chipFocused && (
                                         <button
                                             type="button"
                                             className="MonkeyForm-unknown"
@@ -590,6 +624,8 @@ function MonkeyForm({
                                     ref={chipRef}
                                     // Digits plus , or . to separate two chips
                                     inputMode="decimal"
+                                    readOnly={chipLocked}
+                                    tabIndex={chipLocked ? -1 : undefined}
                                     placeholder={form.chipUnknown ? "Unknown" : "No Chip"}
                                     value={form.chip}
                                     onChange={(event) =>
@@ -601,10 +637,10 @@ function MonkeyForm({
                                     }
                                 />
                                 {/* Hints only while typing; a problem always shows */}
-                                {errorFor("chip") || (chipFocused && (
+                                {errorFor("chip") || (!chipLocked && chipFocused && (
                                     <ul className="MonkeyForm-hint MonkeyForm-hintList" id="MonkeyForm-chip-hint">
                                         <li>{form.chipUnknown ? "Press Clear if no chip" : "Leave blank if no chip"}</li>
-                                        <li>Two chips? e.g. 1011,1604</li>
+                                        <li>More than one? e.g. 1011,1604</li>
                                     </ul>
                                 ))}
                             </div>
@@ -633,6 +669,7 @@ function MonkeyForm({
                             )}
                         </div>
                         )}
+                        {addingChip && <AddChip monkeyId={monkey.id} onAdded={chipAdded} onCancel={() => setAddingChip(false)} />}
                         {/* Status (admins, the Full Profile's Edit): In
                             Sanctuary, or no longer here (to the Monkey Archive,
                             on Save: what that means, its date and details) */}
@@ -974,7 +1011,7 @@ function MonkeyForm({
                                 Cancel
                             </button>
                             {/* Not while a photo is still uploading */}
-                            <button type="submit" className="Modal-edit is-confirm" disabled={busy || Boolean(uploading)}>
+                            <button type="submit" className="Modal-edit is-confirm" disabled={busy || Boolean(uploading) || addingChip}>
                                 {busy ? "Saving…" : isNew ? "Add Monkey" : "Save"}
                             </button>
                         </>

@@ -650,3 +650,61 @@
     border: 2px solid color-mix(in srgb, var(--danger) 55%, var(--line));
     border-radius: 8px;
 }
+
+/* Chip, editing a monkey: read only, with Correct Number and + on the right
+   of its name; new chips open their own small form under the row */
+.MonkeyForm input[readonly] {
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    cursor: default;
+}
+
+.MonkeyForm-chipIcons {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.MonkeyForm-chipIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 24px;
+    margin: -5px 0; /* (the row stays the height of its name, so the box lines up with Status) */
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.MonkeyForm-chipIcon:hover {
+    color: var(--text);
+}
+
+.MonkeyForm-chipIcon.is-add {
+    color: var(--amber-text);
+}
+
+.MonkeyForm-addChip {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    background-color: var(--surface-1);
+    /* (the app's blue, as on the new home's panel: it stands out from the form) */
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+}
+
+.MonkeyForm-addChipTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.MonkeyForm-addChipActions {
+    display: flex;
+    gap: 8px;
+}

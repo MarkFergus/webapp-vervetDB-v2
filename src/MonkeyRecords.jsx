@@ -8,6 +8,7 @@ import { summaryDate } from "./feeding";
 import { ARRIVAL_REASONS } from "./arrival";
 import { SICKBAY_UNIT, placeChoices } from "./enclosures";
 import { fullName } from "./places";
+import { MAX_CHIP_NOTE, chipNumberProblem, microchipText, parseMicrochip } from "./chipRules";
 import useScrollIntoView from "./useScrollIntoView";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
@@ -39,7 +40,7 @@ export const SECTIONS = {
     },
     medical: {
         title: "Medical",
-        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", deworming: "Deworming", observation: "Observation" },
+        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", deworming: "Deworming", microchip: "Microchip", observation: "Observation" },
         older: { medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
     },
 };
@@ -98,7 +99,8 @@ const todayText = () => {
 // database has them (false before monkey-records.sql, or offline), and
 // this is staff.
 //   staff: { canSee, canAdd, userId, isAdmin, readOnly (limited) } or null
-export function useRecords(monkeyId, staff) {
+//   version: a new number loads them again (one's been added elsewhere)
+export function useRecords(monkeyId, staff, version = 0) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
     useEffect(() => {
@@ -113,7 +115,7 @@ export function useRecords(monkeyId, staff) {
         return () => {
             cancelled = true;
         };
-    }, [monkeyId, enabled]);
+    }, [monkeyId, enabled, version]);
 
     const sorted = (list) => [...list].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
     const change = (fn) => setState((s) => ({ ...s, entries: sorted(fn(s.entries)) }));
@@ -379,8 +381,11 @@ function startValues(initial, places) {
     const move = initial.category === "movement" && initial.details ? parseMovement(initial.details) : null;
     const from = place(move?.from);
     const to = place(move?.to);
+    const chip = initial.category === "microchip" ? parseMicrochip(initial.details) : null;
     return {
         ...initial,
+        chipNumber: chip?.number ?? "",
+        chipNote: chip?.note ?? "",
         plain: initial.category === "movement" && Boolean(initial.details) && !move,
         from: from.pick,
         fromOther: from.other,
@@ -407,19 +412,27 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
     const { categories, older } = SECTIONS[section];
     // (a record saved with a category no longer offered keeps it; a Status
     // record stays one)
-    const fixed = locked || (initial.category && !categories[initial.category] && !older[initial.category]);
+    // (a Microchip record stays one, and nothing else becomes one: adding one
+    // is what adds its number to the monkey)
+    const saved = Boolean(initial.details);
+    const fixed = locked || (saved && initial.category === "microchip") || (initial.category && !categories[initial.category] && !older[initial.category]);
     // (Injury and Condition: only when they can be saved; a record already
     // saved as one keeps it)
     const offered = Object.fromEntries(
-        Object.entries(categories).filter(([key]) => !(key in SAVED_ELSEWHERE) || elsewhere.includes(key) || key === initial.category)
+        Object.entries(categories).filter(
+            ([key]) =>
+                (!(key in SAVED_ELSEWHERE) || elsewhere.includes(key) || key === initial.category) &&
+                (key !== "microchip" || !saved || initial.category === "microchip")
+        )
     );
     const choices = initial.category && !categories[initial.category]
         ? { ...offered, [initial.category]: older[initial.category] ?? OTHER_CATEGORIES[initial.category] ?? initial.category }
         : offered;
     const movement = values.category === "movement" && !values.plain;
-    const text = movement ? values.reason : values.details;
+    const microchip = values.category === "microchip";
+    const text = movement ? values.reason : microchip ? values.chipNote : values.details;
     // (an injury's or a condition's description: 500 at most, as their tables)
-    const max = ((locked || elsewhere.includes(values.category)) && SAVED_ELSEWHERE[values.category]) || MAX_RECORD;
+    const max = microchip ? MAX_CHIP_NOTE : ((locked || elsewhere.includes(values.category)) && SAVED_ELSEWHERE[values.category]) || MAX_RECORD;
     const placeOf = (pick, other) => (pick === OTHER ? other.trim() : pick);
 
     async function confirm() {
@@ -435,6 +448,10 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
             details = movementText({ from, to, reason: values.reason });
             movePlaces = { fromPlace: from, toPlace: to };
             if (details.length > MAX_RECORD) return setProblem(`Please shorten the reason (${MAX_RECORD} characters in all).`);
+        } else if (microchip) {
+            const wrong = chipNumberProblem(values.chipNumber);
+            if (wrong) return setProblem(wrong);
+            details = microchipText({ number: values.chipNumber, note: values.chipNote });
         } else if (!details) {
             return setProblem("Please write the details.");
         } else if (details.length > max) {
@@ -491,9 +508,15 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                     />
                 </div>
             )}
+            {microchip && (
+                <label>
+                    <span>Chip Number</span>
+                    <input type="text" inputMode="numeric" value={values.chipNumber} onChange={set("chipNumber")} />
+                </label>
+            )}
             <label>
-                <span>{movement ? "Reason (optional)" : "Details"}</span>
-                <textarea rows={4} value={text} maxLength={max} onChange={set(movement ? "reason" : "details")} />
+                <span>{movement || microchip ? `${movement ? "Reason" : "Details"} (optional)` : "Details"}</span>
+                <textarea rows={4} value={text} maxLength={max} onChange={set(movement ? "reason" : microchip ? "chipNote" : "details")} />
             </label>
             <span className="Integration-count">
                 {text.length} / {max}
@@ -521,7 +544,8 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
 //   and To (movementPlaces); elsewhere: { injury, condition }: each
 //   { add(values), update(id, values), remove(id) } in its own table
 //   (values: { date, description }; async, throwing a message to show)
-export function RecordList({ section, records, others, places = [], elsewhere = {} }) {
+//   onChipAdded(): a Microchip record's been added (the monkey has a new chip)
+export function RecordList({ section, records, others, places = [], elsewhere = {}, onChipAdded }) {
     const [adding, setAdding] = useState(false);
     const [editing, setEditing] = useState(null); // a row's key
     const { title, categories, older } = SECTIONS[section];
@@ -545,6 +569,7 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                             const kept = elsewhere[values.category];
                             if (kept) await kept.add({ date: values.date, description: values.details });
                             else await records.add({ section, ...values });
+                            if (values.category === "microchip") onChipAdded?.();
                             setAdding(false);
                         }}
                         onCancel={() => setAdding(false)}
