@@ -100,6 +100,29 @@ test("photos: by upload day, left off for the bulk move and for the placeholder"
     expect(entries[0].filters).toContain("milestones");
 });
 
+describe("where they were taken on arrival", () => {
+    const enclosures = [{ id: 1, name: "Baby Care", type: "care_unit", parentId: null }, { id: 2, name: "Dreamland", type: "area", parentId: 1 }, { id: 3, name: "Sickbay", type: "care_unit", parentId: null }, { id: 4, name: "Sickbay", type: "area", parentId: 3 }, { id: 5, name: "Koko", type: "troop", parentId: null }];
+    const text = (monkey) => entriesOf(timelineMonths({ ...DAISY, ...monkey }, { enclosures })).find((e) => e.kind === "arrival").text;
+
+    test("the place kept when they were added, not where they are now", () => {
+        expect(text({ arrivalPlace: "Dreamland", arrivalPlaceId: 2 })).toBe("Orphaned, taken to Baby Care (Dreamland)");
+        expect(text({ arrivalPlace: "Koko Troop", arrivalPlaceId: 5 })).toBe("Orphaned, taken to Koko Troop");
+    });
+
+    test("a care unit named the same as its area: once", () => {
+        expect(text({ arrivalPlace: "Sickbay", arrivalPlaceId: 4 })).toBe("Orphaned, taken to Sickbay");
+    });
+
+    test("a place since removed: just its name", () => {
+        expect(text({ arrivalPlace: "Dreamland", arrivalPlaceId: null })).toBe("Orphaned, taken to Dreamland");
+    });
+
+    test("says only what's known", () => {
+        expect(text({})).toBe("Orphaned");
+        expect(text({ arrivalReason: null, arrivalPlace: "Dreamland", arrivalPlaceId: 2 })).toBe("Taken to Baby Care (Dreamland)");
+    });
+});
+
 describe("Right Now", () => {
     const labels = (rows) => Object.fromEntries(rows.map((r) => [r.label, r.text]));
 
@@ -126,6 +149,16 @@ describe("Right Now", () => {
         expect(seen["Next Deworming"]).toMatch(/^Sat 7 Nov.*, Koko Troop 3-Month$/);
         expect(rows.map((r) => r.label).indexOf("Last Deworming")).toBe(rows.map((r) => r.label).indexOf("Next Deworming") - 1);
         expect(rows.find((r) => r.label === "Current Injury")).toMatchObject({ text: "Cut, update needed", alert: true });
+    });
+
+    test("Next Deworming: under 3 none due, from 3 (or age unknown) the Schedule's", () => {
+        const next = { date: "2026-11-07", words: "Koko Troop 3-Month" };
+        const nextFor = (year) => labels(rightNow({ ...DAISY, year }, { next }, "2026-11-06"))["Next Deworming"];
+        expect(nextFor(2024)).toBe("None due until 3 yrs old"); // 2 this season
+        expect(nextFor(2026)).toBe("None due until 3 yrs old");
+        expect(nextFor(2023)).toMatch(/^Sat 7 Nov.*, Koko Troop 3-Month$/); // 3 this season
+        expect(nextFor(null)).toMatch(/^Sat 7 Nov/);
+        expect(labels(rightNow({ ...DAISY, year: 2024 }, {}, "2026-11-06"))["Next Deworming"]).toBe("None due until 3 yrs old");
     });
 
     test("in an introcage: seen every day, as everywhere else", () => {

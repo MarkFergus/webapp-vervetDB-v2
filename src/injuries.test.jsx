@@ -279,7 +279,10 @@ describe("Mark As Seen (Quick Actions)", () => {
         open({ ...ADMIN, isAdmin: false });
         await screen.findByRole("button", { name: "Quick Actions" });
         await quickActions();
-        await userEvent.click(await screen.findByRole("button", { name: "Mark Nita As Seen" }));
+        const markSeen = await screen.findByRole("button", { name: "Mark Nita As Seen" });
+        // (the last in the list)
+        expect(markSeen.nextElementSibling).toBeNull();
+        await userEvent.click(markSeen);
         await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
         expect(addSpotSighting).toHaveBeenCalledWith(7, expect.objectContaining({ note: "" }));
         await waitFor(() => expect(button()).toBeNull());

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { IconEye } from "@tabler/icons-react";
+import { IconSquareCheck } from "@tabler/icons-react";
 import { addSpotSighting, loadLastMoves, loadMonkeySightings } from "./monkeyData";
 import { seenDaily, sightingRecord } from "./monitoringRules";
 import { dayText } from "./babyRecords";
@@ -82,10 +82,10 @@ export function MarkSeenForm({ name, onSave, onCancel }) {
 }
 
 // The Mark As Seen button
-export function MarkSeenButton({ name, onClick }) {
+export function MarkSeenButton({ name, onClick, iconSize = 16 }) {
     return (
         <button type="button" className="Modal-edit is-sickbay MarkSeen-button" aria-label={`Mark ${name} As Seen`} onClick={onClick}>
-            <IconEye size={16} aria-hidden="true" />
+            <IconSquareCheck size={iconSize} aria-hidden="true" />
             Mark As Seen
         </button>
     );

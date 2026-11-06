@@ -36,10 +36,12 @@ const SPECIES_MONKEY_COLUMNS = `${STAY_MONKEY_COLUMNS}, species`;
 const BIRTH_MONKEY_COLUMNS = `${SPECIES_MONKEY_COLUMNS}, birth_date, birth_date_approx`;
 // ...and its arrival date and reason (once arrival-details.sql has run)
 const ARRIVAL_MONKEY_COLUMNS = `${BIRTH_MONKEY_COLUMNS}, arrival_date, arrival_reason`;
+// ...and where they were taken on arrival (once arrival-place.sql has run)
+const ARRIVAL_PLACE_MONKEY_COLUMNS = `${ARRIVAL_MONKEY_COLUMNS}, arrival_place, arrival_place_id`;
 // Newest first: each set has all the ones after it (loadMonkeys tries them
 // in turn)
 const COLUMN_SETS = [
-    ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
+    ARRIVAL_PLACE_MONKEY_COLUMNS, ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
     FEEDING_MONKEY_COLUMNS,
 ];
 // Whether the database's set includes `columns` (the newer ones do)
@@ -133,6 +135,12 @@ export function toAppMonkey(row) {
     if ("arrival_date" in row) {
         monkey.arrivalDate = row.arrival_date;
         monkey.arrivalReason = row.arrival_reason;
+    }
+    // ...and where they were taken ("Dreamland"), or null (not known):
+    // arrival-place.sql
+    if ("arrival_place" in row) {
+        monkey.arrivalPlace = row.arrival_place;
+        monkey.arrivalPlaceId = row.arrival_place_id;
     }
     // Once the database has stays (see introcage-stays.sql): the introcage
     // it's staying in for now, or null (at home)

@@ -38,7 +38,7 @@
         flex-basis: 100%;
     }
 
-    .MarkSeen-button {
+    .MarkSeen-line .MarkSeen-button {
         margin-left: auto;
     }
 }

@@ -434,9 +434,6 @@ function Modal({
                                     </button>
                                     {moreOpen && (
                                         <div className={`Modal-moreRow${formOpen ? " is-form" : ""}`}>
-                                            {isMissing && !formOpen && (
-                                                <MarkSeenButton name={monkey.name} onClick={() => setSeenForm(true)} />
-                                            )}
                                             {seenForm && (
                                                 <MarkSeenForm
                                                     name={monkey.name}
@@ -536,6 +533,9 @@ function Modal({
                                                     <IconEye size={18} aria-hidden="true" />
                                                     Observation
                                                 </button>
+                                            )}
+                                            {isMissing && !formOpen && (
+                                                <MarkSeenButton name={monkey.name} iconSize={18} onClick={() => setSeenForm(true)} />
                                             )}
                                             {conditionForm && (
                                                 <InjuryForm

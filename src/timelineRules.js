@@ -1,6 +1,6 @@
 // A monkey's Timeline (MonkeyTimeline.jsx): everything on record about them as
 // one story, newest first, by month, and how they are right now.
-import { DEWORMERS } from "./dewormingRules";
+import { DEWORMERS, isAdult } from "./dewormingRules";
 import { INTEGRATION_KINDS } from "./integrations";
 import { updateNeeded } from "./injuryRules";
 import { seenDaily, sightingRecord } from "./monitoringRules";
@@ -187,7 +187,24 @@ function photoEntries(monkey) {
     }));
 }
 
-function arrivalEntry(monkey, weights) {
+// Where they were taken when they arrived, kept when they were added
+// (arrival-place.sql): "Baby Care (Dreamland)", or null if it isn't known
+function arrivalPlace(monkey, enclosures) {
+    if (!monkey.arrivalPlace) return null;
+    const place = enclosures.find((e) => e.id === monkey.arrivalPlaceId);
+    const unit = place && enclosures.find((e) => e.id === place.parentId && e.type === "care_unit");
+    return unit && unit.name !== monkey.arrivalPlace ? `${unit.name} (${monkey.arrivalPlace})` : monkey.arrivalPlace;
+}
+
+// "Orphaned, taken to Baby Care (Dreamland)"
+function arrivalText(monkey, enclosures) {
+    const reason = ARRIVAL_REASONS[monkey.arrivalReason] ?? null;
+    const place = arrivalPlace(monkey, enclosures);
+    if (!place) return reason;
+    return reason ? `${reason}, taken to ${place}` : `Taken to ${place}`;
+}
+
+function arrivalEntry(monkey, weights, enclosures) {
     if (!monkey.arrivalDate) return null;
     const first = [...weights].sort((a, b) => a.date.localeCompare(b.date))[0];
     return {
@@ -196,15 +213,15 @@ function arrivalEntry(monkey, weights) {
         kind: "arrival",
         label: "Arrived",
         filters: ["milestones", "moves"],
-        text: ARRIVAL_REASONS[monkey.arrivalReason] ?? null,
+        text: arrivalText(monkey, enclosures),
         note: first ? `Arrival Weight: ${weightText(first.value)}` : null,
     };
 }
 
 // The story, newest first: [{ key, title ("October 2026"), entries }]
 //   data: { records, injuries, conditions, integrations, weights, sessions, spots }
-export function timelineMonths(monkey, { records = [], injuries = [], conditions = [], integrations = [], weights = [], sessions = [], spots = [] }) {
-    const arrival = arrivalEntry(monkey, weights);
+export function timelineMonths(monkey, { records = [], injuries = [], conditions = [], integrations = [], weights = [], sessions = [], spots = [], enclosures = [] }) {
+    const arrival = arrivalEntry(monkey, weights, enclosures);
     const entries = [
         ...records.map(recordEntry),
         ...injuries.map(injuryEntry),
@@ -255,6 +272,8 @@ export function rightNow(monkey, { records = [], injuries = [], weights = [], se
     if (latest) rows.push({ label: "Latest Weight", text: `${weightText(latest.value)}, ${dayWords(latest.date)}` });
     const last = lastDeworming(records);
     rows.push({ label: "Last Deworming", text: last ? `${last.dewormer}, ${dayWords(last.date)}` : "None on record" });
-    if (next) rows.push({ label: "Next Deworming", text: `${dayWords(next.date)}, ${next.words}` });
+    // (dewormed from 3 years old; age unknown: counted as an adult, as on the sheets)
+    if (!isAdult(monkey, new Date(`${today}T00:00:00`))) rows.push({ label: "Next Deworming", text: "None due until 3 yrs old" });
+    else if (next) rows.push({ label: "Next Deworming", text: `${dayWords(next.date)}, ${next.words}` });
     return rows;
 }

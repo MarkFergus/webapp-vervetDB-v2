@@ -184,7 +184,7 @@ export default function MonkeyTimeline({ monkey, monkeys = [], enclosures = [], 
     const next =
         data.calendar && data.sheets ? nextDeworming(monkey, monkeys, enclosures, data.calendar, data.sheets, today) : null;
     const now = rightNow(monkey, { ...data, lastMove: data.moves?.[id] ?? null, next }, today);
-    const months = timelineMonths(monkey, data)
+    const months = timelineMonths(monkey, { ...data, enclosures })
         .map((m) => ({ ...m, entries: m.entries.filter((e) => filter === "all" || e.filters.includes(filter)) }))
         .filter((m) => m.entries.length);
 
