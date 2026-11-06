@@ -415,6 +415,13 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                         <h1 className="Enclosures-recordTitle">{monkey.name}</h1>
                         {/* View Card (its pop-up), and Edit (editors), as icons */}
                         <div className="MonkeyPage-actions">
+                            {/* (its label always shows: it's new, so people can see what it is) */}
+                            {isStaff && timelineHref && (
+                                <a href={timelineHref} className="Modal-edit is-soft Enclosures-edit MonkeyPage-timeline">
+                                    <IconTimelineEvent size={18} aria-hidden="true" />
+                                    <span>Timeline</span>
+                                </a>
+                            )}
                             {onOpenCard && (
                                 <button type="button" className="Modal-edit is-soft is-icon Enclosures-edit" onClick={() => onOpenCard(monkey)} title="View Card">
                                     <IconId size={18} aria-hidden="true" />
@@ -458,12 +465,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     )}
                 </div>
 
-                <SectionNav
-                    jumps={jumps}
-                    onJump={jump}
-                    refresh={tab}
-                    link={isStaff && timelineHref ? { href: timelineHref, label: "Timeline", icon: IconTimelineEvent } : null}
-                />
+                <SectionNav jumps={jumps} onJump={jump} refresh={tab} />
 
                 {/* Profile: the photos beside the main facts (phones: the
                     photos first), then the bio and description */}

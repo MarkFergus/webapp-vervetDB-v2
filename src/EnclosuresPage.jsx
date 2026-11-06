@@ -305,9 +305,7 @@ function Ranking({ label, rank, unknown = "Not known" }) {
 //   jumps: [{ key, label, icon }]; onJump(key)
 //   refresh: anything that changes which parts are on the page (a monkey's
 //   Records tab: its part takes the tab's name), to look again
-//   link: { href, label, icon }: a page of its own, at the end, with its label
-//   always showing
-export function SectionNav({ jumps, onJump, refresh, link = null }) {
+export function SectionNav({ jumps, onJump, refresh }) {
     const ref = useRef(null);
     const [active, setActive] = useState(null);
     const keys = jumps.map((j) => j.key).join(" ");
@@ -359,12 +357,6 @@ export function SectionNav({ jumps, onJump, refresh, link = null }) {
                     <span className="Enclosures-sectionLabel">{label}</span>
                 </button>
             ))}
-            {link && (
-                <a href={link.href} className="Enclosures-sectionButton is-link">
-                    <link.icon size={20} stroke={1.75} aria-hidden="true" />
-                    <span>{link.label}</span>
-                </a>
-            )}
         </nav>
     );
 }

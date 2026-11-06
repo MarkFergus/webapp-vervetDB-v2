@@ -41,7 +41,9 @@ import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
-import { addCondition, addObservation, recordSeen } from "./monkeyData";
+import { addCondition, addObservation, addSpotSighting, recordSeen } from "./monkeyData";
+import { MarkSeenButton, MarkSeenForm, useMissing } from "./MarkSeen";
+import useMonitoring from "./useMonitoring";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
 import RecentEdits from "./RecentEdits";
 import { FavouriteStar } from "./MonkeyCard";
@@ -174,6 +176,14 @@ function Modal({
     // New Condition (Quick Actions): goes in its Medical records, as one
     // added in a monitoring session does, and counts as seen
     const [conditionForm, setConditionForm] = useState(false);
+    // Mark As Seen (Quick Actions): only when they're missing from monitoring,
+    // as on the Full Profile. Checked once Quick Actions is opened. (Muted, or
+    // new arrivals: not looked for in sessions)
+    const canMarkSeen = moreOpen && injuries.canAdd && Boolean(monkey) && !isNewArrival(monkey);
+    const missing = useMissing(monkey, canMarkSeen);
+    const missingMonitoring = useMonitoring(monkey?.id, canMarkSeen);
+    const isMissing = (missing.record?.missed ?? 0) > 0 && missingMonitoring.loaded && !missingMonitoring.value.alertsMuted;
+    const [seenForm, setSeenForm] = useState(false);
     const [injuriesOpen, setInjuriesOpen] = useState(true);
 
     // Saves straight away; the pop-up stays open, now with the new state.
@@ -243,7 +253,7 @@ function Modal({
         (form.to === "introcage" || (form.to === "return" && Boolean(form.introcageId)));
     // A tap outside Quick Actions closes it, unless one of its forms is open
     // (so a half-filled form isn't lost)
-    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || observationForm || conditionForm);
+    const formOpen = Boolean(sickbayForm || releaseForm || injuryForm || observationForm || conditionForm || seenForm);
     // Any form open in the pop-up (these, or one in a list: editing an
     // injury, adding an update…) holds it: no other monkey and no closing
     // until its Cancel or Confirm (formLock.js)
@@ -268,6 +278,7 @@ function Modal({
         setInjuryForm(false);
         setConditionForm(false);
         setObservationForm(false);
+        setSeenForm(false);
         setSickbayForm(null);
         setSickbayProblem(null);
     }
@@ -423,6 +434,23 @@ function Modal({
                                     </button>
                                     {moreOpen && (
                                         <div className={`Modal-moreRow${formOpen ? " is-form" : ""}`}>
+                                            {isMissing && !formOpen && (
+                                                <MarkSeenButton name={monkey.name} onClick={() => setSeenForm(true)} />
+                                            )}
+                                            {seenForm && (
+                                                <MarkSeenForm
+                                                    name={monkey.name}
+                                                    onCancel={() => {
+                                                        setSeenForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                    onSave={async (values) => {
+                                                        await addSpotSighting(monkey.id, values);
+                                                        setSeenForm(false);
+                                                        setMoreOpen(false);
+                                                    }}
+                                                />
+                                            )}
                                             {/* Move to Sickbay (from home, or ending a stay) */}
                                             {canSickbay && !monkey.inSickbay && !formOpen && (
                                                 <button

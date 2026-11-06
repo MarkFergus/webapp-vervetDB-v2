@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "1.27.1",
+        date: "2026-11-06",
+        changes: ["Added Mark As Seen to Quick Actions"],
+    },
+    {
         version: "1.27.0",
         date: "2026-11-06",
         changes: ["Added Timeline to Full Profiles", "Added Last Deworming to Full Profiles"],

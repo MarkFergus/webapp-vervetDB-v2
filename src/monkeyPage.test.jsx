@@ -405,11 +405,13 @@ test("Species: its name, or Not recorded before the database has it", () => {
     expect(screen.getByText("Species").closest("div")).toHaveTextContent("Not recorded");
 });
 
-test("the Timeline: a labelled link among the top icons, for staff only", () => {
+test("the Timeline: a labelled link beside View Card and Edit, for staff only", () => {
     const staff = { canSee: true, canAdd: false, userId: "staff-1", isAdmin: false };
     const { unmount } = render(<MonkeyPage monkey={aroha} staff={staff} timelineHref="#monkeys/aroha-h-b/timeline" />);
     const link = screen.getByRole("link", { name: "Timeline" });
     expect(link).toHaveAttribute("href", "#monkeys/aroha-h-b/timeline");
+    expect(link.closest(".MonkeyPage-actions")).not.toBeNull();
+    expect(link.closest("nav")).toBeNull();
     unmount();
     render(<MonkeyPage monkey={aroha} staff={null} timelineHref="#monkeys/aroha-h-b/timeline" />);
     expect(screen.queryByRole("link", { name: "Timeline" })).toBeNull();

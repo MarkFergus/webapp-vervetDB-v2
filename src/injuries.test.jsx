@@ -1,8 +1,8 @@
 // Injuries: a section of the pop-up, and New Injury under Quick Actions
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
-import { addCondition, addInjury, addInjuryUpdate, addObservation, recordSeen, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
+import { addCondition, addInjury, addInjuryUpdate, addObservation, addSpotSighting, loadLastMoves, loadMonkeySightings, recordSeen, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -22,6 +22,9 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     addObservation: vi.fn(),
     addCondition: vi.fn(),
     recordSeen: vi.fn(),
+    addSpotSighting: vi.fn(),
+    loadMonkeySightings: vi.fn(),
+    loadLastMoves: vi.fn(),
 }));
 
 const MONKEY = {
@@ -44,6 +47,8 @@ beforeEach(() => {
     vi.clearAllMocks();
     loadInjuries.mockResolvedValue([]);
     loadMonitoring.mockResolvedValue({ conditionCheck: false, notes: "", updatedByName: null, updatedAt: null });
+    loadMonkeySightings.mockResolvedValue({ sessions: [], spots: [] });
+    loadLastMoves.mockResolvedValue({});
 });
 
 test("New Injury asks the date (today) and a description, then lists it under Injuries", async () => {
@@ -262,6 +267,43 @@ test("New Condition (Quick Actions): below New Injury, saved to the monkey's con
     expect(addCondition).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
     expect(recordSeen).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
     expect(screen.queryByLabelText("Condition")).toBeNull();
+});
+
+describe("Mark As Seen (Quick Actions)", () => {
+    const session = (seen) => ({ id: 1, date: "2026-10-26", status: "finished", finishedAt: "2026-10-26T10:00:00Z", sightings: [{ monkeyId: 7, seen }] });
+    const button = () => screen.queryByRole("button", { name: "Mark Nita As Seen" });
+
+    test("missing from monitoring: there, and saved as a sighting", async () => {
+        loadMonkeySightings.mockResolvedValue({ sessions: [session(false)], spots: [] });
+        addSpotSighting.mockResolvedValue({});
+        open({ ...ADMIN, isAdmin: false });
+        await screen.findByRole("button", { name: "Quick Actions" });
+        await quickActions();
+        await userEvent.click(await screen.findByRole("button", { name: "Mark Nita As Seen" }));
+        await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(addSpotSighting).toHaveBeenCalledWith(7, expect.objectContaining({ note: "" }));
+        await waitFor(() => expect(button()).toBeNull());
+    });
+
+    test("seen last session, or muted: not there", async () => {
+        loadMonkeySightings.mockResolvedValue({ sessions: [session(true)], spots: [] });
+        const { unmount } = open({ ...ADMIN, isAdmin: false });
+        await screen.findByRole("button", { name: "Quick Actions" });
+        await quickActions();
+        await waitFor(() => expect(loadMonkeySightings).toHaveBeenCalled());
+        expect(await screen.findByRole("button", { name: "New Injury" })).toBeInTheDocument();
+        expect(button()).toBeNull();
+        unmount();
+
+        loadMonkeySightings.mockResolvedValue({ sessions: [session(false)], spots: [] });
+        loadMonitoring.mockResolvedValue({ conditionCheck: false, notes: "", alertsMuted: true });
+        open({ ...ADMIN, isAdmin: false });
+        await screen.findByRole("button", { name: "Quick Actions" });
+        await quickActions();
+        await waitFor(() => expect(loadMonitoring).toHaveBeenCalled());
+        await new Promise((r) => setTimeout(r, 20));
+        expect(button()).toBeNull();
+    });
 });
 
 test("Observation (Quick Actions): a quick note on how it's doing, saved for the day (and as seen)", async () => {

@@ -424,3 +424,9 @@
     font-weight: 500;
     white-space: pre-line;
 }
+
+/* The Timeline: a link looking like the buttons beside it, its label showing */
+.MonkeyPage-timeline {
+    text-decoration: none;
+    color: inherit;
+}
