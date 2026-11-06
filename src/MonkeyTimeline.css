@@ -1,0 +1,231 @@
+/* A monkey's Timeline: MonkeyTimeline.jsx */
+.Timeline {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.Timeline-title {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--text-strong);
+}
+
+.Timeline-sub {
+    margin: 0 0 12px;
+    color: var(--text-2);
+}
+
+.Timeline-problem {
+    margin: 0 0 12px;
+    color: var(--danger);
+}
+
+.Timeline-none {
+    color: var(--text-3);
+}
+
+.Timeline-now {
+    padding: 12px 14px;
+    background-color: var(--surface-1);
+    border-radius: 12px;
+}
+
+.Timeline-now h2 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-2);
+}
+
+.Timeline-now p {
+    margin: 4px 0 0;
+}
+
+.Timeline-now b {
+    color: var(--text-2);
+}
+
+.Timeline-now .is-alert,
+.Timeline-now .is-alert b {
+    color: var(--danger);
+}
+
+/* (stays at the top, under the site's bar, while scrolling) */
+.Timeline-filters {
+    position: sticky;
+    z-index: 1;
+    top: var(--nav-height);
+    display: flex;
+    gap: 6px;
+    padding: 10px 0;
+    overflow-x: auto;
+    background-color: var(--bg);
+    scrollbar-width: none;
+}
+
+.Timeline-filters button {
+    flex: none;
+    height: 40px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Timeline-filters button[aria-pressed="true"] {
+    color: var(--bg);
+    background-color: var(--text-strong);
+}
+
+:where(:root[data-theme="light"]) .Timeline-filters button[aria-pressed="true"] {
+    color: var(--text-strong);
+    background-color: var(--surface-1);
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
+.Timeline-month {
+    margin: 14px 0 6px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-2);
+}
+
+.Timeline-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Timeline-entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    column-gap: 10px;
+    padding-bottom: 12px;
+    --kind: var(--text-2);
+}
+
+/* The line joining them */
+.Timeline-entry:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 36px;
+    bottom: 0;
+    left: 17px;
+    width: 2px;
+    background-color: var(--surface-3);
+}
+
+.Timeline-entry.is-seen,
+.Timeline-entry.is-observation,
+.Timeline-entry.is-arrival {
+    --kind: var(--green);
+}
+
+.Timeline-entry.is-move,
+.Timeline-entry.is-home {
+    --kind: var(--accent);
+}
+
+.Timeline-entry.is-injury {
+    --kind: var(--danger);
+}
+
+.Timeline-entry.is-condition,
+.Timeline-entry.is-integration {
+    --kind: var(--amber-text);
+}
+
+.Timeline-dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--kind);
+    background-color: var(--surface-2);
+    border-radius: 50%;
+}
+
+.Timeline-card {
+    min-width: 0;
+    padding: 8px 12px 10px;
+    background-color: var(--surface-1);
+    border-radius: 10px;
+}
+
+.Timeline-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.Timeline-kind {
+    font-weight: 800;
+    color: var(--kind);
+}
+
+.Timeline-text {
+    margin: 3px 0 0;
+    overflow-wrap: anywhere;
+}
+
+.Timeline-note {
+    margin: 3px 0 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Timeline-by {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.Timeline-quiet {
+    align-self: center;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Timeline-updates {
+    display: grid;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0 0 0 10px;
+    font-size: 14px;
+    list-style: none;
+    border-left: 2px solid var(--surface-3);
+}
+
+.Timeline-updates span {
+    display: block;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.Timeline-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.Timeline-photos img {
+    width: 72px;
+    height: 58px;
+    object-fit: cover;
+    border-radius: 6px;
+}

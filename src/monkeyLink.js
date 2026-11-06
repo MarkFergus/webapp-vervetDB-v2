@@ -41,5 +41,11 @@ export const isMonkeyPageRoute = (route) => `#${route}`.startsWith(PAGE_PREFIX);
 // The monkey a page's address is for, or null
 export function monkeyFromPageRoute(route, monkeys) {
     if (!isMonkeyPageRoute(route)) return null;
-    return monkeys.find((m) => monkeyPageHash(m) === `#${route}`) ?? null;
+    const page = route.replace(TIMELINE_END, "");
+    return monkeys.find((m) => monkeyPageHash(m) === `#${page}`) ?? null;
 }
+
+// Their Timeline: a page of its own (#monkeys/aroha-h-b/timeline)
+const TIMELINE_END = /\/timeline$/;
+export const monkeyTimelineHash = (monkey) => `${monkeyPageHash(monkey)}/timeline`;
+export const isTimelineRoute = (route) => isMonkeyPageRoute(route) && TIMELINE_END.test(route);

@@ -941,6 +941,16 @@
     pointer-events: none;
 }
 
+/* A page of its own (a monkey's Timeline): its name always showing */
+.Enclosures-sectionButton.is-link {
+    flex: none;
+    gap: 6px;
+    padding: 0 10px;
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
 .Enclosures-sectionButton {
     display: flex;
     flex: 1;

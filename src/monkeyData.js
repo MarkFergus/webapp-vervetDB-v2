@@ -784,6 +784,7 @@ const toAppIntegration = (row) => ({
     kind: row.kind,
     status: row.status,
     statusOn: row.status_on ?? null,
+    place: row.place ?? null,
     loggedByName: row.logged_by_name ?? null,
 });
 
@@ -1515,6 +1516,37 @@ export async function loadMonkeySightings(monkeyId) {
         }))
         .sort((a, b) => b.date.localeCompare(a.date) || String(b.finishedAt).localeCompare(String(a.finishedAt)));
     return { sessions, spots };
+}
+
+// Everything for a monkey's Timeline that isn't loaded elsewhere: every session
+// they were on the checklist for, as sessions with just their sighting
+export async function loadTimelineSessions(monkeyId) {
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from("monitoring_sightings")
+            .select("seen, session_id, monitoring_sessions!inner (id, session_date, status)")
+            .eq("monkey_id", monkeyId)
+            .eq("monitoring_sessions.status", "finished")
+            .order("session_id")
+    );
+    if (error) throw sessionProblem(error);
+    return data.map((r) => ({
+        id: r.monitoring_sessions.id,
+        date: r.monitoring_sessions.session_date,
+        status: "finished",
+        sightings: [{ monkeyId, seen: r.seen }],
+    }));
+}
+
+// A monkey's integrations, past and present, for their Timeline
+export async function loadMonkeyIntegrations(monkeyId) {
+    const load = (columns) => supabase.from("integrations").select(columns).eq("monkey_id", monkeyId).order("started_on");
+    const COLUMNS = "id, monkey_id, started_on, kind, status, status_on, logged_by_name";
+    let { data, error } = await load(`${COLUMNS}, place`);
+    // (before integration-place.sql: without where)
+    if (isOlderDatabase(error)) ({ data, error } = await load(COLUMNS));
+    if (error) throw error;
+    return data.map(toAppIntegration);
 }
 
 // What was added during a session, oldest first: [{ monkeyId, text, kind

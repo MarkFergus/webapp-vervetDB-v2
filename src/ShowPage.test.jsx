@@ -355,12 +355,12 @@ describe("swiping the pop-up's photo (phones)", () => {
     });
 });
 
-test("the count pill beside Filters and Sort shows how many sanctuary monkeys match (not the Bandits)", async () => {
+test("the count pill beside Filters and Sort shows how many monkeys are showing (the Bandits too)", async () => {
     const { user, container, troopSelect } = setup();
     const count = () => container.querySelector(".ShowPage-count");
-    const sanctuary = monkeysArr.filter((m) => m.troop !== "Bandits").length;
-    expect(count()).toHaveTextContent(`${sanctuary}sanctuary monkeys`); // (no filters: who is counted)
-    expect(count()).toHaveAttribute("title", `${sanctuary} sanctuary monkeys (not counting the Bandits)`);
+    const everyone = monkeysArr.length;
+    expect(count()).toHaveTextContent(`${everyone}monkeys`); // (no filters: who is counted)
+    expect(count()).toHaveAttribute("title", `${everyone} monkeys`);
 
     await user.selectOptions(troopSelect(), "James");
     const james = monkeysArr.filter((m) => m.troop === "James").length;

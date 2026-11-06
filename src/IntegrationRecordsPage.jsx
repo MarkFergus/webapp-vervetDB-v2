@@ -375,6 +375,12 @@ function NewIntegration({ choices, onStart, onCancel }) {
                     </select>
                 </label>
             </div>
+            {/* (to check before starting: it's kept with the integration) */}
+            {chosen && kind && (
+                <p className="RecordsPage-hint">
+                    Starts a {INTEGRATION_KINDS[kind].toLowerCase()} integration at {fullName(integrationPlace(chosen))}.
+                </p>
+            )}
             <div className="RecordsPage-actions">
                 <button type="button" className="Modal-edit is-confirm" disabled={!ready} onClick={() => setAsking(true)}>
                     Start Integration

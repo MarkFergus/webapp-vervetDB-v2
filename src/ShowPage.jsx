@@ -21,7 +21,7 @@ import MonkeyForm from "./MonkeyForm";
 import QuickPhotos from "./QuickPhotos";
 import { useAuth } from "./auth";
 import Nav from "./Nav";
-import { isMonkeyHash, isMonkeyPageRoute, monkeyFromHash, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
+import { isMonkeyHash, isMonkeyPageRoute, isTimelineRoute, monkeyFromHash, monkeyFromPageRoute, monkeyHash, monkeyPageHash, monkeyTimelineHash } from "./monkeyLink";
 import { fullName, homeName, inIntrocage, placeName, staying } from "./places";
 import {
     enclosureFromRoute,
@@ -44,6 +44,7 @@ import Game from "./Game";
 import UpdatesPage from "./UpdatesPage";
 // (only loaded when it's opened: the rest of the app stays as quick)
 const StatisticsPage = lazy(() => import("./StatisticsPage"));
+const MonkeyTimeline = lazy(() => import("./MonkeyTimeline"));
 const AdminPage = lazy(() => import("./AdminPage"));
 const RecordsPage = lazy(() => import("./RecordsPage"));
 import { isRecordsRoute } from "./babyRecords";
@@ -792,7 +793,7 @@ function ShowPage({
     }, []);
     // Too tight for Filters, Sort, the count and the view switch on one
     // line (narrow phones, long sorts like "Age · Youngest first"): first
-    // the count loses "sanctuary monkeys" (.is-snug), then Filters loses its
+    // the count loses "monkeys" (.is-snug), then Filters loses its
     // word (.is-tight), then Sort becomes just an icon (.is-compact). Tried with all the words each time first, before the
     // screen is drawn, so it never flickers.
     useLayoutEffect(() => {
@@ -845,14 +846,11 @@ function ShowPage({
         },
     ].filter(Boolean);
 
-    // The count beside Sort: sanctuary monkeys only, unless the Bandits
-    // Quick Filter is on
-    const countBandits = filters.quick.includes("bandits");
-    // No filters and no search: the whole sanctuary
+    // No filters and no search: everyone
     const showingEveryone = activeFilters.length === 0 && !searchValue.trim();
-    const countedMonkeys = countBandits
-        ? visibleMonkeys.length
-        : visibleMonkeys.filter((m) => m.troop !== "Bandits").length;
+    // The count beside Sort: every monkey showing, the same as the pop-up's
+    // "3 of 711" (Statistics has the sanctuary's own total)
+    const countedMonkeys = visibleMonkeys.length;
 
     // While a modal is open, the page behind it can't be tabbed to or clicked
     // ("inert"). The PDF modal lives inside the nav, so the nav handles that one.
@@ -1017,9 +1015,14 @@ function ShowPage({
                 )
             ) : onMonkeyPage ? (
                 // (nothing while checking who's signed in, or leaving)
-                pageLocked ? null : (
+                pageLocked ? null : isTimelineRoute(route) ? (
+                    <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
+                        <MonkeyTimeline monkey={pageMonkey} monkeys={monkeys} enclosures={enclosures} inert={isAnyModalOpen} />
+                    </Suspense>
+                ) : (
                     <MonkeyPage
                         monkey={pageMonkey}
+                        timelineHref={pageMonkey ? monkeyTimelineHash(pageMonkey) : null}
                         staff={staff}
                         // (the Full Profile's Edit, everything: admins only.
                         // Editors use the pop-up's quick Edit, and Records)
@@ -1082,17 +1085,11 @@ function ShowPage({
                     />
                 </div>
                 <SortMenu sort={sort} onSort={sortBy} />
-                {/* How many sanctuary monkeys match: not the Bandits (the
-                    wild troop), unless their Quick Filter is on. (Screen
-                    readers hear the whole list's count from the status line
+                {/* How many monkeys are showing. (Screen readers hear the whole list's count from the status line
                     below, so this is for the eyes only) */}
                 <span
                     className="ShowPage-count"
-                    title={
-                        countBandits
-                            ? `${countedMonkeys} ${countedMonkeys === 1 ? "monkey" : "monkeys"}`
-                            : `${countedMonkeys} sanctuary ${countedMonkeys === 1 ? "monkey" : "monkeys"} (not counting the Bandits)`
-                    }
+                    title={`${countedMonkeys} ${countedMonkeys === 1 ? "monkey" : "monkeys"}`}
                     aria-hidden="true"
                 >
                     <MonkeysNavIcon size={16} aria-hidden="true" />
@@ -1101,7 +1098,7 @@ function ShowPage({
                         (Hidden when the row is too tight) */}
                     {showingEveryone && (
                         <span className="ShowPage-countLabel">
-                            sanctuary {countedMonkeys === 1 ? "monkey" : "monkeys"}
+                            {countedMonkeys === 1 ? "monkey" : "monkeys"}
                         </span>
                     )}
                 </span>

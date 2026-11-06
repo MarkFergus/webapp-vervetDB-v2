@@ -24,6 +24,8 @@ import {
     IconStethoscope,
     IconAlertTriangle,
     IconNotes,
+    IconPill,
+    IconTimelineEvent,
 } from "@tabler/icons-react";
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
@@ -43,6 +45,7 @@ import StatusUpdate from "./StatusUpdate";
 import useMonitoring from "./useMonitoring";
 import { LastSeen, useMissing } from "./MarkSeen";
 import { isNewArrival } from "./enclosures";
+import { lastDeworming } from "./timelineRules";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
 
@@ -145,7 +148,7 @@ function Tabs({ tab, onTab, counts = {} }) {
 // the archive (back: { href, label }), a banner with its status, and
 // Status Update (onStatusUpdate(monkey, { status, date, details }), async;
 // statusChoices: the statuses it can change to)
-function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices, places = [] }) {
+function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices, places = [], timelineHref = null }) {
     // (a new page starts at the top)
     useEffect(() => {
         window.scrollTo?.(0, 0);
@@ -163,6 +166,7 @@ function MonkeyPage({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUp
         <MonkeyRecord
             key={monkey.id ?? monkey.name}
             monkey={monkey}
+            timelineHref={timelineHref}
             staff={staff}
             onEdit={onEdit}
             onOpenCard={onOpenCard}
@@ -193,7 +197,7 @@ function StatusBanner({ monkey }) {
     );
 }
 
-function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [], places }) {
+function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatusUpdate, statusChoices = [], places, timelineHref }) {
     const isStaff = Boolean(staff?.canSee);
     const integration = useIntegration(monkey.id, staff);
     const injuries = useInjuries(monkey.id, staff);
@@ -330,6 +334,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Monitoring's rows, one each, the whole width
     const latestCondition = conditions[0] ?? null;
     const { conditionCheck, notes: monitoringNotes } = monitoring.value;
+    const lastDewormed = lastDeworming(records.entries);
     const monitoringRows = [
         {
             icon: IconEye,
@@ -379,6 +384,17 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     <span className="MonkeyPage-monitoringDate">· {dayText(latestCondition.date)}</span>
                 </>
             ) : null,
+        },
+        {
+            icon: IconPill,
+            label: "Last Deworming",
+            value: lastDewormed ? (
+                <>
+                    {lastDewormed.dewormer} <span className="MonkeyPage-monitoringDate">· {dayText(lastDewormed.date)}</span>
+                </>
+            ) : (
+                "None on record"
+            ),
         },
         { icon: IconAlertTriangle, label: "Priority Check", value: monitoring.loaded ? (conditionCheck ? "Yes" : "No") : null },
         {
@@ -442,7 +458,12 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     )}
                 </div>
 
-                <SectionNav jumps={jumps} onJump={jump} refresh={tab} />
+                <SectionNav
+                    jumps={jumps}
+                    onJump={jump}
+                    refresh={tab}
+                    link={isStaff && timelineHref ? { href: timelineHref, label: "Timeline", icon: IconTimelineEvent } : null}
+                />
 
                 {/* Profile: the photos beside the main facts (phones: the
                     photos first), then the bio and description */}

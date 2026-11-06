@@ -282,10 +282,9 @@ function MonkeyForm({
                     window.alert(`${saved.name} was saved, but the Monitoring wasn't: ${error.message} Please open Edit to add it again.`);
                 }
             }
-            // Tidy up: photos this monkey had, or that were uploaded here,
-            // but that aren't kept (only ones uploaded to our storage)
-            const before = [...(monkey?.img ?? []), ...uploadedHere.current];
-            deletePhotos(before.filter((url) => !saved.img.includes(url)));
+            // Tidy up: only photos uploaded just now and then taken off, never
+            // saved. (Saved photos taken off stay in storage, for their history)
+            deletePhotos(uploadedHere.current.filter((url) => !saved.img.includes(url)));
             // A new status: on to the Monkey Archive (its details are saved)
             if (leaving) {
                 const [y, m, d] = status.lastSeen.split("-").map(Number);
@@ -310,7 +309,8 @@ function MonkeyForm({
         try {
             await deleteMonkey(monkey.id);
             // Its uploaded photos go too
-            deletePhotos([...monkey.img, ...uploadedHere.current]);
+            // (their photos stay in storage: only ones added just now, never saved, go)
+            deletePhotos(uploadedHere.current);
             onDeleted(monkey.id);
         } catch (error) {
             setProblem(error.message);

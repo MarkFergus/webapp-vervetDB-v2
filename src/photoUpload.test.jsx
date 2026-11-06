@@ -311,13 +311,17 @@ describe("tidying up photos in storage", () => {
             img: [kept, dropped, IMGBB], bio: "", desc: "",
         };
         let onClose;
+        let onSaved;
+        let onDeleted;
 
         function setup() {
             const user = userEvent.setup();
             onClose = vi.fn();
+            onSaved = vi.fn();
+            onDeleted = vi.fn();
             render(
                 <MonkeyForm monkey={monkey} troops={["Goliath"]} troopIds={{ Goliath: 1 }}
-                    onClose={onClose} onSaved={() => {}} onDeleted={() => {}} />
+                    onClose={onClose} onSaved={onSaved} onDeleted={onDeleted} />
             );
             return { user };
         }
@@ -330,16 +334,14 @@ describe("tidying up photos in storage", () => {
             );
         }
 
-        test("saving deletes photos that were removed (and keeps the rest)", async () => {
+        test("saving keeps photos taken off in storage, for their history", async () => {
             const { user } = setup();
             await deletePhoto(user, 2); // dropped
             await deletePhoto(user, 2); // the ImgBB one
             await user.click(screen.getByRole("button", { name: "Save" }));
 
-            await waitFor(() => expect(deletePhotos).toHaveBeenCalled());
-            // The ImgBB link is passed along too, but deletePhotos ignores it (tested above)
-            expect(deletePhotos).toHaveBeenCalledWith([dropped, IMGBB]);
-            expect(deletePhotos.mock.calls[0][0]).not.toContain(kept);
+            await waitFor(() => expect(onSaved).toHaveBeenCalled());
+            expect(deletePhotos.mock.calls.flatMap(([urls]) => urls)).toEqual([]);
         });
 
         test("uploaded then removed before saving: deleted on save", async () => {
@@ -361,11 +363,12 @@ describe("tidying up photos in storage", () => {
             expect(onClose).toHaveBeenCalled();
         });
 
-        test("deleting the monkey deletes its photos", async () => {
+        test("deleting the monkey keeps their photos in storage", async () => {
             const { user } = setup();
             await user.click(screen.getByRole("button", { name: "Delete" }));
             await user.click(screen.getByRole("button", { name: "Delete" }));
-            await waitFor(() => expect(deletePhotos).toHaveBeenCalledWith([kept, dropped, IMGBB]));
+            await waitFor(() => expect(onDeleted).toHaveBeenCalled());
+            expect(deletePhotos.mock.calls.flatMap(([urls]) => urls)).toEqual([]);
         });
     });
 });

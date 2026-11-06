@@ -53,25 +53,14 @@ test("the Bandits Quick Filter has the bandit icon (just the name for screen rea
     expect(quickPill("Top Section").querySelector("svg")).toBeNull();
 });
 
-test("the count beside Sort leaves out the Bandits, unless their Quick Filter is on", async () => {
-    const user = userEvent.setup();
-    const base = { sex: "female", chip: "1", year: 2015, img: ["x.jpg"], bio: "", desc: "" };
-    const monkeys = [
-        { ...base, id: 1, name: "Wildy", troop: "Bandits", introcage: null, enclosure: null },
-        { ...base, id: 2, name: "Scruff", troop: "Bandits", introcage: null, enclosure: null },
-        { ...base, id: 3, name: "Rocio", troop: "Goliath", introcage: null, enclosure: "Goliath" },
-    ];
-    render(<ShowPage monkeys={monkeys} troops={["All Troops", "Goliath", "Bandits"]} />);
+test("the count beside Sort counts everyone showing, the Bandits too", async () => {
+    const { user } = setup();
     const count = () => document.querySelector(".ShowPage-count");
-    // No filters: says who is counted
-    expect(count()).toHaveTextContent(/^1sanctuary monkey$/);
-    expect(count()).toHaveAttribute("title", "1 sanctuary monkey (not counting the Bandits)");
-    expectShowing(3); // (the list itself still has everyone)
-
+    expect(count()).toHaveTextContent(`${monkeysArr.length}monkeys`);
     await user.click(filtersButton());
     await user.click(quickPill("Bandits"));
-    expect(count()).toHaveTextContent(/^2$/); // (a filter on: just the number)
-    expect(count()).toHaveAttribute("title", "2 monkeys");
+    const bandits = monkeysArr.filter((m) => m.troop === "Bandits").length;
+    expect(count()).toHaveTextContent(new RegExp(`^${bandits}$`));
 });
 
 test("birth years: this year back to 1997", async () => {

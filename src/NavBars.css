@@ -199,9 +199,8 @@
     height: var(--bottom-bar);
     padding-bottom: env(safe-area-inset-bottom);
     font-family: var(--font-ui);
-    background-color: var(--bar);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* (solid: names on the page behind can't show through its labels) */
+    background-color: var(--bg);
     border-top: 1px solid var(--wash-soft);
 }
 
