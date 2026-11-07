@@ -352,6 +352,9 @@ function EnterForm({ kind, babies: babiesNow, monkeys, enclosures, moves, record
 // a late weighing sits where it fell; the latest marked with a dot. Two or
 // more to draw.
 //   history: newest first (historyFor)
+// A chart's date, short: "24 Oct" (without the day's name)
+const sparkDate = (date) => dayLabel(date).replace(/^[A-Za-z]+,? /, "");
+
 function Sparkline({ kind, monkey, history }) {
     const boxRef = useRef(null);
     const [width, setWidth] = useState(300);
@@ -390,6 +393,11 @@ function Sparkline({ kind, monkey, history }) {
                 <path className="RecordsPage-sparkLine" d={line} />
                 <circle className="RecordsPage-sparkDot" cx={ex} cy={ey} r={4} />
             </svg>
+            {/* (how long a stretch it covers: the first and last dates) */}
+            <div className="RecordsPage-sparkDates" aria-hidden="true">
+                <span>{sparkDate(points[0].date)}</span>
+                <span>{sparkDate(points.at(-1).date)}</span>
+            </div>
         </div>
     );
 }

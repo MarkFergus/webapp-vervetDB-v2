@@ -932,6 +932,33 @@ describe("completing a sheet", () => {
         console.error.mockRestore();
     });
 
+    test("an approved sheet not emailed: admins see so, and Email Sheet sends it; a failure's shown", async () => {
+        const sheet = { ...ready(), status: "approved", photos: ["1/a.jpg"], photoEmailedAt: null };
+        loadDewormingSheets.mockResolvedValue([sheet]);
+        emailDewormingSheet.mockRejectedValueOnce(new Error("The email couldn't be sent."));
+        const user = userEvent.setup();
+        open(ADMIN);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        expect(screen.getByText("Sheet not emailed yet.")).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "Email Sheet" }));
+        expect(await screen.findByRole("alert")).toHaveTextContent("The email couldn't be sent.");
+
+        // Sent: it says when, and offers it again
+        loadDewormingSheets.mockResolvedValue([{ ...sheet, photoEmailedAt: "2026-11-07T10:00:00Z" }]);
+        await user.click(screen.getByRole("button", { name: "Email Sheet" }));
+        expect(await screen.findByText(/^Sheet emailed .* 7 Nov\.$/)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Email Again" })).toBeInTheDocument();
+        expect(emailDewormingSheet).toHaveBeenCalledTimes(2);
+    });
+
+    test("staff don't get Email Sheet", async () => {
+        loadDewormingSheets.mockResolvedValue([{ ...ready(), status: "approved", photos: ["1/a.jpg"], photoEmailedAt: null }]);
+        const user = userEvent.setup();
+        open(EDITOR);
+        await user.click(await screen.findByRole("button", { name: /6-Month Deworming/ }));
+        expect(screen.queryByRole("button", { name: "Email Sheet" })).not.toBeInTheDocument();
+    });
+
     test("an admin changing a submitted sheet: Save, no Submit (it's waiting for Approve)", async () => {
         const full = { result: "full", food: "JS" };
         loadDewormingSheets.mockResolvedValue([

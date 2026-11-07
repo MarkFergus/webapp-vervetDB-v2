@@ -5,6 +5,8 @@ import {
     IconChevronLeft,
     IconCurrentLocation,
     IconMap2,
+    IconMapPin,
+    IconMapPinExclamation,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import CloseButton from "./CloseButton";
@@ -15,7 +17,11 @@ import { MAP_HEIGHT, MAP_WIDTH, loadMap, wholeMap } from "./SanctuaryMap";
 import { placeCard, placesByLabel } from "./mapPlaces";
 import { UNITS_PER_METRE, mapPointOf, onMap } from "./mapGeo";
 import { enclosureHash, isInside } from "./enclosures";
+import { fullName } from "./places";
 import { thumbUrl } from "./photoPaths";
+import { loadMaintenanceIssues } from "./monkeyData";
+import { AddPhotosButton, IssueFixDialog, IssuePhotos, IssueReportDialog, UrgentBadge, reportedWords } from "./MaintenanceIssues";
+import { issuePlace, openIssues, pinAt } from "./issueRules";
 import { fallbackTo } from "./photoFallback";
 import "./SanctuaryMap.css";
 import "./WholeMap.css";
@@ -31,6 +37,8 @@ import "./WholeMap.css";
 // dot where the phone is (mapGeo.js), with
 // a circle for how sure it is. The position stays on the phone, and it's
 // only followed while the map is open with My Location on.
+// Staff (canIssues): open maintenance issues as pins, with Issues to hide them,
+// and Report Issue: tap the spot (again to move it), then say what's wrong.
 
 // The whole page, until the drawing on it has been measured (the map file
 // is an A4 page with empty margins around the drawing)
@@ -60,8 +68,12 @@ const PHONE = "(max-width: 624px)";
 // How long a card takes to slide back out (as in WholeMap.css)
 const CARD_OUT_MS = 220;
 
+// A pin, its tip on the spot; 1 unit is a screen pixel (see pinScale)
+const PIN_PATH = "M0 0C-3-9-11-13-11-21A11 11 0 1 1 11-21C11-13 3-9 0 0Z";
+
 //   enclosures, monkeys: the places to tap, and who lives there
-function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
+//   canIssues: staff who can see and report maintenance issues
+function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false }) {
     const closeRef = useRef(null);
     const viewRef = useRef(null);
     const [markup, setMarkup] = useState(undefined); // null: couldn't load
@@ -90,6 +102,26 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
         return () => clearTimeout(done);
     }, [leaving]);
     const labels = useMemo(() => placesByLabel(enclosures), [enclosures]);
+
+    // Maintenance issues: the open ones; whether their pins show; the pin
+    // tapped; reporting: { point, place, nearby } (no point: waiting for a tap);
+    // the pop-up: "report" or "fix"
+    const [issues, setIssues] = useState([]);
+    const [pinsOn, setPinsOn] = useState(true);
+    const [pickedIssue, setPickedIssue] = useState(null);
+    const [reporting, setReporting] = useState(null);
+    const [issueDialog, setIssueDialog] = useState(null);
+    useEffect(() => {
+        if (!canIssues) return;
+        let cancelled = false;
+        loadMaintenanceIssues()
+            .then((list) => !cancelled && setIssues(openIssues(list)))
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, [canIssues]);
+    const pins = canIssues && pinsOn ? issues.filter((i) => i.mapX != null) : [];
 
     // My Location: following (on / off); where the phone is ({ x, y } on the
     // map and accuracy: metres); and what's happening ("finding", "here",
@@ -143,9 +175,16 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
     }
 
     useDialog(true, closeRef, {
-        // (Escape: the card first, then the map)
-        onClose: () => (picked ? closeCard() : onClose()),
-        onKeyDown: (event) => map.onKeyDown(event),
+        // (Escape: a pop-up looks after itself; then reporting, the card, the map)
+        onClose: () => {
+            if (issueDialog) return;
+            if (reporting) setReporting(null);
+            else if (pickedIssue) setPickedIssue(null);
+            else if (picked) closeCard();
+            else onClose();
+        },
+        // (typing in a pop-up isn't moving the map)
+        onKeyDown: (event) => !issueDialog && map.onKeyDown(event),
     });
 
     useEffect(() => {
@@ -235,11 +274,48 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
         return () => lifted.remove();
     }, [picked, markup]);
 
-    // A tap: the place under it (or none: the card goes)
+    // The place whose shape is nearest a tap (screen pixels), or null
+    function nearestPlace(x, y) {
+        let best = null;
+        let bestDistance = Infinity;
+        for (const el of svgRef.current?.querySelectorAll("[data-place]") ?? []) {
+            if (el.closest(".WholeMap-lifted")) continue;
+            const box = el.getBoundingClientRect();
+            const distance = Math.hypot(Math.max(box.left - x, 0, x - box.right), Math.max(box.top - y, 0, y - box.bottom));
+            const place = enclosures.find((e) => e.id === Number(el.getAttribute("data-place")));
+            if (place && distance < bestDistance) {
+                best = place;
+                bestDistance = distance;
+            }
+        }
+        return best;
+    }
+
+    // A tap: reporting, the spot; a pin, its card; or the place under it (or
+    // none: the card goes)
     function tapAt(x, y) {
         const shape = document.elementFromPoint?.(x, y)?.closest?.("[data-place]");
         const id = shape ? Number(shape.getAttribute("data-place")) : null;
         const place = enclosures.find((e) => e.id === id);
+        const box = viewRef.current?.getBoundingClientRect();
+        if (reporting) {
+            if (!box?.width) return;
+            const guess = place ? null : nearestPlace(x, y);
+            setReporting({
+                point: [view.x + ((x - box.left) / box.width) * view.width, view.y + ((y - box.top) / box.height) * view.height],
+                place: issuePlace(place ?? guess, enclosures),
+                nearby: !place && Boolean(guess),
+            });
+            return;
+        }
+        const pin = box ? pinAt(pins, x - box.left, y - box.top, view, { width: box.width, height: box.height }) : null;
+        if (pin) {
+            setPicked(null);
+            setLeaving(false);
+            setPickedIssue(pin);
+            return;
+        }
+        setPickedIssue(null);
         if (!place) return closeCard();
         // (another place: its card slides in, even if one was leaving)
         setLeaving(false);
@@ -247,6 +323,10 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
     }
 
     const card = picked && placeCard(picked, enclosures, monkeys);
+    // (one screen pixel, in the map's units)
+    const pinScale = view.width / size.width;
+    const issueCardPlace = pickedIssue && enclosures.find((e) => e.id === pickedIssue.enclosureId);
+    const issueDraft = reporting?.point ?? null;
 
     return createPortal(
         <div
@@ -315,9 +395,44 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
                                     />
                                 </svg>
                             )}
+                            {/* Maintenance issues: pins, the same size at any zoom
+                                (tapped through the map: see tapAt) */}
+                            {(pins.length > 0 || issueDraft) && (
+                                <svg
+                                    className="WholeMap-here WholeMap-pins"
+                                    viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
+                                    aria-hidden="true"
+                                >
+                                    {!reporting &&
+                                        pins.map((issue) => (
+                                            <g
+                                                key={issue.id}
+                                                data-issue={issue.id}
+                                                className={`WholeMap-pin${issue.urgent ? " is-urgent" : ""}${pickedIssue?.id === issue.id ? " is-picked-pin" : ""}`}
+                                                transform={`translate(${issue.mapX} ${issue.mapY}) scale(${pinScale})`}
+                                            >
+                                                <path d={PIN_PATH} />
+                                                {issue.urgent ? (
+                                                    <path className="WholeMap-pinMark" d="M-1.6-27H1.6L1-20H-1ZM-1.7-17.5A1.7 1.7 0 1 0 1.7-17.5A1.7 1.7 0 1 0-1.7-17.5Z" />
+                                                ) : (
+                                                    <circle className="WholeMap-pinMark" cy={-21} r={4} />
+                                                )}
+                                            </g>
+                                        ))}
+                                    {issueDraft && (
+                                        <g
+                                            className="WholeMap-pin is-draft"
+                                            transform={`translate(${issueDraft[0]} ${issueDraft[1]}) scale(${pinScale})`}
+                                        >
+                                            <path d={PIN_PATH} />
+                                            <circle className="WholeMap-pinMark" cy={-21} r={4} />
+                                        </g>
+                                    )}
+                                </svg>
+                            )}
                         </div>
                         {/* What My Location is doing, when there's no dot */}
-                        <p className="WholeMap-location" role="status">
+                        <p className={`WholeMap-location${canIssues ? " has-issues" : ""}`} role="status">
                             {LOCATION_MESSAGES[locationStatus] ?? ""}
                         </p>
                         {/* My Location: a round button floating on the map,
@@ -333,6 +448,103 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
                         >
                             <IconCurrentLocation size={24} stroke={2} aria-hidden="true" />
                         </button>
+                        {/* Staff: Report Issue, and Issues to show or hide the
+                            pins, bottom left */}
+                        {canIssues && !reporting && (
+                            <div className="WholeMap-issueTools">
+                                <button
+                                    type="button"
+                                    className="Modal-edit is-action"
+                                    onClick={() => {
+                                        setPickedIssue(null);
+                                        closeCard();
+                                        setReporting({ point: null, place: null, nearby: false });
+                                    }}
+                                >
+                                    <IconMapPinExclamation size={18} aria-hidden="true" />
+                                    Report Issue
+                                </button>
+                                <button
+                                    type="button"
+                                    className="Modal-edit is-soft WholeMap-issueToggle"
+                                    aria-pressed={pinsOn}
+                                    onClick={() => {
+                                        setPinsOn((on) => !on);
+                                        setPickedIssue(null);
+                                    }}
+                                >
+                                    <IconMapPin size={18} aria-hidden="true" />
+                                    {pinsOn ? "Hide" : "Show"} Issues ({issues.length})
+                                </button>
+                            </div>
+                        )}
+                        {/* Reporting: where it's up to */}
+                        {reporting && (
+                            <div className="WholeMap-reporting" role="status">
+                                <p>
+                                    {reporting.point ? (
+                                        <>
+                                            <b>{reporting.place ? fullName(reporting.place.name) : "Pin placed"}</b>
+                                            {reporting.nearby && " (nearest)"}
+                                            <br />
+                                            Tap again to move the pin.
+                                        </>
+                                    ) : (
+                                        "Tap the map where the issue is."
+                                    )}
+                                </p>
+                                <div>
+                                    {reporting.point && (
+                                        <button type="button" className="Modal-edit is-confirm" onClick={() => setIssueDialog("report")}>
+                                            Continue
+                                        </button>
+                                    )}
+                                    <button type="button" className="Modal-edit is-cancel" onClick={() => setReporting(null)}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        {/* The tapped pin: what's wrong, who said, Mark Fixed */}
+                        {pickedIssue && (
+                            <div className="WholeMap-cardSpot">
+                                <div
+                                    key={pickedIssue.id}
+                                    className="WholeMap-card WholeMap-issueCard"
+                                    role="region"
+                                    aria-label={`Issue: ${pickedIssue.details}`}
+                                >
+                                    <div className="WholeMap-cardText">
+                                        <h3>{issueCardPlace ? fullName(issueCardPlace.name) : "Issue"}</h3>
+                                        {pickedIssue.urgent && <UrgentBadge />}
+                                        <p className="WholeMap-issueDetails">{pickedIssue.details}</p>
+                                        <IssuePhotos paths={pickedIssue.photoPaths} />
+                                        <p className="WholeMap-cardCount">{reportedWords(pickedIssue)}</p>
+                                        <div className="WholeMap-issueButtons">
+                                            <button type="button" className="Modal-edit is-confirm" onClick={() => setIssueDialog("fix")}>
+                                                Mark Fixed
+                                            </button>
+                                            <AddPhotosButton
+                                                issue={pickedIssue}
+                                                onAdded={(changed) => {
+                                                    setPickedIssue(changed);
+                                                    setIssues((list) => list.map((i) => (i.id === changed.id ? changed : i)));
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="WholeMap-cardClose"
+                                        onClick={() => setPickedIssue(null)}
+                                        aria-label="Close the issue"
+                                        title="Close"
+                                    >
+                                        <IconChevronLeft size={20} stroke={2} aria-hidden="true" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                         {/* The tapped place: its photo, name, what it is,
                             and the way to its page */}
                         {card && (
@@ -391,6 +603,31 @@ function WholeMap({ onClose, enclosures = [], monkeys = [] }) {
                     </div>
                 )}
             </div>
+            {issueDialog === "report" && (
+                <IssueReportDialog
+                    enclosures={enclosures}
+                    start={reporting}
+                    onSaved={(issue) => {
+                        setIssues((list) => openIssues([issue, ...list]));
+                        setPinsOn(true);
+                        setIssueDialog(null);
+                        setReporting(null);
+                    }}
+                    onCancel={() => setIssueDialog(null)}
+                />
+            )}
+            {issueDialog === "fix" && pickedIssue && (
+                <IssueFixDialog
+                    issue={pickedIssue}
+                    enclosures={enclosures}
+                    onDone={({ issue }) => {
+                        setIssues((list) => list.filter((i) => i.id !== issue.id));
+                        setIssueDialog(null);
+                        setPickedIssue(null);
+                    }}
+                    onCancel={() => setIssueDialog(null)}
+                />
+            )}
         </div>,
         document.body
     );

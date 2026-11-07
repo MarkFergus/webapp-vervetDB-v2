@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 // Signing in and out. Supabase is replaced with a pretend version here, so no
 // real accounts are involved.
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -303,7 +304,7 @@ describe("the account menu (computers)", () => {
         const themes = within(within(menu).getByRole("group", { name: "Theme" })).getAllByRole("menuitemradio");
         expect(themes.map((t) => [t.textContent, t.getAttribute("aria-checked")])).toEqual([
             ["Neon Night", "true"],
-            ["Night Savannah", "false"],
+            ["Bearded Coffee", "false"],
             ["Acacia", "false"],
             ["Pastel Safari", "false"],
         ]);
@@ -314,10 +315,10 @@ describe("the account menu (computers)", () => {
         expect(within(menu).getByRole("menuitemradio", { name: "Acacia" })).toHaveAttribute("aria-checked", "true");
         await user.click(within(menu).getByRole("menuitemradio", { name: "Pastel Safari" }));
         expect([root.dataset.theme, root.dataset.palette]).toEqual(["light", "pastel-safari"]);
-        await user.click(within(menu).getByRole("menuitemradio", { name: "Night Savannah" }));
-        expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", "night-savannah"]);
-        expect(localStorage.getItem("vervetdb-theme")).toBe("night-savannah");
-        expect(within(menu).getByRole("menuitemradio", { name: "Night Savannah" })).toHaveAttribute("aria-checked", "true");
+        await user.click(within(menu).getByRole("menuitemradio", { name: "Bearded Coffee" }));
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", "bearded-coffee"]);
+        expect(localStorage.getItem("vervetdb-theme")).toBe("bearded-coffee");
+        expect(within(menu).getByRole("menuitemradio", { name: "Bearded Coffee" })).toHaveAttribute("aria-checked", "true");
         await user.click(within(menu).getByRole("menuitemradio", { name: "Neon Night" }));
         expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", undefined]);
 
@@ -325,6 +326,19 @@ describe("the account menu (computers)", () => {
         await user.click(within(menu).getByRole("menuitem", { name: "Account" }));
         expect(dialog()).toHaveAccessibleName("Account");
         expect(screen.queryByRole("menu")).toBeNull();
+    });
+
+    test("someone who chose Night Savannah moves to Bearded Coffee as the page starts", () => {
+        const html = readFileSync("index.html", "utf8");
+        const script = html.match(/<script>\s*(try \{[\s\S]*?vervetdb-theme[\s\S]*?)<\/script>/)[1];
+        const root = document.documentElement;
+        localStorage.setItem("vervetdb-theme", "night-savannah");
+        new Function(script)();
+        expect(localStorage.getItem("vervetdb-theme")).toBe("bearded-coffee");
+        expect([root.dataset.theme, root.dataset.palette]).toEqual(["dark", "bearded-coffee"]);
+        delete root.dataset.palette;
+        root.dataset.theme = "dark";
+        localStorage.removeItem("vervetdb-theme");
     });
 
     test("Sign Out signs out; the circle then opens the sign-in pop-up", async () => {

@@ -5,6 +5,7 @@ import {
     IconPencil,
     IconPlus,
     IconFileTypePdf,
+    IconMail,
     IconRefresh,
     IconSend,
     IconTrash,
@@ -43,6 +44,7 @@ import { downloadBlob } from "./canvasHelpers";
 import ConfirmBubble from "./ConfirmBubble";
 import {
     AddPhotoButton,
+    emailSheet,
     ResultsForm,
     ResultsTable,
     Review,
@@ -694,6 +696,19 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
     // (staff completing it: Add Photo and Submit too)
     const completing = canEnter && sheet.status === "ready";
 
+    async function emailNow() {
+        setBusy(true);
+        setProblem(null);
+        try {
+            await emailSheet(sheet, photos);
+            await onChanged();
+        } catch (error) {
+            setProblem(error.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
     // The photos (added or removed), or Submit: saved with the results
     async function saveSheet(changes, submit = false) {
         setBusy(true);
@@ -748,6 +763,18 @@ function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged })
                     Approved{sheet.approvedByName ? ` by ${sheet.approvedByName}` : ""}: in each monkey's Medical
                     records.
                 </p>
+            )}
+            {/* Has the paper sheet gone out? (admins: send it, or send it again) */}
+            {sheet.status === "approved" && canPrepare && photos.length > 0 && (
+                <div className="Deworming-emailed">
+                    <p className="Deworming-meta">
+                        {sheet.photoEmailedAt ? `Sheet emailed ${dayLabel(dayText(new Date(sheet.photoEmailedAt)))}.` : "Sheet not emailed yet."}
+                    </p>
+                    <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={emailNow}>
+                        <IconMail size={16} aria-hidden="true" />
+                        {busy ? "Sending…" : sheet.photoEmailedAt ? "Email Again" : "Email Sheet"}
+                    </button>
+                </div>
             )}
             {sheet.instructions && <p className="Deworming-note">{sheet.instructions}</p>}
             {sheet.staffNames && <p className="Deworming-meta">Staff: {sheet.staffNames}</p>}

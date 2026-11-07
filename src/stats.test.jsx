@@ -1,9 +1,9 @@
 // The Statistics page: its figures (stats.js) and the page itself
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { STAT_AGE_GROUPS, babyAgeText, milkPerDay, weekStart, weightPerWeek, weightsByDate, youngestOldest, amPlatesFor, countsBySection, sectionLabel, banditMonkeys, countsByEnclosure, monkeysIn, percent, ranked, sexByTroop, spaceByEnclosure, statsFor } from "./stats";
+import { STAT_AGE_GROUPS, ageInWeeks, babyAgeText, heaviestBaby, highestMilk, largestWeeklyGain, milkByAge, seasonBabies, milkAmount, totalMilk, youngestArrival, weightByAge, youngestOldest, amPlatesFor, countsBySection, sectionLabel, banditMonkeys, countsByEnclosure, monkeysIn, percent, ranked, sexByTroop, spaceByEnclosure, statsFor } from "./stats";
 import { currentBabySeason } from "./ages";
-import StatisticsPage from "./StatisticsPage";
+import StatisticsPage, { BabyCareStats } from "./StatisticsPage";
 import ShowPage from "./ShowPage";
 import { BUILT_IN_DATA } from "./monkeyData";
 
@@ -249,17 +249,6 @@ describe("Baby Care", () => {
         expect([youngest.name, oldest.name]).toEqual(["Muse", "Pip"]);
     });
 
-    test("milk per day (all together, or one baby) and weight per week (each one's last weighing; all: their average)", () => {
-        expect(weekStart("2026-10-22")).toBe("2026-10-19");
-        expect(milkPerDay(FEEDS)).toEqual([
-            { x: "2026-10-20", y: 250, notes: [] },
-            { x: "2026-10-21", y: 120, notes: ["Skipped the 2am feed"] },
-        ]);
-        expect(milkPerDay(FEEDS, 22)).toEqual([{ x: "2026-10-20", y: 150, notes: [] }]);
-        expect(weightPerWeek(WEIGHTS, 21)).toEqual([{ x: "2026-10-12", y: 400 }, { x: "2026-10-19", y: 450 }]);
-        expect(weightPerWeek(WEIGHTS)).toEqual([{ x: "2026-10-12", y: 400 }, { x: "2026-10-19", y: 550 }]);
-    });
-
     const open = async (records) => {
         const user = userEvent.setup();
         render(<StatisticsPage monkeys={[...MONKEYS, ...BABIES]} enclosures={PLACES} sections={["Top", "Care Units"]} babyRecords={records} />);
@@ -269,11 +258,24 @@ describe("Baby Care", () => {
     };
     const tile = (label) => screen.getByText(label, { selector: "dt" }).closest("div");
 
+    test("this season's Baby Care babies, wherever they are now; not those born on site or arriving elsewhere", () => {
+        const places = [BABY_CARE_UNIT, { id: 90, name: "Dreamland", type: "area", parentId: 9 }, { id: 80, name: "Quarantine", type: "care_unit", parentId: null }];
+        const list = [
+            { id: 1, year: SEASON, enclosure: "Baby Care", troop: null }, // there now, arrival not recorded
+            { id: 2, year: SEASON, enclosure: "Koko", troop: "Koko", arrivalPlaceId: 90 }, // moved on
+            { id: 3, year: SEASON, enclosure: "Koko", troop: "Koko" }, // born on site
+            { id: 4, year: SEASON, enclosure: "Royal", troop: "Royal", arrivalPlaceId: 80 }, // to Quarantine
+            { id: 5, year: SEASON - 1, enclosure: "Baby Care", troop: null, arrivalPlaceId: 90 }, // last season
+            { id: 6, year: SEASON, troop: "Bandits" },
+        ];
+        expect(seasonBabies(list, places).map((m) => m.id)).toEqual([1, 2]);
+    });
+
     test("the selector: Baby Care second, but not Quarantine or Sickbay (for now)", async () => {
         const { select } = await open(undefined);
         const names = [...select.options].map((o) => o.textContent);
         // (Baby Care second, under no section heading)
-        expect(names.slice(0, 2)).toEqual(["Whole Sanctuary", "Baby Care"]);
+        expect(names.slice(0, 2)).toEqual(["Whole Sanctuary", `Baby Care ${SEASON}`]);
         expect(select.options[1].parentElement).toBe(select);
         expect(names).not.toContain("Quarantine");
         expect([...select.querySelectorAll("optgroup")].map((g) => g.label)).not.toContain("Care Units");
@@ -282,40 +284,147 @@ describe("Baby Care", () => {
     test("its own tiles, no sections, introcages or age groups; the charts wait for records", async () => {
         await open(undefined);
         expect(tile("Babies")).toHaveTextContent("3");
-        expect(tile("Female : male")).toHaveTextContent("2 : 1");
-        expect(tile("Youngest baby")).toHaveTextContent("Muse");
-        expect(tile("Oldest baby")).toHaveTextContent("Pip");
-        expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Milk intake per day", "Weight per week"]);
-        expect(screen.getByText(/No milk records yet/)).toBeInTheDocument();
-        expect(screen.getByText(/No weights recorded yet/)).toBeInTheDocument();
+        expect(screen.getByText("67% female, 33% male")).toBeInTheDocument();
+        expect(tile("Highest milk total")).toHaveTextContent("no milk records yet");
+        expect(tile("Heaviest weight")).toHaveTextContent("no weights yet");
+        expect(tile("Largest weekly gain")).toHaveTextContent("needs two weighings");
+        expect(tile("Youngest baby")).toHaveTextContent(/Muse$/);
+        expect(tile("Oldest baby")).toHaveTextContent(/Pip$/);
+        expect(tile("Youngest arrival")).toHaveTextContent("arrival dates not recorded");
+        expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Female and male", "Milk by age", "Weight by age"]);
+        expect(screen.getByText("No milk records yet for babies with a birth date.")).toBeInTheDocument();
+        expect(screen.getByText("No weights recorded yet for babies with a birth date.")).toBeInTheDocument();
     });
 
-    test("with records: line charts, all babies or one; the arrow keys step along a line", async () => {
-        const { user } = await open({ feeds: FEEDS, weights: WEIGHTS });
-        const milk = screen.getByRole("img", { name: /^Milk intake per day: 2 points, the latest 120 ml/ });
+    test("total milk: these babies' only, in ml until 5 figures, then litres", () => {
+        const babies = [{ id: 1 }, { id: 2 }];
+        const feeds = [{ monkeyId: 1, ml: 600 }, { monkeyId: 2, ml: 650 }, { monkeyId: 9, ml: 999 }];
+        expect(totalMilk(feeds, babies)).toBe(1250);
+        expect(milkAmount(850)).toBe("850 ml");
+        expect(milkAmount(9999)).toBe("9,999 ml");
+        expect(milkAmount(10000)).toBe("10.0 L");
+        expect(milkAmount(12400)).toBe("12.4 L");
+    });
+
+    test("youngest arrival: the least age on arriving, with their dates", () => {
+        const babies = [
+            { id: 1, name: "Muse", birthDate: "2026-09-21", arrivalDate: "2026-10-18" },
+            { id: 2, name: "Masko", birthDate: "2026-10-25", arrivalDate: "2026-10-27" },
+            { id: 3, name: "No Dates" },
+            { id: 4, name: "Mistyped", birthDate: "2026-10-25", arrivalDate: "2026-10-01" },
+        ];
+        expect(youngestArrival(babies)).toMatchObject({ baby: babies[1], days: 2, age: "2 days old", date: "2026-10-27" });
+        expect(youngestArrival([{ birthDate: "2026-10-25", arrivalDate: "2026-10-25" }])).toMatchObject({ age: "Same day" });
+        expect(youngestArrival(babies.slice(2, 3))).toBeNull();
+    });
+
+    test("by age: pick a baby on one graph, their line against the average; the other's left as it is", async () => {
+        const monkeys = [...MONKEYS, ...BABIES];
+        const user = userEvent.setup();
+        render(
+            <BabyCareStats
+                babies={BABIES}
+                monkeys={monkeys}
+                records={{ feeds: FEEDS.filter((f) => f.monkeyId === 21 || f.monkeyId === 22), weights: WEIGHTS }}
+            />
+        );
+        const pick = screen.getByRole("combobox", { name: "Compare a baby on Milk by age" });
+        expect(screen.queryByRole("list", { name: "Lines" })).not.toBeInTheDocument();
+        await user.selectOptions(pick, "21");
+        expect(within(screen.getByRole("list", { name: "Lines" })).getByText("Muse")).toBeInTheDocument();
+        expect(screen.getByRole("combobox", { name: "Compare a baby on Weight by age" })).toHaveValue("");
+    });
+
+    test("largest weekly gain: between a weighing and the next; not across a long gap, or a loss", () => {
+        const babies = [{ id: 1, name: "Muse" }, { id: 2, name: "Masko" }];
+        const weights = [
+            { monkeyId: 1, date: "2026-10-01", grams: 500 },
+            { monkeyId: 1, date: "2026-10-08", grams: 560 },
+            // (a month later: not a week's gain)
+            { monkeyId: 1, date: "2026-11-08", grams: 900 },
+            { monkeyId: 2, date: "2026-10-01", grams: 400 },
+            { monkeyId: 2, date: "2026-10-09", grams: 485 },
+            { monkeyId: 2, date: "2026-10-16", grams: 450 },
+            // (not one of these babies)
+            { monkeyId: 9, date: "2026-10-01", grams: 100 },
+            { monkeyId: 9, date: "2026-10-08", grams: 900 },
+        ];
+        expect(largestWeeklyGain(weights, babies)).toEqual({ baby: babies[1], gain: 85, date: "2026-10-09" });
+        expect(largestWeeklyGain(weights.slice(0, 1), babies)).toBeNull();
+        expect(largestWeeklyGain([{ monkeyId: 1, date: "2026-10-01", grams: 500 }, { monkeyId: 1, date: "2026-10-08", grams: 480 }], babies)).toBeNull();
+    });
+
+    test("trophies: the highest single day's milk, and the heaviest by their latest weighing; only these babies", () => {
+        const babies = [{ id: 1, name: "Muse" }, { id: 2, name: "Masko" }];
+        const feeds = [
+            { monkeyId: 1, date: "2026-10-02", ml: 300 },
+            { monkeyId: 2, date: "2026-10-01", ml: 300 },
+            { monkeyId: 2, date: "2026-10-03", ml: 100 },
+            { monkeyId: 9, date: "2026-10-03", ml: 999 },
+        ];
+        expect(highestMilk(feeds, babies)).toEqual({ baby: babies[1], ml: 300, date: "2026-10-01" });
+        const weights = [
+            { monkeyId: 1, date: "2026-10-01", grams: 900 },
+            { monkeyId: 1, date: "2026-10-08", grams: 500 },
+            { monkeyId: 2, date: "2026-10-08", grams: 600 },
+            { monkeyId: 9, date: "2026-10-08", grams: 9000 },
+        ];
+        expect(heaviestBaby(weights, babies)).toEqual({ baby: babies[1], grams: 600, date: "2026-10-08" });
+        expect(highestMilk([], babies)).toBeNull();
+        expect(heaviestBaby([], babies)).toBeNull();
+    });
+
+    test("by age: a baby's first week is week 0; none without a birth date, or before it", () => {
+        expect(ageInWeeks("2026-01-01", "2026-01-01")).toBe(0);
+        expect(ageInWeeks("2026-01-01", "2026-01-07")).toBe(0);
+        expect(ageInWeeks("2026-01-01", "2026-01-08")).toBe(1);
+        expect(ageInWeeks("2026-01-01", "2025-12-31")).toBeNull();
+        expect(ageInWeeks(null, "2026-01-01")).toBeNull();
+    });
+
+    test("milk by age: each baby's average that week, then the average across them, past babies too", () => {
+        const monkeys = [{ id: 1, birthDate: "2026-01-01" }, { id: 2, birthDate: "2025-06-01" }, { id: 3 }];
+        const feeds = [
+            { monkeyId: 1, date: "2026-01-01", ml: 100 },
+            { monkeyId: 1, date: "2026-01-02", ml: 200 },
+            { monkeyId: 2, date: "2025-06-03", ml: 50 },
+            { monkeyId: 1, date: "2026-01-09", ml: 300 },
+            // (no birth date: left out)
+            { monkeyId: 3, date: "2026-01-01", ml: 999 },
+        ];
+        expect(milkByAge(feeds, monkeys, 1)).toEqual({
+            babies: 2,
+            points: [
+                { x: 0, y: 100, babies: 2, own: 150 },
+                { x: 1, y: 300, babies: 1, own: 300 },
+            ],
+        });
+        expect(milkByAge(feeds, monkeys).points[0].own).toBeNull();
+        expect(milkByAge(feeds, monkeys, 2).points[1].own).toBeNull();
+    });
+
+    test("weight by age: each baby's last weighing that week", () => {
+        const monkeys = [{ id: 1, birthDate: "2026-01-01" }];
+        const weights = [
+            { monkeyId: 1, date: "2026-01-05", grams: 500 },
+            { monkeyId: 1, date: "2026-01-03", grams: 400 },
+        ];
+        expect(weightByAge(weights, monkeys).points).toEqual([{ x: 0, y: 500, babies: 1, own: null }]);
+    });
+
+    test("with records: the by-age charts; the arrow keys step along a line; the trophies", async () => {
+        await open({ feeds: FEEDS, weights: WEIGHTS });
+        const milk = screen.getByRole("img", { name: /^Milk by age:/ });
         fireEvent.focus(milk);
-        // (with that day's note)
-        expect(screen.getByRole("status")).toHaveTextContent("120 ml21 Oct−130 ml since the one beforeSkipped the 2am feed");
-        // Each point labelled: its value, and the change since the one before
-        const svg = milk;
-        expect([...svg.querySelectorAll(".Stats-lineValue")].map((t) => t.textContent)).toEqual(["250 ml", "120 ml"]);
-        expect([...svg.querySelectorAll(".Stats-lineChange")].map((t) => t.textContent)).toEqual(["−130 ml"]);
+        expect(screen.getByRole("status")).toHaveTextContent(/^Week \d+Average: /);
+        const shown = screen.getByRole("status").textContent;
         fireEvent.keyDown(milk, { key: "ArrowLeft" });
-        expect(screen.getByRole("status")).toHaveTextContent("250 ml20 Oct");
-        await user.selectOptions(screen.getByRole("combobox", { name: "Show milk and weight for" }), "22");
-        expect(screen.getByRole("img", { name: /^Milk intake per day: 1 point, the latest 150 ml/ })).toBeInTheDocument();
-        // (one baby: every weighing, on its day)
-        expect(screen.getByRole("img", { name: /^Weight: 1 point, the latest 650 g \(21 Oct\)/ })).toBeInTheDocument();
-        await user.selectOptions(screen.getByRole("combobox", { name: "Show milk and weight for" }), "21");
-        expect(screen.getByRole("img", { name: /^Weight: 3 points, the latest 450 g \(22 Oct\)/ })).toBeInTheDocument();
+        expect(screen.getByRole("status").textContent).not.toBe(shown);
+        // No day-by-day charts: the by-age ones say it
+        expect(screen.queryByRole("heading", { name: "Milk intake per day" })).not.toBeInTheDocument();
+        // The trophies: the figure first, then whose and when
+        expect(tile("Highest milk total")).toHaveTextContent("150 mlPip20 Oct");
+        expect(tile("Heaviest weight")).toHaveTextContent("650 gPip21 Oct");
     });
 
-    test("one baby's weighings: every one, on its day, oldest first", () => {
-        expect(weightsByDate(WEIGHTS, 21)).toEqual([
-            { x: "2026-10-13", y: 400 },
-            { x: "2026-10-20", y: 430 },
-            { x: "2026-10-22", y: 450 },
-        ]);
-        expect(weightsByDate(WEIGHTS, 99)).toEqual([]);
-    });
 });

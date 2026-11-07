@@ -7,7 +7,7 @@ import { loadMonkeyData, BUILT_IN_DATA } from "./monkeyData";
 import { loadSavedCopy, saveCopy, timeAgo } from "./savedData";
 import { thumbUrl } from "./photoPaths";
 import { fallbackTo } from "./photoFallback";
-import { saveThumbnails } from "./offlinePhotos";
+import { saveMap, saveThumbnails } from "./offlinePhotos";
 
 const OURS = "https://demlwtsrnlkiskcntbcc.supabase.co/storage/v1/object/public/monkey-photos/";
 const PLACEHOLDER = "https://i.ibb.co/2YvYtBJ/blank-image-min.jpg";
@@ -199,5 +199,36 @@ describe("saving thumbnails in the background", () => {
         withServiceWorker({ effectiveType: "2g" });
         await saveThumbnails(monkeys);
         expect(fetch).not.toHaveBeenCalled();
+    });
+});
+
+describe("saving the map ahead of time", () => {
+    const before = Object.getOwnPropertyDescriptor(navigator, "serviceWorker");
+    beforeEach(() => {
+        Object.defineProperty(navigator, "serviceWorker", { configurable: true, value: { controller: {} } });
+    });
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        if (before) Object.defineProperty(navigator, "serviceWorker", before);
+        else delete navigator.serviceWorker;
+    });
+
+    test("fetched when it isn't saved yet (the service worker keeps it); not again once it is", async () => {
+        const fetched = vi.fn(async () => new Response("<svg/>"));
+        vi.stubGlobal("fetch", fetched);
+        vi.stubGlobal("caches", { match: vi.fn(async () => undefined) });
+        expect(await saveMap()).toBe(true);
+        expect(fetched).toHaveBeenCalledWith("/VMF_Sanctuary_Map.svg");
+
+        fetched.mockClear();
+        vi.stubGlobal("caches", { match: vi.fn(async () => new Response("<svg/>")) });
+        expect(await saveMap()).toBe(false);
+        expect(fetched).not.toHaveBeenCalled();
+    });
+
+    test("no signal: no harm, and it tries again next time", async () => {
+        vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Failed to fetch"); }));
+        vi.stubGlobal("caches", { match: vi.fn(async () => undefined) });
+        expect(await saveMap()).toBe(false);
     });
 });

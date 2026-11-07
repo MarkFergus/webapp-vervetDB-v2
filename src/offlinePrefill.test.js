@@ -5,6 +5,7 @@ import * as data from "./monkeyData";
 vi.mock("./monkeyData", () => ({
     keepInjurySnapshot: vi.fn(),
     loadAllMaintenance: vi.fn(async () => []),
+    loadMaintenanceIssues: vi.fn(async () => []),
     loadBabyRecords: vi.fn(async () => []),
     loadConditions: vi.fn(async () => []),
     loadCurrentInjuries: vi.fn(async () => [{ id: 1, monkeyId: 2 }]),

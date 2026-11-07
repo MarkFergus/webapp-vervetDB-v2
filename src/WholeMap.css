@@ -456,3 +456,107 @@
         width: auto;
     }
 }
+
+/* ---- Maintenance issues ---- */
+
+/* Red with an exclamation mark if urgent, amber with a dot if not; blue while
+   it's being placed. White-edged so they stand out on any part of the map. */
+.WholeMap-pin path:first-child {
+    fill: #e08a00;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.WholeMap-pin.is-urgent path:first-child {
+    fill: #d92d20;
+}
+
+.WholeMap-pin.is-draft path:first-child {
+    fill: var(--accent);
+}
+
+.WholeMap-pin.is-picked-pin path:first-child {
+    stroke: #111111;
+}
+
+.WholeMap-pinMark {
+    fill: white;
+}
+
+/* Bottom left, across from My Location */
+.WholeMap-issueTools {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.WholeMap-issueTools .Modal-edit {
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.WholeMap-issueToggle {
+    font-size: 14px;
+}
+
+/* (clear of the buttons above) */
+.WholeMap-location.has-issues {
+    bottom: 100px;
+}
+
+/* Reporting: where it's up to, along the bottom */
+.WholeMap-reporting {
+    position: absolute;
+    left: 10px;
+    /* (clear of My Location) */
+    right: 72px;
+    bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 10px 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px var(--shadow);
+}
+
+.WholeMap-reporting p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.WholeMap-reporting div {
+    display: flex;
+    gap: 8px;
+}
+
+.WholeMap-issueButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.WholeMap-issueCard .Issues-photos {
+    margin: 6px 0;
+}
+
+.WholeMap-issueCard .WholeMap-cardText {
+    max-width: 320px;
+}
+
+.WholeMap-cardText .WholeMap-issueDetails {
+    display: -webkit-box;
+    margin-top: 4px;
+    overflow: hidden;
+    font-size: 14px;
+    color: var(--text);
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}

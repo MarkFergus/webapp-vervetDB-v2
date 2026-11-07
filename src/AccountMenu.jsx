@@ -4,7 +4,7 @@ import {
     IconHistory,
     IconLogout,
     IconMoon,
-    IconMoonStars,
+    IconCoffee,
     IconSun,
     IconSunHigh,
     IconUser,
@@ -24,7 +24,7 @@ import "./AccountMenu.css";
 // The theme choices, in order
 const THEME_CHOICES = [
     { id: "dark", label: "Neon Night", Icon: IconMoon },
-    { id: "night-savannah", label: "Night Savannah", Icon: IconMoonStars },
+    { id: "bearded-coffee", label: "Bearded Coffee", Icon: IconCoffee },
     { id: "light", label: "Acacia", Icon: IconSun },
     { id: "pastel-safari", label: "Pastel Safari", Icon: IconSunHigh },
 ];

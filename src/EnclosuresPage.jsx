@@ -832,6 +832,7 @@ function EnclosureRecord({ enclosure, enclosures, monkeys, onOpenMonkey, editing
                 <Fold title="Maintenance" {...foldProps("maintenance")}>
                     <MaintenanceLog
                         enclosure={enclosure}
+                        enclosures={enclosures}
                         live={editing.live}
                         canAdd={editing.canLog}
                         me={{ userId: editing.userId, isAdmin: editing.isAdmin }}

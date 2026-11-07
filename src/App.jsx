@@ -7,13 +7,13 @@ import { AuthProvider, useAuth } from "./auth";
 import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
 import useOnline from "./useOnline";
-import { saveThumbnails } from "./offlinePhotos";
+import { saveMap, saveThumbnails } from "./offlinePhotos";
 import OfflineSync, { NeedsAttention, WaitingNotice } from "./OfflineSync";
 import { isInstalledApp } from "./installApp";
 import { timeAgo } from "./savedData";
 import "./App.css";
 
-// Saves every photo's thumbnail on the device for offline use, for the
+// Saves every photo's thumbnail and the map on the device for offline use, for the
 // people who need it: signed-in staff, or anyone using the installed app.
 // (Everyone else would use up the database's monthly data allowance.)
 // Runs after a short pause, so the page itself loads first.
@@ -22,7 +22,10 @@ function SaveThumbnails({ live, monkeys }) {
     const wanted = live && (Boolean(user) || isInstalledApp());
     useEffect(() => {
         if (!wanted) return;
-        const timer = setTimeout(() => saveThumbnails(monkeys), 3000);
+        const timer = setTimeout(() => {
+            saveThumbnails(monkeys);
+            saveMap();
+        }, 3000);
         return () => clearTimeout(timer);
     }, [wanted]);
     return null;

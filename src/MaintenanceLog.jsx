@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { IconPencil, IconPlus, IconTool, IconTrash } from "@tabler/icons-react";
 import { addMaintenance, deleteMaintenance, loadMaintenance, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
+import { EnclosureIssues } from "./MaintenanceIssues";
+import { MAINTENANCE_TYPES } from "./maintenanceRecords";
 import "./MaintenanceLog.css";
 
 // An enclosure's maintenance log: dated entries, newest first, each with its
@@ -16,8 +18,7 @@ function today() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// The Maintenance Types (supabase/maintenance-kind.sql)
-export const MAINTENANCE_TYPES = { routine: "Routine", repair: "Repair" };
+export { MAINTENANCE_TYPES };
 
 // "2026-10-05" → "5 Oct 2026"
 function dayText(date) {
@@ -123,7 +124,7 @@ export function EntryForm({ initial, onSave, onCancel, saveLabel, busyLabel }) {
     );
 }
 
-function MaintenanceLog({ enclosure, live, canAdd, me = {} }) {
+function MaintenanceLog({ enclosure, enclosures = [], live, canAdd, me = {} }) {
     const [entries, setEntries] = useState(undefined); // undefined = loading
     const [problem, setProblem] = useState(null);
     const [adding, setAdding] = useState(false);
@@ -182,6 +183,14 @@ function MaintenanceLog({ enclosure, live, canAdd, me = {} }) {
 
     return (
         <div className="MaintenanceLog">
+            {canAdd && enclosures.length > 0 && (
+                <EnclosureIssues
+                    enclosure={enclosure}
+                    enclosures={enclosures}
+                    me={me}
+                    onReportAdded={(report) => report.enclosureId === enclosure.id && setEntries((list) => inOrder([report, ...(list ?? [])]))}
+                />
+            )}
             {canAdd &&
                 (adding ? (
                     <EntryForm

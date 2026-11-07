@@ -10,8 +10,10 @@
      troop / introcages   two steps of the same violet
      none        grey: not known (e.g. age)
    Each theme has its own set, in its own colours (below: Neon Night's;
-   then Night Savannah's, Acacia's and Pastel Safari's) */
+   then Bearded Coffee's, Acacia's and Pastel Safari's) */
 .Stats {
+    /* (the average, behind a baby's own line) */
+    --viz-average: var(--text-3);
     --viz-count: #9d8cff;
     --viz-troop: #9d8cff;
     --viz-introcages: #cbc2ff;
@@ -36,19 +38,20 @@
     color: var(--text);
 }
 
-:root[data-palette="night-savannah"] .Stats {
-    --viz-count: #d9b45a;
-    --viz-troop: #d9b45a;
-    --viz-introcages: #f0d99c;
-    --viz-female: #e8835e;
-    --viz-male: #3fa6bc;
-    --viz-unknown: #9cc25a;
-    --viz-none: #5b5345;
-    --viz-top: #9cc25a;
-    --viz-middle: #3fa6bc;
-    --viz-bottom: #f06a55;
-    --viz-sickbay: #eab04c;
-    --viz-careunits: #b48ad1;
+:root[data-palette="bearded-coffee"] .Stats {
+    --viz-average: #85736c;
+    --viz-count: #f09177;
+    --viz-troop: #f09177;
+    --viz-introcages: #f7d979;
+    --viz-female: #e480ad;
+    --viz-male: #6eddd6;
+    --viz-unknown: #94d652;
+    --viz-none: #51403b;
+    --viz-top: #94d652;
+    --viz-middle: #6eddd6;
+    --viz-bottom: #f77a6a;
+    --viz-sickbay: #f7d979;
+    --viz-careunits: #9991f1;
 }
 
 :root[data-theme="light"] .Stats {
@@ -193,15 +196,67 @@
     color: var(--text-strong);
 }
 
+/* Whose figure it is, beside it: the figure's what stands out */
+.Stats-tileWho {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+}
+
 .Stats-tileSub {
     font-size: 13px;
     font-weight: 400;
     color: var(--text-3);
 }
 
+/* Baby Care's eight: four and four, with Babies (just a number) narrow to give
+   Youngest Arrival its room (phones: the same pair on top, then two by two) */
+.Stats-tiles.is-babyCare {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.Stats-tiles.is-babyCare div {
+    grid-column: span 3;
+}
+
+.Stats-tiles.is-babyCare div:first-child {
+    grid-column: span 2;
+}
+
+.Stats-tiles.is-babyCare div:nth-child(2) {
+    grid-column: span 4;
+}
+
+.Stats-tiles dt:has(.Stats-trophy) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.Stats-trophy {
+    flex-shrink: 0;
+    color: var(--amber-text);
+}
+
 @media (max-width: 559px) {
     .Stats-tiles {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .Stats-tiles.is-babyCare {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .Stats-tiles.is-babyCare div {
+        grid-column: span 3;
+    }
+
+    .Stats-tiles.is-babyCare div:first-child {
+        grid-column: span 2;
+    }
+
+    .Stats-tiles.is-babyCare div:nth-child(2) {
+        grid-column: span 4;
     }
 }
 
@@ -830,12 +885,6 @@
     stroke-linecap: round;
 }
 
-/* (a faint wash under the line) */
-.Stats-lineArea {
-    fill: var(--viz-count);
-    opacity: 0.1;
-}
-
 /* Each point: a dot with a ring of the card's colour */
 .Stats-lineDot {
     fill: var(--viz-count);
@@ -853,27 +902,6 @@
     fill: var(--text);
 }
 
-/* Each point's value, and its change since the one before (quieter);
-   a thin outline of the card's colour, so gridlines don't run through them */
-.Stats-lineValue,
-.Stats-lineChange {
-    paint-order: stroke;
-    stroke: var(--surface-1);
-    stroke-width: 4px;
-    stroke-linejoin: round;
-}
-
-.Stats-lineValue {
-    font-size: 12px;
-    font-weight: 700;
-    fill: var(--text);
-}
-
-.Stats-lineChange {
-    font-size: 11px;
-    fill: var(--text-3);
-}
-
 .Stats-crosshair {
     stroke: var(--text-3);
     stroke-width: 1;
@@ -884,11 +912,39 @@
     position: absolute;
 }
 
-/* A note in the line's tooltip (e.g. "Skipped the 2am feed"): wraps */
-.Stats-tooltipNote {
-    max-width: 220px;
-    margin-top: 3px;
-    font-size: 12px;
-    white-space: normal;
+/* By age: a baby picked, against the average */
+.Stats-agePick {
+    display: inline-flex;
+    margin-bottom: 10px;
+}
+
+.Stats-linePath.is-average {
+    stroke: var(--viz-average);
+    stroke-dasharray: 5 4;
+}
+
+.Stats-ageKey {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0 0 8px;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
     color: var(--text-2);
+}
+
+.Stats-ageKey li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.Stats-ageSwatch {
+    width: 18px;
+    border-top: 2px solid var(--viz-count);
+}
+
+.Stats-ageSwatch.is-average {
+    border-top: 2px dashed var(--viz-average);
 }

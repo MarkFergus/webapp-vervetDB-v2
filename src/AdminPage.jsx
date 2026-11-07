@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconHistory, IconMail, IconMinus, IconSun, IconUsers } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconCoffee, IconHistory, IconMail, IconMinus, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
@@ -230,7 +230,7 @@ const PARTS = [
     { id: "activity", title: "Staff Activity", sub: "What each staff member has added, changed or deleted", Icon: IconHistory },
     { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
     { id: "reports", title: "Weekly Reports", sub: "Your weekly report email: when it comes and what's in it", Icon: IconMail },
-    { id: "brief", title: "Morning Brief", sub: "Today's brief: what needs doing, as the 06:50 email has it", Icon: IconSun },
+    { id: "brief", title: "Morning Brief", sub: "Today's brief: what needs doing, as the 06:50 email has it", Icon: IconCoffee },
 ];
 
 // "admin" → no part (the choices); "admin/staff"; "admin/archive" and an

@@ -226,11 +226,31 @@ function babyPart({ monkeys, enclosures, milk, weights, today }) {
     ];
 }
 
+// Issues waiting: New (reported today or yesterday) and Outstanding (longer);
+// urgent ones first, in red
+function maintenancePart({ maintenanceIssues = [], enclosures, today }) {
+    const [y, m, d] = today.split("-").map(Number);
+    const yesterday = new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10);
+    const placeOf = (issue) => fullName(enclosures.find((e) => e.id === issue.enclosureId)?.name ?? "Unknown place");
+    const open = maintenanceIssues
+        .filter((i) => i.status === "open")
+        .map((i) => ({ ...i, day: sanctuaryToday(new Date(i.reportedAt)) }))
+        .sort((a, b) => Number(b.urgent) - Number(a.urgent) || a.day.localeCompare(b.day));
+    const words = (i, after = "") => line(`${i.urgent ? "Urgent: " : ""}${placeOf(i)}: ${i.details}${after}`, i.urgent);
+    return [
+        { title: "New", lines: open.filter((i) => i.day >= yesterday).map((i) => words(i)) },
+        {
+            title: "Outstanding",
+            lines: open.filter((i) => i.day < yesterday).map((i) => words(i, ` (${plural(daysBetween(i.day, today), "day")})`)),
+        },
+    ];
+}
+
 const alertCount = (sections) =>
     sections.reduce((total, s) => total + s.groups.reduce((n, g) => n + g.lines.filter((l) => l.alert).length, 0), 0);
 
 // data: { monkeys, enclosures, sessions, spots, lastMoves, monitoring,
-//   injuries, calendarEvents, sheets, milk, weights, news: [{ kind ("arrival", "movement",
+//   injuries, calendarEvents, sheets, milk, weights, maintenanceIssues, news: [{ kind ("arrival", "movement",
 //   "status"), name, details }], today }
 export function buildMorningBrief(data) {
     const section = (id, title, groups) => ({ id, title, groups: groups.filter((g) => g.lines.length) });
@@ -255,6 +275,7 @@ export function buildMorningBrief(data) {
         section("medical", "Medical", medicalPart(data)),
         section("baby_care", "Baby Care", babyPart(data)),
         section("deworming", "Deworming", deworming.groups),
+        section("maintenance", "Maintenance", maintenancePart(data)),
     ].filter((s) => s.groups.length);
     const news = (kind) => data.news.filter((n) => n.kind === kind);
     const good = section("good_to_know", "Good To Know (Last 24 Hours)", [

@@ -1,11 +1,12 @@
--- Deworming: the paper sheet's photo emailed on Approve (2026-11-02)
+-- Deworming: the paper sheet's photo emailed on Approve (2026-11-02), and
+-- Email Sheet on an approved list (2026-11-07)
 -- When an admin approves a deworming list, the website makes a PDF of the
 -- paper sheet's photos and this emails it, attached, from
 -- reports@vervetdb.com to mark@vervet.za.org (for now: change
--- private.deworming_sheet_to below). Once per list.
+-- private.deworming_sheet_to below).
 --
--- Only for the list the person just approved (in the last 15 minutes),
--- once, so it can't be used to send other emails.
+-- Admins only, approved lists only, and not more than once a minute for a
+-- list, so it can't be used to send other emails.
 -- Uses the Resend key already saved in the Vault (as the weekly reports).
 -- Safe to run more than once.
 --
@@ -45,12 +46,14 @@ begin
     if not found then
         raise exception 'That deworming list no longer exists.' using errcode = 'P0001';
     end if;
-    if s.status <> 'approved' or s.approved_by is distinct from auth.uid()
-            or s.approved_at < now() - interval '15 minutes' then
-        raise exception 'Only the list you just approved can be emailed.' using errcode = '42501';
+    if not public.is_admin() then
+        raise exception 'Only admins can email a deworming sheet.' using errcode = '42501';
     end if;
-    if s.photo_emailed_at is not null then
-        raise exception 'This list''s photo has already been emailed.' using errcode = 'P0001';
+    if s.status <> 'approved' then
+        raise exception 'Only an approved list can be emailed.' using errcode = 'P0001';
+    end if;
+    if s.photo_emailed_at > now() - interval '1 minute' then
+        raise exception 'This list was emailed a moment ago. Please check your inbox first.' using errcode = 'P0001';
     end if;
     if pdf is null or char_length(pdf) > 30000000 or pdf !~ '^[A-Za-z0-9+/=]+$' then
         raise exception 'That PDF can''t be emailed.' using errcode = 'P0001';
@@ -97,6 +100,5 @@ grant execute on function public.email_deworming_sheet(bigint, text, text) to au
 commit;
 
 -- Check: should say "ready"
-select case when exists (
-    select 1 from pg_proc where proname = 'email_deworming_sheet'
-) then 'ready' else 'not updated' end as sheet_email;
+select case when prosrc like '%Only admins can email%' then 'ready' else 'not updated' end as sheet_email
+from pg_proc where proname = 'email_deworming_sheet';

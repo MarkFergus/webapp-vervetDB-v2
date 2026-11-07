@@ -153,7 +153,7 @@ async function sendWaiting() {
 }
 
 // (big, and nothing goes by them once they're sent)
-const NOT_KEPT_ONCE_SENT = new Set(["baby-save", "deworming-results", "deworming-add", "deworming-remove", "sheet-photo"]);
+const NOT_KEPT_ONCE_SENT = new Set(["baby-save", "deworming-results", "deworming-add", "deworming-remove", "sheet-photo", "issue-photo"]);
 function setStatus(id, status, problem = null) {
     change((list) =>
         list

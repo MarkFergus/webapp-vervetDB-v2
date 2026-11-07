@@ -3,7 +3,8 @@ import { useSyncExternalStore } from "react";
 // The site's theme, chosen from the account menu and remembered on this
 // device: two dark and two light
 //   "dark"            Neon Night (the default)
-//   "night-savannah"  Night Savannah
+//   "bearded-coffee"  Bearded Coffee (took over from Night Savannah: index.html
+//                     moves anyone who chose that across)
 //   "light"           Acacia
 //   "pastel-safari"   Pastel Safari
 // The page's data-theme is the mode ("dark" / "light": what the light-only
@@ -12,11 +13,11 @@ import { useSyncExternalStore } from "react";
 // before the page draws, so there's no flash of the wrong one; this keeps
 // them in step after that.
 
-export const THEMES = ["dark", "night-savannah", "light", "pastel-safari"];
+export const THEMES = ["dark", "bearded-coffee", "light", "pastel-safari"];
 const LIGHT = ["light", "pastel-safari"];
 const KEY = "vervetdb-theme";
 // The browser's own bar colour on phones, matching the top bar
-const BAR_COLOUR = { dark: "#121212", "night-savannah": "#16130e", light: "#f9f4e8", "pastel-safari": "#f8fcf9" };
+const BAR_COLOUR = { dark: "#121212", "bearded-coffee": "#1a1716", light: "#f9f4e8", "pastel-safari": "#f8fcf9" };
 
 export function currentTheme() {
     const { theme, palette } = document.documentElement.dataset;

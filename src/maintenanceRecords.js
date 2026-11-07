@@ -5,6 +5,9 @@
 import { fullName } from "./places";
 import { TYPE_NAMES, isSoleArea } from "./enclosures";
 
+// The Maintenance Types (supabase/maintenance-kind.sql)
+export const MAINTENANCE_TYPES = { routine: "Routine", repair: "Repair" };
+
 // The list shows this many reports at first (See More for the rest)
 export const PAGE_SIZE = 30;
 

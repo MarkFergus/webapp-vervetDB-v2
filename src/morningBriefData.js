@@ -6,6 +6,7 @@ import {
     loadDewormingCalendar,
     loadDewormingSheets,
     loadLastMoves,
+    loadMaintenanceIssues,
     loadMonitoringFor,
     loadMilkTotals,
     loadMonitoringSessions,
@@ -41,7 +42,7 @@ export async function loadMorningBrief(now = new Date()) {
     const today = sanctuaryToday(now);
     const { monkeys, enclosures } = await loadMonkeyData();
     const ids = monkeys.map((m) => m.id);
-    const [sessions, spots, lastMoves, monitoring, injuries, calendar, sheets, milk, weights, news] = await Promise.all([
+    const [sessions, spots, lastMoves, monitoring, injuries, calendar, sheets, milk, weights, maintenanceIssues, news] = await Promise.all([
         loadMonitoringSessions(),
         loadSpotSightings(),
         loadLastMoves(ids),
@@ -51,6 +52,7 @@ export async function loadMorningBrief(now = new Date()) {
         loadDewormingSheets(),
         loadMilkTotals(),
         loadWeights(),
+        loadMaintenanceIssues(),
         loadNews(monkeys, today),
     ]);
     return buildMorningBrief({
@@ -65,6 +67,7 @@ export async function loadMorningBrief(now = new Date()) {
         sheets,
         milk,
         weights,
+        maintenanceIssues,
         news,
         today,
     });

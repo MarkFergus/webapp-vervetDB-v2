@@ -820,22 +820,17 @@ function Day4Question({ lines, onDecide, onClose }) {
     );
 }
 
-// After Approve: the paper sheet's photos as a PDF, emailed once (to Mark,
-// for now: supabase/deworming-sheet-email.sql). Not sent: logged, as the
-// sheet's approved anyway (the photos are in the app)
-async function emailPhotos(sheet, photos) {
-    try {
-        const [{ pdf }, { default: DewormingPhotosPDF }, data] = await Promise.all([
-            import("@react-pdf/renderer"),
-            import("./DewormingPhotosPDF"),
-            sheetPhotoData(photos),
-        ]);
-        const blob = await pdf(<DewormingPhotosPDF sheet={sheet} photos={data} />).toBlob();
-        const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
-        await emailDewormingSheet(sheet.id, blob, `deworming_sheet_${name}_${sheet.startedOn ?? sheet.startDate}.pdf`);
-    } catch (error) {
-        console.error(`Emailing the photo of ${sheetTitle(sheet)} failed:`, error);
-    }
+// The paper sheet's photos as a PDF, emailed (to Mark, for now:
+// supabase/deworming-sheet-email.sql). Throws a message to show.
+export async function emailSheet(sheet, photos) {
+    const [{ pdf }, { default: DewormingPhotosPDF }, data] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./DewormingPhotosPDF"),
+        sheetPhotoData(photos),
+    ]);
+    const blob = await pdf(<DewormingPhotosPDF sheet={sheet} photos={data} />).toBlob();
+    const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
+    return emailDewormingSheet(sheet.id, blob, `deworming_sheet_${name}_${sheet.startedOn ?? sheet.startDate}.pdf`);
 }
 
 // The days in order (each opens once the day before is complete): Day 1–3,
@@ -1196,7 +1191,11 @@ export function Review({ sheet, lines, onDone }) {
                 sheet.id,
                 lines.map((l) => ({ lineId: l.id, text: texts[l.id].trim() }))
             );
-            await emailPhotos(sheet, sheet.photos ?? []);
+            // (it's approved either way: if this fails, the sheet says it wasn't
+            // emailed, with Email Sheet to try again)
+            await emailSheet(sheet, sheet.photos ?? []).catch((error) =>
+                console.error(`Emailing the photo of ${sheetTitle(sheet)} failed:`, error)
+            );
             await onDone();
         } catch (error) {
             setProblem(error.message);

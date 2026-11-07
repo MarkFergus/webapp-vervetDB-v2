@@ -21,7 +21,12 @@
         <script>
             try {
                 var theme = localStorage.getItem("vervetdb-theme");
-                var bar = { "night-savannah": "#16130e", light: "#f9f4e8", "pastel-safari": "#f8fcf9" }[theme];
+                // (Night Savannah became Bearded Coffee)
+                if (theme === "night-savannah") {
+                    theme = "bearded-coffee";
+                    localStorage.setItem("vervetdb-theme", theme);
+                }
+                var bar = { "bearded-coffee": "#1a1716", light: "#f9f4e8", "pastel-safari": "#f8fcf9" }[theme];
                 if (bar) {
                     var mode = theme === "light" || theme === "pastel-safari" ? "light" : "dark";
                     document.documentElement.dataset.theme = mode;

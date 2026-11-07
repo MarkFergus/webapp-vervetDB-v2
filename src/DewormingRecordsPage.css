@@ -1180,3 +1180,16 @@
         justify-self: start;
     }
 }
+
+/* An approved sheet: has it been emailed, and the button to send it */
+.Deworming-emailed {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 8px 0;
+}
+
+.Deworming-emailed .Deworming-meta {
+    margin: 0;
+}

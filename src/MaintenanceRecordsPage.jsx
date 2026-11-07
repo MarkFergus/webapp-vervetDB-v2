@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconBuildingCommunity, IconFilterOff, IconPencil, IconSearch, IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import { addMaintenance, deleteMaintenance, loadAllMaintenance, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
 import { EntryForm, MAINTENANCE_TYPES } from "./MaintenanceLog";
+import { PlacePicker, TypeButtons } from "./MaintenancePickers";
+import { IssuesTab } from "./MaintenanceIssues";
 import { enclosureHash } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
-import { PAGE_SIZE, checkReport, filterReports, maintenancePlaces, matchesPlace, placeSub } from "./maintenanceRecords";
+import { PAGE_SIZE, checkReport, filterReports, maintenancePlaces } from "./maintenanceRecords";
 import "./MaintenanceLog.css";
 import "./IntegrationRecordsPage.css"; // (its search, dates and report box)
 import "./MaintenanceRecordsPage.css";
@@ -20,103 +22,13 @@ import "./MaintenanceRecordsPage.css";
 //   View    every report, newest first: Routine / Repair and a place
 //           picked from the search's list (an enclosure: its introcages
 //           too); Edit and Delete their own (admins: anyone's)
+//   Issues  what needs doing (MaintenanceIssues.jsx); fixing one adds a report
 //   live: the database has the log (false before enclosures.sql, or
 //   offline); me: { userId, isAdmin }
 
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
 // ---- Enter ----
-
-// Find the enclosure or introcage: a search, then tap one. chosen: shown
-// with Change to search again (filtering: the monkey list's pink clear
-// filter icon by its name, Clear).
-// onType(text): what's typed so far (View narrows the list as you type).
-//   note: under a chosen one's name, instead of what it is
-function PlacePicker({ places, enclosures, chosen, onChoose, onType = () => {}, filtering = false, note = null }) {
-    const [search, setSearch] = useState("");
-    const type = (text) => {
-        setSearch(text);
-        onType(text);
-    };
-    const found = search.trim() ? places.filter((p) => matchesPlace(p, search, enclosures)).slice(0, 8) : [];
-    if (chosen) {
-        return (
-            <div className={`IntegrationPage-chosen${filtering ? " is-filter" : ""}`}>
-                <span className="MaintenancePage-placeIcon">
-                    <IconBuildingCommunity size={20} aria-hidden="true" />
-                </span>
-                <span className="RecordsPage-baby">
-                    <span className="RecordsPage-name">{fullName(chosen.name)}</span>
-                    <span className="RecordsPage-place">{note ?? placeSub(chosen, enclosures)}</span>
-                </span>
-                {filtering ? (
-                    <button type="button" className="MaintenancePage-clear" onClick={() => onChoose(null)} aria-label="Clear" title="Clear">
-                        <IconFilterOff size={15} aria-hidden="true" />
-                    </button>
-                ) : (
-                    <button type="button" className="Modal-edit is-soft" onClick={() => onChoose(null)}>
-                        Change
-                    </button>
-                )}
-            </div>
-        );
-    }
-    return (
-        <div className="IntegrationPage-find">
-            <label className="IntegrationPage-search">
-                <IconSearch size={16} aria-hidden="true" />
-                <input
-                    type="search"
-                    value={search}
-                    placeholder="Search enclosures and introcages"
-                    onChange={(e) => type(e.target.value)}
-                    aria-label="Search enclosures and introcages"
-                />
-            </label>
-            {search.trim() && (
-                <ul className="IntegrationPage-found" aria-label="Places found">
-                    {found.length ? (
-                        found.map((p) => (
-                            <li key={p.id}>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        onChoose(p);
-                                        type("");
-                                    }}
-                                >
-                                    <span className="MaintenancePage-placeIcon">
-                                        <IconBuildingCommunity size={18} aria-hidden="true" />
-                                    </span>
-                                    <span className="RecordsPage-baby">
-                                        <span className="RecordsPage-name">{fullName(p.name)}</span>
-                                        <span className="RecordsPage-place">{placeSub(p, enclosures)}</span>
-                                    </span>
-                                </button>
-                            </li>
-                        ))
-                    ) : (
-                        <li className="RecordsPage-none">No enclosure or introcage found.</li>
-                    )}
-                </ul>
-            )}
-        </div>
-    );
-}
-
-// Routine or Repair: two buttons
-function TypeButtons({ value, onChange, label = "Maintenance Type", withAll = false }) {
-    const options = withAll ? { all: "All", ...MAINTENANCE_TYPES } : MAINTENANCE_TYPES;
-    return (
-        <div className="MaintenancePage-types" role="group" aria-label={label}>
-            {Object.entries(options).map(([id, word]) => (
-                <button key={id} type="button" aria-pressed={value === id} onClick={() => onChange(id)}>
-                    {word}
-                </button>
-            ))}
-        </div>
-    );
-}
 
 function EnterForm({ enclosures, onAdded }) {
     const places = maintenancePlaces(enclosures);
@@ -395,6 +307,7 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
                         {[
                             ["enter", "Add"],
                             ["view", "View"],
+                            ["issues", "Issues"],
                         ].map(([id, label]) => (
                             <button
                                 key={id}
@@ -410,7 +323,13 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
                     </div>
                 </div>
             )}
-            {reports === null ? (
+            {shownTab === "issues" ? (
+                <IssuesTab
+                    enclosures={enclosures}
+                    me={me}
+                    onReportAdded={(r) => setReports((l) => (Array.isArray(l) ? inOrder([r, ...l]) : l))}
+                />
+            ) : reports === null ? (
                 <p className="RecordsPage-none">Loading…</p>
             ) : reports === "failed" ? (
                 <p className="RecordsPage-none RecordsPage-problem">

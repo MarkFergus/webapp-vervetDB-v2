@@ -18,6 +18,16 @@ export const SOURCES = {
         group: "enclosures",
         fields: { done_on: field("Date Done", "date"), kind: field("Type", "words"), details: field("Details") },
     },
+    maintenance_issues: {
+        label: "Maintenance Issue",
+        group: "enclosures",
+        fields: {
+            details: field("Details"),
+            urgent: field("Urgent", "yesno"),
+            status: field("Status", "words"),
+            close_reason: field("Reason Closed"),
+        },
+    },
     injuries: {
         label: "Injury",
         group: "medical",
@@ -127,6 +137,18 @@ export const PERIODS = [
     { days: 30, label: "30 Days" },
 ];
 
+// Back to the start (the stats' whole history; the list below them shows the
+// latest changes)
+export const ALL_TIME = { days: "all", label: "All Time" };
+
+// The Numbers: what's counted (staff_stats' names)
+export const STATS = [
+    ["injuries", "Injuries Added"],
+    ["conditions", "Conditions Added"],
+    ["photos", "Photos Uploaded"],
+    ["edits", "Profile Edits"],
+];
+
 // A day ("2026-10-20") as "20 Oct 2026"
 export const dayWords = (date) => valueText(date, "date");
 
@@ -135,6 +157,7 @@ export const dayWords = (date) => valueText(date, "date");
 //   of the From day to the end of the To day ("2026-10-20"), on this
 //   device's clock
 export function periodFor(days, from, to, now = new Date()) {
+    if (days === ALL_TIME.days) return { since: new Date(2020, 0, 1), until: now };
     if (days !== "custom") return { since: new Date(now.getTime() - days * 86400000), until: now };
     const start = (text, extra = 0) => {
         const [y, m, d] = text.split("-").map(Number);

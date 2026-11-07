@@ -4,7 +4,7 @@
 // with unknown ages counted on their own.
 // Everything goes by where a monkey lives (its home): a monkey in Sickbay
 // or staying in an introcage for now still counts with its troop.
-import { AGE_GROUPS, ageFromBirthDate, ageInYears } from "./ages";
+import { AGE_GROUPS, ageFromBirthDate, ageInYears, currentBabySeason } from "./ages";
 import { homeName, inIntrocage } from "./places";
 import { hasTroop, isEnclosure } from "./enclosures";
 import { amPlate, fedBy, hasFeeding } from "./feeding";
@@ -189,6 +189,18 @@ const todayText = (today = new Date()) =>
 // old" (the Full Profile's too: ages.js); null without a birth date
 export const babyAgeText = (birthDate, today = new Date()) => ageFromBirthDate(birthDate, today);
 
+// This season's Baby Care babies, wherever they are now: those who arrived into
+// Baby Care or one of its areas (they've moved on since, some of them), and any
+// there now whose arrival place wasn't recorded. Born on site, or arrived
+// elsewhere: not theirs. (Baby Care's stats, e.g. Baby Care 2026)
+export function seasonBabies(monkeys, enclosures, today = new Date()) {
+    const unit = enclosures.find((e) => e.type === "care_unit" && e.name === BABY_CARE);
+    const places = new Set(unit ? [unit.id, ...enclosures.filter((e) => e.parentId === unit.id).map((e) => e.id)] : []);
+    return sanctuaryMonkeys(monkeys).filter(
+        (m) => Number(m.year) === currentBabySeason(today) && (places.has(m.arrivalPlaceId) || homeName(m) === BABY_CARE)
+    );
+}
+
 // Baby Care's youngest and oldest (by birth date; babies without one can't
 // be placed)
 //   → { youngest, oldest } (monkeys, or null)
@@ -197,60 +209,123 @@ export function youngestOldest(babies) {
     return { youngest: dated.at(-1) ?? null, oldest: dated[0] ?? null };
 }
 
-// The Monday a date's week starts on ("2026-10-22" → "2026-10-19")
-export function weekStart(date) {
-    const d = new Date(`${date}T00:00:00`);
-    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    return todayText(d);
+// The youngest to arrive: the least age at arrival → { baby, days, age ("2
+// days old"), date }, or null (needs both dates)
+export function youngestArrival(babies) {
+    const dayOf = (date) => new Date(`${date}T00:00:00Z`).getTime();
+    const dated = babies
+        .filter((m) => m.birthDate && m.arrivalDate && m.arrivalDate >= m.birthDate)
+        .map((m) => ({ baby: m, days: Math.round((dayOf(m.arrivalDate) - dayOf(m.birthDate)) / 86400000), date: m.arrivalDate }))
+        .sort((a, b) => a.days - b.days);
+    if (!dated.length) return null;
+    const top = dated[0];
+    const words = babyAgeText(top.baby.birthDate, new Date(`${top.date}T00:00:00`));
+    return { ...top, age: words === "Born today" ? "Same day" : words };
 }
 
-// Milk drunk per day, in ml: one baby's (babyId), or all of them together
-// (null)
-//   feeds: [{ monkeyId, date ("2026-10-24"), ml, notes }] (a day's total
-//   each: milk-totals.sql)
-//   → [{ x: date, y: ml, notes: [that day's notes] }], oldest first
-export function milkPerDay(feeds, babyId = null) {
-    const byDay = new Map();
-    for (const f of feeds) {
-        if (babyId !== null && f.monkeyId !== babyId) continue;
-        const day = byDay.get(f.date) ?? { y: 0, notes: [] };
-        day.y += f.ml;
-        if (f.notes) day.notes.push(f.notes);
-        byDay.set(f.date, day);
-    }
-    return [...byDay].sort(([a], [b]) => a.localeCompare(b)).map(([x, day]) => ({ x, ...day }));
+// All the milk these babies have drunk, in ml
+export function totalMilk(feeds, babies) {
+    const ids = new Set(babies.map((m) => m.id));
+    return feeds.reduce((sum, f) => (ids.has(f.monkeyId) ? sum + f.ml : sum), 0);
 }
 
-// One baby's every weighing, in grams, on its day (a weighing can be late,
-// or more than one a week), oldest first
+// "9,850 ml", then from 5 figures, litres to one decimal: "12.4 L"
+export const milkAmount = (ml) => (ml < 10000 ? `${ml.toLocaleString("en-GB")} ml` : `${(ml / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1, minimumFractionDigits: 1 })} L`);
+
+// The highest single day's milk total among these babies → { baby, ml, date },
+// or null (the first to reach it, if it's been matched)
+//   feeds: [{ monkeyId, date, ml }]
+export function highestMilk(feeds, babies) {
+    const byId = new Map(babies.map((m) => [m.id, m]));
+    const top = feeds
+        .filter((f) => byId.has(f.monkeyId))
+        .sort((a, b) => b.ml - a.ml || a.date.localeCompare(b.date))[0];
+    return top ? { baby: byId.get(top.monkeyId), ml: top.ml, date: top.date } : null;
+}
+
+// The heaviest of these babies, by each one's latest weighing → { baby, grams,
+// date }, or null
 //   weights: [{ monkeyId, date, grams }]
-//   → [{ x: date, y: grams }]
-export function weightsByDate(weights, babyId) {
-    return weights
-        .filter((w) => w.monkeyId === babyId)
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .map((w) => ({ x: w.date, y: w.grams }));
-}
-
-// Weight per week, in grams (by the week's Monday): one baby's (its last
-// weighing that week), or all of them (the average of each baby's last
-// weighing that week)
-//   weights: [{ monkeyId, date, grams }]
-//   → [{ x: week's Monday, y: grams }], oldest first
-export function weightPerWeek(weights, babyId = null) {
-    const last = new Map(); // "week|baby" → { date, grams }
+export function heaviestBaby(weights, babies) {
+    const byId = new Map(babies.map((m) => [m.id, m]));
+    const latest = new Map();
     for (const w of weights) {
-        if (babyId !== null && w.monkeyId !== babyId) continue;
-        const key = `${weekStart(w.date)}|${w.monkeyId}`;
-        const seen = last.get(key);
-        if (!seen || w.date >= seen.date) last.set(key, w);
+        if (byId.has(w.monkeyId) && !(latest.get(w.monkeyId)?.date >= w.date)) latest.set(w.monkeyId, w);
     }
-    const byWeek = new Map();
-    for (const [key, w] of last) {
-        const week = key.split("|")[0];
-        byWeek.set(week, [...(byWeek.get(week) ?? []), w.grams]);
-    }
-    return [...byWeek]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([x, all]) => ({ x, y: Math.round(all.reduce((n, g) => n + g, 0) / all.length) }));
+    const top = [...latest.values()].sort((a, b) => b.grams - a.grams)[0];
+    return top ? { baby: byId.get(top.monkeyId), grams: top.grams, date: top.date } : null;
 }
+
+// The largest gain between a baby's weighing and their next → { baby, gain,
+// date (the later weighing's) }, or null. Weighings can run a little late, but
+// over this many days apart it isn't a week's gain any more, so it doesn't count.
+const WEEK_GAIN_MAX_DAYS = 10;
+export function largestWeeklyGain(weights, babies) {
+    const dayOf = (date) => new Date(`${date}T00:00:00Z`).getTime() / 86400000;
+    let best = null;
+    for (const baby of babies) {
+        const list = weights.filter((w) => w.monkeyId === baby.id).sort((x, y) => x.date.localeCompare(y.date));
+        list.forEach((w, i) => {
+            const before = list[i - 1];
+            if (!before || dayOf(w.date) - dayOf(before.date) > WEEK_GAIN_MAX_DAYS) return;
+            const gain = w.grams - before.grams;
+            if (gain > 0 && (!best || gain > best.gain)) best = { baby, gain, date: w.date };
+        });
+    }
+    return best;
+}
+
+// Whole weeks old on a date (a baby's first week is 0), or null: no birth
+// date, or a record from before it
+export function ageInWeeks(birthDate, date) {
+    if (!birthDate) return null;
+    const days = Math.round((new Date(`${date}T00:00:00Z`) - new Date(`${birthDate}T00:00:00Z`)) / 86400000);
+    return days < 0 ? null : Math.floor(days / 7);
+}
+
+// Each baby's figure for each week of their age: { week → { baby → value } }
+function byAgeWeek(records, birthDates, pick) {
+    const weeks = new Map();
+    for (const r of records) {
+        const week = ageInWeeks(birthDates.get(r.monkeyId), r.date);
+        if (week === null) continue;
+        if (!weeks.has(week)) weeks.set(week, new Map());
+        const babies = weeks.get(week);
+        babies.set(r.monkeyId, [...(babies.get(r.monkeyId) ?? []), r]);
+    }
+    return new Map([...weeks].map(([week, babies]) => [week, new Map([...babies].map(([id, list]) => [id, pick(list)]))]));
+}
+
+// Growth by age: what's typical at each week of a baby's age, across every
+// baby with a birth date (past babies too), and one baby's own line to set
+// against it
+//   records: [{ monkeyId, date, … }]; monkeys: everyone (for birth dates)
+//   pick(a baby's records that week) → their figure
+//   → { points: [{ x: week, y: the average, babies: how many, own: the baby's
+//     figure or null }] oldest first, babies: how many in all }
+function growthByAge(records, monkeys, pick, babyId) {
+    const birthDates = new Map(monkeys.filter((m) => m.birthDate).map((m) => [m.id, m.birthDate]));
+    const weeks = byAgeWeek(records, birthDates, pick);
+    const all = new Set();
+    const points = [...weeks]
+        .sort(([a], [b]) => a - b)
+        .map(([x, babies]) => {
+            const values = [...babies.values()];
+            for (const id of babies.keys()) all.add(id);
+            return {
+                x,
+                y: Math.round(values.reduce((n, v) => n + v, 0) / values.length),
+                babies: values.length,
+                own: babyId !== null && babies.has(babyId) ? Math.round(babies.get(babyId)) : null,
+            };
+        });
+    return { points, babies: all.size };
+}
+
+// Milk by age: each baby's average ml a day that week
+export const milkByAge = (feeds, monkeys, babyId = null) =>
+    growthByAge(feeds, monkeys, (list) => list.reduce((n, f) => n + f.ml, 0) / list.length, babyId);
+
+// Weight by age: each baby's last weighing that week
+export const weightByAge = (weights, monkeys, babyId = null) =>
+    growthByAge(weights, monkeys, (list) => [...list].sort((a, b) => a.date.localeCompare(b.date)).at(-1).grams, babyId);

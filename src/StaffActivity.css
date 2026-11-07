@@ -141,3 +141,58 @@
         flex: 1 1 0;
     }
 }
+
+/* The Numbers: a look at what's been done, the figure first */
+.Activity-numbers {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 4px 0 20px;
+}
+
+.Activity-numbersTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Activity-numbers dl {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.Activity-numbers dl > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+    padding: 10px 12px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Activity-numbers dd {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-strong);
+}
+
+.Activity-numbers dt {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+/* (nothing yet: it stays in its place, quieter) */
+.Activity-numbers .is-none dd {
+    color: var(--text-3);
+}
+
+@media (max-width: 559px) {
+    .Activity-numbers dl {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

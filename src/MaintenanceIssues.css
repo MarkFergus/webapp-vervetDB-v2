@@ -1,0 +1,265 @@
+/* Maintenance Issues (MaintenanceIssues.jsx). The pop-ups are Records' (and
+   sit over the Interactive Map); the search, type buttons and boxes are
+   Records → Maintenance's. */
+
+.Issues-scrim {
+    z-index: 30;
+}
+
+.Issues-dialog {
+    z-index: 31;
+    width: min(500px, calc(100vw - 24px));
+}
+
+.Issues-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.Issues-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.Issues-form .RecordsPage-dialogButtons {
+    margin-top: 0;
+}
+
+/* Which one's being fixed */
+.Issues-dialog .Issues-reminder {
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    font-size: 14px;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Issues-closeLink {
+    align-self: center;
+    padding: 4px 8px;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--text-2);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Issues-closeLink:hover:not(:disabled) {
+    color: var(--text-strong);
+}
+
+/* Urgent: red, and it says so */
+.Issues-urgent {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--danger);
+    border: 1px solid currentColor;
+    border-radius: 6px;
+}
+
+.MaintenancePage-types button.is-urgent[aria-pressed="true"] {
+    color: white;
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+
+/* The photos chosen, each with a cross to remove it */
+.Issues-photoList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Issues-photoList li {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Issues-photoList img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.Issues-photoList button {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: white;
+    background-color: var(--danger);
+    border: 2px solid var(--surface-1);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+/* The tab: Open or Past, and Report Issue */
+.Issues-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.Issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.Issues-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.Issues-item.is-urgent {
+    border-left: 4px solid var(--danger);
+}
+
+.Issues-itemMain {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.Issues-itemTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.Issues-itemTop:empty {
+    display: none;
+}
+
+.Issues-details {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.Issues-itemSide {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+/* An issue's photos, small enough for all 4 to fit a phone's row */
+.Issues-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0;
+}
+
+.Issues-photo {
+    flex: none;
+    line-height: 0;
+}
+
+.Issues-photo img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    background-color: var(--surface-2);
+    border-radius: 8px;
+}
+
+.Issues-itemButtons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.Issues-photoProblem {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 13px;
+    text-align: right;
+}
+
+/* An enclosure's page */
+.Issues-enclosure {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.Issues-enclosure h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Issues-enclosure .Issues-list {
+    align-self: stretch;
+}
+
+@media (max-width: 459px) {
+    .Issues-item {
+        flex-wrap: wrap;
+    }
+
+    .Issues-itemMain {
+        flex-basis: calc(100% - 76px);
+    }
+
+    .Issues-itemSide {
+        flex: 1 1 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+    }
+}
+
+/* (Change and Delete: in the row, not the log's corner) */
+.Issues-itemSide .MaintenanceLog-icons {
+    position: static;
+    display: inline-flex;
+    gap: 4px;
+    opacity: 1;
+}

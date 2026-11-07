@@ -131,43 +131,48 @@
     color-scheme: light;
 }
 
-/* ---- The second dark theme: Night Savannah (2026-11-02) ----
-   Warm brown-blacks with Acacia's colours brightened for the dark: olive-lime
-   Save, teal links, clay Cancel. (Its blue fills stay deep, for white text.) */
-:root[data-palette="night-savannah"] {
-    --bg: #16130e;
-    --surface-1: #201c15;
-    --surface-2: #2b261d;
-    --surface-3: #40382a;
-    --field: #1a1711;
-    --line: #353024;
-    --line-strong: #51493a;
-    --text: #f2ead8;
-    --text-2: #b5aa91;
-    --text-3: #a0957c;
-    --accent: #3fa6bc;
-    --accent-2: #7cc6d6;
-    --blue: #1f6475;
-    --blue-2: #2a7c90;
-    --green: #9cc25a;
-    --green-2: #b3d27a;
-    --on-green: #16130e;
-    --pink: #e8835e;
-    --pink-2: #f0a283;
-    --danger: #f06a55;
-    --danger-2: #f59484;
-    --amber: #eab04c;
-    --amber-text: #eab04c;
-    --on-status: #16130e;
-    --orange-text: #f0874a;
-    --text-strong: #fffaf0;
-    --wash-soft: rgba(255, 240, 210, 0.07);
-    --wash: rgba(255, 240, 210, 0.1);
-    --wash-strong: rgba(255, 240, 210, 0.16);
-    --green-wash: rgba(156, 194, 90, 0.15);
-    --bar: rgba(22, 19, 14, 0.9);
-    --bar-line: rgba(255, 240, 210, 0.08);
-    --selection: rgba(63, 166, 188, 0.35);
+/* ---- The second dark theme: Bearded Coffee (2026-11-07) ----
+   Bearded Theme Coffee Reversed (a VS Code theme): rosy brown-blacks, mint
+   links, lime Save, coral New Arrival. Its main text is brightened and its red
+   softened, for reading on a phone. (Its blue fills stay deep, for white text.) */
+:root[data-palette="bearded-coffee"] {
+    --bg: #1a1716;
+    --surface-1: #201c1b;
+    --surface-2: #2c2624;
+    --surface-3: #51403b;
+    --field: #211d1c;
+    --line: #372f2d;
+    --line-strong: #514845;
+    --text: #ecd9d3;
+    --text-2: #c8aca5;
+    --text-3: #ab9189;
+    --accent: #6eddd6;
+    --accent-2: #a3ebe6;
+    --blue: #1d6f6a;
+    --blue-2: #258a84;
+    --green: #94d652;
+    --green-2: #aee27a;
+    --on-green: #1a1716;
+    --stay: #3ceaa8;
+    --pink: #e480ad;
+    --pink-2: #eda3c5;
+    --danger: #f77a6a;
+    --danger-2: #f99d91;
+    --amber: #f7d979;
+    --amber-text: #f7d979;
+    --orange: #f09177;
+    --rescue: #9991f1;
+    --on-status: #1a1716;
+    --orange-text: #ffa777;
+    --star: #f7d979;
+    --text-strong: #fbe3dc;
+    --wash-soft: rgba(200, 172, 165, 0.08);
+    --wash: rgba(200, 172, 165, 0.12);
+    --wash-strong: rgba(200, 172, 165, 0.18);
+    --green-wash: rgba(148, 214, 82, 0.15);
+    --bar: rgba(26, 23, 22, 0.9);
+    --bar-line: rgba(200, 172, 165, 0.1);
+    --selection: rgba(240, 145, 119, 0.3);
 }
 
 /* ---- The second light theme: Pastel Safari (2026-11-02) ----

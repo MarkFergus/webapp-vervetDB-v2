@@ -21,6 +21,18 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.1.0",
+        date: "2026-11-07",
+        changes: [
+            "New Maintenance Issues: report them on the Interactive Map with a pin and photos, then Mark Fixed; also in Records > Maintenance and on enclosure pages",
+            "New Baby Care 2026 stats on the Statistics page, with milk and weight by age",
+            "New Bearded Coffee theme replaces Night Savannah",
+            "Added Behaviour to Rehabilitation records, and moved Observations to Medical",
+            "Added dates to the small charts in Milk Totals and Weights",
+            "Improved Offline Mode: the map now saves ahead of time",
+        ],
+    },
+    {
         version: "2.0.0",
         date: "2026-11-07",
         major: true,

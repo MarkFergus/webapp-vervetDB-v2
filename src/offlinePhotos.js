@@ -15,6 +15,22 @@ export function canSavePhotos() {
     return true;
 }
 
+// Saves the sanctuary map ahead of time (the service worker keeps it), so it's
+// there with no signal even if it's never been opened. Only the once: it's big,
+// and it's kept up to date whenever it's opened.
+const MAP_FILE = "/VMF_Sanctuary_Map.svg";
+export async function saveMap() {
+    if (!canSavePhotos()) return false;
+    try {
+        if (await caches.match(MAP_FILE)) return false;
+        await fetch(MAP_FILE);
+        return true;
+    } catch {
+        // Offline or a hiccup: it'll be tried again next time
+        return false;
+    }
+}
+
 export async function saveThumbnails(monkeys) {
     if (!canSavePhotos()) return;
     const urls = [...new Set(monkeys.flatMap((m) => m.img).map(thumbUrl))];

@@ -313,6 +313,8 @@ describe("viewing", () => {
         expect(muse).toHaveTextContent("Sun 25 Oct");
         expect(muse).toHaveTextContent("+38 g since Sun 18 Oct (474 g)");
         expect(muse).toHaveTextContent("A day late");
+        // (the small chart: how long a stretch it covers)
+        expect(muse.querySelector(".RecordsPage-sparkDates")).toHaveTextContent("18 Oct25 Oct");
         await user.click(within(muse).getByRole("button", { name: "History (2)" }));
         const rows = within(within(muse).getByRole("table")).getAllByRole("row").slice(1);
         expect(rows.map((r) => r.textContent)).toEqual(["Sun 25 OctA day late · Sam512 g+38 g", "Sun 18 OctSam474 g–"]);

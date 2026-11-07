@@ -627,8 +627,8 @@
     min-width: 0;
 }
 
-:root[data-palette="night-savannah"] .RecordsPage-spark {
-    --spark: #d9b45a;
+:root[data-palette="bearded-coffee"] .RecordsPage-spark {
+    --spark: #f09177;
 }
 
 :root[data-theme="light"] .RecordsPage-spark {
@@ -642,6 +642,14 @@
 .RecordsPage-spark svg {
     display: block;
     overflow: visible;
+}
+
+.RecordsPage-sparkDates {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-3);
 }
 
 .RecordsPage-sparkLine {

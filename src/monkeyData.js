@@ -760,6 +760,272 @@ export async function deleteMaintenance(id) {
     if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever wrote it in, can delete it.");
 }
 
+// ---- Maintenance issues: what needs doing (maintenanceIssues.js) ----
+
+const ISSUE_BUCKET = "maintenance-issues";
+const ISSUE_PHOTO_WIDTH = 1600;
+const ISSUE_COLUMNS =
+    "id, enclosure_id, map_x, map_y, details, urgent, photo_paths, status, close_reason, report_id, closed_at, closed_by_name, reported_by, reported_by_name, reported_at";
+
+const toAppIssue = (row) => ({
+    id: row.id,
+    enclosureId: row.enclosure_id,
+    mapX: row.map_x,
+    mapY: row.map_y,
+    details: row.details,
+    urgent: row.urgent,
+    photoPaths: row.photo_paths ?? [],
+    status: row.status,
+    closeReason: row.close_reason,
+    reportId: row.report_id,
+    closedAt: row.closed_at,
+    closedByName: row.closed_by_name,
+    reportedBy: row.reported_by_name,
+    reportedById: row.reported_by,
+    reportedAt: row.reported_at,
+});
+
+// What's on this phone and not in the database's answer yet
+function withOutboxIssues(list) {
+    let out = list.map((i) => ({ ...i, id: displayId(i.id) }));
+    for (const { payload, optimistic } of outboxEntries("issue-add")) {
+        if (!out.some((i) => sameId(i.id, payload.localId))) out = [optimistic, ...out];
+    }
+    for (const { payload } of outboxEntries("issue-photos")) {
+        out = out.map((i) => (sameId(i.id, payload.id) ? { ...i, photoPaths: [...new Set([...i.photoPaths, ...payload.paths])] } : i));
+    }
+    for (const kind of ["issue-fix", "issue-close"]) {
+        for (const { payload, optimistic, status } of outboxEntries(kind)) {
+            out = out.map((i) => (sameId(i.id, payload.id) && (status !== "sent" || i.status === "open") ? { ...i, ...optimistic } : i));
+        }
+    }
+    return out;
+}
+
+// Every issue, newest first. (Before maintenance-issues.sql has run: none.)
+export async function loadMaintenanceIssues() {
+    const { data, error } = await supabase.from("maintenance_issues").select(ISSUE_COLUMNS).order("reported_at", { ascending: false });
+    if (error) {
+        // (42703: the first version of the file, with one photo)
+        if (["42P01", "PGRST205", "42703"].includes(error.code)) return withOutboxIssues([]);
+        console.error("Loading the maintenance issues failed:", error);
+        if (!error.code) return withOutboxIssues([]);
+        throw new Error("Couldn't load the maintenance issues. Please check your connection.");
+    }
+    return withOutboxIssues(data.map(toAppIssue));
+}
+
+// A photo, shrunk to send (couldn't here: as it is)
+async function shrunkPhoto(file, width) {
+    try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, width / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        return (await new Promise((done) => canvas.toBlob(done, "image/jpeg", 0.85))) ?? file;
+    } catch {
+        return file;
+    }
+}
+
+// Photos, kept on the phone and on their way, each an entry of its own → their
+// paths in storage
+async function sendIssuePhotos(photos) {
+    const paths = [];
+    for (const photo of photos) {
+        const path = `${newRef()}.jpg`;
+        await keepPhoto(path, await shrunkPhoto(photo, ISSUE_PHOTO_WIDTH));
+        try {
+            await submit("issue-photo", { path }, { path });
+        } catch (error) {
+            await forgetPhoto(path);
+            throw error;
+        }
+        paths.push(path);
+    }
+    return paths;
+}
+
+// Reports an issue ({ enclosureId, mapX, mapY, details, urgent, photos: files }).
+// Works with no signal. Returns the issue.
+export async function addIssue({ enclosureId, mapX = null, mapY = null, details, urgent, photos = [] }) {
+    refuseIfTooLong();
+    const me = outboxUser();
+    const ref = newRef();
+    const localId = newLocalId();
+    const photoPaths = await sendIssuePhotos(photos);
+    const optimistic = {
+        id: localId,
+        enclosureId,
+        mapX,
+        mapY,
+        details,
+        urgent,
+        photoPaths,
+        status: "open",
+        closeReason: null,
+        reportId: null,
+        closedAt: null,
+        closedByName: null,
+        reportedBy: me?.name ?? null,
+        reportedById: me?.id ?? null,
+        reportedAt: new Date().toISOString(),
+    };
+    const payload = { ref, localId, enclosureId, mapX, mapY, details, urgent, photoPaths };
+    const { result } = await submit("issue-add", payload, optimistic);
+    return { ...result, id: displayId(result.id) };
+}
+
+registerSender(
+    "issue-photo",
+    async ({ path }) => {
+        const blob = await keptPhoto(path);
+        if (!blob) throw { code: "P0001", message: "An issue's photo has gone from this phone." };
+        const { error } = await supabase.storage.from(ISSUE_BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        // (already there: sent before the answer got back)
+        if (error && !/already exists|duplicate/i.test(error.message ?? "") && String(error.statusCode) !== "409") {
+            console.error("Uploading an issue's photo failed:", error);
+            // (the database said no, and would again; anything else: tried later)
+            throw { code: /^4/.test(String(error.statusCode ?? "")) ? "P0001" : "", message: error.message };
+        }
+        await forgetPhoto(path);
+        return { path };
+    },
+    (error) => error.message
+);
+
+registerSender(
+    "issue-add",
+    async ({ ref, enclosureId, mapX, mapY, details, urgent, photoPaths }) => {
+        const row = { client_ref: ref, enclosure_id: enclosureId, map_x: mapX, map_y: mapY, details, urgent, photo_paths: photoPaths };
+        try {
+            return toAppIssue(await insertOnce("maintenance_issues", row, ISSUE_COLUMNS));
+        } catch (error) {
+            // (the database isn't ready: said so, rather than holding up what's behind it)
+            if (["42703", "PGRST204", "PGRST205", "42P01"].includes(error.code)) {
+                throw { code: "P0001", message: "Maintenance Issues isn't ready yet. Please try again a little later." };
+            }
+            throw error;
+        }
+    },
+    (error) => (error.code === "P0001" ? error.message : saveProblem(error).message)
+);
+
+// More photos on an issue already reported. Works with no signal. Returns the
+// issue.
+export async function addIssuePhotos(issue, photos) {
+    const paths = await sendIssuePhotos(photos);
+    await submit("issue-photos", { id: issue.id, paths }, { paths }, { needs: [issue.id] });
+    return { ...issue, photoPaths: [...issue.photoPaths, ...paths] };
+}
+
+registerSender(
+    "issue-photos",
+    async ({ id, paths }) => {
+        // (added to what's there now: someone else may have added some)
+        const realId = resolveId(id);
+        const { data, error } = await supabase.from("maintenance_issues").select("photo_paths").eq("id", realId).single();
+        if (error) throw error;
+        const { error: saveError } = await supabase
+            .from("maintenance_issues")
+            .update({ photo_paths: [...new Set([...(data.photo_paths ?? []), ...paths])] })
+            .eq("id", realId);
+        if (saveError) throw saveError;
+        return {};
+    },
+    (error) => (error.code === "23514" ? "An issue can only have 4 photos." : saveProblem(error).message)
+);
+
+// Fixed: adds its Maintenance report ({ doneOn, kind, details }), and the issue
+// closes. Works with no signal. → { issue, report }
+export async function fixIssue(issue, values) {
+    const report = await addMaintenance(issue.enclosureId, values);
+    const optimistic = { status: "fixed", reportId: report.id, closedAt: new Date().toISOString(), closedByName: outboxUser()?.name ?? null };
+    await submit("issue-fix", { id: issue.id, reportId: report.id }, optimistic, { needs: [issue.id, report.id] });
+    return { issue: { ...issue, ...optimistic }, report: { ...report, enclosureId: issue.enclosureId } };
+}
+
+registerSender(
+    "issue-fix",
+    async ({ id, reportId }) => {
+        // (someone else got there first: theirs stands)
+        const { error } = await supabase
+            .from("maintenance_issues")
+            .update({ status: "fixed", report_id: resolveId(reportId) })
+            .eq("id", resolveId(id))
+            .eq("status", "open");
+        if (error) throw error;
+        return {};
+    },
+    (error) => saveProblem(error).message
+);
+
+// Closed without a report (a false alarm, a duplicate): says why. Works with
+// no signal. Returns the issue.
+export async function closeIssue(issue, reason) {
+    const optimistic = { status: "closed", closeReason: reason, closedAt: new Date().toISOString(), closedByName: outboxUser()?.name ?? null };
+    await submit("issue-close", { id: issue.id, reason }, optimistic, { needs: [issue.id] });
+    return { ...issue, ...optimistic };
+}
+
+registerSender(
+    "issue-close",
+    async ({ id, reason }) => {
+        const { error } = await supabase
+            .from("maintenance_issues")
+            .update({ status: "closed", close_reason: reason })
+            .eq("id", resolveId(id))
+            .eq("status", "open");
+        if (error) throw error;
+        return {};
+    },
+    (error) => saveProblem(error).message
+);
+
+// Changes an issue's place, details or urgency. Returns the saved issue.
+export async function saveIssue(id, { enclosureId, details, urgent }) {
+    const { data, error } = await supabase
+        .from("maintenance_issues")
+        .update({ enclosure_id: enclosureId, details, urgent })
+        .eq("id", resolveId(id))
+        .select(ISSUE_COLUMNS)
+        .single();
+    if (error) {
+        console.error("Saving the issue failed:", error);
+        throw saveProblem(error);
+    }
+    return { ...toAppIssue(data), id };
+}
+
+// Deletes an issue and its photos (admins)
+export async function deleteIssue(issue) {
+    const { data, error } = await supabase.from("maintenance_issues").delete().eq("id", resolveId(issue.id)).select("id");
+    if (error) {
+        console.error("Deleting the issue failed:", error);
+        throw saveProblem(error);
+    }
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete an issue.");
+    if (issue.photoPaths.length) {
+        const { error: photoError } = await supabase.storage.from(ISSUE_BUCKET).remove(issue.photoPaths);
+        if (photoError) console.warn("Deleting the issue's photos failed:", photoError);
+    }
+}
+
+// An issue's photo, to show: from this phone while it's waiting to send; null
+// if it can't be fetched just now
+export async function issuePhotoUrl(path) {
+    const waiting = outboxEntries("issue-photo").some((e) => e.status !== "sent" && e.payload.path === path);
+    if (waiting) {
+        const blob = await keptPhoto(path).catch(() => null);
+        if (blob) return URL.createObjectURL(blob);
+    }
+    const { data, error } = await supabase.storage.from(ISSUE_BUCKET).createSignedUrl(path, 3600);
+    if (error) return null;
+    return data.signedUrl;
+}
+
 // ---- Integration reports: staff reports on how a monkey's integration is going ----
 
 // An entry, as the site uses it: { id, from ("2026-10-04"), to, report,
@@ -2006,6 +2272,21 @@ export async function loadStaff() {
 // staff-activity-dates.sql): one person's changes (person null: everyone's)
 // from since up to until (Dates), newest first, as staff_activity gives
 // them. Throws a message to show.
+// The Numbers: how much one person (null: everyone) has done in a period
+// (supabase/staff-stats.sql) → { injuries: 4, … }. Throws a message to show.
+export async function loadStaffStats(person, since, until) {
+    const { data, error } = await supabase.rpc("staff_stats", {
+        person,
+        since: since.toISOString(),
+        until: until.toISOString(),
+    });
+    if (error) {
+        if (error.code === "PGRST202") throw new Error("The numbers aren't ready yet: supabase/staff-stats.sql needs to be run.");
+        throw new Error("Couldn't load the numbers right now. Please check your connection and try again.");
+    }
+    return data ?? {};
+}
+
 export async function loadStaffActivity(person, since, until) {
     const { data, error } = await supabase.rpc("staff_activity", {
         person,
@@ -2244,6 +2525,7 @@ const toAppSheet = (row) => ({
     submittedByName: row.submitted_by_name ?? null,
     approvedByName: row.approved_by_name ?? null,
     returnNote: row.return_note ?? null,
+    photoEmailedAt: row.photo_emailed_at ?? null,
     lines: (row.deworming_lines ?? []).map((l) => ({
         id: l.id,
         monkeyId: l.monkey_id,
@@ -2272,7 +2554,7 @@ const toAppSheet = (row) => ({
 
 const SHEET_COLUMNS = "id, group_key, group_name, session, start_date, instructions, status, prepared_by_name";
 const resultColumns = (lineColumns) =>
-    "started_on, staff_names, day_notes, photos, days_done, submitted_by_name, approved_by_name, return_note, " +
+    "started_on, staff_names, day_notes, photos, days_done, submitted_by_name, approved_by_name, return_note, photo_emailed_at, " +
     `deworming_lines (id, monkey_id, medication, dose, days, record_text, ${lineColumns}` +
     "deworming_doses (day, result, food, note, medication, dose))";
 // (deworming-additions.sql: the monkeys staff added, and Day 4)

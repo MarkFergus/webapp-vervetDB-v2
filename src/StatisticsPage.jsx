@@ -1,5 +1,6 @@
+import { currentBabySeason } from "./ages";
 import { useEffect, useId, useRef, useState } from "react";
-import { IconChartBar, IconSortAscending, IconSortDescending, IconTable } from "@tabler/icons-react";
+import { IconChartBar, IconSortAscending, IconSortDescending, IconTable, IconTrophy } from "@tabler/icons-react";
 import { bySection, hasTroop, isCareUnit, isInside, sizeText } from "./enclosures";
 import { fullName } from "./places";
 import { SPECIES } from "./species";
@@ -18,10 +19,16 @@ import {
     ranked,
     BABY_CARE,
     babyAgeText,
-    milkPerDay,
+    heaviestBaby,
+    highestMilk,
+    largestWeeklyGain,
+    milkAmount,
+    totalMilk,
+    youngestArrival,
+    milkByAge,
+    seasonBabies,
     sectionLabel,
-    weightPerWeek,
-    weightsByDate,
+    weightByAge,
     youngestOldest,
     sexByTroop,
     spaceByEnclosure,
@@ -338,9 +345,6 @@ const shortDay = (date) => {
     return `${d} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1]}`;
 };
 
-// A change: "+18 ml", "−5 ml", "±0 ml"
-const changeText = (n, unit) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString("en-GB")} ${unit}`;
-
 // Clean steps for an axis: 0 to a round number above the highest, in 4
 function niceTicks(most) {
     const raw = Math.max(1, most) / 4;
@@ -349,12 +353,14 @@ function niceTicks(most) {
     return [0, 1, 2, 3, 4].map((i) => i * step);
 }
 
-// A line over time (one series): a 2px line with a faint wash under it, a
-// dot per point, the last value labelled at the end; a crosshair finds the
-// nearest point under the pointer (or arrow keys, once focused)
-//   points: [{ x: "2026-10-24", y }] oldest first; unit: "ml", "g"
-//   xLabel(x): how a point's date reads ("24 Oct", "Week of 19 Oct")
-function LineChart({ points, unit, xLabel = shortDay, label }) {
+// A week of age on the axis and in words
+const weekText = (week) => `Week ${week + 1}`;
+
+// Growth by age: the average across every baby, by week of age, and (a baby
+// picked) their own line to set against it. Weeks are spaced true to size, so a
+// gap in the records looks like one.
+//   points: from milkByAge / weightByAge; name: the baby picked, or null
+function AgeChart({ points, unit, name, label }) {
     const boxRef = useRef(null);
     const [width, setWidth] = useState(600);
     const [active, setActive] = useState(null); // a point's index
@@ -365,34 +371,36 @@ function LineChart({ points, unit, xLabel = shortDay, label }) {
         watch.observe(box);
         return () => watch.disconnect();
     }, []);
-    const height = 200;
-    // Each point labelled with its value and the change since the one before
-    // (when they fit: up to 14, with room between them); otherwise just the
-    // latest, at the end of the line
-    const labelAll = points.length <= 14 && (width - 100) / Math.max(1, points.length - 1) >= 46;
-    const pad = { left: 44, right: labelAll ? 34 : 56, top: labelAll ? 40 : 14, bottom: 26 };
-    const ticks = niceTicks(Math.max(...points.map((p) => p.y)));
+    const own = points.filter((p) => p.own !== null);
+    const height = 220;
+    const pad = { left: 44, right: 70, top: 14, bottom: 26 };
+    const ticks = niceTicks(Math.max(...points.map((p) => Math.max(p.y, p.own ?? 0))));
     const top = ticks.at(-1);
+    const first = points[0].x;
+    const last = points.at(-1).x;
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
-    const xAt = (i) => pad.left + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+    const xAt = (week) => pad.left + (last === first ? plotW / 2 : ((week - first) / (last - first)) * plotW);
     const yAt = (y) => pad.top + plotH - (y / top) * plotH;
-    const line = points.map((p, i) => `${i ? "L" : "M"}${xAt(i)},${yAt(p.y)}`).join(" ");
-    const area = `${line} L${xAt(points.length - 1)},${yAt(0)} L${xAt(0)},${yAt(0)} Z`;
-    // The labelled dates: every one (while every point's labelled), or
-    // else the first, the last, and one between
-    const labelled = labelAll
-        ? points.map((_, i) => i)
-        : [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
-    const last = points.at(-1);
+    const path = (list, value) => list.map((p, i) => `${i ? "L" : "M"}${xAt(p.x)},${yAt(value(p))}`).join(" ");
+    // (the first, the last, and evenly between, as many as fit)
+    const steps = Math.min(Math.floor(plotW / 70), last - first);
+    const weeksShown = [...new Set(Array.from({ length: steps + 1 }, (_, i) => first + Math.round(((last - first) * i) / Math.max(1, steps))))];
     const showDots = points.length <= 40;
+    const amount = (n) => `${n.toLocaleString("en-GB")} ${unit}`;
+    const lastAverage = points.at(-1);
+    const lastOwn = own.at(-1);
+    // The lines' ends named, kept apart if they'd overlap
+    const ownY = lastOwn ? yAt(lastOwn.own) : null;
+    let averageY = yAt(lastAverage.y);
+    if (lastOwn && lastOwn.x === last && Math.abs(averageY - ownY) < 14) averageY = ownY + (averageY >= ownY ? 14 : -14);
 
     function nearest(event) {
         const box = event.currentTarget.getBoundingClientRect();
         const x = ((event.clientX - box.left) / box.width) * width;
         let best = 0;
-        points.forEach((_, i) => {
-            if (Math.abs(xAt(i) - x) < Math.abs(xAt(best) - x)) best = i;
+        points.forEach((p, i) => {
+            if (Math.abs(xAt(p.x) - x) < Math.abs(xAt(points[best].x) - x)) best = i;
         });
         setActive(best);
     }
@@ -405,88 +413,128 @@ function LineChart({ points, unit, xLabel = shortDay, label }) {
     const point = active === null ? null : points[active];
 
     return (
-        <div className="Stats-line" ref={boxRef}>
-            <svg
-                width={width}
-                height={height}
-                viewBox={`0 0 ${width} ${height}`}
-                role="img"
-                aria-label={`${label}: ${points.length} ${points.length === 1 ? "point" : "points"}, the latest ${last.y.toLocaleString("en-GB")} ${unit} (${xLabel(last.x)}). Use the arrow keys to step through them.`}
-                tabIndex={0}
-                onPointerMove={nearest}
-                onPointerLeave={() => setActive(null)}
-                onFocus={() => setActive(points.length - 1)}
-                onBlur={() => setActive(null)}
-                onKeyDown={onKeyDown}
-            >
-                {/* The grid: hairlines at clean steps */}
-                {ticks.map((t) => (
-                    <g key={t}>
-                        <line className="Stats-gridline" x1={pad.left} x2={width - pad.right} y1={yAt(t)} y2={yAt(t)} />
-                        <text className="Stats-axis" x={pad.left - 8} y={yAt(t)} textAnchor="end" dominantBaseline="middle">
-                            {t >= 1000 ? `${t / 1000}k` : t}
-                        </text>
-                    </g>
-                ))}
-                {labelled.map((i) => (
-                    <text key={i} className="Stats-axis" x={xAt(i)} y={height - 6} textAnchor="middle">
-                        {xLabel(points[i].x)}
-                    </text>
-                ))}
-                <path className="Stats-lineArea" d={area} />
-                <path className="Stats-linePath" d={line} />
-                {showDots &&
-                    points.map((p, i) => <circle key={p.x} className="Stats-lineDot" cx={xAt(i)} cy={yAt(p.y)} r={4} />)}
-                {labelAll ? (
-                    // Every point: its value, and the change since the one before
-                    points.map((p, i) => (
-                        <g key={p.x}>
-                            {i > 0 && (
-                                <text className="Stats-lineChange" x={xAt(i)} y={yAt(p.y) - 26} textAnchor="middle">
-                                    {changeText(p.y - points[i - 1].y, unit)}
-                                </text>
-                            )}
-                            <text className="Stats-lineValue" x={xAt(i)} y={yAt(p.y) - 11} textAnchor="middle">
-                                {p.y.toLocaleString("en-GB")} {unit}
+        <>
+            {name && (
+                <ul className="Stats-ageKey" aria-label="Lines">
+                    <li>
+                        <span className="Stats-ageSwatch" aria-hidden="true" />
+                        {name}
+                    </li>
+                    <li>
+                        <span className="Stats-ageSwatch is-average" aria-hidden="true" />
+                        Average
+                    </li>
+                </ul>
+            )}
+            <div className="Stats-line" ref={boxRef}>
+                <svg
+                    width={width}
+                    height={height}
+                    viewBox={`0 0 ${width} ${height}`}
+                    role="img"
+                    aria-label={`${label}: ${weekText(first)} to ${weekText(last)}, ${amount(points[0].y)} to ${amount(lastAverage.y)} on average`}
+                    tabIndex={0}
+                    onPointerMove={nearest}
+                    onPointerLeave={() => setActive(null)}
+                    onFocus={() => setActive(points.length - 1)}
+                    onBlur={() => setActive(null)}
+                    onKeyDown={onKeyDown}
+                >
+                    {ticks.map((t) => (
+                        <g key={t}>
+                            <line className="Stats-gridline" x1={pad.left} x2={width - pad.right} y1={yAt(t)} y2={yAt(t)} />
+                            <text className="Stats-axis" x={pad.left - 8} y={yAt(t)} textAnchor="end" dominantBaseline="middle">
+                                {t >= 1000 ? `${t / 1000}k` : t}
                             </text>
                         </g>
-                    ))
-                ) : (
-                    // The latest value, at the end of the line
-                    <text className="Stats-lineEnd" x={xAt(points.length - 1) + 10} y={yAt(last.y)} dominantBaseline="middle">
-                        {last.y.toLocaleString("en-GB")} {unit}
-                    </text>
-                )}
-                {/* The crosshair: where the pointer (or arrow keys) is */}
-                {point && (
-                    <g>
-                        <line className="Stats-crosshair" x1={xAt(active)} x2={xAt(active)} y1={pad.top} y2={yAt(0)} />
-                        <circle className="Stats-lineDot is-active" cx={xAt(active)} cy={yAt(point.y)} r={5} />
-                    </g>
-                )}
-            </svg>
-            {point && (
-                <div
-                    className="Stats-tooltip is-inChart"
-                    role="status"
-                    style={{ left: `${(xAt(active) / width) * 100}%`, top: yAt(point.y) }}
-                >
-                    <strong>
-                        {point.y.toLocaleString("en-GB")} {unit}
-                    </strong>
-                    <span>{xLabel(point.x)}</span>
-                    {active > 0 && (
-                        <span>{changeText(point.y - points[active - 1].y, unit)} since the one before</span>
-                    )}
-                    {/* (that day's notes) */}
-                    {point.notes?.map((note) => (
-                        <span key={note} className="Stats-tooltipNote">
-                            {note}
-                        </span>
                     ))}
-                </div>
+                    {weeksShown.map((week) => (
+                        <text key={week} className="Stats-axis" x={xAt(week)} y={height - 6} textAnchor="middle">
+                            {weekText(week)}
+                        </text>
+                    ))}
+                    {/* A baby picked: the average steps back to a dashed grey line */}
+                    <path className={`Stats-linePath${name ? " is-average" : ""}`} d={path(points, (p) => p.y)} />
+                    {showDots && !name && points.map((p) => <circle key={p.x} className="Stats-lineDot" cx={xAt(p.x)} cy={yAt(p.y)} r={4} />)}
+                    {own.length > 0 && <path className="Stats-linePath" d={path(own, (p) => p.own)} />}
+                    {own.map((p) => (
+                        <circle key={p.x} className="Stats-lineDot" cx={xAt(p.x)} cy={yAt(p.own)} r={4} />
+                    ))}
+                    <text className="Stats-lineEnd" x={xAt(last) + 10} y={averageY} dominantBaseline="middle">
+                        {name ? "Average" : amount(lastAverage.y)}
+                    </text>
+                    {lastOwn && (
+                        <text className="Stats-lineEnd" x={xAt(lastOwn.x) + 10} y={ownY} dominantBaseline="middle">
+                            {name.length > 9 ? `${name.slice(0, 8)}…` : name}
+                        </text>
+                    )}
+                    {point && (
+                        <g>
+                            <line className="Stats-crosshair" x1={xAt(point.x)} x2={xAt(point.x)} y1={pad.top} y2={yAt(0)} />
+                            <circle className="Stats-lineDot is-active" cx={xAt(point.x)} cy={yAt(point.own ?? point.y)} r={5} />
+                        </g>
+                    )}
+                </svg>
+                {point && (
+                    <div
+                        className="Stats-tooltip is-inChart"
+                        role="status"
+                        style={{ left: `${(xAt(point.x) / width) * 100}%`, top: yAt(point.own ?? point.y) }}
+                    >
+                        <strong>{weekText(point.x)}</strong>
+                        {point.own !== null && (
+                            <span>
+                                {name}: {amount(point.own)}
+                            </span>
+                        )}
+                        <span>
+                            Average: {amount(point.y)} ({point.babies} {point.babies === 1 ? "baby" : "babies"})
+                        </span>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
+
+// A by-age chart in its card, with its own baby picker
+//   growth(baby's id or null) → milkByAge / weightByAge's answer
+//   babies: who can be picked; words: its headline; none: with no records
+function AgeCard({ title, words, none, unit, babies, growth }) {
+    const [babyId, setBabyId] = useState("");
+    const chosen = babies.find((m) => String(m.id) === babyId) ?? null;
+    const { points, babies: count } = growth(chosen ? chosen.id : null);
+    return (
+        <Card
+            title={title}
+            headline={`${words}, from ${count} ${count === 1 ? "baby" : "babies"} with a birth date`}
+            wide
+            table={{
+                columns: ["Age", `Average (${unit})`, "Babies", ...(chosen ? [`${chosen.name} (${unit})`] : [])],
+                rows: points.map((p) => [weekText(p.x), p.y, p.babies, ...(chosen ? [p.own ?? "–"] : [])]),
+            }}
+        >
+            {points.length ? (
+                <>
+                    {babies.length > 0 && (
+                        <label className="Stats-select Stats-agePick">
+                            <span className="visually-hidden">Compare a baby on {title}</span>
+                            <select value={babyId} onChange={(e) => setBabyId(e.target.value)}>
+                                <option value="">Average only</option>
+                                {babies.map((m) => (
+                                    <option key={m.id ?? m.name} value={m.id}>
+                                        {m.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+                    <AgeChart points={points} unit={unit} name={chosen?.name ?? null} label={title} />
+                </>
+            ) : (
+                <p className="Stats-none">{none}</p>
             )}
-        </div>
+        </Card>
     );
 }
 
@@ -521,13 +569,13 @@ function Tiles({ stats }) {
 const NO_BABY_RECORDS = { feeds: [], weights: [] };
 
 // Baby Care's own stats (not sections, introcages or age groups): its
-// babies, female to male, the youngest and oldest; milk drunk per day and
-// weight per week, for all the babies or one
+// babies, the youngest and oldest, the youngest arrival, the highest milk total
+// and heaviest weight,
+// the largest weekly gain, female to male; milk and weight by age
 //   babies: the monkeys in Baby Care
 //   records: { feeds: [{ monkeyId, date, ml }], weights: [{ monkeyId,
 //   date, grams }] } (empty until they're recorded)
-function BabyCareStats({ babies, records: given }) {
-    const [babyId, setBabyId] = useState("");
+export function BabyCareStats({ babies, monkeys = babies, records: given }) {
     // The records: given (tests), or loaded from the database (milk totals
     // and weights, entered on the Records page: baby-care-records.sql)
     const [loaded, setLoaded] = useState(NO_BABY_RECORDS);
@@ -547,95 +595,108 @@ function BabyCareStats({ babies, records: given }) {
         };
     }, [given]);
     const records = given ?? loaded;
-    const chosen = babies.find((m) => String(m.id) === babyId) ?? null;
     const { youngest, oldest } = youngestOldest(babies);
     const sex = statsFor(babies).sex;
-    const baby = (m) =>
+    // (their age first, it's what you came for; then whose)
+    const ageTile = (m) =>
         m
-            ? { value: m.name, sub: babyAgeText(m.birthDate) }
+            ? { value: babyAgeText(m.birthDate).replace(/ old$/, ""), who: m.name }
             : { value: "–", sub: babies.length ? "birth dates not recorded" : "no babies" };
+    const earliest = youngestArrival(babies);
+    const mostMilk = highestMilk(records.feeds, babies);
+    const heaviest = heaviestBaby(records.weights, babies);
+    const allMilk = totalMilk(records.feeds, babies);
+    const biggestGain = largestWeeklyGain(records.weights, babies);
     const tiles = [
         { label: "Babies", value: babies.length },
         {
-            label: "Female : male",
-            value: `${sex.female} : ${sex.male}`,
-            sub: sex.unknown ? `${sex.unknown} not known` : null,
+            label: "Youngest arrival",
+            ...(earliest
+                ? { value: earliest.age, who: earliest.baby.name, sub: shortDay(earliest.date) }
+                : { value: "–", sub: "arrival dates not recorded" }),
         },
-        { label: "Youngest baby", ...baby(youngest) },
-        { label: "Oldest baby", ...baby(oldest) },
+        { label: "Youngest baby", ...ageTile(youngest) },
+        { label: "Oldest baby", ...ageTile(oldest) },
+        { label: "Total milk drank", value: allMilk ? milkAmount(allMilk) : "–", sub: allMilk ? "this season" : "no milk records yet" },
+        {
+            label: "Highest milk total",
+            trophy: true,
+            ...(mostMilk
+                ? { value: `${mostMilk.ml.toLocaleString("en-GB")} ml`, who: mostMilk.baby.name, sub: shortDay(mostMilk.date) }
+                : { value: "–", sub: "no milk records yet" }),
+        },
+        {
+            label: "Heaviest weight",
+            trophy: true,
+            ...(heaviest
+                ? { value: `${heaviest.grams.toLocaleString("en-GB")} g`, who: heaviest.baby.name, sub: shortDay(heaviest.date) }
+                : { value: "–", sub: "no weights yet" }),
+        },
+        {
+            label: "Largest weekly gain",
+            trophy: true,
+            ...(biggestGain
+                ? { value: `+${biggestGain.gain.toLocaleString("en-GB")} g`, who: biggestGain.baby.name, sub: shortDay(biggestGain.date) }
+                : { value: "–", sub: "needs two weighings" }),
+        },
     ];
-    const id = chosen ? chosen.id : null;
-    const milk = milkPerDay(records.feeds, id);
-    // (one baby: every weighing, on its day; all of them: the average each
-    // week)
-    const weights = chosen ? weightsByDate(records.weights, id) : weightPerWeek(records.weights, id);
-    const whose = chosen ? chosen.name : "All babies";
-    const weekLabel = (x) => `w/c ${shortDay(x)}`;
+    const sexParts = [
+        { key: "female", label: "Female", value: sex.female },
+        { key: "male", label: "Male", value: sex.male },
+        { key: "unknown", label: "Unknown", value: sex.unknown },
+    ];
     return (
         <>
-            <dl className="Stats-tiles">
+            <dl className="Stats-tiles is-babyCare">
                 {tiles.map((t) => (
                     <div key={t.label}>
-                        <dt>{t.label}</dt>
+                        <dt>
+                            {t.trophy && <IconTrophy className="Stats-trophy" size={15} aria-hidden="true" />}
+                            {t.label}
+                        </dt>
                         <dd>
                             {t.value}
+                            {t.who && <span className="Stats-tileWho">{t.who}</span>}
                             {t.sub && <span className="Stats-tileSub">{t.sub}</span>}
                         </dd>
                     </div>
                 ))}
             </dl>
 
-            {/* Whose milk and weight: all the babies, or one */}
             {babies.length > 0 && (
-                <div className="Stats-filters">
-                    <label className="Stats-select">
-                        <span className="visually-hidden">Show milk and weight for</span>
-                        <select value={babyId} onChange={(e) => setBabyId(e.target.value)}>
-                            <option value="">All babies</option>
-                            {babies.map((m) => (
-                                <option key={m.id ?? m.name} value={m.id}>
-                                    {m.name}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                <div className="Stats-grid">
+                    <Card
+                        title="Female and male"
+                        headline={`${percent(sex.female, babies.length)}% female, ${percent(sex.male, babies.length)}% male`}
+                        wide
+                        table={{
+                            columns: ["Sex", "Babies", "%"],
+                            rows: sexParts.map((p) => [p.label, p.value, `${percent(p.value, babies.length)}%`]),
+                        }}
+                    >
+                        <PartsBar parts={sexParts} total={babies.length} />
+                    </Card>
                 </div>
             )}
 
+            {/* What's typical at each age, first */}
             <div className="Stats-grid">
-                <Card
-                    title="Milk intake per day"
-                    headline={chosen ? `${whose}'s milk, in ml a day` : "All the babies' milk together, in ml a day"}
-                    wide
-                    table={{ columns: ["Day", "Milk (ml)", "Notes"], rows: milk.map((p) => [shortDay(p.x), p.y, p.notes.join("; ")]) }}
-                >
-                    {milk.length ? (
-                        <LineChart points={milk} unit="ml" label="Milk intake per day" />
-                    ) : (
-                        <p className="Stats-none">No milk records yet. They'll show here once they're being recorded.</p>
-                    )}
-                </Card>
-                <Card
-                    title={chosen ? "Weight" : "Weight per week"}
-                    headline={chosen ? `${whose}'s weight, in grams (every weighing)` : "The babies' average weight, in grams (each one's last weighing that week)"}
-                    wide
-                    table={
-                        chosen
-                            ? { columns: ["Day", "Weight (g)"], rows: weights.map((p) => [shortDay(p.x), p.y]) }
-                            : { columns: ["Week", "Weight (g)"], rows: weights.map((p) => [weekLabel(p.x), p.y]) }
-                    }
-                >
-                    {weights.length ? (
-                        <LineChart
-                            points={weights}
-                            unit="g"
-                            xLabel={chosen ? shortDay : weekLabel}
-                            label={chosen ? "Weight" : "Weight per week"}
-                        />
-                    ) : (
-                        <p className="Stats-none">No weights recorded yet. They'll show here once they're being recorded.</p>
-                    )}
-                </Card>
+                <AgeCard
+                    title="Milk by age"
+                    words="Average ml a day at each week of age"
+                    none="No milk records yet for babies with a birth date."
+                    unit="ml"
+                    babies={babies}
+                    growth={(id) => milkByAge(records.feeds, monkeys, id)}
+                />
+                <AgeCard
+                    title="Weight by age"
+                    words="Average weight in grams at each week of age"
+                    none="No weights recorded yet for babies with a birth date."
+                    unit="g"
+                    babies={babies}
+                    growth={(id) => weightByAge(records.weights, monkeys, id)}
+                />
             </div>
         </>
     );
@@ -712,7 +773,7 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
                         <option value="">Whole Sanctuary</option>
                         {/* Baby Care next, on its own (its own stats); the
                             other care units, Quarantine and Sickbay: later */}
-                        {babyCareUnit && <option value={babyCareUnit.id}>{BABY_CARE}</option>}
+                        {babyCareUnit && <option value={babyCareUnit.id}>{`${BABY_CARE} ${currentBabySeason()}`}</option>}
                         {bySection(enclosures.filter((e) => !isCareUnit(e)), sections).map(({ section, enclosures: list }) => (
                             <optgroup key={section} label={section}>
                                 {list.map((e) => (
@@ -743,7 +804,7 @@ function StatisticsPage({ monkeys, enclosures, sections, babyRecords, inert = fa
 
             {enclosure?.name === BABY_CARE ? (
                 // Baby Care: its own stats
-                <BabyCareStats key={enclosure.id} babies={group} records={babyRecords} />
+                <BabyCareStats key={enclosure.id} babies={seasonBabies(monkeys, enclosures)} monkeys={monkeys} records={babyRecords} />
             ) : stats.total === 0 ? (
                 <p className="Stats-none">No monkeys here at the moment.</p>
             ) : (

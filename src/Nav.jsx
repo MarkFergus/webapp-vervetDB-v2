@@ -71,6 +71,7 @@ function Nav({
     showSearch = true, // false: no search box (the game)
     barsInert = false, // a pop-up is open: the side rail and bottom bar wait
     enclosures = [], // the Interactive Map: the places to tap
+    canIssues = false, // the Interactive Map: maintenance issues (any role but Limited)
     monkeys = [], // … and who lives there
 }) {
     const { role } = useAuth();
@@ -251,7 +252,7 @@ function Nav({
                         onScan={() => setScanOpen(true)}
                         inert={barsInert || anyPopUp}
                     />
-                    {mapOpen && <WholeMap onClose={() => setMapOpen(false)} enclosures={enclosures} monkeys={monkeys} />}
+                    {mapOpen && <WholeMap onClose={() => setMapOpen(false)} enclosures={enclosures} monkeys={monkeys} canIssues={canIssues} />}
                     <Drawer
                         open={drawerOpen}
                         onClose={() => setDrawerOpen(false)}

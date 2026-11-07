@@ -943,6 +943,7 @@ function ShowPage({
             >
                 <Nav
                     enclosures={enclosures}
+                    canIssues={enclosureEditing.canLog || (fieldWork && canLogMaintenance)}
                     monkeys={monkeys}
                     createPDF={createPDF}
                     isGeneratingPDF={isGeneratingPDF}
