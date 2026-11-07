@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
     IconArrowRight,
     IconBandage,
+    IconPaw,
     IconClipboardText,
     IconCpu,
     IconEye,
@@ -54,6 +55,7 @@ const FILTERS = [
 
 const ICONS = {
     arrival: IconStar,
+    behaviour: IconPaw,
     condition: IconHeartbeat,
     deworming: IconPill,
     home: IconHome,

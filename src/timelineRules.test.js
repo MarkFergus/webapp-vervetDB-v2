@@ -15,6 +15,19 @@ test("weights: grams up to 1 kg, then kg to 2 decimals", () => {
 });
 
 describe("the story", () => {
+    test("Observation: under Medical and Seen; Behaviour: under Seen", () => {
+        const entries = entriesOf(
+            timelineMonths(DAISY, {
+                records: [
+                    { id: 1, section: "medical", category: "observation", date: "2026-03-02", details: "Eating ok" },
+                    { id: 2, section: "rehabilitation", category: "behaviour", date: "2026-03-01", details: "Calm" },
+                ],
+            })
+        );
+        expect(entries.find((e) => e.text === "Eating ok")).toMatchObject({ label: "Observation", filters: ["medical", "seen"] });
+        expect(entries.find((e) => e.text === "Calm")).toMatchObject({ kind: "behaviour", label: "Behaviour", filters: ["seen"] });
+    });
+
     test("a Microchip record: its number, then the note, under Medical", () => {
         const [plain, noted] = entriesOf(
             timelineMonths(DAISY, {

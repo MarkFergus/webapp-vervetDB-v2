@@ -73,8 +73,13 @@ test("Mark As Seen, Observation, Maintenance: kept, then saved once each with th
     await flushOutbox();
     expect(inserts.map((i) => i.table)).toEqual(["monkey_sightings", "monkey_records", "monkey_sightings", "maintenance"]);
     expect(inserts.every((i) => i.row.client_ref)).toBe(true);
-    expect(inserts[1].row).toMatchObject({ category: "observation", section: "rehabilitation", details: "Eating well" });
+    expect(inserts[1].row).toMatchObject({ category: "observation", section: "medical", details: "Eating well" });
     expect(inserts[3].row).toMatchObject({ enclosure_id: 10, done_on: "2026-11-06", kind: "repair" });
+});
+
+test("a long note: the sighting's is cut to fit (its record keeps all of it)", async () => {
+    const long = "x".repeat(300);
+    expect((await addSpotSighting(1, { date: "2026-11-06", note: long })).note).toHaveLength(200);
 });
 
 test("a sighting waiting to send counts as seen, even with nothing else saved", async () => {

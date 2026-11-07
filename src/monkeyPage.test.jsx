@@ -4,7 +4,7 @@ import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
 import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./monkeysArr";
-import { loadRecords } from "./monkeyData";
+import { addRecord, loadRecords, recordSeen } from "./monkeyData";
 import { STAFF } from "./testStaff";
 import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
 
@@ -12,6 +12,8 @@ import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } fr
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     loadRecords: vi.fn(),
+    addRecord: vi.fn(),
+    recordSeen: vi.fn(),
 }));
 beforeEach(() => {
     loadRecords.mockResolvedValue([]);
@@ -189,6 +191,29 @@ test("Microchip, edited: stays one, its number and note split out; others can't 
     expect(screen.queryByRole("option", { name: "Microchip" })).not.toBeInTheDocument();
 });
 
+test("Behaviour and Observation: a sighting too, as someone saw them; other records aren't", async () => {
+    vi.mocked(recordSeen).mockClear();
+    vi.mocked(addRecord).mockImplementation(async (_id, values) => ({ id: 1, loggedByName: "A", ...values }));
+    function Page() {
+        const records = useRecords(7, { canSee: true, isAdmin: true, canAdd: true });
+        return records.available ? <RecordList section="rehabilitation" records={records} others={[]} /> : null;
+    }
+    const user = userEvent.setup();
+    render(<Page />);
+    const add = async (category) => {
+        await user.click(await screen.findByRole("button", { name: "New Rehabilitation Record" }));
+        await user.selectOptions(screen.getByLabelText("Category"), category);
+        await user.type(screen.getByLabelText("Details"), "Calm with the others");
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+    };
+    await add("behaviour");
+    await waitFor(() => expect(recordSeen).toHaveBeenCalledWith(7, expect.objectContaining({ description: "Calm with the others" })));
+    vi.mocked(recordSeen).mockClear();
+    await add("escape");
+    await waitFor(() => expect(addRecord).toHaveBeenCalledTimes(2));
+    expect(recordSeen).not.toHaveBeenCalled();
+});
+
 test("rehabilitation's categories; no button without permission to add", () => {
     render(<RecordList section="rehabilitation" records={fakeRecords([], { canAdd: false })} others={[]} />);
     expect(screen.queryByRole("button", { name: "New Rehabilitation Record" })).not.toBeInTheDocument();
@@ -203,7 +228,7 @@ test("rehabilitation's drop-down", async () => {
         "Choose…",
         "Movement",
         "Escape",
-        "Observation",
+        "Behaviour",
     ]);
 });
 

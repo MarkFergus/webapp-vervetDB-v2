@@ -63,7 +63,7 @@ import "./MonkeyPage.css";
 //                   Check, Notes for Monitoring
 //   Records         staff only, folding: two tabs, like a browser's, each
 //                   a list of records (MonkeyRecords.jsx)
-//     Rehabilitation  movements, observations, escapes, integration
+//     Rehabilitation  movements, escapes, behaviour, integration
 //     Medical         injuries, medicine, treatment, vet visits, observations
 //     Integration     integration reports (moved here from the pop-up)
 // The pop-up stays as the quick look; every record lives here.

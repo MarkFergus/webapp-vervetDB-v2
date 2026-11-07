@@ -1782,7 +1782,8 @@ export async function addSpotSighting(monkeyId, { date, note = "" }) {
     refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
-    const words = note.trim();
+    // (a sighting's note is short; an Observation's or Behaviour's can be longer)
+    const words = note.trim().slice(0, 200).trimEnd();
     const optimistic = {
         id: localId,
         monkeyId,
@@ -1841,7 +1842,7 @@ export async function loadLastMoves(monkeyIds) {
 }
 
 // Observation (the pop-up's Quick Actions): a quick note on how a monkey's
-// doing ({ date, description }): an Observation in its Rehabilitation
+// doing ({ date, description }): an Observation in its Medical
 // records, and a sighting (as Mark As Seen), so it counts as seen that day.
 // Throws a message to show.
 export async function addObservation(monkeyId, { date, description }) {
@@ -1851,7 +1852,7 @@ export async function addObservation(monkeyId, { date, description }) {
     const details = description.trim();
     const optimistic = {
         id: localId,
-        section: "rehabilitation",
+        section: "medical",
         date,
         category: "observation",
         details,
@@ -1869,11 +1870,11 @@ registerSender(
         toAppRecord(
             await insertOnce(
                 "monkey_records",
-                { client_ref: ref, monkey_id: monkeyId, section: "rehabilitation", record_date: date, category: "observation", details },
+                { client_ref: ref, monkey_id: monkeyId, section: "medical", record_date: date, category: "observation", details },
                 RECORD_COLUMNS
             )
         ),
-    (error) => (error.code === "42501" ? "Observations aren't ready yet: supabase/observations.sql needs to be run." : saveProblem(error).message)
+    (error) => (error.code === "42501" ? "Observations aren't ready yet: supabase/behaviour-observation.sql needs to be run." : saveProblem(error).message)
 );
 
 // A monkey's finished sessions it was on the checklist for (newest first,

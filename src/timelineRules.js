@@ -73,9 +73,10 @@ function recordEntry(r) {
             note: chip?.note || null,
         };
     }
+    if (r.category === "behaviour") return { ...base, kind: "behaviour", label: "Behaviour", filters: ["seen"] };
     if (r.category === "deworming") return { ...base, kind: "deworming", label: "Deworming", filters: ["medical"] };
     if (r.category === "observation") {
-        return { ...base, kind: "observation", label: "Observation", filters: r.section === "medical" ? ["medical"] : ["seen"] };
+        return { ...base, kind: "observation", label: "Observation", filters: ["medical", "seen"] };
     }
     return {
         ...base,
