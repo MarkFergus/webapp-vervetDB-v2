@@ -248,7 +248,7 @@ function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
     const [shown, setShown] = useState(PAGE_SIZE);
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
-    const canChange = (r) => canLog && Boolean(me.isAdmin || (me.userId && r.loggedById === me.userId));
+    const canChange = (r) => canLog && !me.offline && Boolean(me.isAdmin || (me.userId && r.loggedById === me.userId));
     const placeOf = (r) => enclosures.find((e) => e.id === r.enclosureId) ?? null;
     const found = filterReports(reports, { type, search, placeId: picked?.id ?? null }, enclosures);
     const hasInside = picked && enclosures.some((e) => e.parentId === picked.id);

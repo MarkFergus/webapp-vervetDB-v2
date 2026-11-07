@@ -42,6 +42,7 @@ import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
 import { addCondition, addObservation, addSpotSighting, recordSeen } from "./monkeyData";
+import { fieldStaff } from "./outbox";
 import { MarkSeenButton, MarkSeenForm, useMissing } from "./MarkSeen";
 import useMonitoring from "./useMonitoring";
 import { amText, fedBy, hasFeeding, pmText, summaryDate } from "./feeding";
@@ -169,7 +170,8 @@ function Modal({
     const [releaseBusy, setReleaseBusy] = useState(false);
     const [releaseProblem, setReleaseProblem] = useState(null);
     // Injuries: New Injury's form, and the current list's fold
-    const injuries = useInjuries(monkey?.id, staff);
+    // (Quick Actions' entries carry on with no signal)
+    const injuries = useInjuries(monkey?.id, fieldStaff(staff));
     const [injuryForm, setInjuryForm] = useState(false);
     // Observation (Quick Actions): a quick note on how it's doing, which
     // also counts as seen (its last seen date)

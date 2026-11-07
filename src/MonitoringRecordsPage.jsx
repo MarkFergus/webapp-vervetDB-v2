@@ -36,7 +36,7 @@ import {
 import { hasTroop } from "./enclosures";
 import { MONITORED_SECTIONS } from "./monitoring";
 import { troopMonkeys } from "./offlinePrefill";
-import { discardEntry, outboxProblems, retryEntry, subscribeOutbox } from "./outbox";
+import { fieldStaff, subscribeOutbox } from "./outbox";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
@@ -1205,45 +1205,10 @@ function SpotItem({ spot, name, canDelete, onDeleted }) {
 
 // onTitle(title, back): the page's title while a session's open ("Skunkey
 // Monitoring"; null: back to "Monitoring")
-// Entries the database refused: never lost without someone saying so
-function OutboxProblems({ onChange }) {
-    const problems = outboxProblems();
-    if (!problems.length) return null;
-    return (
-        <section className="Monitoring-warning" role="alert" aria-label="Needs Attention">
-            <h2 className="RecordsPage-subhead">Needs Attention</h2>
-            <p>These were saved on this phone but the database refused them.</p>
-            <ul>
-                {problems.map((entry) => (
-                    <li key={entry.id}>
-                        {entry.problem}{" "}
-                        <button type="button" className="Modal-edit is-blue-outline" onClick={() => retryEntry(entry.id).then(onChange)}>
-                            Try Again
-                        </button>{" "}
-                        <button
-                            type="button"
-                            className="Modal-edit is-cancel"
-                            onClick={() => {
-                                discardEntry(entry.id);
-                                onChange();
-                            }}
-                        >
-                            Discard
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        </section>
-    );
-}
-
 export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], staff: givenStaff = null, onTitle = () => {} }) {
     // (Monitoring carries on with no signal: entries wait in the outbox)
-    const staff = useMemo(
-        () => (givenStaff?.canEnterOffline && !givenStaff.canAdd ? { ...givenStaff, canAdd: true } : givenStaff),
-        [givenStaff]
-    );
-    // (Mark As Seen isn't offline work yet)
+    const staff = useMemo(() => fieldStaff(givenStaff), [givenStaff]);
+    // (taking a sighting back needs the database)
     const needsSignal = Boolean(givenStaff?.offline);
     const today = dayText(new Date());
     const troops = useMemo(
@@ -1424,7 +1389,6 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
     return (
         <div className="Monitoring">
-            <OutboxProblems onChange={reload} />
             {/* Who's monitoring now, and what's been done in the last day:
                 every troop, a list to look at (Continue and Cancel Session:
                 by the troop picker) */}
@@ -1578,7 +1542,7 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
                                 key={monkey.id}
                                 monkey={monkey}
                                 record={record}
-                                canMark={canEnter && !needsSignal}
+                                canMark={canEnter}
                                 onMark={(values) => markSeen(monkey.id, values)}
                             />
                         ))}

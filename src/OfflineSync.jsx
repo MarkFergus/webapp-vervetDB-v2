@@ -1,7 +1,9 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "./auth";
-import { flushOutbox, subscribeOutbox, waitingCount } from "./outbox";
+import { discardEntry, flushOutbox, outboxEntries, retryEntry, subscribeOutbox, waitingCount } from "./outbox";
 import { prefillMonitoring } from "./offlinePrefill";
+import { lastContact } from "./offlineFetch";
+import useOnline from "./useOnline";
 
 const TRY_EVERY_MS = 60000;
 
@@ -43,13 +45,74 @@ export default function OfflineSync({ live, monkeys, enclosures }) {
     return null;
 }
 
-// "3 entries waiting to send": whatever page they're on
+const STALE_AFTER_MS = 24 * 3600000;
+const KIND_WORDS = {
+    "session-start": "Monitoring session",
+    "session-finish": "Monitoring session",
+    "session-delete": "Cancelled session",
+    "injury-add": "New injury",
+    "injury-update": "Injury update",
+    "injury-healed": "Injury healed",
+    "condition-add": "New condition",
+    "spot-add": "Mark As Seen",
+    "observation-add": "Observation",
+    "maintenance-add": "Maintenance report",
+    "baby-save": "Baby Care records",
+    "deworming-results": "Deworming results",
+    "deworming-add": "Monkey added to deworming",
+    "deworming-remove": "Monkey removed from deworming",
+    "sheet-photo": "Deworming sheet photo",
+};
+const problemsNow = () => JSON.stringify(outboxEntries().filter((e) => e.status === "problem").map((e) => e.id));
+
+// Entries the database refused: never lost without someone saying so
+export function NeedsAttention() {
+    useSyncExternalStore(subscribeOutbox, problemsNow);
+    const problems = outboxEntries().filter((e) => e.status === "problem");
+    if (!problems.length) return null;
+    return (
+        <section className="App-notice App-needsAttention" role="alert" aria-label="Needs Attention">
+            <b>Needs Attention:</b> saved on this phone, but the database refused {problems.length === 1 ? "it" : "them"}.
+            <ul>
+                {problems.map((entry) => (
+                    <li key={entry.id}>
+                        <span>
+                            <b>{KIND_WORDS[entry.kind] ?? "Entry"}:</b> {entry.problem}
+                        </span>
+                        <span className="App-needsAttentionButtons">
+                            <button type="button" onClick={() => retryEntry(entry.id)}>
+                                Try Again
+                            </button>
+                            <button type="button" onClick={() => window.confirm("Discard this entry? It can't be brought back.") && discardEntry(entry.id)}>
+                                Discard
+                            </button>
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+// "3 entries waiting to send": whatever page they're on; and a phone that's
+// been out of touch for a while saying so
 export function WaitingNotice() {
     const count = useWaitingCount();
-    if (!count) return null;
+    const online = useOnline();
+    const last = lastContact();
+    const stale = !online && last && Date.now() - last > STALE_AFTER_MS;
     return (
-        <p className="App-notice" role="status">
-            {count === 1 ? "1 entry" : `${count} entries`} saved on this phone, waiting to send.
-        </p>
+        <>
+            {stale && (
+                <p className="App-notice" role="status">
+                    Not updated for over a day, so what you see may be out of date.
+                </p>
+            )}
+            {count > 0 && (
+                <p className="App-notice" role="status">
+                    {count === 1 ? "1 entry" : `${count} entries`} saved on this phone, waiting to send.
+                </p>
+            )}
+        </>
     );
 }

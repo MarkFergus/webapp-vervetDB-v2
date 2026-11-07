@@ -245,7 +245,15 @@ function ShowPage({
     // (canAdd), except Monitoring (canEnterOffline)
     const staff =
         role && (editable || fieldWork)
-            ? { canSee: true, canAdd: canEdit, canEnterOffline: isEditor && fieldWork, offline: !editable, userId: user?.id, isAdmin, readOnly: role === "limited" }
+            ? {
+                  canSee: true,
+                  canAdd: canEdit,
+                  canEnterOffline: isEditor && fieldWork,
+                  offline: !editable,
+                  userId: user?.id,
+                  isAdmin: isAdmin && editable,
+                  readOnly: role === "limited" || !editable,
+              }
             : null;
     const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -1013,11 +1021,13 @@ function ShowPage({
                             monkeys={monkeys}
                             enclosures={enclosures}
                             canEnter={canEdit}
+                            canEnterBaby={canEdit || (isEditor && fieldWork)}
                             onEnclosureSaved={onEnclosureSaved}
                             maintenance={{
-                                live: enclosureEditing.live,
-                                canLog: enclosureEditing.canLog,
-                                me: { userId: enclosureEditing.userId, isAdmin },
+                                // (reports carry on with no signal; nothing's changed)
+                                live: enclosureEditing.live || (fieldWork && Boolean(role)),
+                                canLog: enclosureEditing.canLog || (fieldWork && canLogMaintenance),
+                                me: { userId: enclosureEditing.userId ?? user?.id, isAdmin, offline: !editable },
                             }}
                             staff={staff}
                             inert={isAnyModalOpen}

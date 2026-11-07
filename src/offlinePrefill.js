@@ -1,7 +1,21 @@
-// So Monitoring works with no signal, even for a troop nobody's opened on this
-// phone: saves each troop's briefing (the same requests its page makes, which
-// offlineFetch.js keeps), now and then, while there's a connection.
-import { loadConditions, loadCurrentInjuries, loadLastMoves, loadMonitoringFor, loadMonitoringSessions, loadSpotSightings } from "./monkeyData";
+// So the daily entries work with no signal, even for a troop nobody's opened
+// on this phone: saves each troop's briefing and the lists the forms need (the
+// same requests their pages make, which offlineFetch.js keeps), now and then,
+// while there's a connection.
+import {
+    keepInjurySnapshot,
+    loadAllMaintenance,
+    loadBabyRecords,
+    loadConditions,
+    loadCurrentInjuries,
+    loadDewormingCalendar,
+    loadDewormingSheets,
+    loadLastMoves,
+    loadMonitoringFor,
+    loadMonitoringSessions,
+    loadMoves,
+    loadSpotSightings,
+} from "./monkeyData";
 import { hasTroop } from "./enclosures";
 import { monkeysIn } from "./stats";
 
@@ -27,13 +41,22 @@ export async function prefillMonitoring(monkeys, enclosures, now = Date.now()) {
         return false;
     }
     const quietly = (promise) => promise.catch(() => null);
-    await Promise.all([quietly(loadMonitoringSessions()), quietly(loadSpotSightings())]);
+    await Promise.all([
+        quietly(loadMonitoringSessions()),
+        quietly(loadSpotSightings()),
+        quietly(loadAllMaintenance()),
+        quietly(loadDewormingSheets()),
+        quietly(loadDewormingCalendar()),
+        quietly(loadBabyRecords("milk")),
+        quietly(loadBabyRecords("weights")),
+        quietly(loadMoves()),
+    ]);
     // (a troop at a time: this mustn't get in the way of the page)
     for (const troop of enclosures.filter(hasTroop)) {
         if (navigator.onLine === false) return false;
         const ids = troopMonkeys(monkeys, troop).all.map((m) => m.id);
         await Promise.all([
-            quietly(loadCurrentInjuries(ids)),
+            quietly(loadCurrentInjuries(ids).then((list) => keepInjurySnapshot(list, ids))),
             quietly(loadConditions(ids)),
             quietly(loadMonitoringFor(ids)),
             quietly(loadLastMoves(ids)),

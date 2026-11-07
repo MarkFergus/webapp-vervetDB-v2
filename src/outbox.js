@@ -52,6 +52,10 @@ export function displayId(id) {
     return found ?? id;
 }
 
+// Staff, for the forms that carry on with no signal: they can add (see
+// ShowPage's staff: with no signal, nobody changes anything else)
+export const fieldStaff = (staff) => (staff?.canEnterOffline && staff.offline ? { ...staff, canAdd: true, readOnly: false } : staff);
+
 // Who's signed in, kept for when there's no signal: { id, name } or null
 export function setOutboxUser(user) {
     try {
@@ -105,6 +109,13 @@ async function sendWaiting() {
     const { data, error: sessionError } = await supabase.auth.getSession();
     const user = data?.session?.user;
     if (sessionError || !user) return;
+    // (what it belonged to has got through since: its turn now)
+    const unblocked = read(ENTRIES, []).map((e) =>
+        e.status === "problem" && e.blocked && !(e.needs ?? []).some((local) => isLocalId(resolveId(local)))
+            ? { ...e, status: "waiting", problem: null, blocked: false }
+            : e
+    );
+    store(ENTRIES, unblocked);
     for (;;) {
         // (afresh each time: another tab may have added or sent some)
         const entry = read(ENTRIES, []).find((e) => e.userId === user.id && e.status === "waiting");
@@ -114,7 +125,7 @@ async function sendWaiting() {
         // (it belongs to one that didn't get through: that comes first)
         const blocked = (entry.needs ?? []).some((local) => isLocalId(resolveId(local)));
         if (blocked) {
-            setStatus(entry.id, "problem", "The entry this belongs to hasn't been sent.");
+            change((list) => list.map((e) => (e.id === entry.id ? { ...e, status: "problem", problem: "The entry this belongs to hasn't been sent.", blocked: true } : e)));
             continue;
         }
         try {
@@ -141,9 +152,13 @@ async function sendWaiting() {
     if (kept.length !== list.length) store(ENTRIES, kept);
 }
 
+// (big, and nothing goes by them once they're sent)
+const NOT_KEPT_ONCE_SENT = new Set(["baby-save", "deworming-results", "deworming-add", "deworming-remove", "sheet-photo"]);
 function setStatus(id, status, problem = null) {
     change((list) =>
-        list.map((e) => (e.id === id ? { ...e, status, problem, ...(status === "sent" && { sentAt: Date.now() }) } : e))
+        list
+            .filter((e) => !(e.id === id && status === "sent" && NOT_KEPT_ONCE_SENT.has(e.kind)))
+            .map((e) => (e.id === id ? { ...e, status, problem, ...(status === "sent" && { sentAt: Date.now() }) } : e))
     );
 }
 
@@ -172,7 +187,11 @@ export async function submit(kind, payload, optimistic, { needs = [] } = {}) {
         problem: null,
         at: Date.now(),
     };
-    change((list) => [...list, entry]);
+    try {
+        change((list) => [...list, entry]);
+    } catch {
+        throw new Error("There's no room left on this phone to save this. Please connect so what's waiting can send, then try again.");
+    }
     if (navigator.onLine !== false) {
         await Promise.race([flushOutbox(), new Promise((resolve) => setTimeout(resolve, FORM_WAIT_MS))]);
         const outcome = settled.get(entry.id);

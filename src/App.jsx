@@ -8,7 +8,7 @@ import useHashRoute from "./useHashRoute";
 import useMonkeyData from "./useMonkeyData";
 import useOnline from "./useOnline";
 import { saveThumbnails } from "./offlinePhotos";
-import OfflineSync, { WaitingNotice } from "./OfflineSync";
+import OfflineSync, { NeedsAttention, WaitingNotice } from "./OfflineSync";
 import { isInstalledApp } from "./installApp";
 import { timeAgo } from "./savedData";
 import "./App.css";
@@ -59,12 +59,12 @@ function App() {
     let notice = null;
     if (status === "saved") {
         notice = online
-            ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Monitoring still works; other editing is off for now.`
-            : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Monitoring still works; other editing is off until you're back online.`;
+            ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off for now.`
+            : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off until you're back online.`;
     } else if (status === "built-in") {
         notice = "Couldn't reach the database, so this is a saved copy of the monkeys and may be out of date.";
     } else if (!online) {
-        notice = "You're offline. Monitoring still works. Photos you haven't opened before may not show, and other editing is off until you're back online.";
+        notice = "You're offline. Daily entries still save and send later. Photos you haven't opened before may not show, and other editing is off until you're back online.";
     }
 
     return (
@@ -77,6 +77,7 @@ function App() {
                     </p>
                 )}
                 <WaitingNotice />
+                <NeedsAttention />
                 {/* Every page (the monkeys, the enclosures, the game) under
                     the same top bar */}
                 <ShowPage

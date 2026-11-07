@@ -97,7 +97,7 @@ describe("the app with and without a connection", () => {
         render(<App />);
         // No "Loading monkeys…" and no database call
         expect(screen.getByRole("alert")).toHaveTextContent(
-            "You're offline, so these are the monkeys saved on this device just now. Monitoring still works; other editing is off until you're back online."
+            "You're offline, so these are the monkeys saved on this device just now. Daily entries still save and send later; other editing is off until you're back online."
         );
         expect(await screen.findByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
         expect(loadMonkeyData).not.toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe("the app with and without a connection", () => {
         await screen.findByRole("button", { name: /^Brand New/ });
         goOnline(false);
         expect(screen.getByRole("alert")).toHaveTextContent(
-            "You're offline. Monitoring still works. Photos you haven't opened before may not show, and other editing is off"
+            "You're offline. Daily entries still save and send later. Photos you haven't opened before may not show, and other editing is off"
         );
         goOnline(true);
         await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());

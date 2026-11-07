@@ -4,6 +4,7 @@ import {
     displayId,
     dropEntries,
     editEntries,
+    flushOutbox,
     isLocalId,
     newLocalId,
     newRef,
@@ -14,6 +15,7 @@ import {
     submit,
 } from "./outbox";
 import { lastContact } from "./offlineFetch";
+import { forgetPhoto, keepPhoto, keptPhoto } from "./outboxPhotos";
 import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
 import enclosuresArr, { SECTION_NAMES } from "./enclosuresArr";
@@ -667,7 +669,7 @@ export async function loadMaintenance(enclosureId) {
         console.error("Loading the maintenance log failed:", error);
         throw new Error("Couldn't load the maintenance log. Please check your connection.");
     }
-    return data.map(toAppEntry);
+    return withOutboxMaintenance(data.map(toAppEntry), enclosureId);
 }
 
 // Records → Maintenance: every enclosure's log, newest first (each with
@@ -691,26 +693,48 @@ export async function loadAllMaintenance() {
     }
     if (error) {
         console.error("Loading the maintenance reports failed:", error);
+        if (!error.code) return withOutboxMaintenance([]);
         throw new Error("Couldn't load the maintenance reports. Please check your connection.");
     }
-    return data.map(toAppEntry);
+    return withOutboxMaintenance(data.map(toAppEntry));
 }
 
 // Adds an entry ({ doneOn, kind, details }); who and when are filled in by
 // the database. Returns the saved entry.
 export async function addMaintenance(enclosureId, { doneOn, kind, details }) {
-    const row = { enclosure_id: enclosureId, done_on: doneOn, details };
-    if (maintenanceKindsAvailable() && kind) row.kind = kind;
-    const { data, error } = await supabase
-        .from("maintenance")
-        .insert(row)
-        .select(entryColumns())
-        .single();
-    if (error) {
-        console.error("Adding maintenance failed:", error);
-        throw saveProblem(error);
-    }
-    return toAppEntry(data);
+    refuseIfTooLong();
+    const me = outboxUser();
+    const localId = newLocalId();
+    const optimistic = {
+        id: localId,
+        enclosureId,
+        doneOn,
+        kind: kind ?? null,
+        details,
+        loggedBy: me?.name ?? null,
+        loggedById: me?.id ?? null,
+        loggedAt: new Date().toISOString(),
+    };
+    const { result } = await submit("maintenance-add", { ref: newRef(), localId, enclosureId, doneOn, kind, details }, optimistic);
+    return result;
+}
+
+registerSender(
+    "maintenance-add",
+    async ({ ref, enclosureId, doneOn, kind, details }) => {
+        const row = { client_ref: ref, enclosure_id: enclosureId, done_on: doneOn, details };
+        if (hasMaintenanceKind !== false && kind) row.kind = kind;
+        return toAppEntry(await insertOnce("maintenance", row, `${entryColumns()}, enclosure_id`));
+    },
+    (error) => saveProblem(error).message
+);
+
+// What's on this phone and not in the database's answer yet
+function withOutboxMaintenance(list, enclosureId = null) {
+    const added = outboxEntries("maintenance-add")
+        .filter(({ payload }) => (enclosureId == null || payload.enclosureId === enclosureId) && !list.some((r) => sameId(r.id, payload.localId)))
+        .map((e) => e.optimistic);
+    return [...added, ...list].sort((a, b) => b.doneOn.localeCompare(a.doneOn));
 }
 
 // Changes an entry's date, Maintenance Type or details (admins, or whoever
@@ -718,7 +742,7 @@ export async function addMaintenance(enclosureId, { doneOn, kind, details }) {
 export async function saveMaintenance(id, { doneOn, kind, details }) {
     const row = { done_on: doneOn, details };
     if (maintenanceKindsAvailable() && kind) row.kind = kind;
-    const { data, error } = await supabase.from("maintenance").update(row).eq("id", id).select(entryColumns()).single();
+    const { data, error } = await supabase.from("maintenance").update(row).eq("id", resolveId(id)).select(entryColumns()).single();
     if (error) {
         console.error("Saving maintenance failed:", error);
         throw saveProblem(error);
@@ -728,7 +752,7 @@ export async function saveMaintenance(id, { doneOn, kind, details }) {
 
 // Deletes an entry (admins, or whoever wrote it in: maintenance-own.sql)
 export async function deleteMaintenance(id) {
-    const { data, error } = await supabase.from("maintenance").delete().eq("id", id).select("id");
+    const { data, error } = await supabase.from("maintenance").delete().eq("id", resolveId(id)).select("id");
     if (error) {
         console.error("Deleting maintenance failed:", error);
         throw saveProblem(error);
@@ -926,7 +950,11 @@ export async function loadRecords(monkeyId) {
         .order("record_date", { ascending: false })
         .order("id", { ascending: false });
     if (error) throw error;
-    return data.map(toAppRecord);
+    const saved = data.map(toAppRecord);
+    const added = outboxEntries("observation-add")
+        .filter(({ payload }) => payload.monkeyId === monkeyId && !saved.some((r) => sameId(r.id, payload.localId)))
+        .map((e) => e.optimistic);
+    return [...added, ...saved].sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // A Movement's where from and to, from the form (none: not sent, so other
@@ -1082,8 +1110,29 @@ export async function loadInjuries(monkeyId) {
             .eq("monkey_id", monkeyId)
             .order("injury_date", { ascending: false })
             .order("id", { ascending: false })
-    );
+    ).catch((error) => injurySnapshot(error, [monkeyId]));
     return withOutboxInjuries(list, [monkeyId]);
+}
+
+// No signal, and these monkeys' injuries weren't saved under this request (a
+// monkey not opened on this phone): every current injury, saved as a list
+// with the troops' briefings (offlinePrefill.js)
+const INJURY_SNAPSHOT = "vervetdb-injuries-snapshot";
+export function keepInjurySnapshot(injuries, monkeyIds) {
+    try {
+        const others = JSON.parse(localStorage.getItem(INJURY_SNAPSHOT) ?? "[]").filter((i) => !monkeyIds.includes(i.monkeyId));
+        localStorage.setItem(INJURY_SNAPSHOT, JSON.stringify([...others, ...injuries.filter((i) => !isLocalId(i.id))]));
+    } catch {
+        // (no room, or not allowed)
+    }
+}
+function injurySnapshot(error, monkeyIds) {
+    if (error.code || !isOffline(error)) throw error;
+    // (nothing saved at all, e.g. just installed: none known, so entries can
+    // still be made)
+    const saved = JSON.parse(localStorage.getItem(INJURY_SNAPSHOT) ?? "[]");
+    hasInjuryUpdates = hasInjuryUpdates ?? true;
+    return saved.filter((i) => monkeyIds.includes(i.monkeyId));
 }
 
 // The current (not healed) injuries of these monkeys, with their updates,
@@ -1099,7 +1148,7 @@ export async function loadCurrentInjuries(monkeyIds) {
             .is("healed_on", null)
             .order("injury_date")
             .order("id")
-    );
+    ).catch((error) => injurySnapshot(error, monkeyIds));
     return withOutboxInjuries(list, monkeyIds).filter((i) => !i.healedOn);
 }
 
@@ -1123,6 +1172,7 @@ export async function loadPastInjuries(monkeyIds, since) {
 // database. Returns the saved injury.
 //   sessionId: added during a monitoring session (its WhatsApp summary)
 export async function addInjury(monkeyId, { date, description, sessionId = null }) {
+    if (!sessionId) refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
     const payload = { ref: newRef(), localId, monkeyId, date, description, sessionId };
@@ -1174,7 +1224,7 @@ export async function saveInjury(id, { date, description }) {
     const { data, error } = await supabase
         .from("injuries")
         .update({ injury_date: date, description })
-        .eq("id", id)
+        .eq("id", resolveId(id))
         .select(INJURY_COLUMNS)
         .single();
     if (error) {
@@ -1234,7 +1284,7 @@ registerSender(
 
 // Deletes an injury (admins, or whoever added it)
 export async function deleteInjury(id) {
-    const { data, error } = await supabase.from("injuries").delete().eq("id", id).select("id");
+    const { data, error } = await supabase.from("injuries").delete().eq("id", resolveId(id)).select("id");
     if (error) {
         console.error("Deleting an injury failed:", error);
         throw saveProblem(error);
@@ -1286,7 +1336,7 @@ export async function saveInjuryUpdate(id, { date, details }) {
     const { data, error } = await supabase
         .from("injury_updates")
         .update({ update_date: date, details })
-        .eq("id", id)
+        .eq("id", resolveId(id))
         .select(UPDATE_COLUMNS)
         .single();
     if (error) {
@@ -1298,7 +1348,7 @@ export async function saveInjuryUpdate(id, { date, details }) {
 
 // Deletes an update (admins, or whoever added it)
 export async function deleteInjuryUpdate(id) {
-    const { data, error } = await supabase.from("injury_updates").delete().eq("id", id).select("id");
+    const { data, error } = await supabase.from("injury_updates").delete().eq("id", resolveId(id)).select("id");
     if (error) {
         console.error("Deleting an injury update failed:", error);
         throw saveProblem(error);
@@ -1475,13 +1525,16 @@ export const tooLongOffline = (now = Date.now()) => {
     const last = lastContact();
     return Boolean(last) && navigator.onLine === false && now - last > OFFLINE_LIMIT_MS;
 };
+function refuseIfTooLong() {
+    if (tooLongOffline()) {
+        throw new Error("This phone hasn't reached the database for over 2 days, so what it knows may be out of date. Please connect before adding anything new.");
+    }
+}
 
 // Start Session: in progress, in the signed-in person's name (no signal: on
 // this phone for now)
 export async function startMonitoringSession(enclosureId, date) {
-    if (tooLongOffline()) {
-        throw new Error("This phone hasn't reached the database for over 2 days, so what it knows may be out of date. Please connect before starting a new session.");
-    }
+    refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
     const optimistic = toAppSession({
@@ -1636,6 +1689,7 @@ export async function loadConditions(monkeyIds) {
 
 // A new condition ({ date, description, sessionId })
 export async function addCondition(monkeyId, { date, description, sessionId = null }) {
+    if (!sessionId) refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
     const optimistic = {
@@ -1672,7 +1726,7 @@ export async function saveCondition(id, { date, description }) {
     const { data, error } = await supabase
         .from("monkey_conditions")
         .update({ condition_date: date, description })
-        .eq("id", id)
+        .eq("id", resolveId(id))
         .select(CONDITION_COLUMNS)
         .single();
     if (error) throw saveProblem(error);
@@ -1681,7 +1735,7 @@ export async function saveCondition(id, { date, description }) {
 
 // Deletes a condition (admins, or whoever added it)
 export async function deleteCondition(id) {
-    const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", id).select("id");
+    const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", resolveId(id)).select("id");
     if (error) throw saveProblem(error);
     if (!data?.length) throw saveProblem({ code: "PGRST116" });
 }
@@ -1711,26 +1765,43 @@ export async function loadSpotSightings(monkeyIds = null) {
             .order("logged_at", { ascending: false })
             .order("id", { ascending: false });
     });
+    const added = () =>
+        outboxEntries("spot-add")
+            .filter(({ payload }) => !monkeyIds || monkeyIds.includes(payload.monkeyId))
+            .map((e) => e.optimistic);
     if (error) {
-        if (isOlderDatabase(error)) return [];
+        if (isOlderDatabase(error) || !error.code) return added();
         throw sessionProblem(error);
     }
-    return data.map(toAppSpot);
+    const saved = data.map(toAppSpot);
+    return [...added().filter((a) => !saved.some((r) => sameId(r.id, a.id))), ...saved].sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // Mark As Seen: a missing monkey seen between sessions ({ date, note })
 export async function addSpotSighting(monkeyId, { date, note = "" }) {
-    const { data, error } = await supabase
-        .from("monkey_sightings")
-        .insert({ monkey_id: monkeyId, seen_on: date, note: note.trim() || null })
-        .select(SPOT_COLUMNS)
-        .single();
-    if (error) {
-        if (isOlderDatabase(error)) throw new Error("Mark As Seen isn't ready yet: supabase/monkey-sightings.sql needs to be run.");
-        throw sessionProblem(error);
-    }
-    return toAppSpot(data);
+    refuseIfTooLong();
+    const me = outboxUser();
+    const localId = newLocalId();
+    const words = note.trim();
+    const optimistic = {
+        id: localId,
+        monkeyId,
+        date,
+        note: words,
+        loggedBy: me?.id ?? null,
+        by: me?.name ?? "Staff",
+        at: new Date().toISOString(),
+    };
+    const { result } = await submit("spot-add", { ref: newRef(), localId, monkeyId, date, note: words }, optimistic);
+    return result;
 }
+
+registerSender(
+    "spot-add",
+    async ({ ref, monkeyId, date, note }) =>
+        toAppSpot(await insertOnce("monkey_sightings", { client_ref: ref, monkey_id: monkeyId, seen_on: date, note: note || null }, SPOT_COLUMNS)),
+    (error) => sessionProblem(error).message
+);
 
 // A record that shows a monkey was seen that day (Quick Actions' New Injury
 // and New Condition): a sighting too, so it counts for their last seen. The
@@ -1745,7 +1816,9 @@ export async function recordSeen(monkeyId, { date, description }) {
 
 // Deletes a sighting (admins, or whoever added it)
 export async function deleteSpotSighting(id) {
-    const { data, error } = await supabase.from("monkey_sightings").delete().eq("id", id).select("id");
+    // (never sent: it just goes)
+    if (isLocalId(resolveId(id))) return dropEntries((e) => e.kind === "spot-add" && e.payload.localId === id);
+    const { data, error } = await supabase.from("monkey_sightings").delete().eq("id", resolveId(id)).select("id");
     if (error) throw sessionProblem(error);
     if (!data?.length) throw saveProblem({ code: "PGRST116" });
 }
@@ -1772,17 +1845,36 @@ export async function loadLastMoves(monkeyIds) {
 // records, and a sighting (as Mark As Seen), so it counts as seen that day.
 // Throws a message to show.
 export async function addObservation(monkeyId, { date, description }) {
-    const { error } = await supabase
-        .from("monkey_records")
-        .insert({ monkey_id: monkeyId, section: "rehabilitation", record_date: date, category: "observation", details: description.trim() });
-    if (error) {
-        console.error("Adding an observation failed:", error);
-        if (error.code === "42501")
-            throw new Error("Observations aren't ready yet: supabase/observations.sql needs to be run.");
-        throw saveProblem(error);
-    }
+    refuseIfTooLong();
+    const me = outboxUser();
+    const localId = newLocalId();
+    const details = description.trim();
+    const optimistic = {
+        id: localId,
+        section: "rehabilitation",
+        date,
+        category: "observation",
+        details,
+        loggedBy: me?.id ?? null,
+        loggedByName: me?.name ?? null,
+        loggedAt: new Date().toISOString(),
+    };
+    await submit("observation-add", { ref: newRef(), localId, monkeyId, date, details }, optimistic);
     await addSpotSighting(monkeyId, { date, note: description });
 }
+
+registerSender(
+    "observation-add",
+    async ({ ref, monkeyId, date, details }) =>
+        toAppRecord(
+            await insertOnce(
+                "monkey_records",
+                { client_ref: ref, monkey_id: monkeyId, section: "rehabilitation", record_date: date, category: "observation", details },
+                RECORD_COLUMNS
+            )
+        ),
+    (error) => (error.code === "42501" ? "Observations aren't ready yet: supabase/observations.sql needs to be run." : saveProblem(error).message)
+);
 
 // A monkey's finished sessions it was on the checklist for (newest first,
 // as sessions with just its sighting), and its sightings between them:
@@ -1798,6 +1890,18 @@ export async function loadMonkeySightings(monkeyId) {
             .limit(20),
         loadSpotSightings([monkeyId]),
     ]);
+    // (no signal, and not opened on this phone: from the list of all sessions)
+    if (sightings.error && !sightings.error.code) {
+        const all = await loadMonitoringSessions();
+        const sessions = all.filter((x) => x.status === "finished" && x.sightings.some((y) => y.monkeyId === monkeyId)).map((x) => ({
+            id: x.id,
+            date: x.date,
+            status: "finished",
+            finishedAt: x.finishedAt,
+            sightings: x.sightings.filter((y) => y.monkeyId === monkeyId),
+        }));
+        return { sessions: sessions.slice(0, 20), spots };
+    }
     if (sightings.error) throw sessionProblem(sightings.error);
     const sessions = sightings.data
         .map((r) => ({
@@ -2012,14 +2116,35 @@ export async function loadBabyRecords(kindId) {
             .order(t.date)
             .order("monkey_id")
     );
+    // (no signal, and nothing saved on this phone yet: entries can still be made)
+    if (error && !error.code) return withOutboxBaby(kindId, []);
     if (error) throw error;
-    return data.map((row) => ({
-        monkeyId: row.monkey_id,
-        date: row[t.date],
-        value: row[t.value],
-        notes: row.notes ?? null,
-        loggedByName: row.logged_by_name ?? null,
-    }));
+    return withOutboxBaby(
+        kindId,
+        data.map((row) => ({
+            monkeyId: row.monkey_id,
+            date: row[t.date],
+            value: row[t.value],
+            notes: row.notes ?? null,
+            loggedByName: row.logged_by_name ?? null,
+        }))
+    );
+}
+
+// What's waiting to send on top of what's saved: a baby's value that day (as
+// the database will: replaced, or left as it was)
+function withOutboxBaby(kindId, list) {
+    let out = list;
+    for (const { payload, status } of outboxEntries("baby-save")) {
+        if (payload.kindId !== kindId || status === "sent") continue;
+        for (const e of payload.entries) {
+            const there = out.some((r) => r.monkeyId === e.monkeyId && r.date === e.date);
+            if (there && !payload.replace) continue;
+            const row = { monkeyId: e.monkeyId, date: e.date, value: e.value, notes: e.notes ?? null, loggedByName: outboxUser()?.name ?? null };
+            out = there ? out.map((r) => (r.monkeyId === e.monkeyId && r.date === e.date ? row : r)) : [...out, row];
+        }
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date) || a.monkeyId - b.monkeyId);
 }
 
 // One monkey's weights (the Records page's), oldest first, for its Medical
@@ -2066,18 +2191,30 @@ export async function loadMoves() {
 // notes }]); a baby that already has one that day is replaced (replace
 // true) or left as it was. → how many were saved
 export async function saveBabyRecords(kindId, entries, replace) {
-    const { data, error } = await supabase.rpc(BABY_TABLES[kindId].save, {
-        entries: entries.map((e) => ({ monkey_id: e.monkeyId, date: e.date, value: e.value, notes: e.notes })),
-        replace,
-    });
-    if (error) {
-        console.error("Saving records failed:", error);
-        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an editor?");
-        if (error.code === "23514") throw new Error("The database refused one of the values or the date. Please check them.");
-        throw saveProblem(error);
-    }
-    return data;
+    refuseIfTooLong();
+    // (with no signal it can't know how many it'll leave as they were: it
+    // says all of them, and what's waiting shows as it'll be)
+    const { result } = await submit("baby-save", { kindId, entries, replace }, { count: entries.length });
+    return result.count;
 }
+
+registerSender(
+    "baby-save",
+    async ({ kindId, entries, replace }) => {
+        const { data, error } = await supabase.rpc(BABY_TABLES[kindId].save, {
+            entries: entries.map((e) => ({ monkey_id: e.monkeyId, date: e.date, value: e.value, notes: e.notes })),
+            replace,
+        });
+        if (error) throw error;
+        return { count: data };
+    },
+    (error) => {
+        console.error("Saving records failed:", error);
+        if (error.code === "42501") return "The database didn't allow this. Are you still signed in as an editor?";
+        if (error.code === "23514") return "The database refused one of the values or the date. Please check them.";
+        return saveProblem(error).message;
+    }
+);
 
 // ---- Deworming (supabase/deworming.sql) ----
 
@@ -2158,9 +2295,41 @@ export async function loadDewormingSheets() {
         console.error("Loading deworming sheets failed:", error);
         if (isOlderDatabase(error))
             throw new Error("Deworming isn't ready yet: supabase/deworming.sql needs to be run.");
+        if (!error.code) throw new Error("The deworming lists aren't saved on this phone yet. Please open this page once with signal.");
         throw new Error("Couldn't load the deworming lists. Please check your connection and try again.");
     }
-    return data.map(toAppSheet);
+    return withOutboxSheets(data.map(toAppSheet));
+}
+
+// A sheet with what's waiting to send on top: monkeys added, and results
+export function withOutboxSheets(list) {
+    const waiting = (kind) => outboxEntries(kind).filter((e) => e.status !== "sent");
+    return list.map((sheet) => {
+        let out = sheet;
+        for (const { payload, optimistic } of waiting("deworming-add")) {
+            if (payload.sheetId === sheet.id && !out.lines.some((l) => sameId(l.id, payload.localId))) {
+                out = { ...out, lines: [...out.lines, optimistic] };
+            }
+        }
+        for (const { payload } of waiting("deworming-remove")) {
+            out = { ...out, lines: out.lines.filter((l) => !sameId(l.id, payload.lineId)) };
+        }
+        for (const { payload } of waiting("deworming-results")) {
+            if (payload.sheetId !== sheet.id) continue;
+            const { startedOn, staffNames, dayNotes, photos, daysDone, lines } = payload.results;
+            const changed = (l) => lines.find((x) => sameId(x.id, l.id));
+            out = {
+                ...out,
+                startedOn,
+                staffNames,
+                dayNotes,
+                photos,
+                daysDone,
+                lines: out.lines.map((l) => (changed(l) ? { ...l, doses: changed(l).doses, day4: changed(l).day4 } : l)),
+            };
+        }
+        return out;
+    });
 }
 
 // Prepare Sheet's Save (admins): a new sheet (no id) or a change to one,
@@ -2220,6 +2389,23 @@ function dewormingProblem(error, what) {
 //   results: { startedOn, staffNames, dayNotes, photos, daysDone, lines
 //   (with their doses), submit }
 export async function saveDewormingResults(sheetId, results) {
+    // Submit needs the database there and then: what it emails is made from
+    // what's saved. What's waiting goes first.
+    if (results.submit) {
+        await flushOutbox();
+        return sendDewormingResults(sheetId, results).catch((error) => {
+            if (!error.code) throw new Error("Submit needs a connection. Everything entered is kept on this phone: please try again when there's signal.");
+            throw dewormingProblem(error, "Saving deworming results");
+        });
+    }
+    // (each save has the whole sheet, so only the latest needs to go)
+    dropEntries((e) => e.kind === "deworming-results" && e.status === "waiting" && e.payload.sheetId === sheetId);
+    const needs = results.lines.map((l) => l.id);
+    const { result } = await submit("deworming-results", { sheetId, results }, { status: "ready" }, { needs });
+    return result.status ?? result;
+}
+
+async function sendDewormingResults(sheetId, results) {
     const { data, error } = await supabase.rpc("save_deworming_results", {
         sheet: sheetId,
         results: {
@@ -2230,10 +2416,10 @@ export async function saveDewormingResults(sheetId, results) {
             days_done: results.daysDone ?? [],
             submit: Boolean(results.submit),
             // (each line's Day 4 decision)
-            day_4: results.lines.map((l) => ({ line_id: l.id, day_4: l.day4 ?? null })),
+            day_4: results.lines.map((l) => ({ line_id: resolveId(l.id), day_4: l.day4 ?? null })),
             doses: results.lines.flatMap((l) =>
                 Object.entries(l.doses ?? {}).map(([day, d]) => ({
-                    line_id: l.id,
+                    line_id: resolveId(l.id),
                     day: Number(day),
                     result: d.result,
                     food: d.food,
@@ -2244,9 +2430,15 @@ export async function saveDewormingResults(sheetId, results) {
             ),
         },
     });
-    if (error) throw dewormingProblem(error, "Saving deworming results");
+    if (error) throw error;
     return data;
 }
+
+registerSender(
+    "deworming-results",
+    async ({ sheetId, results }) => ({ status: await sendDewormingResults(sheetId, results) }),
+    (error) => dewormingProblem(error, "Saving deworming results").message
+);
 
 // A deworming problem with a monkey staff add or remove, as words to show
 function additionProblem(error, what) {
@@ -2261,26 +2453,60 @@ function additionProblem(error, what) {
 //   line: { monkeyId, kind ("added" / "accidental"), fromDay, medication,
 //   dose, days }
 export async function addDewormingMonkey(sheetId, line) {
-    const { data, error } = await supabase.rpc("add_deworming_monkey", {
-        sheet: sheetId,
-        line: {
-            monkey_id: line.monkeyId,
-            kind: line.kind,
-            from_day: line.fromDay,
-            medication: line.medication,
-            dose: line.dose,
-            days: line.days,
-        },
-    });
-    if (error) throw additionProblem(error, "Adding a monkey to deworming");
-    return data;
+    const localId = newLocalId();
+    const optimistic = { ...line, id: localId, doses: {}, day4: null, recordText: null };
+    await submit("deworming-add", { ref: newRef(), localId, sheetId, line }, optimistic);
+    return localId;
 }
 
-// Removes a monkey staff added (not one of the sheet's own)
+registerSender(
+    "deworming-add",
+    async ({ sheetId, line }) => {
+        const { data, error } = await supabase.rpc("add_deworming_monkey", {
+            sheet: sheetId,
+            line: {
+                monkey_id: line.monkeyId,
+                kind: line.kind,
+                from_day: line.fromDay,
+                medication: line.medication,
+                dose: line.dose,
+                days: line.days,
+            },
+        });
+        if (error) throw error;
+        return { id: data };
+    },
+    (error) => additionProblem(error, "Adding a monkey to deworming").message
+);
+
+// Removes a monkey staff added (not one of the sheet's own). One that never
+// left this phone just goes.
 export async function removeDewormingMonkey(lineId) {
-    const { error } = await supabase.rpc("remove_deworming_monkey", { line: lineId });
-    if (error) throw additionProblem(error, "Removing a monkey from deworming");
+    if (isLocalId(resolveId(lineId))) {
+        dropEntries((e) => e.kind === "deworming-add" && e.payload.localId === lineId);
+        editEntries((e) =>
+            e.kind === "deworming-results"
+                ? {
+                      ...e,
+                      needs: (e.needs ?? []).filter((n) => n !== lineId),
+                      payload: { ...e.payload, results: { ...e.payload.results, lines: e.payload.results.lines.filter((l) => l.id !== lineId) } },
+                  }
+                : e
+        );
+        return;
+    }
+    await submit("deworming-remove", { lineId }, {});
 }
+
+registerSender(
+    "deworming-remove",
+    async ({ lineId }) => {
+        const { error } = await supabase.rpc("remove_deworming_monkey", { line: resolveId(lineId) });
+        if (error) throw error;
+        return {};
+    },
+    (error) => additionProblem(error, "Removing a monkey from deworming").message
+);
 
 // Approve (admins): each monkey's record, in these words → how many
 // records were added. records: [{ lineId, text }]
@@ -2349,19 +2575,35 @@ export async function uploadSheetPhoto(file, sheetId) {
     } catch {
         // (couldn't shrink it here: the photo as it is)
     }
+    // (kept on the phone first, then sent like any other entry; its name's
+    // already its name in storage, so the results can list it straight away)
     const path = `${sheetId}/${Date.now()}.jpg`;
-    const { error } = await supabase.storage
-        .from(SHEET_BUCKET)
-        .upload(path, blob, { contentType: "image/jpeg", upsert: false });
-    if (error) {
-        console.error("Uploading a sheet photo failed:", error);
-        if (/bucket not found/i.test(error.message)) {
-            throw new Error("Sheet photos aren't ready yet: supabase/deworming-results.sql needs to be run.");
-        }
-        throw new Error("Couldn't upload the photo. Please check your connection and try again.");
+    await keepPhoto(path, blob);
+    try {
+        await submit("sheet-photo", { path }, { path });
+    } catch (error) {
+        await forgetPhoto(path);
+        throw error;
     }
     return path;
 }
+
+registerSender(
+    "sheet-photo",
+    async ({ path }) => {
+        const blob = await keptPhoto(path);
+        if (!blob) throw { code: "P0001", message: "A sheet photo's gone from this phone. Please add it again." };
+        const { error } = await supabase.storage.from(SHEET_BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        // (already there: sent before the answer got back)
+        if (error && !/already exists|duplicate/i.test(error.message ?? "") && String(error.statusCode) !== "409") {
+            console.error("Uploading a sheet photo failed:", error);
+            throw { code: "", message: error.message };
+        }
+        await forgetPhoto(path);
+        return { path };
+    },
+    (error) => error.message
+);
 
 // The photos themselves, as data URLs (for the emailed PDF), in order
 export async function sheetPhotoData(paths) {
@@ -2400,10 +2642,18 @@ export async function emailDewormingSheet(sheetId, pdfBlob, fileName) {
 // The photos' addresses to show (for an hour) → { path: url }
 export async function sheetPhotoUrls(paths) {
     if (!paths.length) return {};
-    const { data, error } = await supabase.storage.from(SHEET_BUCKET).createSignedUrls(paths, 3600);
-    if (error) {
-        console.error("Loading sheet photos failed:", error);
-        return {};
-    }
-    return Object.fromEntries(data.filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
+    // (still on this phone: from here)
+    const waiting = outboxEntries("sheet-photo").filter((e) => e.status !== "sent").map((e) => e.payload.path);
+    const here = await Promise.all(
+        paths
+            .filter((p) => waiting.includes(p))
+            .map(async (p) => {
+                const blob = await keptPhoto(p).catch(() => null);
+                return blob ? [p, URL.createObjectURL(blob)] : null;
+            })
+    );
+    const rest = paths.filter((p) => !waiting.includes(p));
+    const { data, error } = rest.length ? await supabase.storage.from(SHEET_BUCKET).createSignedUrls(rest, 3600) : { data: [] };
+    if (error) console.error("Loading sheet photos failed:", error);
+    return Object.fromEntries([...here.filter(Boolean), ...(error ? [] : data.filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]))]);
 }

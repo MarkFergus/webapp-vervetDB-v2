@@ -721,6 +721,7 @@ function RecordsPage({
     monkeys = [],
     enclosures = [],
     canEnter = false,
+    canEnterBaby = canEnter,
     maintenance = {},
     staff = null,
     inert = false,
@@ -805,7 +806,7 @@ function RecordsPage({
                         <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     )
                 ) : (
-                    <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} />
+                    <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnterBaby} />
                 )
             )}
         </div>

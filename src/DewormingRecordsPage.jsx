@@ -1,3 +1,4 @@
+import { fieldStaff } from "./outbox";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     IconClipboardCheck,
@@ -1112,7 +1113,8 @@ function Schedule({ groups, sheets, canPrepare, onOpen }) {
 export default function DewormingRecordsPage({ monkeys = [], enclosures = [], staff = null, onTitle = () => {} }) {
     const canPrepare = Boolean(staff?.isAdmin && !staff.readOnly);
     // (editors and admins: recording results)
-    const canRecord = Boolean(staff?.canAdd && !staff.readOnly);
+    // (results carry on with no signal)
+    const canRecord = Boolean(fieldStaff(staff)?.canAdd && !fieldStaff(staff).readOnly);
     const groups = useMemo(() => dewormingGroups(enclosures, monkeys), [enclosures, monkeys]);
     // null: loading; { problem }; or the sheets
     const [sheets, setSheets] = useState(null);

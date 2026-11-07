@@ -8,7 +8,12 @@ import { offlineFetch } from "./offlineFetch";
 export const SUPABASE_URL = "https://demlwtsrnlkiskcntbcc.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6Ts_XZUKA56m-izWdKPI_Q_dnvWnNC3";
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { global: { fetch: offlineFetch } });
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    global: { fetch: offlineFetch },
+    // (its own retries take about 7 seconds per request with no signal; saved
+    // answers and the outbox cover for a failed request instead)
+    db: { retry: false },
+});
 
 // The sign-in as Supabase keeps it on this phone, or null
 const KEPT_SIGN_IN = `sb-${new URL(SUPABASE_URL).hostname.split(".")[0]}-auth-token`;
@@ -29,6 +34,7 @@ export const savedSignIn = () => keptSession()?.user ?? null;
 // saving, but requests fall back on saved answers, and the outbox keeps
 // trying until Supabase has renewed it.)
 const RENEW_WAIT_MS = 1500;
+let renewing = null;
 const realGetSession = supabase.auth.getSession.bind(supabase.auth);
 supabase.auth.getSession = async () => {
     const kept = keptSession();
@@ -36,6 +42,11 @@ supabase.auth.getSession = async () => {
     if (!expired) return realGetSession();
     const stillThem = { data: { session: kept }, error: null };
     if (navigator.onLine === false) return stillThem;
-    const answer = realGetSession().then((result) => (result.data.session || !result.error ? result : stillThem));
+    // (one wait while it's being renewed: the next request needn't wait too)
+    if (renewing) return stillThem;
+    renewing = realGetSession().finally(() => {
+        renewing = null;
+    });
+    const answer = renewing.then((result) => (result.data.session || !result.error ? result : stillThem));
     return Promise.race([answer, new Promise((resolve) => setTimeout(() => resolve(stillThem), RENEW_WAIT_MS))]);
 };

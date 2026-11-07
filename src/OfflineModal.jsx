@@ -133,6 +133,21 @@ function OfflineModal({ isOpen, onClose, monkeys, onSignIn }) {
                                     )}
                                 </section>
 
+                                <section className="OfflineModal-section" aria-labelledby="OfflineModal-entries">
+                                    <h2 id="OfflineModal-entries">Working With No Signal</h2>
+                                    <p>
+                                        Monitoring, Mark As Seen, Observations, Injuries, Conditions, Maintenance reports, Deworming results and Baby
+                                        Care's milk and weights all still save. They stay on this phone and send by themselves once there's signal and
+                                        the app is open.
+                                    </p>
+                                    <ul className="OfflineModal-steps">
+                                        <li>Open the app with signal now and then, so what's saved on this phone stays up to date.</li>
+                                        <li>When you're back in signal, open the app for a moment so your entries can send.</li>
+                                        <li>Entries show at the top of the page until they've been sent.</li>
+                                        <li>After 2 days with no connection, new entries stop until this phone has connected again.</li>
+                                        <li>Deworming's Submit, and all other changes, need signal.</li>
+                                    </ul>
+                                </section>
                                 <section className="OfflineModal-section" aria-labelledby="OfflineModal-photos">
                                     <h2 id="OfflineModal-photos">Use Offline</h2>
                                     <p>Download all photos to make available when offline.</p>

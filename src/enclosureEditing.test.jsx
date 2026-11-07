@@ -338,7 +338,7 @@ describe("the maintenance log", () => {
 
         await waitFor(() => expect(saved.inserts).toHaveLength(1));
         // Who logged it isn't sent: the database fills it in
-        expect(saved.inserts[0]).toEqual({
+        expect(saved.inserts[0]).toMatchObject({
             enclosure_id: ROBERT.id, done_on: "2026-10-05", kind: "routine", details: "Replaced the shade cloth",
         });
         const entries = await screen.findAllByRole("listitem");

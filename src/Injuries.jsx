@@ -81,7 +81,7 @@ export function useInjuries(monkeyId, staff) {
         canAddUpdate: canAdd && injuryUpdatesAvailable(),
         // Admins, or whoever added it (an injury or an update)
         canChange: (entry) =>
-            state.available && !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+            state.available && !staff?.readOnly && !staff?.offline && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
         async addUpdate(injuryId, values) {
             const saved = await addInjuryUpdate(injuryId, values);
             changeUpdates(injuryId, (list) => [...list, saved]);
@@ -157,7 +157,7 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
         canAdd,
         canAddUpdate: canAdd && injuryUpdatesAvailable(),
         canChange: (entry) =>
-            available && !staff?.readOnly && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
+            available && !staff?.readOnly && !staff?.offline && Boolean(staff?.isAdmin || (staff?.userId && entry.loggedBy === staff.userId)),
         async addUpdate(injuryId, values) {
             const saved = await addInjuryUpdate(injuryId, values);
             changeUpdates(injuryId, (list) => [...list, saved]);

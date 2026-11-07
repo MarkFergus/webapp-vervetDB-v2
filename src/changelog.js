@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.0.0",
+        date: "2026-11-07",
+        major: true,
+        changes: [
+            "New Offline Mode: daily entries save with no signal and send by themselves when it returns",
+            "Added offline Mark As Seen, Observations, Injuries, Conditions, Maintenance reports, Deworming results and Baby Care milk and weights",
+        ],
+    },
+    {
         version: "1.29.0",
         date: "2026-11-06",
         changes: [

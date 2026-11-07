@@ -45,3 +45,39 @@ body {
     color: var(--on-status);
     background-color: #ffb454;
 }
+
+.App-needsAttention {
+    text-align: left;
+    background-color: var(--danger);
+    color: #fff;
+}
+
+.App-needsAttention ul {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.App-needsAttention li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 6px 0;
+}
+
+.App-needsAttentionButtons {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.App-needsAttentionButtons button {
+    padding: 4px 10px;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    cursor: pointer;
+}

@@ -97,9 +97,10 @@ test("refused later: kept to Try Again or Discard; what needs it waits with it",
     expect(outboxProblems().map((e) => e.problem)).toEqual(["Refused.", "The entry this belongs to hasn't been sent."]);
 
     refuse = false;
-    const [first, second] = outboxProblems();
+    const [first] = outboxProblems();
     await retryEntry(first.id);
-    await retryEntry(second.id);
+    await flushOutbox();
+    // (what needed it goes by itself once it's through)
     expect(outboxProblems()).toHaveLength(0);
     expect(resolveId(session)).toBe(9);
     discardEntry(first.id);

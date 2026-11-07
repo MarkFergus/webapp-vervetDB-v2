@@ -12,6 +12,7 @@ const LAST_CONTACT = "vervetdb-last-contact";
 // (a saved answer, once the database has had this long)
 const READ_WAIT_MS = 6000;
 const WRITE_WAIT_MS = 30000;
+const PHOTO_WAIT_MS = 90000;
 const NOT_SAVED = /\/rest\/v1\/(monkeys|troops|enclosures)(\?|$)/;
 
 const openCache = async () => {
@@ -42,15 +43,16 @@ function noteContact() {
 export async function clearSavedRecords() {
     try {
         await globalThis.caches?.delete(CACHE);
+        localStorage.removeItem("vervetdb-injuries-snapshot");
     } catch {
         // (not allowed)
     }
 }
 
-function write(input, init) {
+function write(input, init, wait = WRITE_WAIT_MS) {
     if (init.signal) return fetch(input, init);
     const stop = new AbortController();
-    const timer = setTimeout(() => stop.abort(), WRITE_WAIT_MS);
+    const timer = setTimeout(() => stop.abort(), wait);
     return fetch(input, { ...init, signal: stop.signal })
         .then((response) => {
             if (response.ok) noteContact();
@@ -61,6 +63,10 @@ function write(input, init) {
 
 export async function offlineFetch(input, init = {}) {
     const url = typeof input === "string" ? input : (input.url ?? String(input));
+    // (a photo on a poor signal: longer, but not for ever)
+    if (url.includes("/storage/v1/object/") && (init.method ?? "GET").toUpperCase() === "POST" && !url.includes("/sign/")) {
+        return write(input, init, PHOTO_WAIT_MS);
+    }
     if (!url.includes("/rest/v1/")) return fetch(input, init);
     const method = (init.method ?? "GET").toUpperCase();
     if (method === "HEAD") return fetch(input, init);
