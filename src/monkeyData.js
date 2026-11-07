@@ -962,14 +962,8 @@ registerSender(
     (error) => saveProblem(error).message
 );
 
-// Closed without a report (a false alarm, a duplicate): says why. Works with
-// no signal. Returns the issue.
-export async function closeIssue(issue, reason) {
-    const optimistic = { status: "closed", closeReason: reason, closedAt: new Date().toISOString(), closedByName: outboxUser()?.name ?? null };
-    await submit("issue-close", { id: issue.id, reason }, optimistic, { needs: [issue.id] });
-    return { ...issue, ...optimistic };
-}
-
+// Closed without a report: no longer offered, but one may still be waiting on a
+// phone from before, and is sent as it was
 registerSender(
     "issue-close",
     async ({ id, reason }) => {

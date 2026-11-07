@@ -4,8 +4,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { IssuesTab } from "./MaintenanceIssues";
 import WholeMap from "./WholeMap";
-import { addIssue, addIssuePhotos, closeIssue, deleteIssue, fixIssue, loadMaintenanceIssues } from "./monkeyData";
-import { checkClose, checkIssue, daysAgo, issuePlace, issuesAt, openIssues, pastIssues, photosWithRoom, pinAt } from "./issueRules";
+import { addIssue, addIssuePhotos, deleteIssue, fixIssue, loadMaintenanceIssues } from "./monkeyData";
+import { checkIssue, daysAgo, issuePlace, issueReport, issuesAt, openIssues, pastIssues, photosWithRoom, pinAt } from "./issueRules";
 import { buildMorningBrief } from "./morningBriefRules";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -15,10 +15,10 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     addIssuePhotos: vi.fn(),
     issuePhotoUrl: vi.fn(async (path) => `signed:${path}`),
     fixIssue: vi.fn(),
-    closeIssue: vi.fn(),
     saveIssue: vi.fn(),
     deleteIssue: vi.fn(),
-    maintenanceKindsAvailable: () => true,
+    // (not known yet, as on the map before the reports have loaded)
+    maintenanceKindsAvailable: () => false,
 }));
 
 const place = (id, name, type, parentId = null) => ({ id, name, type, parentId, sortOrder: id });
@@ -98,12 +98,11 @@ describe("the rules", () => {
         expect(photosWithRoom(["a"], 4)).toEqual({ files: [], tooMany: true });
     });
 
-    test("what a report and a closing need", () => {
+    test("what a report needs, and what Job Done saves", () => {
         expect(checkIssue({ place: null, details: "x" }).error).toMatch(/enclosure/);
         expect(checkIssue({ place: ENCLOSURES[0], details: "  " }).error).toMatch(/what's wrong/);
         expect(checkIssue({ place: ENCLOSURES[0], details: " Fence ", urgent: true }).values).toEqual({ enclosureId: 1, details: "Fence", urgent: true });
-        expect(checkClose(" ").error).toMatch(/why/);
-        expect(checkClose(" Duplicate ").reason).toBe("Duplicate");
+        expect(issueReport({ details: "Fence down" }, " Replaced two posts ")).toBe("Issue: Fence down\nDone: Replaced two posts");
     });
 });
 
@@ -122,15 +121,15 @@ describe("the Issues tab", () => {
         return { user: userEvent.setup(), onReportAdded };
     }
 
-    test("open ones, urgent first and marked; Past shows why one was closed", async () => {
+    test("open ones, urgent first and marked; Closed shows why one was closed", async () => {
         const { user } = await setup();
         const items = screen.getAllByRole("listitem");
         expect(items.map((li) => within(li).getByRole("link").textContent)).toEqual(["Goliath A", "Goliath"]);
         expect(within(items[0]).getByText("Urgent")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Open (2)" })).toBeInTheDocument();
-        await user.click(screen.getByRole("button", { name: "Past" }));
-        expect(screen.getByText(/Closed by Lee.*Duplicate/)).toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "Mark Fixed" })).not.toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "Closed" }));
+        expect(screen.getByText(/Closed by Lee, 4 Nov 2026: Duplicate/)).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Job Done" })).not.toBeInTheDocument();
     });
 
     test("Report Issue: needs a place and what's wrong, then it's on the list", async () => {
@@ -138,13 +137,13 @@ describe("the Issues tab", () => {
         addIssue.mockResolvedValue(issue(9, 3, "Tap dripping"));
         await user.click(screen.getByRole("button", { name: "Report Issue" }));
         const dialog = screen.getByRole("dialog", { name: "Report Issue" });
-        await user.click(within(dialog).getByRole("button", { name: "Report Issue" }));
+        await user.click(within(dialog).getByRole("button", { name: "Submit" }));
         expect(within(dialog).getByRole("alert")).toHaveTextContent("choose the enclosure");
         await user.type(within(dialog).getByRole("searchbox"), "H&B");
         await user.click(within(dialog).getByRole("button", { name: /Holt/ }));
         await user.type(within(dialog).getByLabelText("What's Wrong"), "Tap dripping");
         await user.click(within(dialog).getByRole("button", { name: "Urgent" }));
-        await user.click(within(dialog).getByRole("button", { name: "Report Issue" }));
+        await user.click(within(dialog).getByRole("button", { name: "Submit" }));
         await waitFor(() =>
             expect(addIssue).toHaveBeenCalledWith({ enclosureId: 3, details: "Tap dripping", urgent: true, mapX: null, mapY: null, photos: [] })
         );
@@ -152,19 +151,26 @@ describe("the Issues tab", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    test("Mark Fixed: the report form, filled in; saving adds the report and the issue goes", async () => {
+    test("Job Done: an empty box to say what was done; the report says the issue too, and the issue goes", async () => {
         const { user, onReportAdded } = await setup();
         const report = { id: 50, enclosureId: 1 };
         fixIssue.mockImplementation(async (i) => ({ issue: { ...i, status: "fixed" }, report }));
         const row = screen.getByText("Gate sticking").closest("li");
-        await user.click(within(row).getByRole("button", { name: "Mark Fixed" }));
-        const dialog = screen.getByRole("dialog", { name: "Mark Fixed" });
-        expect(within(dialog).getByLabelText("Maintenance Details")).toHaveValue("Gate sticking");
+        await user.click(within(row).getByRole("button", { name: "Job Done" }));
+        const dialog = screen.getByRole("dialog", { name: "Job Done" });
+        const box = within(dialog).getByLabelText("Maintenance Details");
+        expect(box).toHaveValue("");
+        expect(box).toHaveAttribute("placeholder", "Details of the work done and the outcome. If no work was needed, say why.");
         expect(within(dialog).getByRole("button", { name: "Repair" })).toHaveAttribute("aria-pressed", "true");
+        expect(within(dialog).queryByRole("button", { name: "Close Without Report" })).not.toBeInTheDocument();
+        await user.click(within(dialog).getByRole("button", { name: "Save Report" }));
+        expect(within(dialog).getByRole("alert")).toHaveTextContent("Please say what was done");
+        expect(fixIssue).not.toHaveBeenCalled();
+        await user.type(box, "Oiled the hinges");
         await user.click(within(dialog).getByRole("button", { name: "Save Report" }));
         await waitFor(() => expect(onReportAdded).toHaveBeenCalledWith(report));
         expect(fixIssue.mock.calls[0][0].id).toBe(1);
-        expect(fixIssue.mock.calls[0][1]).toMatchObject({ kind: "repair", details: "Gate sticking" });
+        expect(fixIssue.mock.calls[0][1]).toMatchObject({ kind: "repair", details: "Issue: Gate sticking\nDone: Oiled the hinges" });
         expect(screen.queryByText("Gate sticking")).not.toBeInTheDocument();
     });
 
@@ -186,7 +192,7 @@ describe("the Issues tab", () => {
         await user.type(within(dialog).getByRole("searchbox"), "Goliath A");
         await user.click(within(dialog).getByRole("button", { name: /Goliath A/ }));
         await user.type(within(dialog).getByLabelText("What's Wrong"), "Roof");
-        await user.click(within(dialog).getByRole("button", { name: "Report Issue" }));
+        await user.click(within(dialog).getByRole("button", { name: "Submit" }));
         await waitFor(() => expect(addIssue).toHaveBeenCalled());
         expect(addIssue.mock.calls[0][0].photos.map((f) => f.name)).toEqual(["1.jpg", "3.jpg", "4.jpg"]);
     });
@@ -208,19 +214,48 @@ describe("the Issues tab", () => {
         await waitFor(() => expect(document.querySelectorAll(".Issues-photo")).toHaveLength(8));
     });
 
-    test("Close Without Report needs a reason", async () => {
-        const { user, onReportAdded } = await setup();
-        closeIssue.mockImplementation(async (i, closeReason) => ({ ...i, status: "closed", closeReason }));
-        const row = screen.getByText("Gate sticking").closest("li");
-        await user.click(within(row).getByRole("button", { name: "Mark Fixed" }));
-        await user.click(screen.getByRole("button", { name: "Close Without Report" }));
-        const dialog = screen.getByRole("dialog", { name: "Close Without Report" });
-        await user.click(within(dialog).getByRole("button", { name: "Close Issue" }));
-        expect(within(dialog).getByRole("alert")).toHaveTextContent("why");
-        await user.type(within(dialog).getByLabelText("Reason"), "False alarm");
-        await user.click(within(dialog).getByRole("button", { name: "Close Issue" }));
-        await waitFor(() => expect(closeIssue).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), "False alarm"));
-        expect(onReportAdded).not.toHaveBeenCalled();
+    test("a photo enlarges: the others by arrows, Save Photo, Escape only closes the photo", async () => {
+        const user = userEvent.setup();
+        const url = "blob:saved";
+        URL.createObjectURL = vi.fn(() => url);
+        URL.revokeObjectURL = vi.fn();
+        const fetched = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(new Blob(["photo"])));
+        const clicked = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+        const outer = vi.fn();
+        document.addEventListener("keydown", outer);
+        loadMaintenanceIssues.mockResolvedValue([issue(1, 1, "Fence", { photoPaths: ["a.jpg", "b.jpg"] })]);
+        render(<IssuesTab enclosures={ENCLOSURES} me={{}} />);
+        await user.click(await screen.findByRole("button", { name: "See photo 2 of 2" }));
+        const viewer = screen.getByRole("dialog", { name: "Photo" });
+        expect(within(viewer).getByRole("img")).toHaveAttribute("src", "signed:b.jpg");
+        expect(viewer).toHaveTextContent("2 of 2");
+        await user.click(within(viewer).getByRole("button", { name: "Next Photo" }));
+        expect(within(viewer).getByRole("img")).toHaveAttribute("src", "signed:a.jpg");
+        await user.keyboard("{ArrowLeft}");
+        expect(within(viewer).getByRole("img")).toHaveAttribute("src", "signed:b.jpg");
+        await user.click(within(viewer).getByRole("button", { name: "Save Photo" }));
+        await waitFor(() => expect(clicked).toHaveBeenCalled());
+        expect(fetched).toHaveBeenCalledWith("signed:b.jpg");
+        outer.mockClear();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog", { name: "Photo" })).not.toBeInTheDocument();
+        expect(outer).not.toHaveBeenCalled();
+        document.removeEventListener("keydown", outer);
+        vi.restoreAllMocks();
+    });
+
+    test("Save Photo that fails says so, and the photo stays", async () => {
+        const user = userEvent.setup();
+        vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("no signal"));
+        loadMaintenanceIssues.mockResolvedValue([issue(1, 1, "Fence", { photoPaths: ["a.jpg"] })]);
+        render(<IssuesTab enclosures={ENCLOSURES} me={{}} />);
+        await user.click(await screen.findByRole("button", { name: "See photo 1 of 1" }));
+        const viewer = screen.getByRole("dialog", { name: "Photo" });
+        expect(within(viewer).queryByRole("button", { name: "Next Photo" })).not.toBeInTheDocument();
+        await user.click(within(viewer).getByRole("button", { name: "Save Photo" }));
+        expect(await within(viewer).findByRole("alert")).toHaveTextContent("Couldn't save the photo");
+        expect(within(viewer).getByRole("img")).toBeInTheDocument();
+        vi.restoreAllMocks();
     });
 
     test("only admins can delete, and with no signal nobody changes or deletes", async () => {
@@ -239,7 +274,7 @@ describe("the Issues tab", () => {
         await screen.findByText("Gate sticking");
         expect(screen.queryByRole("button", { name: /^Change/ })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: /^Delete/ })).not.toBeInTheDocument();
-        expect(screen.getAllByRole("button", { name: "Mark Fixed" }).length).toBeGreaterThan(0);
+        expect(screen.getAllByRole("button", { name: "Job Done" }).length).toBeGreaterThan(0);
     });
 });
 

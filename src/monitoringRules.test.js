@@ -3,6 +3,7 @@
 import {
     prioritySeenLine,
     isOverdue,
+    troopStages,
     latestSessionDays,
     seenLine,
     sessionAlerts,
@@ -220,5 +221,40 @@ test("in an introcage or Sickbay: seen every day; moved back out to the troop: s
         true,
         true,
         false,
+    ]);
+});
+
+test("the troops' stages: each troop once, from the most urgent to the least", () => {
+    const NOW = new Date("2026-11-07T12:00:00Z").getTime();
+    const troop = (id, section = "Top") => ({ id, section });
+    const done = (enclosureId, date, finishedAt = `${date}T09:00:00Z`) => ({ enclosureId, date, status: "finished", finishedAt });
+    const sessions = [
+        { enclosureId: 1, date: "2026-11-07", status: "in_progress" },
+        done(1, "2026-11-06"),
+        done(2, "2026-11-01"),
+        done(3, "2026-10-28"),
+        done(5, "2026-11-07"),
+        done(5, "2026-11-06"),
+        done(6, "2026-11-06"),
+        done(7, "2026-11-04"),
+        done(8, "2026-11-03"),
+        // (entered just now, for an old day: still overdue)
+        done(9, "2026-10-20", "2026-11-07T10:00:00Z"),
+        // (a wild troop, just monitored)
+        done(11, "2026-11-07"),
+    ];
+    const troops = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((id) => troop(id));
+    const stages = troopStages([...troops, troop(10, "Wild"), troop(11, "Wild")], sessions, ["Top"], "2026-11-07", NOW);
+    expect(stages.map((s) => [s.troop.id, s.stage, s.days])).toEqual([
+        [1, "progress", 1],
+        [4, "overdue", null],
+        [9, "overdue", 18],
+        [3, "overdue", 10],
+        [2, "overdue", 6],
+        [8, "rest", 4],
+        [7, "rest", 3],
+        [6, "recent", 1],
+        [5, "recent", 0],
+        [11, "recent", 0],
     ]);
 });

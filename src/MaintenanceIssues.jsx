@@ -1,23 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconAlertTriangle, IconCamera, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
-import useDialog from "./useDialog";
-import { addIssue, addIssuePhotos, closeIssue, deleteIssue, fixIssue, issuePhotoUrl, loadMaintenanceIssues, maintenanceKindsAvailable, saveIssue } from "./monkeyData";
+import { IconAlertTriangle, IconCamera, IconChevronLeft, IconChevronRight, IconDownload, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import useDialog, { lockScroll, unlockScroll } from "./useDialog";
+import CloseButton from "./CloseButton";
+import ImagePreview from "./ImagePreview";
+import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
+import { addIssue, addIssuePhotos, deleteIssue, fixIssue, issuePhotoUrl, loadMaintenanceIssues, saveIssue } from "./monkeyData";
 import { PlacePicker, TypeButtons } from "./MaintenancePickers";
 import { enclosureHash } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { maintenancePlaces } from "./maintenanceRecords";
-import { MAX_ISSUE_PHOTOS, checkClose, checkIssue, daysAgo, isOpen, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
+import { MAX_ISSUE_PHOTOS, checkIssue, daysAgo, isOpen, issueReport, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
 import "./RecordsPage.css"; // (its pop-ups, hints and messages)
 import "./MaintenanceLog.css";
 import "./MaintenanceIssues.css";
 
-// Maintenance Issues: what needs doing. An issue stays open until it's fixed
-// (which adds a Maintenance report) or closed without a report, with a reason.
+// Maintenance Issues: what needs doing. An issue stays open until Job Done, which
+// adds a Maintenance report. (Closed without a report, with a reason: only the
+// few from before Job Done was the one way, shown as they were.)
 //   IssueReportDialog  report one, or change one
-//   IssueFixDialog     Mark Fixed / Close Without Report
-//   IssuesTab          Records → Maintenance → Issues
+//   IssueFixDialog     Job Done
+//   IssuesTab          Records → Maintenance → Job List (Open and Closed)
 //   EnclosureIssues    the open ones on an enclosure's page
 // Everyone with a role but Limited (the Interactive Map too: WholeMap.jsx).
 
@@ -143,7 +147,7 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
                                 onChange={pickPhotos}
                             />
                             {photos.length < MAX_ISSUE_PHOTOS && (
-                                <button type="button" className="Modal-edit is-soft" onClick={() => fileRef.current?.click()}>
+                                <button type="button" className="Modal-edit is-sickbay" onClick={() => fileRef.current?.click()}>
                                     <IconCamera size={16} aria-hidden="true" />
                                     Add Photos
                                 </button>
@@ -175,7 +179,7 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
                 )}
                 <div className="RecordsPage-dialogButtons">
                     <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
-                        {busy ? "Saving…" : issue ? "Save" : "Report Issue"}
+                        {busy ? "Saving…" : issue ? "Save" : "Submit"}
                     </button>
                     <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
                         Cancel
@@ -188,168 +192,214 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
 
 const todayText = () => dayText(new Date());
 
-// Mark Fixed: the normal Maintenance report, filled in, and it goes under the
-// issue's place. Close Without Report: only a reason.
-//   onDone({ issue, report }) (no report if it was closed)
+// Job Done: the normal Maintenance report, under the issue's place. They say
+// what was done (or why nothing was needed); the report says what the issue was
+// too (issueReport).
+//   onDone({ issue, report })
 export function IssueFixDialog({ issue, enclosures, onDone, onCancel }) {
     const firstRef = useRef(null);
     const place = enclosures.find((e) => e.id === issue.enclosureId);
-    const [closing, setClosing] = useState(false);
     const [doneOn, setDoneOn] = useState(todayText());
     const [kind, setKind] = useState("repair");
-    const [details, setDetails] = useState(issue.details);
-    const [reason, setReason] = useState("");
+    const [details, setDetails] = useState("");
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
 
-    async function attempt(action) {
+    async function fix(event) {
+        event.preventDefault();
+        if (!doneOn) return setProblem("Please give the date.");
+        if (doneOn > todayText()) return setProblem("The date can't be in the future.");
+        if (!details.trim()) return setProblem("Please say what was done, or why no work was needed.");
         setBusy(true);
         setProblem(null);
         try {
-            onDone(await action());
+            onDone(await fixIssue(issue, { doneOn, kind, details: issueReport(issue, details) }));
         } catch (failure) {
             setProblem(failure.message);
             setBusy(false);
         }
     }
-    function fix(event) {
-        event.preventDefault();
-        if (!doneOn) return setProblem("Please give the date.");
-        if (doneOn > todayText()) return setProblem("The date can't be in the future.");
-        if (!details.trim()) return setProblem("Please say what was done.");
-        attempt(() => fixIssue(issue, { doneOn, kind, details: details.trim() }));
-    }
-    function close(event) {
-        event.preventDefault();
-        const checked = checkClose(reason);
-        if (checked.error) return setProblem(checked.error);
-        attempt(async () => ({ issue: await closeIssue(issue, checked.reason) }));
-    }
 
     return (
-        <Dialog title={closing ? "Close Without Report" : "Mark Fixed"} onClose={onCancel} busy={busy} firstRef={firstRef}>
+        <Dialog title="Job Done" onClose={onCancel} busy={busy} firstRef={firstRef}>
             <p className="Issues-reminder">
                 <b>{place ? fullName(place.name) : "An enclosure"}:</b> {issue.details}
             </p>
-            {closing ? (
-                <form className="Issues-form" onSubmit={close} noValidate>
-                    <label className="MaintenancePage-field">
-                        <span className="MaintenancePage-label">Reason</span>
-                        <textarea
-                            ref={firstRef}
-                            className="IntegrationPage-report"
-                            rows={2}
-                            value={reason}
-                            placeholder="e.g. A duplicate, or a false alarm"
-                            onChange={(e) => setReason(e.target.value)}
-                        />
+            <form className="Issues-form" onSubmit={fix} noValidate>
+                <div className="IntegrationPage-dates">
+                    <label>
+                        <span>Date Done</span>
+                        <input type="date" value={doneOn} max={todayText()} onChange={(e) => setDoneOn(e.target.value)} />
                     </label>
-                    {problem && (
-                        <p className="RecordsPage-problem" role="alert">
-                            {problem}
-                        </p>
-                    )}
-                    <div className="RecordsPage-dialogButtons">
-                        <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
-                            {busy ? "Saving…" : "Close Issue"}
-                        </button>
-                        <button
-                            type="button"
-                            className="Modal-edit is-cancel"
-                            disabled={busy}
-                            onClick={() => {
-                                setClosing(false);
-                                setProblem(null);
-                            }}
-                        >
-                            Back
-                        </button>
+                    {/* (always: from the map, the reports may not have loaded yet) */}
+                    <div className="MaintenancePage-field">
+                        <span className="MaintenancePage-label">Maintenance Type</span>
+                        <TypeButtons value={kind} onChange={setKind} />
                     </div>
-                </form>
-            ) : (
-                <form className="Issues-form" onSubmit={fix} noValidate>
-                    <div className="IntegrationPage-dates">
-                        <label>
-                            <span>Date Done</span>
-                            <input type="date" value={doneOn} max={todayText()} onChange={(e) => setDoneOn(e.target.value)} />
-                        </label>
-                        {maintenanceKindsAvailable() && (
-                            <div className="MaintenancePage-field">
-                                <span className="MaintenancePage-label">Maintenance Type</span>
-                                <TypeButtons value={kind} onChange={setKind} />
-                            </div>
-                        )}
-                    </div>
-                    <label className="MaintenancePage-field">
-                        <span className="MaintenancePage-label">Maintenance Details</span>
-                        <textarea
-                            ref={firstRef}
-                            className="IntegrationPage-report"
-                            rows={3}
-                            value={details}
-                            onChange={(e) => setDetails(e.target.value)}
-                        />
-                    </label>
-                    {problem && (
-                        <p className="RecordsPage-problem" role="alert">
-                            {problem}
-                        </p>
-                    )}
-                    <div className="RecordsPage-dialogButtons">
-                        <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
-                            {busy ? "Saving…" : "Save Report"}
-                        </button>
-                        <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
-                            Cancel
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        className="Issues-closeLink"
-                        disabled={busy}
-                        onClick={() => {
-                            setClosing(true);
-                            setProblem(null);
-                        }}
-                    >
-                        Close Without Report
+                </div>
+                <label className="MaintenancePage-field">
+                    <span className="MaintenancePage-label">Maintenance Details</span>
+                    <textarea
+                        ref={firstRef}
+                        className="IntegrationPage-report"
+                        rows={3}
+                        value={details}
+                        placeholder="Details of the work done and the outcome. If no work was needed, say why."
+                        onChange={(e) => setDetails(e.target.value)}
+                    />
+                </label>
+                {problem && (
+                    <p className="RecordsPage-problem" role="alert">
+                        {problem}
+                    </p>
+                )}
+                <div className="RecordsPage-dialogButtons">
+                    <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
+                        {busy ? "Saving…" : "Save Report"}
                     </button>
-                </form>
-            )}
+                    <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </Dialog>
     );
 }
 
-// An issue's photo (private: fetched when it's shown), tap for the full size
-function IssuePhoto({ path }) {
-    const [url, setUrl] = useState(null);
+// A photo enlarged, over everything: arrows (or a swipe, or the arrow keys) to
+// the others, Save Photo to keep a copy on this phone. photos: [{ path, url }]
+function PhotoViewer({ photos, start, onClose }) {
+    const closeRef = useRef(null);
+    const swipeFrom = useRef(null);
+    const [index, setIndex] = useState(start);
+    const [saving, setSaving] = useState(false);
+    const [problem, setProblem] = useState(null);
+    // (Firefox's home-screen app can't download: press and hold instead)
+    const [preview, setPreview] = useState(null);
+    const count = photos.length;
+    const step = (by) => {
+        setIndex((now) => (now + by + count) % count);
+        setProblem(null);
+    };
+
+    // (these keys are just for here, not the map or pop-up underneath)
+    const keys = useRef(null);
+    keys.current = (event) => {
+        if (preview) return;
+        const actions = { Escape: onClose, ArrowLeft: () => count > 1 && step(-1), ArrowRight: () => count > 1 && step(1) };
+        if (!actions[event.key]) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        actions[event.key]();
+    };
     useEffect(() => {
-        let cancelled = false;
-        setUrl(null);
-        issuePhotoUrl(path)
-            .then((found) => !cancelled && setUrl(found))
-            .catch(() => {});
+        const before = document.activeElement;
+        closeRef.current?.focus();
+        const listener = (event) => keys.current(event);
+        document.addEventListener("keydown", listener, true);
+        lockScroll();
         return () => {
-            cancelled = true;
+            document.removeEventListener("keydown", listener, true);
+            unlockScroll();
+            before?.focus?.();
         };
-    }, [path]);
-    if (!url) return null;
-    return (
-        <a className="Issues-photo" href={url} target="_blank" rel="noreferrer" aria-label="See the photo">
-            <img src={url} alt="" />
-        </a>
+    }, []);
+
+    async function save() {
+        setSaving(true);
+        setProblem(null);
+        try {
+            const response = await fetch(photos[index].url);
+            if (!response.ok) throw new Error("Not found");
+            const blob = await response.blob();
+            if (isFirefoxAndroidApp()) setPreview(blob);
+            else downloadBlob(blob, `vervetdb-issue-photo-${index + 1}.jpg`);
+        } catch {
+            setProblem("Couldn't save the photo. Please check your connection and try again.");
+        }
+        setSaving(false);
+    }
+
+    return createPortal(
+        <div className="Issues-viewer" role="dialog" aria-modal="true" aria-label="Photo">
+            <div className="Issues-viewerTop">
+                <span>{count > 1 ? `${index + 1} of ${count}` : ""}</span>
+                <CloseButton ref={closeRef} onClick={onClose} />
+            </div>
+            <div
+                className="Issues-viewerPhoto"
+                onPointerDown={(event) => {
+                    swipeFrom.current = event.clientX;
+                }}
+                onPointerUp={(event) => {
+                    const moved = event.clientX - (swipeFrom.current ?? event.clientX);
+                    swipeFrom.current = null;
+                    if (count > 1 && Math.abs(moved) > 50) step(moved < 0 ? 1 : -1);
+                }}
+            >
+                <img src={photos[index].url} alt={`Issue photo ${index + 1} of ${count}`} draggable="false" />
+                {count > 1 && (
+                    <>
+                        <button type="button" className="Issues-viewerStep is-back" aria-label="Previous Photo" onClick={() => step(-1)}>
+                            <IconChevronLeft size={26} aria-hidden="true" />
+                        </button>
+                        <button type="button" className="Issues-viewerStep is-next" aria-label="Next Photo" onClick={() => step(1)}>
+                            <IconChevronRight size={26} aria-hidden="true" />
+                        </button>
+                    </>
+                )}
+            </div>
+            <div className="Issues-viewerBottom">
+                {problem && (
+                    <p className="RecordsPage-problem" role="alert">
+                        {problem}
+                    </p>
+                )}
+                <button type="button" className="Modal-edit is-blue" disabled={saving} onClick={save}>
+                    <IconDownload size={18} aria-hidden="true" />
+                    {saving ? "Saving…" : "Save Photo"}
+                </button>
+            </div>
+            <ImagePreview image={preview} onClose={() => setPreview(null)} />
+        </div>,
+        document.body
     );
 }
 
-// All of an issue's photos
+// All of an issue's photos (private: fetched when they're shown), small; tap
+// one to enlarge it
 export function IssuePhotos({ paths }) {
-    if (!paths.length) return null;
+    const [urls, setUrls] = useState({});
+    const [open, setOpen] = useState(null);
+    const key = paths.join("|");
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all(paths.map(async (path) => [path, await issuePhotoUrl(path).catch(() => null)])).then(
+            (found) => !cancelled && setUrls(Object.fromEntries(found))
+        );
+        return () => {
+            cancelled = true;
+        };
+    }, [key]);
+    const photos = paths.filter((path) => urls[path]).map((path) => ({ path, url: urls[path] }));
+    if (!photos.length) return null;
     return (
-        <div className="Issues-photos">
-            {paths.map((path) => (
-                <IssuePhoto key={path} path={path} />
-            ))}
-        </div>
+        <>
+            <div className="Issues-photos">
+                {photos.map(({ path, url }, index) => (
+                    <button
+                        key={path}
+                        type="button"
+                        className="Issues-photo"
+                        aria-label={`See photo ${index + 1} of ${photos.length}`}
+                        onClick={() => setOpen(index)}
+                    >
+                        <img src={url} alt="" />
+                    </button>
+                ))}
+            </div>
+            {open !== null && <PhotoViewer photos={photos} start={open} onClose={() => setOpen(null)} />}
+        </>
     );
 }
 
@@ -375,7 +425,7 @@ export function AddPhotosButton({ issue, onAdded }) {
     return (
         <>
             <input ref={fileRef} type="file" accept="image/*" multiple hidden aria-label={`Photos for: ${issue.details}`} onChange={pick} />
-            <button type="button" className="Modal-edit is-soft" disabled={busy} onClick={() => fileRef.current?.click()}>
+            <button type="button" className="Modal-edit is-sickbay" disabled={busy} onClick={() => fileRef.current?.click()}>
                 <IconCamera size={16} aria-hidden="true" />
                 {busy ? "Adding…" : "Add Photos"}
             </button>
@@ -395,7 +445,9 @@ export const reportedWords = (issue, now = new Date()) =>
 // One issue in a list
 function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onDelete, onChanged }) {
     const place = enclosures.find((e) => e.id === issue.enclosureId);
-    const when = (issue.closedAt ?? "").slice(0, 10);
+    const when = issue.closedAt
+        ? new Date(issue.closedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+        : "";
     return (
         <li className={`Issues-item${issue.urgent && isOpen(issue) ? " is-urgent" : ""}`}>
             <div className="Issues-itemMain">
@@ -445,7 +497,7 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
                     <span className="Issues-itemButtons">
                         <AddPhotosButton issue={issue} onAdded={onChanged} />
                         <button type="button" className="Modal-edit is-confirm" onClick={() => onFix(issue)}>
-                            Mark Fixed
+                            Job Done
                         </button>
                     </span>
                 )}
@@ -490,7 +542,7 @@ function DeleteDialog({ issue, onConfirm, onCancel }) {
 
 const placed = (list, issue) => (list.some((i) => i.id === issue.id) ? list.map((i) => (i.id === issue.id ? issue : i)) : [issue, ...list]);
 
-// Records → Maintenance → Issues: Open or Past, and Report Issue
+// Records → Maintenance → Issues: Open or Closed, and Report Issue
 export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     const [issues, setIssues] = useState(null); // null (loading), "failed", or the list
     const [show, setShow] = useState("open");
@@ -509,13 +561,14 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     const shown = show === "open" ? waiting : pastIssues(issues);
     return (
         <>
+            <p className="RecordsPage-hint">Something needs fixing? Report it here, then press Job Done when it's finished.</p>
             <div className="Issues-bar">
                 <div className="MaintenancePage-types" role="group" aria-label="Show">
                     <button type="button" aria-pressed={show === "open"} onClick={() => setShow("open")}>
                         Open ({waiting.length})
                     </button>
                     <button type="button" aria-pressed={show === "past"} onClick={() => setShow("past")}>
-                        Past
+                        Closed
                     </button>
                 </div>
                 <button type="button" className="Modal-edit is-action-outline" onClick={() => setOpen({ report: true })}>
@@ -539,7 +592,7 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                     ))}
                 </ol>
             ) : (
-                <p className="RecordsPage-none">{show === "open" ? "No open issues." : "No past issues yet."}</p>
+                <p className="RecordsPage-none">{show === "open" ? "No open issues." : "No closed issues yet."}</p>
             )}
             {(open?.report || open?.edit) && (
                 <IssueReportDialog

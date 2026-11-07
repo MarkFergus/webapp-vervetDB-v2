@@ -21,10 +21,21 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.1.1",
+        date: "2026-11-07",
+        changes: [
+            "Improved Monitoring: every troop in one list, most urgent first",
+            "Improved Maintenance: new Job List, Log Job and History tabs, and Job Done to finish a job",
+            "Improved Maintenance Issues: tap a photo to enlarge it, with Save Photo",
+            "Improved the Interactive Map: an eye button shows or hides the issue pins",
+            "Fixed the double search box in Maintenance and Integration",
+        ],
+    },
+    {
         version: "2.1.0",
         date: "2026-11-07",
         changes: [
-            "New Maintenance Issues: report them on the Interactive Map with a pin and photos, then Mark Fixed; also in Records > Maintenance and on enclosure pages",
+            "New Maintenance Issues: report them on the Interactive Map with a pin and photos, then Job Done; also in Records > Maintenance and on enclosure pages",
             "New Baby Care 2026 stats on the Statistics page, with milk and weight by age",
             "New Bearded Coffee theme replaces Night Savannah",
             "Added Behaviour to Rehabilitation records, and moved Observations to Medical",

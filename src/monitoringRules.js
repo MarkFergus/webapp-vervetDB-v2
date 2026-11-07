@@ -103,6 +103,41 @@ export function latestSessionDays(sessions) {
 // Whether a troop's overdue a session (none yet, or the last too long ago)
 export const isOverdue = (lastDay, today) => !lastDay || daysBetween(lastDay, today) >= OVERDUE_DAYS;
 
+// The top of Monitoring: every monitored troop once, at the stage it's at, from
+// the most urgent to the least: in progress; overdue, longest first (never
+// monitored: first of all); the rest, nearest to overdue first; then finished
+// in the last 48 hours, the newest last. A session entered late for an old date doesn't stop
+// a troop being overdue. Troops outside the monitored list only show while
+// they've a session in progress or just finished.
+//   → [{ troop, stage ("progress", "overdue", "recent", "rest"), session, days
+//   (since the last session; null: none yet) }]
+export function troopStages(troops, sessions, monitored, today, now = Date.now()) {
+    const latest = latestSessionDays(sessions);
+    const rows = troops.map((troop) => {
+        const own = sessions.filter((s) => s.enclosureId === troop.id);
+        const last = latest.get(troop.id);
+        const days = last ? daysBetween(last, today) : null;
+        const open = own.find((s) => s.status === "in_progress");
+        if (open) return { troop, stage: "progress", session: open, days };
+        const isMonitored = monitored.includes(troop.section);
+        const recent = own
+            .filter((s) => s.status === "finished" && s.finishedAt && now - new Date(s.finishedAt) < 2 * 86400000)
+            .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)))[0];
+        if (isMonitored && isOverdue(last, today)) return { troop, stage: "overdue", session: null, days };
+        if (recent) return { troop, stage: "recent", session: recent, days };
+        return isMonitored ? { troop, stage: "rest", session: null, days } : null;
+    });
+    const order = ["progress", "overdue", "rest", "recent"];
+    const away = (row) => row.days ?? Infinity;
+    return rows
+        .filter(Boolean)
+        .sort(
+            (a, b) =>
+                order.indexOf(a.stage) - order.indexOf(b.stage) ||
+                (a.stage === "recent" ? String(a.session.finishedAt).localeCompare(String(b.session.finishedAt)) : away(b) - away(a))
+        );
+}
+
 // "Malawi", "Malawi and Daisy Mae", "Malawi, Rox and Daisy Mae"
 export function joinNames(names) {
     if (names.length <= 1) return names.join("");

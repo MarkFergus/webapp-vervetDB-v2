@@ -140,7 +140,8 @@ describe("tapping the map", () => {
         const leaving = screen.queryByRole("region", { name: "Goliath" });
         if (leaving) expect(leaving).toHaveClass("is-leaving");
         await cardGone();
-        expect(shape("Goliath troop")).not.toHaveClass("is-picked");
+        // (the glow goes just after the card, once the page has caught up)
+        await waitFor(() => expect(shape("Goliath troop")).not.toHaveClass("is-picked"));
     });
 
     test("tapping somewhere else, the card's close or Escape puts the card away (Escape again: the map)", async () => {
@@ -149,7 +150,8 @@ describe("tapping the map", () => {
         expect(screen.getByRole("region", { name: "Goliath" })).toBeInTheDocument();
         await tap(user, null);
         await cardGone();
-        expect(shape("Goliath troop")).not.toHaveClass("is-picked");
+        // (the glow goes just after the card, once the page has caught up)
+        await waitFor(() => expect(shape("Goliath troop")).not.toHaveClass("is-picked"));
 
         await tap(user, "Goliath troop");
         await user.click(screen.getByRole("button", { name: "Close Goliath" }));

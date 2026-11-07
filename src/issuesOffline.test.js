@@ -1,7 +1,7 @@
 // Maintenance Issues with no signal: reported, fixed and closed on the phone,
 // reaching the database afterwards with the right ids, and nothing's lost
-import { addIssue, addIssuePhotos, closeIssue, fixIssue, loadAllMaintenance, loadMaintenanceIssues } from "./monkeyData";
-import { flushOutbox, outboxProblems, resetOutbox, setOutboxUser, waitingCount } from "./outbox";
+import { addIssue, addIssuePhotos, fixIssue, loadAllMaintenance, loadMaintenanceIssues } from "./monkeyData";
+import { flushOutbox, outboxProblems, submit, resetOutbox, setOutboxUser, waitingCount } from "./outbox";
 import { supabase } from "./supabase";
 import { keptPhoto } from "./outboxPhotos";
 
@@ -97,14 +97,13 @@ test("reported and fixed with no signal: the report's added, and the issue point
     expect(outboxProblems()).toEqual([]);
 });
 
-test("closed with no signal: stays closed here, even once the old answer comes back", async () => {
+test("one closed from before, still waiting on a phone: sent as it was, and stays closed here", async () => {
     answer = {
         data: [{ id: 5, enclosure_id: 7, details: "Fence", urgent: false, status: "open", reported_at: "2026-11-01T10:00:00Z" }],
         error: null,
     };
     const [issue] = await loadMaintenanceIssues();
-    const closed = await closeIssue(issue, "Duplicate");
-    expect(closed).toMatchObject({ status: "closed", closeReason: "Duplicate", closedByName: "Mark" });
+    await submit("issue-close", { id: issue.id, reason: "Duplicate" }, { status: "closed", closeReason: "Duplicate", closedByName: "Mark" }, { needs: [issue.id] });
     expect((await loadMaintenanceIssues())[0].status).toBe("closed");
     online = true;
     await flushOutbox();

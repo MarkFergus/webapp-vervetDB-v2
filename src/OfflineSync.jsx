@@ -60,7 +60,7 @@ const KIND_WORDS = {
     "issue-add": "Maintenance issue",
     "issue-photo": "Maintenance issue photo",
     "issue-photos": "Photos added to an issue",
-    "issue-fix": "Issue marked fixed",
+    "issue-fix": "Job Done",
     "issue-close": "Issue closed",
     "baby-save": "Baby Care records",
     "deworming-results": "Deworming results",

@@ -193,6 +193,15 @@
     cursor: pointer;
 }
 
+/* Blue to change, red to delete (as on Integration reports) */
+.MaintenanceLog-icon.is-edit {
+    color: var(--accent);
+}
+
+.MaintenanceLog-icon.is-delete {
+    color: var(--danger);
+}
+
 .MaintenanceLog-icon.is-edit:hover {
     color: var(--accent);
     background-color: var(--surface-2);
@@ -274,4 +283,9 @@
     .MaintenanceLog:has(.MaintenanceLog-form) {
         padding-bottom: 60vh;
     }
+}
+
+/* (a Job Done's report has two lines: Issue, then Done) */
+.MaintenanceLog-entry p {
+    white-space: pre-line;
 }

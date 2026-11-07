@@ -39,22 +39,6 @@
     border-radius: 8px;
 }
 
-.Issues-closeLink {
-    align-self: center;
-    padding: 4px 8px;
-    font-family: var(--font-ui);
-    font-size: 14px;
-    color: var(--text-2);
-    text-decoration: underline;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.Issues-closeLink:hover:not(:disabled) {
-    color: var(--text-strong);
-}
-
 /* Urgent: red, and it says so */
 .Issues-urgent {
     display: inline-flex;
@@ -134,10 +118,11 @@
     list-style: none;
 }
 
+/* What's wrong across the top, then Add Photos and Job Done bottom right */
 .Issues-item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    gap: 8px;
     padding: 10px 12px;
     background-color: var(--surface-1);
     border: 1px solid var(--line);
@@ -150,7 +135,6 @@
 
 .Issues-itemMain {
     display: flex;
-    flex: 1;
     flex-direction: column;
     gap: 3px;
     min-width: 0;
@@ -175,14 +159,6 @@
     white-space: pre-line;
 }
 
-.Issues-itemSide {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-}
-
 /* An issue's photos, small enough for all 4 to fit a phone's row */
 .Issues-photos {
     display: flex;
@@ -193,7 +169,17 @@
 
 .Issues-photo {
     flex: none;
+    padding: 0;
     line-height: 0;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: zoom-in;
+}
+
+.Issues-photo:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .Issues-photo img {
@@ -239,27 +225,191 @@
     align-self: stretch;
 }
 
+/* The boxes: as Records' (a pop-up sits outside its page, so these don't reach) */
+.Issues-form input:not([type="file"]) {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Issues-form input:not([type="file"]):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+/* (the search box has its own outline, round the icon too) */
+.Issues-form .IntegrationPage-search input:not([type="file"]) {
+    padding-left: 0;
+    background: none;
+    border: none;
+}
+
+.Issues-form .IntegrationPage-search input:not([type="file"]):focus-visible {
+    outline: none;
+}
+
+/* Urgent: beside the place's name in a list; on the map's card, its top right
+   corner */
+.Issues-item,
+.WholeMap-issueCard {
+    position: relative;
+}
+
+.WholeMap-issueCard > .Issues-urgent {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.WholeMap-issueCard.is-urgent h3 {
+    padding-right: 84px;
+}
+
+/* Change and Delete: the top right corner */
+.Issues-item .MaintenanceLog-icons {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    display: inline-flex;
+    gap: 4px;
+}
+
+/* (a long name stops short of them) */
+.Issues-itemTop {
+    padding-right: 64px;
+}
+
+/* (nothing to press on a closed one: no empty row) */
+.Issues-itemSide:not(:has(.Issues-itemButtons)) {
+    display: contents;
+}
+
+/* Phones: Change and Delete in the bottom row, beside Add Photos and Job Done
+   (on a closed one, with nothing else to press: still the corner) */
 @media (max-width: 459px) {
-    .Issues-item {
-        flex-wrap: wrap;
-    }
-
-    .Issues-itemMain {
-        flex-basis: calc(100% - 76px);
-    }
-
-    .Issues-itemSide {
-        flex: 1 1 100%;
-        flex-direction: row;
+    .Issues-itemSide:has(.Issues-itemButtons) {
+        display: flex;
         align-items: center;
         justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .Issues-itemSide:has(.Issues-itemButtons) .MaintenanceLog-icons {
+        position: static;
+    }
+
+    .Issues-itemTop {
+        padding-right: 0;
+    }
+
+    .Issues-item:has(.MaintenanceLog-icons):not(:has(.Issues-itemButtons)) .Issues-itemTop {
+        padding-right: 64px;
     }
 }
 
-/* (Change and Delete: in the row, not the log's corner) */
-.Issues-itemSide .MaintenanceLog-icons {
-    position: static;
-    display: inline-flex;
-    gap: 4px;
-    opacity: 1;
+/* Computers: the buttons level with the text, bottom right, so no extra row */
+@media (min-width: 460px) {
+    .Issues-item {
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .Issues-itemMain {
+        flex: 1;
+    }
+
+    .Issues-itemSide {
+        flex: none;
+    }
+}
+
+/* A photo enlarged: over everything, dark in every theme */
+.Issues-viewer {
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 12px;
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.97);
+}
+
+.Issues-viewerTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.Issues-viewerPhoto {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    margin: 8px 0;
+    touch-action: pan-y pinch-zoom;
+}
+
+.Issues-viewerPhoto img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+}
+
+.Issues-viewerStep {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.55);
+    border: none;
+    border-radius: 999px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.Issues-viewerStep.is-back {
+    left: 4px;
+}
+
+.Issues-viewerStep.is-next {
+    right: 4px;
+}
+
+.Issues-viewerStep:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+.Issues-viewerBottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.Issues-viewerBottom .RecordsPage-problem {
+    flex-basis: 100%;
+    margin: 0;
+    text-align: center;
 }

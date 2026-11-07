@@ -16,13 +16,13 @@ import "./MaintenanceRecordsPage.css";
 
 // Records → Maintenance (staff): the enclosures' maintenance logs, all in
 // one place (a report added here shows on its enclosure's page too).
-//   Add     find the enclosure or introcage, then the date, Routine or
+//   Job List  the issues: what needs doing (MaintenanceIssues.jsx); fixing one adds a report
+//   Log Job  a job done that wasn't an issue: find the enclosure or introcage, then the date, Routine or
 //           Repair, and what was done (canLog: anyone with a role,
 //           maintenance staff too)
-//   View    every report, newest first: Routine / Repair and a place
+//   History  every report, newest first: Routine / Repair and a place
 //           picked from the search's list (an enclosure: its introcages
 //           too); Edit and Delete their own (admins: anyone's)
-//   Issues  what needs doing (MaintenanceIssues.jsx); fixing one adds a report
 //   live: the database has the log (false before enclosures.sql, or
 //   offline); me: { userId, isAdmin }
 
@@ -62,7 +62,7 @@ function EnterForm({ enclosures, onAdded }) {
 
     return (
         <form className="MaintenancePage-enter" onSubmit={save} noValidate>
-            <p className="RecordsPage-hint">Find the enclosure or introcage, then say what was done.</p>
+            <p className="RecordsPage-hint">Finished a job that wasn't reported as an issue? Log it here.</p>
             <div className="MaintenancePage-field">
                 <span className="MaintenancePage-label">Enclosure or Introcage</span>
                 <PlacePicker places={places} enclosures={enclosures} chosen={form.place} onChoose={(p) => change("place", p)} />
@@ -171,6 +171,7 @@ function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
 
     return (
         <>
+            <p className="RecordsPage-hint">Every job that's been completed.</p>
             <div className="MaintenancePage-filters">
                 <PlacePicker
                     places={maintenancePlaces(enclosures)}
@@ -285,7 +286,7 @@ function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
 const inOrder = (list) => [...list].sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.id - a.id);
 
 function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
-    const [tab, setTab] = useState("enter");
+    const [tab, setTab] = useState("issues");
     // null (loading), "failed", or every report
     const [reports, setReports] = useState(null);
     const load = useCallback(() => {
@@ -305,9 +306,9 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
                 <div className="RecordsPage-tabRow">
                     <div className="RecordsPage-tabs" role="tablist" aria-label="Maintenance">
                         {[
-                            ["enter", "Add"],
-                            ["view", "View"],
-                            ["issues", "Issues"],
+                            ["issues", "Job List"],
+                            ["enter", "Log Job"],
+                            ["view", "History"],
                         ].map(([id, label]) => (
                             <button
                                 key={id}

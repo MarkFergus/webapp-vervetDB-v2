@@ -3,8 +3,9 @@ import {
     IconAlertTriangle,
     IconCheck,
     IconChevronDown,
-    IconCalendarExclamation,
     IconCircleCheckFilled,
+    IconCircleDashed,
+    IconExclamationCircle,
     IconClipboardList,
     IconCopy,
     IconExclamationMark,
@@ -50,6 +51,7 @@ import {
     WATERS,
     daysBetween,
     isOverdue,
+    troopStages,
     latestSessionDays,
     sessionAlerts,
     seenDaily,
@@ -1318,16 +1320,10 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     // (by the troop picker: Continue / Cancel Session, for whoever started
     // it, or an admin)
     const myOpen = troop && inProgress.find((s) => s.enclosureId === troop.id && canChange(s));
-    // Finished in the last 48 hours, newest first
-    const recent = sessions
-        .filter((s) => s.status === "finished" && s.finishedAt && Date.now() - new Date(s.finishedAt) < 2 * 86400000)
-        .sort((a, b) => String(b.finishedAt).localeCompare(String(a.finishedAt)));
-    // Overdue, longest first (never monitored: first of all; not the Bandits:
-    // a wild troop, not monitored)
+    // Every monitored troop, at the stage it's at (not the Bandits: a wild
+    // troop, not monitored)
+    const stages = troopStages(troops, sessions, MONITORED_SECTIONS, today);
     const sinceLast = (t) => (latest.has(t.id) ? daysBetween(latest.get(t.id), today) : Infinity);
-    const overdueTroops = troops
-        .filter((t) => MONITORED_SECTIONS.includes(t.section) && isOverdue(latest.get(t.id), today))
-        .sort((a, b) => sinceLast(b) - sinceLast(a));
     const history = troop ? troopSessions(sessions, troop.id) : [];
     // The troop's monkeys, and who's missing (not seen in their last
     // session, nor since)
@@ -1389,66 +1385,56 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
 
     return (
         <div className="Monitoring">
-            {/* Who's monitoring now, and what's been done in the last day:
-                every troop, a list to look at (Continue and Cancel Session:
-                by the troop picker) */}
-            {(inProgress.length > 0 || overdueTroops.length > 0 || recent.length > 0) && (
-                <section className="Monitoring-inProgress" aria-label="In Progress">
-                    {inProgress.length > 0 && (
-                        <>
-                            <h2 className="RecordsPage-subhead">In Progress</h2>
-                            <ul>
-                                {inProgress.map((s) => (
-                                    <li key={s.id}>
-                                        <IconProgress size={18} className="Monitoring-stateIcon is-progress" aria-hidden="true" />
-                                        <span>
-                                            <b>{fullName(troopById[s.enclosureId]?.name ?? "A troop")}</b> · started{" "}
-                                            {longDate(s.date)} at {timeText(s.startedAt)} by {s.startedByName ?? "Staff"}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                    {overdueTroops.length > 0 && (
-                        <div className="Monitoring-overdue">
-                            <h2 className="RecordsPage-subhead">
-                                <IconCalendarExclamation size={18} aria-hidden="true" />
-                                Overdue
-                            </h2>
-                            <ul aria-label="Overdue">
-                                {overdueTroops.map((t) => (
+            {/* Every troop at a glance: a list to look at, the icon says what
+                stage it's at (Continue and Cancel Session: by the troop picker) */}
+            {stages.length > 0 && (
+                <section className="Monitoring-inProgress" aria-label="Troops">
+                    <h2 className="RecordsPage-subhead">Troops</h2>
+                    <ul aria-label="Troops">
+                        {stages.map(({ troop: t, stage, session, days }) => {
+                            // (phones: D&D, H&B)
+                            const name = <b>{phone ? t.name : fullName(t.name)}</b>;
+                            if (stage === "progress") {
+                                return (
                                     <li key={t.id}>
+                                        <IconProgress size={18} className="Monitoring-stateIcon is-progress" aria-label="In Progress" />
                                         <span>
-                                            <b>{phone ? t.name : fullName(t.name)}</b> ·{" "}
-                                            {latest.has(t.id)
-                                                ? `${sinceLast(t)} days since monitored`
-                                                : "No sessions yet"}
+                                            {name} · started {longDate(session.date)} at {timeText(session.startedAt)} by{" "}
+                                            {session.startedByName ?? "Staff"}
                                         </span>
                                     </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    {recent.length > 0 && (
-                        <>
-                            <h2 className="RecordsPage-subhead">
-                                Recently Monitored <span className="Monitoring-when">(Last 48 hours)</span>
-                            </h2>
-                            <ul aria-label="Recently Monitored">
-                                {recent.map((s) => (
-                                    <li key={s.id} className="Monitoring-recent">
-                                        <IconCircleCheckFilled size={18} className="Monitoring-stateIcon is-done" aria-hidden="true" />
-                                        {/* (one line: troop · when · first name; phones: D&D, H&B) */}
+                                );
+                            }
+                            if (stage === "overdue") {
+                                return (
+                                    <li key={t.id} className="Monitoring-oneLine is-overdue">
+                                        <IconExclamationCircle size={18} className="Monitoring-stateIcon is-overdue" aria-label="Overdue" />
                                         <span>
-                                            <b>{phone ? troopById[s.enclosureId]?.name ?? "A troop" : fullName(troopById[s.enclosureId]?.name ?? "A troop")}</b>{" "}
-                                            · {recentWhen(s)} · {firstName(s.startedByName)}
+                                            {name} · {days === null ? "No sessions yet" : `${days} days since monitored`}
                                         </span>
                                     </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
+                                );
+                            }
+                            if (stage === "recent") {
+                                return (
+                                    <li key={t.id} className="Monitoring-oneLine">
+                                        <IconCircleCheckFilled size={18} className="Monitoring-stateIcon is-done" aria-label="Recently Monitored" />
+                                        <span>
+                                            {name} · {recentWhen(session)} · {firstName(session.startedByName)}
+                                        </span>
+                                    </li>
+                                );
+                            }
+                            return (
+                                <li key={t.id} className="Monitoring-oneLine">
+                                    <IconCircleDashed size={18} className="Monitoring-stateIcon" aria-hidden="true" />
+                                    <span>
+                                        {name} · {days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 </section>
             )}
 

@@ -1,15 +1,16 @@
-// Records → Maintenance: Add (find the place, the date, Routine or Repair,
-// what was done) and View (every report: a search, Routine / Repair, Edit
+// Records → Maintenance: Log Job (find the place, the date, Routine or Repair,
+// what was done) and History (every report: a search, Routine / Repair, Edit
 // and Delete their own); Meds & Sickbay coming soon
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
-import { addMaintenance, deleteMaintenance, loadAllMaintenance, saveMaintenance } from "./monkeyData";
+import { addMaintenance, deleteMaintenance, loadAllMaintenance, loadMaintenanceIssues, saveMaintenance } from "./monkeyData";
 import { checkReport, filterReports, maintenancePlaces, placeSub } from "./maintenanceRecords";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     loadAllMaintenance: vi.fn(),
+    loadMaintenanceIssues: vi.fn(async () => []),
     addMaintenance: vi.fn(),
     saveMaintenance: vi.fn(),
     deleteMaintenance: vi.fn(),
@@ -101,10 +102,11 @@ test("a team coming soon: says so", () => {
     expect(screen.getByText("Coming soon…")).toBeInTheDocument();
 });
 
-describe("Add", () => {
+describe("Log Job", () => {
     test("find the introcage, then the date, Routine or Repair and the details; saved, ready for the next", async () => {
         addMaintenance.mockResolvedValue({ ...report(9, 4, today(), "repair", "New perch."), enclosureId: undefined });
         const { user } = open();
+        await user.click(await screen.findByRole("tab", { name: "Log Job" }));
         await user.type(await screen.findByRole("searchbox", { name: "Search enclosures and introcages" }), "holt");
         const found = within(screen.getByRole("list", { name: "Places found" }));
         expect(found.getAllByRole("button").map((b) => b.textContent)).toEqual([
@@ -119,23 +121,24 @@ describe("Add", () => {
         await waitFor(() => expect(addMaintenance).toHaveBeenCalledWith(4, { doneOn: today(), kind: "repair", details: "New perch." }));
         expect(await screen.findByText("Saved for Holt & Barrington C1.")).toBeInTheDocument();
         expect(screen.getByLabelText("Maintenance Details")).toHaveValue("");
-        // (and it's in View)
-        await user.click(screen.getByRole("tab", { name: "View" }));
+        // (and it's in History)
+        await user.click(screen.getByRole("tab", { name: "History" }));
         expect(screen.getByText("New perch.")).toBeInTheDocument();
     });
 
     test("something missing: says what, nothing saved", async () => {
         const { user } = open();
+        await user.click(await screen.findByRole("tab", { name: "Log Job" }));
         await user.click(await screen.findByRole("button", { name: "Save Report" }));
         expect(screen.getByRole("alert")).toHaveTextContent("Please choose the enclosure or introcage.");
         expect(addMaintenance).not.toHaveBeenCalled();
     });
 });
 
-describe("View", () => {
+describe("History", () => {
     test("every report, newest first: the date, type, place (a link) and details", async () => {
         const { user } = open();
-        await user.click(await screen.findByRole("tab", { name: "View" }));
+        await user.click(await screen.findByRole("tab", { name: "History" }));
         const items = screen.getAllByRole("listitem");
         expect(items).toHaveLength(3);
         expect(items[0]).toHaveTextContent("27th Oct 2026");
@@ -147,7 +150,7 @@ describe("View", () => {
 
     test("Routine / Repair and the search narrow it down", async () => {
         const { user } = open();
-        await user.click(await screen.findByRole("tab", { name: "View" }));
+        await user.click(await screen.findByRole("tab", { name: "History" }));
         await user.click(within(screen.getByRole("group", { name: "Show" })).getByRole("button", { name: "Routine" }));
         expect(screen.getByText("2 reports")).toBeInTheDocument();
         await user.type(screen.getByRole("searchbox", { name: "Search enclosures and introcages" }), "goliath");
@@ -159,7 +162,7 @@ describe("View", () => {
 
     test("pick a place from the search's list: just its reports (an enclosure: its introcages too); Clear for all", async () => {
         const { user } = open();
-        await user.click(await screen.findByRole("tab", { name: "View" }));
+        await user.click(await screen.findByRole("tab", { name: "History" }));
         await user.type(screen.getByRole("searchbox", { name: "Search enclosures and introcages" }), "gol");
         const found = within(screen.getByRole("list", { name: "Places found" }));
         await user.click(found.getByRole("button", { name: /^GoliathTroop/ }));
@@ -180,7 +183,7 @@ describe("View", () => {
         saveMaintenance.mockResolvedValue(report(3, undefined, "2026-10-27", "repair", "Fixed the slide door and the lock."));
         deleteMaintenance.mockResolvedValue();
         const { user } = open();
-        await user.click(await screen.findByRole("tab", { name: "View" }));
+        await user.click(await screen.findByRole("tab", { name: "History" }));
         const [mine, theirs] = screen.getAllByRole("listitem");
         expect(within(theirs).queryByRole("button", { name: /Edit/ })).toBeNull();
 
@@ -205,7 +208,7 @@ describe("View", () => {
 
     test("an admin can change anyone's", async () => {
         const { user } = open("records/maintenance", { me: { userId: "me", isAdmin: true } });
-        await user.click(await screen.findByRole("tab", { name: "View" }));
+        await user.click(await screen.findByRole("tab", { name: "History" }));
         expect(screen.getAllByRole("button", { name: /^Edit the report/ })).toHaveLength(3);
     });
 });

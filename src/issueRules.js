@@ -71,7 +71,6 @@ export function checkIssue({ place, details, urgent }) {
     return { values: { enclosureId: place.id, details: details.trim(), urgent: Boolean(urgent) } };
 }
 
-// Closing without a report needs a reason
-export function checkClose(reason) {
-    return reason.trim() ? { reason: reason.trim() } : { error: "Please say why it's being closed." };
-}
+// A Job Done's report: what the issue was, then what was done, so the report
+// makes sense by itself in History, an enclosure's log and the Weekly Reports
+export const issueReport = (issue, done) => `Issue: ${issue.details}\nDone: ${done.trim()}`;

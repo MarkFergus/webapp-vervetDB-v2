@@ -284,16 +284,16 @@ test("no connection at Finish: nothing lost, kept on the phone until it's saved"
     expect(localStorage.getItem("vervetdb-monitoring-draft-30")).toBeNull();
 });
 
-test("the top: In Progress and Recently Monitored (48 hours), every troop, just a list; maintenance staff can't start one", async () => {
+test("the top: troops at their stages, just a list; maintenance staff can't start one", async () => {
     loadMonitoringSessions.mockResolvedValue([
         { ...finished(30, today(), {}), status: "in_progress", finishedAt: null, startedByName: "Jo", enclosureId: 3 },
         finished(31, today(), { 1: true, 2: false }, { finishedAt: new Date().toISOString(), startedByName: "Sam" }),
         ...PAST,
     ]);
     const { unmount } = open();
-    const top = await screen.findByRole("region", { name: "In Progress" });
+    const top = await screen.findByRole("region", { name: "Troops" });
     expect(top).toHaveTextContent(/Goliath · started .* by Jo/);
-    expect(within(top).getByRole("list", { name: "Recently Monitored" })).toHaveTextContent(/^Skunkey · Today · \d\d:\d\d · Sam$/);
+    expect(top).toHaveTextContent(/Skunkey · Today · \d\d:\d\d · Sam/);
     // (older sessions aren't recent)
     expect(within(top).queryByText(/26th Oct/)).toBeNull();
     expect(within(top).queryByRole("button")).toBeNull();
@@ -303,7 +303,7 @@ test("the top: In Progress and Recently Monitored (48 hours), every troop, just 
     expect(screen.queryByRole("button", { name: "Start Session" })).toBeNull();
 });
 
-test("Overdue: troops not monitored for 5 days or more, longest first, above Recently Monitored", async () => {
+test("every monitored troop in one list: in progress, overdue (longest first), the rest, then recent; not the Bandits", async () => {
     const dayAgo = (n) => {
         const d = new Date();
         d.setDate(d.getDate() - n);
@@ -329,14 +329,15 @@ test("Overdue: troops not monitored for 5 days or more, longest first, above Rec
             staff={EDITOR}
         />
     );
-    const list = await screen.findByRole("list", { name: "Overdue" });
+    const list = await screen.findByRole("list", { name: "Troops" });
     expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
         "Gismo · No sessions yet",
         "Royal · 9 days since monitored",
         "Goliath · 5 days since monitored",
+        "Skunkey · 4 days ago",
     ]);
-    const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-    expect(headings).toContain("Overdue");
+    expect(within(list).getAllByLabelText("Overdue")).toHaveLength(3);
+    expect(screen.queryByRole("heading", { name: "Overdue" })).toBeNull();
 });
 
 test("two injuries: choose which to update or mark Healed; healed leaves the list, with a note in the session", async () => {
@@ -378,13 +379,13 @@ test("two injuries: choose which to update or mark Healed; healed leaves the lis
     await waitFor(() => expect(within(row()).queryByText("Injury")).toBeNull());
 });
 
-test("Recently Monitored: a session entered late shows its own date, and when it was entered", async () => {
-    loadMonitoringSessions.mockResolvedValue([
-        finished(31, "2026-10-02", { 1: true }, { finishedAt: new Date().toISOString(), startedByName: "Sam" }),
-    ]);
+test("the list: a session entered late shows its own date, and when it was entered", async () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 86400000);
+    const date = `${twoDaysAgo.getFullYear()}-${String(twoDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(twoDaysAgo.getDate()).padStart(2, "0")}`;
+    loadMonitoringSessions.mockResolvedValue([finished(31, date, { 1: true }, { finishedAt: new Date().toISOString(), startedByName: "Sam" })]);
     open();
-    const list = await screen.findByRole("list", { name: "Recently Monitored" });
-    expect(list).toHaveTextContent(/^Skunkey · 2nd Oct · entered today · Sam$/);
+    const list = await screen.findByRole("list", { name: "Troops" });
+    expect(list).toHaveTextContent(/Skunkey · .* · entered today · Sam/);
 });
 
 test("the History: tap a session for its summary again", async () => {

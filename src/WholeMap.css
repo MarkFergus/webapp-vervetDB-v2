@@ -483,14 +483,13 @@
     fill: white;
 }
 
-/* Bottom left, across from My Location */
+/* Report Issue and the eye: bottom left, across from My Location */
 .WholeMap-issueTools {
     position: absolute;
     left: 10px;
     bottom: 10px;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 6px;
 }
 
@@ -498,13 +497,9 @@
     box-shadow: 0 4px 12px var(--shadow);
 }
 
-.WholeMap-issueToggle {
-    font-size: 14px;
-}
-
 /* (clear of the buttons above) */
 .WholeMap-location.has-issues {
-    bottom: 100px;
+    bottom: 56px;
 }
 
 /* Reporting: where it's up to, along the bottom */

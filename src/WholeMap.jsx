@@ -4,8 +4,9 @@ import {
     IconArrowRight,
     IconChevronLeft,
     IconCurrentLocation,
+    IconEye,
+    IconEyeOff,
     IconMap2,
-    IconMapPin,
     IconMapPinExclamation,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
@@ -37,7 +38,7 @@ import "./WholeMap.css";
 // dot where the phone is (mapGeo.js), with
 // a circle for how sure it is. The position stays on the phone, and it's
 // only followed while the map is open with My Location on.
-// Staff (canIssues): open maintenance issues as pins, with Issues to hide them,
+// Staff (canIssues): open maintenance issues as pins, with an eye to hide them,
 // and Report Issue: tap the spot (again to move it), then say what's wrong.
 
 // The whole page, until the drawing on it has been measured (the map file
@@ -122,6 +123,21 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
         };
     }, [canIssues]);
     const pins = canIssues && pinsOn ? issues.filter((i) => i.mapX != null) : [];
+    // Its card sliding back out to the left (then it's gone), as a place's does
+    const [issueLeaving, setIssueLeaving] = useState(false);
+    function closeIssueCard() {
+        if (!pickedIssue) return;
+        if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setPickedIssue(null);
+        else setIssueLeaving(true);
+    }
+    useEffect(() => {
+        if (!issueLeaving) return;
+        const done = setTimeout(() => {
+            setPickedIssue(null);
+            setIssueLeaving(false);
+        }, CARD_OUT_MS);
+        return () => clearTimeout(done);
+    }, [issueLeaving]);
 
     // My Location: following (on / off); where the phone is ({ x, y } on the
     // map and accuracy: metres); and what's happening ("finding", "here",
@@ -179,7 +195,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
         onClose: () => {
             if (issueDialog) return;
             if (reporting) setReporting(null);
-            else if (pickedIssue) setPickedIssue(null);
+            else if (pickedIssue) closeIssueCard();
             else if (picked) closeCard();
             else onClose();
         },
@@ -312,10 +328,11 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
         if (pin) {
             setPicked(null);
             setLeaving(false);
+            setIssueLeaving(false);
             setPickedIssue(pin);
             return;
         }
-        setPickedIssue(null);
+        closeIssueCard();
         if (!place) return closeCard();
         // (another place: its card slides in, even if one was leaving)
         setLeaving(false);
@@ -456,7 +473,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                     type="button"
                                     className="Modal-edit is-action"
                                     onClick={() => {
-                                        setPickedIssue(null);
+                                        closeIssueCard();
                                         closeCard();
                                         setReporting({ point: null, place: null, nearby: false });
                                     }}
@@ -464,17 +481,19 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                     <IconMapPinExclamation size={18} aria-hidden="true" />
                                     Report Issue
                                 </button>
+                                {/* The pins: an eye, crossed out while they're hidden */}
                                 <button
                                     type="button"
-                                    className="Modal-edit is-soft WholeMap-issueToggle"
+                                    className="Modal-edit is-soft is-icon WholeMap-issueToggle"
                                     aria-pressed={pinsOn}
+                                    aria-label={`${pinsOn ? "Hide" : "Show"} Issues (${issues.length})`}
+                                    title={`${pinsOn ? "Hide" : "Show"} Issues (${issues.length})`}
                                     onClick={() => {
                                         setPinsOn((on) => !on);
-                                        setPickedIssue(null);
+                                        closeIssueCard();
                                     }}
                                 >
-                                    <IconMapPin size={18} aria-hidden="true" />
-                                    {pinsOn ? "Hide" : "Show"} Issues ({issues.length})
+                                    {pinsOn ? <IconEye size={18} aria-hidden="true" /> : <IconEyeOff size={18} aria-hidden="true" />}
                                 </button>
                             </div>
                         )}
@@ -505,24 +524,24 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                 </div>
                             </div>
                         )}
-                        {/* The tapped pin: what's wrong, who said, Mark Fixed */}
+                        {/* The tapped pin: what's wrong, who said, Job Done */}
                         {pickedIssue && (
                             <div className="WholeMap-cardSpot">
                                 <div
                                     key={pickedIssue.id}
-                                    className="WholeMap-card WholeMap-issueCard"
+                                    className={`WholeMap-card WholeMap-issueCard${pickedIssue.urgent ? " is-urgent" : ""}${issueLeaving ? " is-leaving" : ""}`}
                                     role="region"
                                     aria-label={`Issue: ${pickedIssue.details}`}
                                 >
+                                    {pickedIssue.urgent && <UrgentBadge />}
                                     <div className="WholeMap-cardText">
                                         <h3>{issueCardPlace ? fullName(issueCardPlace.name) : "Issue"}</h3>
-                                        {pickedIssue.urgent && <UrgentBadge />}
                                         <p className="WholeMap-issueDetails">{pickedIssue.details}</p>
                                         <IssuePhotos paths={pickedIssue.photoPaths} />
                                         <p className="WholeMap-cardCount">{reportedWords(pickedIssue)}</p>
                                         <div className="WholeMap-issueButtons">
                                             <button type="button" className="Modal-edit is-confirm" onClick={() => setIssueDialog("fix")}>
-                                                Mark Fixed
+                                                Job Done
                                             </button>
                                             <AddPhotosButton
                                                 issue={pickedIssue}
@@ -536,7 +555,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                     <button
                                         type="button"
                                         className="WholeMap-cardClose"
-                                        onClick={() => setPickedIssue(null)}
+                                        onClick={closeIssueCard}
                                         aria-label="Close the issue"
                                         title="Close"
                                     >

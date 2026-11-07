@@ -2,8 +2,13 @@ import { useState } from "react";
 import { IconBuildingCommunity, IconFilterOff, IconSearch } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { MAINTENANCE_TYPES, matchesPlace, placeSub } from "./maintenanceRecords";
-import "./IntegrationRecordsPage.css"; // (its search and chosen box)
+// (in this order, the same as when they loaded with the Records page: each is
+// more particular than the one before, e.g. Integration's search box over
+// Records' boxes. The Interactive Map brings them all into the main stylesheet.)
+import "./RecordsPage.css";
+import "./MaintenanceLog.css";
 import "./MaintenanceRecordsPage.css";
+import "./IntegrationRecordsPage.css"; // (its search and chosen box)
 
 // What the maintenance forms share (MaintenanceRecordsPage.jsx,
 // MaintenanceIssues.jsx).
