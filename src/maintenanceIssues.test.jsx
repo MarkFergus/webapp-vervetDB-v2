@@ -102,7 +102,7 @@ describe("the rules", () => {
         expect(checkIssue({ place: null, details: "x" }).error).toMatch(/enclosure/);
         expect(checkIssue({ place: ENCLOSURES[0], details: "  " }).error).toMatch(/what's wrong/);
         expect(checkIssue({ place: ENCLOSURES[0], details: " Fence ", urgent: true }).values).toEqual({ enclosureId: 1, details: "Fence", urgent: true });
-        expect(issueReport({ details: "Fence down" }, " Replaced two posts ")).toBe("Issue: Fence down\nDone: Replaced two posts");
+        expect(issueReport({ details: "Fence down" }, " Replaced two posts ")).toBe("Job: Fence down\nDone: Replaced two posts");
     });
 });
 
@@ -135,8 +135,8 @@ describe("the Issues tab", () => {
     test("Report Issue: needs a place and what's wrong, then it's on the list", async () => {
         const { user } = await setup();
         addIssue.mockResolvedValue(issue(9, 3, "Tap dripping"));
-        await user.click(screen.getByRole("button", { name: "Report Issue" }));
-        const dialog = screen.getByRole("dialog", { name: "Report Issue" });
+        await user.click(screen.getByRole("button", { name: "Add Job" }));
+        const dialog = screen.getByRole("dialog", { name: "Add Job" });
         await user.click(within(dialog).getByRole("button", { name: "Submit" }));
         expect(within(dialog).getByRole("alert")).toHaveTextContent("choose the enclosure");
         await user.type(within(dialog).getByRole("searchbox"), "H&B");
@@ -170,8 +170,43 @@ describe("the Issues tab", () => {
         await user.click(within(dialog).getByRole("button", { name: "Save Report" }));
         await waitFor(() => expect(onReportAdded).toHaveBeenCalledWith(report));
         expect(fixIssue.mock.calls[0][0].id).toBe(1);
-        expect(fixIssue.mock.calls[0][1]).toMatchObject({ kind: "repair", details: "Issue: Gate sticking\nDone: Oiled the hinges" });
+        expect(fixIssue.mock.calls[0][1]).toMatchObject({ kind: "repair", details: "Job: Gate sticking\nDone: Oiled the hinges" });
         expect(screen.queryByText("Gate sticking")).not.toBeInTheDocument();
+    });
+
+    test("Job Done: Add After Photos, sent with the report", async () => {
+        const { user } = await setup();
+        URL.createObjectURL = vi.fn(() => "blob:here");
+        URL.revokeObjectURL = vi.fn();
+        fixIssue.mockImplementation(async (i) => ({ issue: { ...i, status: "fixed" }, report: { id: 51, enclosureId: 1 } }));
+        const row = screen.getByText("Gate sticking").closest("li");
+        await user.click(within(row).getByRole("button", { name: "Job Done" }));
+        const dialog = screen.getByRole("dialog", { name: "Job Done" });
+        expect(within(dialog).getByRole("button", { name: "Add After Photos" })).toBeInTheDocument();
+        fireEvent.change(within(dialog).getByLabelText("Photos"), { target: { files: [new File(["x"], "after.jpg", { type: "image/jpeg" })] } });
+        expect(within(dialog).getByRole("button", { name: "Remove photo 1" })).toBeInTheDocument();
+        await user.type(within(dialog).getByLabelText("Maintenance Details"), "Oiled the hinges");
+        await user.click(within(dialog).getByRole("button", { name: "Save Report" }));
+        await waitFor(() => expect(fixIssue).toHaveBeenCalled());
+        expect(fixIssue.mock.calls[0][2].map((f) => f.name)).toEqual(["after.jpg"]);
+    });
+
+    test("a finished job with After photos: Before and After, labelled", async () => {
+        loadMaintenanceIssues.mockResolvedValue([
+            issue(7, 1, "Roof leaking", { status: "fixed", closedAt: "2026-11-05T09:00:00Z", photoPaths: ["b.jpg"], donePhotoPaths: ["a1.jpg", "a2.jpg"] }),
+            issue(8, 1, "Tap dripping", { status: "fixed", closedAt: "2026-11-04T09:00:00Z", photoPaths: ["t.jpg"], donePhotoPaths: [] }),
+        ]);
+        render(<IssuesTab enclosures={ENCLOSURES} me={{}} />);
+        const user = userEvent.setup();
+        await user.click(await screen.findByRole("button", { name: "Closed" }));
+        const roof = screen.getByText("Roof leaking").closest("li");
+        expect(await within(roof).findByText("Before")).toBeInTheDocument();
+        expect(within(roof).getByText("After")).toBeInTheDocument();
+        expect(await within(roof).findAllByRole("button", { name: /See after photo/ })).toHaveLength(2);
+        // (no After photos: no labels)
+        const tap = screen.getByText("Tap dripping").closest("li");
+        expect(await within(tap).findByRole("button", { name: "See photo 1 of 1" })).toBeInTheDocument();
+        expect(within(tap).queryByText("Before")).toBeNull();
     });
 
     test("Report Issue takes up to 4 photos, and one can be removed", async () => {
@@ -180,8 +215,8 @@ describe("the Issues tab", () => {
         URL.createObjectURL = vi.fn(() => "blob:here");
         URL.revokeObjectURL = vi.fn();
         addIssue.mockResolvedValue(issue(9, 1, "Roof"));
-        await user.click(screen.getByRole("button", { name: "Report Issue" }));
-        const dialog = screen.getByRole("dialog", { name: "Report Issue" });
+        await user.click(screen.getByRole("button", { name: "Add Job" }));
+        const dialog = screen.getByRole("dialog", { name: "Add Job" });
         const input = within(dialog).getByLabelText("Photos");
         fireEvent.change(input, { target: { files: ["1", "2", "3", "4", "5"].map((n) => file(`${n}.jpg`)) } });
         expect(within(dialog).getByRole("alert")).toHaveTextContent("up to 4 photos");
@@ -266,7 +301,7 @@ describe("the Issues tab", () => {
         deleteIssue.mockResolvedValue();
         render(<IssuesTab enclosures={ENCLOSURES} me={{ isAdmin: true }} />);
         await screen.findByText("Fence down");
-        await user.click(screen.getByRole("button", { name: "Delete the issue: Fence down" }));
+        await user.click(screen.getByRole("button", { name: "Delete the job: Fence down" }));
         await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Delete" }));
         await waitFor(() => expect(deleteIssue).toHaveBeenCalled());
         document.body.innerHTML = "";
@@ -293,27 +328,27 @@ describe("the map", () => {
         render(<WholeMap onClose={() => {}} enclosures={ENCLOSURES} />);
         await screen.findByRole("img", { name: "The whole sanctuary map" });
         expect(loadMaintenanceIssues).not.toHaveBeenCalled();
-        expect(screen.queryByRole("button", { name: "Report Issue" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Add Job" })).not.toBeInTheDocument();
     });
 
     test("staff: pins for the open issues, which can be hidden", async () => {
         const user = userEvent.setup();
         const { baseElement } = render(<WholeMap onClose={() => {}} enclosures={ENCLOSURES} canIssues />);
-        await screen.findByRole("button", { name: "Hide Issues (2)" });
+        await screen.findByRole("button", { name: "Hide Jobs (2)" });
         await waitFor(() => expect(baseElement.querySelectorAll("[data-issue]")).toHaveLength(1));
-        await user.click(screen.getByRole("button", { name: "Hide Issues (2)" }));
+        await user.click(screen.getByRole("button", { name: "Hide Jobs (2)" }));
         expect(baseElement.querySelectorAll("[data-issue]")).toHaveLength(0);
-        expect(screen.getByRole("button", { name: "Show Issues (2)" })).toHaveAttribute("aria-pressed", "false");
+        expect(screen.getByRole("button", { name: "Show Jobs (2)" })).toHaveAttribute("aria-pressed", "false");
     });
 
     test("Report Issue asks for the spot, and Cancel goes back", async () => {
         const user = userEvent.setup();
         render(<WholeMap onClose={() => {}} enclosures={ENCLOSURES} canIssues />);
-        await user.click(await screen.findByRole("button", { name: "Report Issue" }));
-        expect(screen.getByText("Tap the map where the issue is.")).toBeInTheDocument();
+        await user.click(await screen.findByRole("button", { name: "Add Job" }));
+        expect(screen.getByText("Tap the map where the job is.")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Continue" })).not.toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Cancel" }));
-        expect(screen.getByRole("button", { name: "Report Issue" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Add Job" })).toBeInTheDocument();
     });
 });
 

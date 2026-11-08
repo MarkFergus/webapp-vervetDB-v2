@@ -100,6 +100,8 @@ function usePhone() {
 }
 
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
+// "12th Oct"
+const shortDate = (date) => longDate(date).replace(/ \d{4}$/, "");
 const timeText = (at) => new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 // Recently Monitored: when it was, in one line. Entered on another day: the
 // session's own date, so it doesn't look more recent than it was ("2nd Nov ·
@@ -277,7 +279,8 @@ function Briefing({ facts, today }) {
     // (seen between sessions, since they were last seen in one)
     const seenSince = all.filter((m) => records[m.id].spot);
     const byId = Object.fromEntries(all.map((m) => [m.id, m]));
-    const seenText = (m) => (records[m.id].lastSeen ? `last seen ${longDate(records[m.id].lastSeen)}` : "not seen in a session yet");
+    // (no year: keeps each one on a line)
+    const seenText = (m) => (records[m.id].lastSeen ? `last seen ${shortDate(records[m.id].lastSeen)}` : "not seen in a session yet");
     const empty =
         !mustSee.length && !notSeenLast.length && !seenSince.length && !priorities.length && !current.length && !withCondition.length;
 
@@ -1341,7 +1344,8 @@ export default function MonitoringRecordsPage({ monkeys = [], enclosures = [], s
     const nameOf = Object.fromEntries(members.map((m) => [m.id, m.name]));
     const historyItems = [
         ...history.map((s) => ({ kind: "session", date: s.date, at: s.finishedAt, item: s })),
-        ...spots.filter((s) => memberIds.has(s.monkeyId)).map((s) => ({ kind: "spot", date: s.date, at: s.at, item: s })),
+        // (Mark As Seen's only: a record's own sighting is on the monkey's page)
+        ...spots.filter((s) => memberIds.has(s.monkeyId) && !s.source).map((s) => ({ kind: "spot", date: s.date, at: s.at, item: s })),
     ].sort(
         (a, b) =>
             b.date.localeCompare(a.date) || (a.kind === b.kind ? String(b.at).localeCompare(String(a.at)) : a.kind === "spot" ? -1 : 1)

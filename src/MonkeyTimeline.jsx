@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import {
-    IconArrowRight,
-    IconBandage,
-    IconPaw,
+    IconArrowsExchange,
     IconClipboardText,
     IconCpu,
     IconEye,
+    IconFirstAidKit,
     IconFlag,
+    IconFriends,
     IconHeartbeat,
     IconHome,
+    IconPaw,
     IconPhoto,
     IconPill,
+    IconPlaneArrival,
+    IconReportMedical,
     IconScale,
-    IconStar,
-    IconUsers,
 } from "@tabler/icons-react";
 import { BackLink } from "./EnclosuresPage";
 import { dayText } from "./babyRecords";
@@ -54,16 +55,16 @@ const FILTERS = [
 ];
 
 const ICONS = {
-    arrival: IconStar,
+    arrival: IconPlaneArrival,
     behaviour: IconPaw,
     condition: IconHeartbeat,
     deworming: IconPill,
     home: IconHome,
-    injury: IconBandage,
-    integration: IconUsers,
-    medical: IconClipboardText,
+    injury: IconFirstAidKit,
+    integration: IconFriends,
+    medical: IconReportMedical,
     microchip: IconCpu,
-    move: IconArrowRight,
+    move: IconArrowsExchange,
     observation: IconEye,
     photos: IconPhoto,
     other: IconClipboardText,

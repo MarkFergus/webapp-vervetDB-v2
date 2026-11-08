@@ -123,10 +123,10 @@ function EnclosureForm({ enclosure, onClose, onSaved, noSize = false, noTroopDoo
         }
         try {
             const saved = await saveEnclosure(enclosure, changes);
-            // Tidy up: uploaded photos it had, or that were uploaded here,
-            // but that aren't kept
-            const before = [...(enclosure.photos ?? []), ...uploadedHere.current];
-            deletePhotos(before.filter((url) => !saved.photos.includes(url)));
+            // Tidy up: only photos uploaded just now and then taken off, never
+            // saved. (Saved photos taken off stay in storage, for their
+            // history, as monkeys' do)
+            deletePhotos(uploadedHere.current.filter((url) => !saved.photos.includes(url)));
             onSaved(saved);
         } catch (error) {
             setProblem(error.message);

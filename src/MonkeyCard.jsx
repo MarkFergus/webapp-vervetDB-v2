@@ -1,4 +1,4 @@
-import { IconBandage, IconCube, IconPhoto, IconFirstAidKit, IconMars, IconSparkles, IconStar, IconStarFilled, IconVenus } from "@tabler/icons-react";
+import { IconBandage, IconBuildingHospital, IconCube, IconMars, IconPhoto, IconSparkles, IconStar, IconStarFilled, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -73,7 +73,7 @@ function MonkeyCard({
                         {/* One badge is enough: New Arrival comes first */}
                         {inSickbay && !newArrival && (
                             <span className="MonkeyCard-sickbay">
-                                <IconFirstAidKit size={14} aria-hidden="true" />
+                                <IconBuildingHospital size={14} aria-hidden="true" />
                                 In Sickbay
                             </span>
                         )}

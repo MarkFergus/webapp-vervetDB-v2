@@ -771,7 +771,7 @@ export async function deleteMaintenance(id) {
 const ISSUE_BUCKET = "maintenance-issues";
 const ISSUE_PHOTO_WIDTH = 1600;
 const ISSUE_COLUMNS =
-    "id, enclosure_id, map_x, map_y, details, urgent, photo_paths, status, close_reason, report_id, closed_at, closed_by_name, reported_by, reported_by_name, reported_at";
+    "id, enclosure_id, map_x, map_y, details, urgent, photo_paths, done_photo_paths, status, close_reason, report_id, closed_at, closed_by_name, reported_by, reported_by_name, reported_at";
 
 const toAppIssue = (row) => ({
     id: row.id,
@@ -781,6 +781,8 @@ const toAppIssue = (row) => ({
     details: row.details,
     urgent: row.urgent,
     photoPaths: row.photo_paths ?? [],
+    // After photos: added with Job Done (maintenance-done-photos.sql)
+    donePhotoPaths: row.done_photo_paths ?? [],
     status: row.status,
     closeReason: row.close_reason,
     reportId: row.report_id,
@@ -816,7 +818,7 @@ export async function loadMaintenanceIssues() {
         if (["42P01", "PGRST205", "42703"].includes(error.code)) return withOutboxIssues([]);
         console.error("Loading the maintenance issues failed:", error);
         if (!error.code) return withOutboxIssues([]);
-        throw new Error("Couldn't load the maintenance issues. Please check your connection.");
+        throw new Error("Couldn't load the maintenance jobs. Please check your connection.");
     }
     return withOutboxIssues(data.map(toAppIssue));
 }
@@ -870,6 +872,7 @@ export async function addIssue({ enclosureId, mapX = null, mapY = null, details,
         details,
         urgent,
         photoPaths,
+        donePhotoPaths: [],
         status: "open",
         closeReason: null,
         reportId: null,
@@ -888,7 +891,7 @@ registerSender(
     "issue-photo",
     async ({ path }) => {
         const blob = await keptPhoto(path);
-        if (!blob) throw { code: "P0001", message: "An issue's photo has gone from this phone." };
+        if (!blob) throw { code: "P0001", message: "A job's photo has gone from this phone." };
         const { error } = await supabase.storage.from(ISSUE_BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
         // (already there: sent before the answer got back)
         if (error && !/already exists|duplicate/i.test(error.message ?? "") && String(error.statusCode) !== "409") {
@@ -911,7 +914,7 @@ registerSender(
         } catch (error) {
             // (the database isn't ready: said so, rather than holding up what's behind it)
             if (["42703", "PGRST204", "PGRST205", "42P01"].includes(error.code)) {
-                throw { code: "P0001", message: "Maintenance Issues isn't ready yet. Please try again a little later." };
+                throw { code: "P0001", message: "Maintenance jobs aren't ready yet. Please try again a little later." };
             }
             throw error;
         }
@@ -941,25 +944,35 @@ registerSender(
         if (saveError) throw saveError;
         return {};
     },
-    (error) => (error.code === "23514" ? "An issue can only have 4 photos." : saveProblem(error).message)
+    (error) => (error.code === "23514" ? "A job can only have 4 photos." : saveProblem(error).message)
 );
 
 // Fixed: adds its Maintenance report ({ doneOn, kind, details }), and the issue
 // closes. Works with no signal. → { issue, report }
-export async function fixIssue(issue, values) {
+//   photos: After photos (files), up to 4, kept on the job
+export async function fixIssue(issue, values, photos = []) {
     const report = await addMaintenance(issue.enclosureId, values);
-    const optimistic = { status: "fixed", reportId: report.id, closedAt: new Date().toISOString(), closedByName: outboxUser()?.name ?? null };
-    await submit("issue-fix", { id: issue.id, reportId: report.id }, optimistic, { needs: [issue.id, report.id] });
+    const donePaths = await sendIssuePhotos(photos);
+    const optimistic = {
+        status: "fixed",
+        reportId: report.id,
+        closedAt: new Date().toISOString(),
+        closedByName: outboxUser()?.name ?? null,
+        donePhotoPaths: donePaths,
+    };
+    await submit("issue-fix", { id: issue.id, reportId: report.id, donePaths }, optimistic, { needs: [issue.id, report.id] });
     return { issue: { ...issue, ...optimistic }, report: { ...report, enclosureId: issue.enclosureId } };
 }
 
 registerSender(
     "issue-fix",
-    async ({ id, reportId }) => {
+    async ({ id, reportId, donePaths = [] }) => {
         // (someone else got there first: theirs stands)
+        const change = { status: "fixed", report_id: resolveId(reportId) };
+        if (donePaths.length) change.done_photo_paths = donePaths;
         const { error } = await supabase
             .from("maintenance_issues")
-            .update({ status: "fixed", report_id: resolveId(reportId) })
+            .update(change)
             .eq("id", resolveId(id))
             .eq("status", "open");
         if (error) throw error;
@@ -1006,7 +1019,7 @@ export async function deleteIssue(issue) {
         console.error("Deleting the issue failed:", error);
         throw saveProblem(error);
     }
-    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete an issue.");
+    if (!data?.length) throw new Error("The database didn't allow this. Only admins can delete a job.");
     if (issue.photoPaths.length) {
         const { error: photoError } = await supabase.storage.from(ISSUE_BUCKET).remove(issue.photoPaths);
         if (photoError) console.warn("Deleting the issue's photos failed:", photoError);
@@ -2009,12 +2022,15 @@ export async function deleteCondition(id) {
 // ---- Sightings between sessions (supabase/monkey-sightings.sql) ----
 
 // A sighting: { id, monkeyId, date, note, loggedBy, by, at }
-const SPOT_COLUMNS = "id, monkey_id, seen_on, note, logged_by, logged_by_name, logged_at";
+const SPOT_COLUMNS = "id, monkey_id, seen_on, note, source, logged_by, logged_by_name, logged_at";
 const toAppSpot = (row) => ({
     id: row.id,
     monkeyId: row.monkey_id,
     date: row.seen_on,
     note: row.note ?? "",
+    // what it came from: a record that shows they were seen ("dewormed",
+    // "observation"…, last-seen.sql), or null: Mark As Seen
+    source: row.source ?? null,
     loggedBy: row.logged_by,
     by: row.logged_by_name ?? "Staff",
     at: row.logged_at,
@@ -2069,17 +2085,6 @@ registerSender(
         toAppSpot(await insertOnce("monkey_sightings", { client_ref: ref, monkey_id: monkeyId, seen_on: date, note: note || null }, SPOT_COLUMNS)),
     (error) => sessionProblem(error).message
 );
-
-// A record that shows a monkey was seen that day (Quick Actions' New Injury
-// and New Condition): a sighting too, so it counts for their last seen. The
-// record's already saved by now, so a problem here doesn't undo or repeat it.
-export async function recordSeen(monkeyId, { date, description }) {
-    try {
-        await addSpotSighting(monkeyId, { date, note: description });
-    } catch (error) {
-        console.error("Recording the sighting failed:", error);
-    }
-}
 
 // Deletes a sighting (admins, or whoever added it)
 export async function deleteSpotSighting(id) {
@@ -2272,21 +2277,6 @@ export async function loadStaff() {
 // staff-activity-dates.sql): one person's changes (person null: everyone's)
 // from since up to until (Dates), newest first, as staff_activity gives
 // them. Throws a message to show.
-// The Numbers: how much one person (null: everyone) has done in a period
-// (supabase/staff-stats.sql) → { injuries: 4, … }. Throws a message to show.
-export async function loadStaffStats(person, since, until) {
-    const { data, error } = await supabase.rpc("staff_stats", {
-        person,
-        since: since.toISOString(),
-        until: until.toISOString(),
-    });
-    if (error) {
-        if (error.code === "PGRST202") throw new Error("The numbers aren't ready yet: supabase/staff-stats.sql needs to be run.");
-        throw new Error("Couldn't load the numbers right now. Please check your connection and try again.");
-    }
-    return data ?? {};
-}
-
 export async function loadStaffActivity(person, since, until) {
     const { data, error } = await supabase.rpc("staff_activity", {
         person,

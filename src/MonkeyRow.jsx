@@ -1,4 +1,4 @@
-import { IconBandage, IconCube, IconFirstAidKit, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
+import { IconBandage, IconBuildingHospital, IconCube, IconMars, IconSparkles, IconVenus } from "@tabler/icons-react";
 import { fullName } from "./places";
 import { ageLabel } from "./ages";
 import { isPlaceholderPhoto, thumbUrl } from "./photoPaths";
@@ -61,7 +61,7 @@ function MonkeyRow({ name, sex, year, troop, inIntrocage = false, inSickbay = fa
                 {/* One badge is enough: New Arrival comes first */}
                 {inSickbay && !newArrival && (
                     <span className="MonkeyRow-sickbay" title="In Sickbay">
-                        <IconFirstAidKit size={12} aria-hidden="true" />
+                        <IconBuildingHospital size={12} aria-hidden="true" />
                     </span>
                 )}
                 {stayingIn && !newArrival && (

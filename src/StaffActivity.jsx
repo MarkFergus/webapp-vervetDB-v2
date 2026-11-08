@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { IconCirclePlus, IconPencil, IconTrash } from "@tabler/icons-react";
-import { loadStaff, loadStaffActivity, loadStaffStats } from "./monkeyData";
+import { loadStaff, loadStaffActivity } from "./monkeyData";
 import { dayLabel } from "./MyChanges";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
-import { ALL_TIME, GROUPS, PERIODS, STATS, changeLines, dayWords, inGroup, periodFor, sourceOf } from "./activityWords";
+import { ALL_TIME, GROUPS, PERIODS, changeLines, dayWords, inGroup, periodFor, sourceOf } from "./activityWords";
 import "./MyChanges.css";
 import "./StaffActivity.css";
 
@@ -13,9 +13,7 @@ import "./StaffActivity.css";
 // first, grouped by day: monkeys, enclosures, injuries, records, weights,
 // maintenance and the rest, each with what changed. Choose who, how far
 // back (24 Hours, 7, 14 or 30 Days, All Time, or Custom: From and To dates) and
-// what. The Numbers, above the list: how much was done, by that person or
-// everyone, in that period; a look at the work, so no rankings or comparisons.
-// Looking only: nothing is undone from here (yet).
+// what. Looking only: nothing is undone from here (yet).
 // (supabase/staff-activity.sql)
 
 const ACTIONS = {
@@ -72,33 +70,6 @@ function Filters({ staff, person, onPerson, days, onDays, group, onGroup, from, 
                     </label>
                 </div>
             )}
-        </div>
-    );
-}
-
-// The Numbers: the counts, for who and when's chosen
-//   numbers: { injuries: 4, … }, or null while they're loading
-function Numbers({ numbers, problem, whose, period }) {
-    if (problem) {
-        return (
-            <p className="MyChanges-problem" role="alert">
-                {problem}
-            </p>
-        );
-    }
-    return (
-        <div className="Activity-numbers" aria-busy={!numbers}>
-            <h2 className="Activity-numbersTitle">
-                {whose} {period}
-            </h2>
-            <dl>
-                {STATS.map(([key, label]) => (
-                    <div key={key} className={numbers?.[key] ? "" : "is-none"}>
-                        <dt>{label}</dt>
-                        <dd>{numbers ? (numbers[key] ?? 0).toLocaleString("en-GB") : "–"}</dd>
-                    </div>
-                ))}
-            </dl>
         </div>
     );
 }
@@ -168,21 +139,6 @@ export default function StaffActivity() {
         };
     }, [person, days, from, to, datesOk]);
 
-    // The Numbers: { numbers }, { problem }, or null while they're loading
-    const [counted, setCounted] = useState(null);
-    useEffect(() => {
-        if (!datesOk) return undefined;
-        let cancelled = false;
-        setCounted(null);
-        const { since, until } = periodFor(days, from, to);
-        loadStaffStats(person || null, since, until)
-            .then((numbers) => !cancelled && setCounted({ numbers }))
-            .catch((error) => !cancelled && setCounted({ problem: error.message }));
-        return () => {
-            cancelled = true;
-        };
-    }, [person, days, from, to, datesOk]);
-
     const shown = result?.changes ? inGroup(result.changes, group) : [];
     const byDay = [];
     for (const change of shown) {
@@ -199,8 +155,6 @@ export default function StaffActivity() {
             : days === ALL_TIME.days
               ? "so far"
               : `in the last ${PERIODS.find((p) => p.days === days)?.label.toLowerCase()}`;
-    const chosen = staff.find((s) => s.userId === person);
-    const whose = person ? (chosen?.name ?? chosen?.email ?? "This person") : "Everyone";
 
     return (
         <>
@@ -219,7 +173,6 @@ export default function StaffActivity() {
                     onFrom={setFrom}
                     onTo={setTo}
                 />
-                {datesOk && <Numbers numbers={counted?.numbers ?? null} problem={counted?.problem ?? null} whose={whose} period={period} />}
                 {!datesOk ? (
                     <p className="MyChanges-problem" role="alert">
                         Please choose a From date on or before the To date.

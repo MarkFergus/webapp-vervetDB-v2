@@ -431,6 +431,24 @@ describe("enclosure photos", () => {
         expect(await screen.findByRole("img", { name: "Robert" })).toHaveAttribute("src", PHOTOS[1]);
     });
 
+    test("a saved photo taken off stays in storage (only the link goes), as monkeys' do", async () => {
+        const { SUPABASE_URL } = await import("./supabase");
+        const OURS = `${SUPABASE_URL}/storage/v1/object/public/monkey-photos/`;
+        const stored = [`${OURS}enclosures/robert-1.webp`, `${OURS}enclosures/robert-2.webp`];
+        const list = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT.id ? { ...e, photos: stored } : e));
+        const { user } = setup({ startingEnclosures: list });
+        const remove = vi.fn().mockResolvedValue({ error: null });
+        vi.spyOn(supabase.storage, "from").mockReturnValue({ remove });
+        await user.click(await screen.findByRole("button", { name: "Edit" }));
+        const form = screen.getByRole("dialog", { name: "Edit Robert" });
+        await user.click(within(form).getByRole("button", { name: /Photo 2 options/ }));
+        await user.click(screen.getByRole("menuitem", { name: /Delete/i }));
+        await user.click(within(form).getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saved.updates).toHaveLength(1));
+        expect(saved.updates[0].row.photos).toEqual([stored[0]]);
+        expect(remove).not.toHaveBeenCalled();
+    });
+
     test("an introcage's own photo is its picture in the enclosure's Introcages list", async () => {
         const b1Photo = "https://example.com/robert-b1.webp";
         const list = BUILT_IN_DATA.enclosures.map((e) => (e.id === ROBERT_B1.id ? { ...e, photos: [b1Photo] } : e));

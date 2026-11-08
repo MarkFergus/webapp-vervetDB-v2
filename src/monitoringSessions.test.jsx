@@ -141,7 +141,7 @@ test("a whole session: Start (the briefing), the checks and checklist, Finish, t
     // The briefing: Must See, priority checks, injuries (Update Needed), conditions
     const briefing = await screen.findByRole("region", { name: "Briefing" });
     expect(within(briefing).getByText("Must See")).toBeInTheDocument();
-    expect(within(briefing).getByText(/not seen last 2 sessions, last seen 12th Oct 2026/)).toBeInTheDocument();
+    expect(within(briefing).getByText(/not seen last 2 sessions, last seen 12th Oct$/)).toBeInTheDocument();
     expect(within(briefing).getByText(/Check her weight/)).toBeInTheDocument();
     expect(await within(briefing).findByText(/Eye infection/)).toBeInTheDocument();
     expect(within(briefing).getByText("Update Needed")).toBeInTheDocument();
@@ -518,7 +518,7 @@ test("Missing: Mark As Seen ticks a monkey off between sessions; it shows in the
     open();
     // (Malawi: missed the last 2 sessions)
     const missing = await screen.findByRole("region", { name: "Missing" });
-    expect(within(missing).getByText(/Not seen last 2 sessions · last seen 12th Oct 2026/)).toBeInTheDocument();
+    expect(within(missing).getByText(/Not seen last 2 sessions · last seen 12th Oct$/)).toBeInTheDocument();
     await user.click(within(missing).getByRole("button", { name: "Mark Malawi As Seen" }));
     const form = within(missing).getByRole("group", { name: "Mark Malawi As Seen" });
     expect(within(form).getByLabelText("Seen On")).toHaveValue(today());

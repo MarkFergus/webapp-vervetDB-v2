@@ -4,7 +4,7 @@ import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
 import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./monkeysArr";
-import { addRecord, loadRecords, recordSeen } from "./monkeyData";
+import { addRecord, loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
 import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
 
@@ -13,7 +13,6 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     loadRecords: vi.fn(),
     addRecord: vi.fn(),
-    recordSeen: vi.fn(),
 }));
 beforeEach(() => {
     loadRecords.mockResolvedValue([]);
@@ -191,8 +190,7 @@ test("Microchip, edited: stays one, its number and note split out; others can't 
     expect(screen.queryByRole("option", { name: "Microchip" })).not.toBeInTheDocument();
 });
 
-test("Behaviour and Observation: a sighting too, as someone saw them; other records aren't", async () => {
-    vi.mocked(recordSeen).mockClear();
+test("Trapped: a Rehabilitation category, saved like the others", async () => {
     vi.mocked(addRecord).mockImplementation(async (_id, values) => ({ id: 1, loggedByName: "A", ...values }));
     function Page() {
         const records = useRecords(7, { canSee: true, isAdmin: true, canAdd: true });
@@ -200,18 +198,11 @@ test("Behaviour and Observation: a sighting too, as someone saw them; other reco
     }
     const user = userEvent.setup();
     render(<Page />);
-    const add = async (category) => {
-        await user.click(await screen.findByRole("button", { name: "New Rehabilitation Record" }));
-        await user.selectOptions(screen.getByLabelText("Category"), category);
-        await user.type(screen.getByLabelText("Details"), "Calm with the others");
-        await user.click(screen.getByRole("button", { name: "Confirm" }));
-    };
-    await add("behaviour");
-    await waitFor(() => expect(recordSeen).toHaveBeenCalledWith(7, expect.objectContaining({ description: "Calm with the others" })));
-    vi.mocked(recordSeen).mockClear();
-    await add("escape");
-    await waitFor(() => expect(addRecord).toHaveBeenCalledTimes(2));
-    expect(recordSeen).not.toHaveBeenCalled();
+    await user.click(await screen.findByRole("button", { name: "New Rehabilitation Record" }));
+    await user.selectOptions(screen.getByLabelText("Category"), "trapped");
+    await user.type(screen.getByLabelText("Details"), "Trapped to check the chip");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(addRecord).toHaveBeenCalledWith(7, expect.objectContaining({ category: "trapped", details: "Trapped to check the chip" })));
 });
 
 test("rehabilitation's categories; no button without permission to add", () => {
@@ -228,6 +219,7 @@ test("rehabilitation's drop-down", async () => {
         "Choose…",
         "Movement",
         "Escape",
+        "Trapped",
         "Behaviour",
     ]);
 });
@@ -389,6 +381,14 @@ test("Birth Date unknown: Not recorded, then Birth Year", () => {
     render(<MonkeyPage monkey={aroha} staff={null} />);
     expect(screen.getByText("Birth Date").closest("div")).toHaveTextContent("Not recorded");
     expect(screen.getByText("Birth Year").closest("div")).toHaveTextContent("2016");
+});
+
+test("Arrival Place: where they were first taken, beside Area of Origin", () => {
+    const { unmount } = render(<MonkeyPage monkey={{ ...aroha, arrivalDate: "2026-10-20", arrivalReason: "orphaned", arrivalPlace: "Dreamland" }} staff={null} />);
+    expect(screen.getByText("Arrival Place").closest("div")).toHaveTextContent("Dreamland");
+    unmount();
+    render(<MonkeyPage monkey={aroha} staff={null} />);
+    expect(screen.getByText("Arrival Place").closest("div")).toHaveTextContent("Not recorded");
 });
 
 test("View Card opens the monkey's pop-up, and the address stays on its page", async () => {

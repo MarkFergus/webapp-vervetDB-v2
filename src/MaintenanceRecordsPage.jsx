@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import useDialog from "./useDialog";
-import { addMaintenance, deleteMaintenance, loadAllMaintenance, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
+import { addMaintenance, deleteMaintenance, loadAllMaintenance, loadMaintenanceIssues, maintenanceKindsAvailable, saveMaintenance } from "./monkeyData";
 import { EntryForm, MAINTENANCE_TYPES } from "./MaintenanceLog";
 import { PlacePicker, TypeButtons } from "./MaintenancePickers";
-import { IssuesTab } from "./MaintenanceIssues";
+import { IssuePhotos, IssuesTab } from "./MaintenanceIssues";
 import { enclosureHash, isBuilding } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
@@ -62,7 +62,7 @@ function EnterForm({ enclosures, onAdded }) {
 
     return (
         <form className="MaintenancePage-enter" onSubmit={save} noValidate>
-            <p className="RecordsPage-hint">Finished a job that wasn't reported as an issue? Log it here.</p>
+            <p className="RecordsPage-hint">Finished a job that wasn't on the Job List? Log it here.</p>
             <div className="MaintenancePage-field">
                 <span className="MaintenancePage-label">Enclosure or Introcage</span>
                 <PlacePicker places={places} enclosures={enclosures} chosen={form.place} onChoose={(p) => change("place", p)} />
@@ -153,7 +153,21 @@ function DeleteDialog({ report, place, onConfirm, onCancel }) {
     );
 }
 
-function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
+// A Job Done report's photos: the job's Before (labelled only when there are
+// After photos too) and After
+function JobPhotos({ job }) {
+    if (!job || !(job.photoPaths.length || job.donePhotoPaths?.length)) return null;
+    const after = job.donePhotoPaths ?? [];
+    return (
+        <>
+            <IssuePhotos paths={job.photoPaths} label={after.length ? "Before" : null} />
+            {after.length > 0 && <IssuePhotos paths={after} label="After" />}
+        </>
+    );
+}
+
+//   jobs: the maintenance jobs, for a Job Done report's Before / After photos
+function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted, jobs = [] }) {
     const [type, setType] = useState("all");
     const [search, setSearch] = useState("");
     const [picked, setPicked] = useState(null);
@@ -226,6 +240,8 @@ function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
                                             <p>{r.details}</p>
                                         </div>
                                     )}
+                                    {/* From Job Done: the job's photos, Before and After */}
+                                    {editing !== r.id && <JobPhotos job={jobs.find((j) => j.reportId === r.id)} />}
                                 </div>
                                 {/* On the right: Edit / Delete, then who logged it */}
                                 <div className="MaintenancePage-side">
@@ -292,6 +308,8 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
     const [tab, setTab] = useState("issues");
     // null (loading), "failed", or every report
     const [reports, setReports] = useState(null);
+    // The jobs (for History's photos; a problem just leaves them off)
+    const [jobs, setJobs] = useState([]);
     const load = useCallback(() => {
         loadAllMaintenance()
             .then(setReports)
@@ -301,8 +319,19 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
         if (live) load();
     }, [live, load]);
 
-    if (!live) return <p className="RecordsPage-none">Maintenance reports will show here once vervetDB is online.</p>;
     const shownTab = canLog ? tab : "view";
+    // (each time History opens: a job just done shows its photos there)
+    useEffect(() => {
+        if (!live || shownTab !== "view") return undefined;
+        let cancelled = false;
+        loadMaintenanceIssues()
+            .then((list) => !cancelled && setJobs(list))
+            .catch(() => !cancelled && setJobs([]));
+        return () => {
+            cancelled = true;
+        };
+    }, [live, shownTab]);
+    if (!live) return <p className="RecordsPage-none">Maintenance reports will show here once vervetDB is online.</p>;
     return (
         <>
             {canLog && (
@@ -349,6 +378,7 @@ function MaintenanceRecordsPage({ enclosures, live, canLog, me = {} }) {
                     me={me}
                     onSaved={(r) => setReports((l) => inOrder(l.map((x) => (x.id === r.id ? r : x))))}
                     onDeleted={(id) => setReports((l) => l.filter((x) => x.id !== id))}
+                    jobs={jobs}
                 />
             )}
         </>

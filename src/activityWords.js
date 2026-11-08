@@ -19,7 +19,7 @@ export const SOURCES = {
         fields: { done_on: field("Date Done", "date"), kind: field("Type", "words"), details: field("Details") },
     },
     maintenance_issues: {
-        label: "Maintenance Issue",
+        label: "Maintenance Job",
         group: "enclosures",
         fields: {
             details: field("Details"),
@@ -137,17 +137,8 @@ export const PERIODS = [
     { days: 30, label: "30 Days" },
 ];
 
-// Back to the start (the stats' whole history; the list below them shows the
-// latest changes)
+// Back to the start (the list shows the latest changes)
 export const ALL_TIME = { days: "all", label: "All Time" };
-
-// The Numbers: what's counted (staff_stats' names)
-export const STATS = [
-    ["injuries", "Injuries Added"],
-    ["conditions", "Conditions Added"],
-    ["photos", "Photos Uploaded"],
-    ["edits", "Profile Edits"],
-];
 
 // A day ("2026-10-20") as "20 Oct 2026"
 export const dayWords = (date) => valueText(date, "date");

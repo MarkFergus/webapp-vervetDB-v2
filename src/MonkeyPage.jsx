@@ -1,32 +1,31 @@
 import { loadChip } from "./monkeyData";
 import { useEffect, useRef, useState } from "react";
 import {
+    IconAlertTriangle,
+    IconArchive,
+    IconBinoculars,
     IconCalendar,
     IconCalendarEvent,
     IconCpu,
     IconDna2,
-    IconFlag,
-    IconGenderBigender,
-    IconHeartHandshake,
-    IconId,
-    IconDoorEnter,
-    IconHome,
-    IconCurrentLocation,
-    IconPencil,
-    IconRosetteDiscountCheck,
-    IconArchive,
-    IconReportMedical,
-    IconFriends,
-    IconUserCircle,
-    IconWorldPin,
-    IconBinoculars,
     IconEye,
     IconFirstAidKit,
-    IconStethoscope,
-    IconAlertTriangle,
+    IconFlag,
+    IconFriends,
+    IconGenderBigender,
+    IconHeartHandshake,
+    IconHeartbeat,
+    IconHome,
+    IconId,
+    IconMapPin,
     IconNotes,
+    IconPencil,
     IconPill,
+    IconPlaneArrival,
+    IconReportMedical,
     IconTimelineEvent,
+    IconUserCircle,
+    IconWorldPin,
 } from "@tabler/icons-react";
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
@@ -259,7 +258,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // name, so the bar lights up the one showing)
     const jumps = [
         { key: "profile", label: "Profile", icon: IconUserCircle },
-        { key: "arrival", label: "Arrival Info", icon: IconDoorEnter },
+        { key: "arrival", label: "Arrival Info", icon: IconPlaneArrival },
         ...(monitored ? [{ key: "monitoring", label: "Monitoring", icon: IconBinoculars }] : []),
         ...(isStaff ? TABS : []),
     ];
@@ -286,7 +285,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         // Where it is now: Sickbay or the introcage it's staying in (Quick
         // Actions), else home
         {
-            icon: IconCurrentLocation,
+            icon: IconMapPin,
             label: "Current Location",
             value: monkey.inSickbay ? "Sickbay" : staying(monkey) ? <PlaceName name={staying(monkey)} /> : homeText(monkey),
         },
@@ -318,7 +317,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         // (once the database has species: species.sql)
         { icon: IconDna2, label: "Species", value: SPECIES[monkey.species] ?? null },
         // (once the database has a status: Sanctuary or Released, so far)
-        { icon: IconRosetteDiscountCheck, label: "Status", value: STATUS_WORDS[monkey.status] ?? null },
+        { icon: IconFlag, label: "Status", value: STATUS_WORDS[monkey.status] ?? null },
         {
             icon: IconCpu,
             label: "Microchip",
@@ -327,11 +326,13 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         },
     ]);
     // Arrival: its date and reason (new arrivals, once the database has
-    // them: arrival-details.sql); Area of Origin not recorded yet
+    // them: arrival-details.sql), where they were first taken (kept when
+    // they were added: arrival-place.sql); Area of Origin not recorded yet
     const detailRows = inPairs([
         { icon: IconCalendar, label: "Arrival Date", value: monkey.arrivalDate ? dayText(monkey.arrivalDate) : null },
-        { icon: IconFlag, label: "Arrival Reason", value: ARRIVAL_REASONS[monkey.arrivalReason] ?? null },
-        { icon: IconWorldPin, label: "Area of Origin", value: null, wide: true },
+        { icon: IconPlaneArrival, label: "Arrival Reason", value: ARRIVAL_REASONS[monkey.arrivalReason] ?? null },
+        { icon: IconMapPin, label: "Arrival Place", value: monkey.arrivalPlace ? <PlaceName name={monkey.arrivalPlace} /> : null },
+        { icon: IconWorldPin, label: "Area of Origin", value: null },
     ]);
 
     // Monitoring's rows, one each, the whole width
@@ -379,7 +380,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
             ),
         },
         {
-            icon: IconStethoscope,
+            icon: IconHeartbeat,
             label: "Latest Condition",
             value: latestCondition ? (
                 <>
@@ -445,7 +446,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     aria-expanded={statusOpen}
                                     title="Status Update"
                                 >
-                                    <IconRosetteDiscountCheck size={18} aria-hidden="true" />
+                                    <IconFlag size={18} aria-hidden="true" />
                                     <span className="Modal-editLabel">Status Update</span>
                                 </button>
                             )}

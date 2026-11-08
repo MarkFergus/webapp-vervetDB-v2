@@ -4,14 +4,13 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import AdminPage from "./AdminPage";
 import StaffActivity from "./StaffActivity";
-import { loadStaff, loadStaffActivity, loadStaffStats } from "./monkeyData";
+import { loadStaff, loadStaffActivity } from "./monkeyData";
 import { changeLines, inGroup, periodFor, valueText } from "./activityWords";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
     loadStaff: vi.fn(),
     loadStaffActivity: vi.fn(),
-    loadStaffStats: vi.fn(),
 }));
 
 const now = new Date().toISOString();
@@ -34,7 +33,6 @@ beforeEach(() => {
         { userId: "u-1", name: "Sam Smith", email: "sam@x.com", role: "editor" },
     ]);
     loadStaffActivity.mockResolvedValue(CHANGES);
-    loadStaffStats.mockResolvedValue({ injuries: 4, photos: 65, edits: 23, conditions: 0 });
 });
 
 describe("putting a change into words", () => {
@@ -137,41 +135,16 @@ test("nothing, or a problem: says so", async () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("staff-activity-dates.sql");
 });
 
-describe("the numbers", () => {
-    const stat = (label) => screen.getByText(label).closest("div");
+test("no number tiles at the top: straight to the changes", async () => {
+    render(<StaffActivity />);
+    await waitFor(() => expect(loadStaffActivity).toHaveBeenCalled());
+    expect(screen.queryByText("Photos Uploaded")).toBeNull();
+    expect(screen.queryByText("Injuries Added")).toBeNull();
+});
 
-    test("everyone's, in the period chosen, the figure with its name; nothing yet still shows, as 0", async () => {
-        render(<StaffActivity />);
-        await waitFor(() => expect(stat("Photos Uploaded")).toHaveTextContent("65"));
-        expect(screen.getByRole("heading", { name: "Everyone in the last 7 days" })).toBeInTheDocument();
-        expect(stat("Injuries Added")).toHaveTextContent("4");
-        expect(stat("Profile Edits")).toHaveTextContent("23");
-        expect(stat("Conditions Added")).toHaveTextContent("0");
-        expect(loadStaffStats.mock.calls[0][0]).toBeNull();
-    });
-
-    test("no comparing: one person or everyone's total, never a list of staff", async () => {
-        loadStaff.mockResolvedValue([{ userId: "u-1", name: "Thandi Mokoena", email: "t@x" }]);
-        const user = userEvent.setup();
-        render(<StaffActivity />);
-        await screen.findByRole("option", { name: "Thandi Mokoena" });
-        await user.selectOptions(screen.getByLabelText("Staff Member"), "u-1");
-        await waitFor(() => expect(loadStaffStats.mock.lastCall[0]).toBe("u-1"));
-        expect(await screen.findByRole("heading", { name: "Thandi Mokoena in the last 7 days" })).toBeInTheDocument();
-    });
-
-    test("All Time: from the start", async () => {
-        const user = userEvent.setup();
-        render(<StaffActivity />);
-        await user.click(await screen.findByRole("button", { name: "All Time" }));
-        await waitFor(() => expect(loadStaffStats.mock.lastCall[1].getFullYear()).toBe(2020));
-        expect(await screen.findByRole("heading", { name: "Everyone so far" })).toBeInTheDocument();
-    });
-
-    test("not ready: says so, and the list still shows", async () => {
-        loadStaffStats.mockRejectedValue(new Error("The numbers aren't ready yet: supabase/staff-stats.sql needs to be run."));
-        render(<StaffActivity />);
-        expect(await screen.findByRole("alert")).toHaveTextContent("staff-stats.sql");
-        await waitFor(() => expect(screen.getByText(/in the last 7 days/)).toBeInTheDocument());
-    });
+test("All Time: the changes from the start", async () => {
+    const user = userEvent.setup();
+    render(<StaffActivity />);
+    await user.click(await screen.findByRole("button", { name: "All Time" }));
+    await waitFor(() => expect(loadStaffActivity.mock.lastCall[1].getFullYear()).toBe(2020));
 });

@@ -2,6 +2,8 @@
 -- Completed: how many issues were reported that week and how many were still
 -- open at its end, then each of those (urgent first, in red, then whichever
 -- has waited longest). Job Done's "Issue: … / Done: …" now shows on two lines.
+-- Updated 2026-11-08: Not Seen lines say "not seen last 3 sessions" instead of
+-- "Must See" (facts, as the Monitoring checklist does). Run it again.
 -- Safe to run more than once.
 --
 -- Run once in Supabase: SQL Editor → New query → paste all of this → Run.
@@ -115,7 +117,7 @@ begin
                         private.wr_who(n ->> 'name', n ->> 'troop') || ': not seen '
                             || (select string_agg(private.wr_day(d::date), ', ') from jsonb_array_elements_text(n -> 'dates') d)
                             || ' · ' || case
-                                when (n ->> 'missed')::int >= 2 then 'Must See'
+                                when (n ->> 'missed')::int >= 2 then 'not seen last ' || (n ->> 'missed') || ' sessions'
                                 when (n ->> 'missed')::int > 0 then 'still not seen at the week''s end'
                                 else 'seen again ' || private.wr_day((n ->> 'last_seen')::date)
                             end,

@@ -21,6 +21,18 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.3.0",
+        date: "2026-11-08",
+        changes: [
+            "Improved Last Seen: any record showing a monkey was seen now counts",
+            "New Trapped record in Rehabilitation",
+            "Added After photos to Job Done in Maintenance",
+            "Added Arrival Place to the Full Profile",
+            "Improved Maintenance: issues are now called jobs",
+            "Improved icons across the site",
+        ],
+    },
+    {
         version: "2.2.0",
         date: "2026-11-08",
         changes: [

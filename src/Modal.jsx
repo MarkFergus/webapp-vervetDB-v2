@@ -1,31 +1,31 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import {
-    IconChevronLeft,
-    IconChevronRight,
-    IconMars,
-    IconVenus,
-    IconDownload,
-    IconPencil,
-    IconShare,
-    IconCameraPlus,
-    IconPhotoPlus,
-    IconFirstAidKit,
+    IconAlertTriangle,
     IconAmbulance,
-    IconHeartbeat,
-    IconReportMedical,
     IconArrowBigLeftLines,
-    IconTrees,
-    IconSparkles,
+    IconArrowBigRightLines,
     IconBandage,
     IconBolt,
-    IconArrowBigRightLines,
-    IconCube,
-    IconUserCircle,
+    IconBuildingHospital,
+    IconCameraPlus,
+    IconChevronLeft,
+    IconChevronRight,
     IconCpu,
-    IconHistory,
+    IconCube,
+    IconDownload,
     IconEye,
-    IconAlertTriangle,
+    IconFirstAidKit,
+    IconHeartbeat,
+    IconHistory,
+    IconMars,
+    IconPencil,
+    IconPhotoPlus,
+    IconShare,
+    IconSparkles,
+    IconTrees,
+    IconUserCircle,
+    IconVenus,
 } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import useDialog from "./useDialog";
@@ -41,7 +41,7 @@ import useSwipe from "./useSwipe";
 import { fullName, placeLabel, staying } from "./places";
 import { inBabyCare, isNewArrival, showsInjuredRescue, showsNewArrival } from "./enclosures";
 import { InjuryForm, InjuriesSection, useInjuries } from "./Injuries";
-import { addCondition, addObservation, addSpotSighting, recordSeen } from "./monkeyData";
+import { addCondition, addObservation, addSpotSighting } from "./monkeyData";
 import { fieldStaff } from "./outbox";
 import { MarkSeenButton, MarkSeenForm, useMissing } from "./MarkSeen";
 import useMonitoring from "./useMonitoring";
@@ -513,7 +513,7 @@ function Modal({
                                                     className="Modal-edit is-sickbay"
                                                     onClick={() => setInjuryForm(true)}
                                                 >
-                                                    <IconReportMedical size={18} aria-hidden="true" />
+                                                    <IconFirstAidKit size={18} aria-hidden="true" />
                                                     New Injury
                                                 </button>
                                             )}
@@ -547,7 +547,6 @@ function Modal({
                                                     max={todayText()}
                                                     onSave={async (values) => {
                                                         await addCondition(monkey.id, values);
-                                                        await recordSeen(monkey.id, values);
                                                         setConditionForm(false);
                                                         setMoreOpen(false);
                                                     }}
@@ -579,7 +578,6 @@ function Modal({
                                                     max={todayText()}
                                                     onSave={async (values) => {
                                                         await injuries.add(values);
-                                                        await recordSeen(monkey.id, values);
                                                         setInjuryForm(false);
                                                         setMoreOpen(false);
                                                         setInjuriesOpen(true);
@@ -873,7 +871,7 @@ function Modal({
                                             )}
                                             {monkey.inSickbay && (
                                                 <li className="is-sickbay">
-                                                    <IconFirstAidKit size={15} stroke={2} aria-hidden="true" />
+                                                    <IconBuildingHospital size={15} stroke={2} aria-hidden="true" />
                                                     In Sickbay
                                                 </li>
                                             )}

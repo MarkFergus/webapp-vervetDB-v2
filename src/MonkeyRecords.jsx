@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconChevronDown, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
-import { addRecord, deleteRecord, loadConditions, loadMonkeyWeights, loadRecords, recordSeen, saveRecord } from "./monkeyData";
+import { addRecord, deleteRecord, loadConditions, loadMonkeyWeights, loadRecords, saveRecord } from "./monkeyData";
 import { changeText, historyFor } from "./babyRecords";
 import { IntegrationForm, newReportDates } from "./IntegrationReports";
 import { summaryDate } from "./feeding";
@@ -27,7 +27,6 @@ import "./MonkeyRecords.css";
 //     (supabase/integration-reports.sql)
 
 export const MAX_RECORD = 1000;
-const SEEN_CATEGORIES = ["behaviour", "observation"];
 
 // Each section's name and categories, in the drop-down's order; older:
 // categories no longer offered, still named (records saved with them)
@@ -36,7 +35,7 @@ export const SECTIONS = {
         title: "Rehabilitation",
         // (integration: its own tab now, so not offered; the database still
         // allows it)
-        categories: { movement: "Movement", escape: "Escape", behaviour: "Behaviour" },
+        categories: { movement: "Movement", escape: "Escape", trapped: "Trapped", behaviour: "Behaviour" },
         older: {},
     },
     medical: {
@@ -134,8 +133,8 @@ export function useRecords(monkeyId, staff, version = 0) {
         async add(values) {
             const saved = await addRecord(monkeyId, values);
             change((list) => [...list, saved]);
-            // (someone saw them that day: a sighting too, for their last seen)
-            if (SEEN_CATEGORIES.includes(values.category)) await recordSeen(monkeyId, { date: values.date, description: values.details });
+            // (a record showing they were seen counts as their last seen: the
+            // database notes it, last-seen.sql)
         },
         async update(id, values) {
             const saved = await saveRecord(id, values);

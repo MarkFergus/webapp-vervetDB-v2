@@ -74,6 +74,7 @@ function recordEntry(r) {
         };
     }
     if (r.category === "behaviour") return { ...base, kind: "behaviour", label: "Behaviour", filters: ["seen"] };
+    if (r.category === "trapped" || r.category === "escape") return { ...base, kind: "other", label: titleWords(r.category), filters: ["seen"] };
     if (r.category === "deworming") return { ...base, kind: "deworming", label: "Deworming", filters: ["medical"] };
     if (r.category === "observation") {
         return { ...base, kind: "observation", label: "Observation", filters: ["medical", "seen"] };
@@ -151,7 +152,8 @@ function weightEntries(weights, hasArrival) {
 function seenEntries(sessions, spots, monkeyId) {
     const dates = [
         ...sessions.filter((s) => s.sightings.some((x) => x.monkeyId === monkeyId && x.seen)).map((s) => ({ date: s.date, session: true })),
-        ...spots.filter((s) => s.monkeyId === monkeyId).map((s) => ({ date: s.date, session: false })),
+        // (Mark As Seen's: a record's own sighting is the record, already listed)
+        ...spots.filter((s) => s.monkeyId === monkeyId && !s.source).map((s) => ({ date: s.date, session: false })),
     ];
     const months = new Map();
     for (const d of dates) {

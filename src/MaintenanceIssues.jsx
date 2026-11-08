@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconAlertTriangle, IconCamera, IconChevronLeft, IconChevronRight, IconCopy, IconDownload, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import { IconAlertTriangle, IconChevronLeft, IconChevronRight, IconCopy, IconDownload, IconPencil, IconPhotoPlus, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import useDialog, { lockScroll, unlockScroll } from "./useDialog";
 import CloseButton from "./CloseButton";
 import ImagePreview from "./ImagePreview";
@@ -60,33 +60,71 @@ export const UrgentBadge = () => (
     </span>
 );
 
-// Report an issue. start: { place, nearby (the map guessed it: the nearest),
-// point: [x, y] on the map }. issue: changing this one instead.
-//   onSaved(issue)
-export function IssueReportDialog({ enclosures, start = {}, issue = null, onSaved, onCancel }) {
-    const detailsRef = useRef(null);
-    const fileRef = useRef(null);
-    const [place, setPlace] = useState(issue ? enclosures.find((e) => e.id === issue.enclosureId) ?? null : (start.place ?? null));
-    const [nearby, setNearby] = useState(Boolean(start.nearby));
-    const [details, setDetails] = useState(issue?.details ?? "");
-    const [urgent, setUrgent] = useState(issue?.urgent ?? false);
+// Photos picked to send with a job (Add Job, Job Done): up to 4, each shown
+// small with a ✕ to take it off. → { photos (files), pick (the file
+// input's onChange), remove(index), list (the small ones, or null) }
+//   onProblem(words or null): too many picked
+function usePickedPhotos(onProblem) {
     const [photos, setPhotos] = useState([]);
     const [previews, setPreviews] = useState([]);
-    const [busy, setBusy] = useState(false);
-    const [problem, setProblem] = useState(null);
     useEffect(() => {
         if (!URL.createObjectURL) return;
         const urls = photos.map((photo) => URL.createObjectURL(photo));
         setPreviews(urls);
         return () => urls.forEach((url) => URL.revokeObjectURL(url));
     }, [photos]);
-    function pickPhotos(event) {
+    function pick(event) {
         const { files, tooMany } = photosWithRoom(event.target.files ?? [], photos.length);
         setPhotos((list) => [...list, ...files]);
-        setProblem(tooMany ? `An issue can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
+        onProblem(tooMany ? `A job can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
         // (the same photo can be picked again)
         event.target.value = "";
     }
+    const remove = (index) => setPhotos((list) => list.filter((_, i) => i !== index));
+    const list =
+        photos.length > 0 ? (
+            <ul className="Issues-photoList" aria-label="Photos chosen">
+                {photos.map((photo, index) => (
+                    <li key={`${photo.name}-${index}`}>
+                        {previews[index] && <img src={previews[index]} alt="" />}
+                        <button type="button" aria-label={`Remove photo ${index + 1}`} title="Remove" onClick={() => remove(index)}>
+                            <IconX size={14} aria-hidden="true" />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        ) : null;
+    return { photos, pick, remove, list };
+}
+
+// The hidden file input and its Add Photos button (gone once there are 4)
+function PickPhotosButton({ picked, label = "Add Photos" }) {
+    const fileRef = useRef(null);
+    return (
+        <>
+            <input ref={fileRef} type="file" accept="image/*" hidden multiple aria-label="Photos" onChange={picked.pick} />
+            {picked.photos.length < MAX_ISSUE_PHOTOS && (
+                <button type="button" className="Modal-edit is-sickbay" onClick={() => fileRef.current?.click()}>
+                    <IconPhotoPlus size={16} aria-hidden="true" />
+                    {label}
+                </button>
+            )}
+        </>
+    );
+}
+
+// Report an issue. start: { place, nearby (the map guessed it: the nearest),
+// point: [x, y] on the map }. issue: changing this one instead.
+//   onSaved(issue)
+export function IssueReportDialog({ enclosures, start = {}, issue = null, onSaved, onCancel }) {
+    const detailsRef = useRef(null);
+    const [place, setPlace] = useState(issue ? enclosures.find((e) => e.id === issue.enclosureId) ?? null : (start.place ?? null));
+    const [nearby, setNearby] = useState(Boolean(start.nearby));
+    const [details, setDetails] = useState(issue?.details ?? "");
+    const [urgent, setUrgent] = useState(issue?.urgent ?? false);
+    const [busy, setBusy] = useState(false);
+    const [problem, setProblem] = useState(null);
+    const picked = usePickedPhotos(setProblem);
 
     async function save(event) {
         event.preventDefault();
@@ -99,7 +137,7 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
         setProblem(null);
         try {
             const point = start.point ?? [null, null];
-            onSaved(issue ? await saveIssue(issue.id, values) : await addIssue({ ...values, mapX: point[0], mapY: point[1], photos }));
+            onSaved(issue ? await saveIssue(issue.id, values) : await addIssue({ ...values, mapX: point[0], mapY: point[1], photos: picked.photos }));
         } catch (failure) {
             setProblem(failure.message);
             setBusy(false);
@@ -107,7 +145,7 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
     }
 
     return (
-        <Dialog title={issue ? "Change Issue" : "Report Issue"} onClose={onCancel} busy={busy} firstRef={detailsRef}>
+        <Dialog title={issue ? "Change Job" : "Add Job"} onClose={onCancel} busy={busy} firstRef={detailsRef}>
             <form className="Issues-form" onSubmit={save} noValidate>
                 <div className="MaintenancePage-field">
                     <span className="MaintenancePage-label">Enclosure or Introcage</span>
@@ -135,43 +173,9 @@ export function IssueReportDialog({ enclosures, start = {}, issue = null, onSave
                 </label>
                 <div className="Issues-row">
                     <UrgentButtons value={urgent} onChange={setUrgent} />
-                    {!issue && (
-                        <>
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                multiple
-                                aria-label="Photos"
-                                onChange={pickPhotos}
-                            />
-                            {photos.length < MAX_ISSUE_PHOTOS && (
-                                <button type="button" className="Modal-edit is-sickbay" onClick={() => fileRef.current?.click()}>
-                                    <IconCamera size={16} aria-hidden="true" />
-                                    Add Photos
-                                </button>
-                            )}
-                        </>
-                    )}
+                    {!issue && <PickPhotosButton picked={picked} />}
                 </div>
-                {photos.length > 0 && (
-                    <ul className="Issues-photoList" aria-label="Photos chosen">
-                        {photos.map((photo, index) => (
-                            <li key={`${photo.name}-${index}`}>
-                                {previews[index] && <img src={previews[index]} alt="" />}
-                                <button
-                                    type="button"
-                                    aria-label={`Remove photo ${index + 1}`}
-                                    title="Remove"
-                                    onClick={() => setPhotos((list) => list.filter((_, i) => i !== index))}
-                                >
-                                    <IconX size={14} aria-hidden="true" />
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                {picked.list}
                 {problem && (
                     <p className="RecordsPage-problem" role="alert">
                         {problem}
@@ -204,6 +208,8 @@ export function IssueFixDialog({ issue, enclosures, onDone, onCancel }) {
     const [details, setDetails] = useState("");
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
+    // After photos: the finished work (optional)
+    const picked = usePickedPhotos(setProblem);
 
     async function fix(event) {
         event.preventDefault();
@@ -213,7 +219,7 @@ export function IssueFixDialog({ issue, enclosures, onDone, onCancel }) {
         setBusy(true);
         setProblem(null);
         try {
-            onDone(await fixIssue(issue, { doneOn, kind, details: issueReport(issue, details) }));
+            onDone(await fixIssue(issue, { doneOn, kind, details: issueReport(issue, details) }, picked.photos));
         } catch (failure) {
             setProblem(failure.message);
             setBusy(false);
@@ -248,6 +254,10 @@ export function IssueFixDialog({ issue, enclosures, onDone, onCancel }) {
                         onChange={(e) => setDetails(e.target.value)}
                     />
                 </label>
+                <div className="Issues-row">
+                    <PickPhotosButton picked={picked} label="Add After Photos" />
+                </div>
+                {picked.list}
                 {problem && (
                     <p className="RecordsPage-problem" role="alert">
                         {problem}
@@ -313,7 +323,7 @@ function PhotoViewer({ photos, start, onClose }) {
             if (!response.ok) throw new Error("Not found");
             const blob = await response.blob();
             if (isFirefoxAndroidApp()) setPreview(blob);
-            else downloadBlob(blob, `vervetdb-issue-photo-${index + 1}.jpg`);
+            else downloadBlob(blob, `vervetdb-job-photo-${index + 1}.jpg`);
         } catch {
             setProblem("Couldn't save the photo. Please check your connection and try again.");
         }
@@ -337,7 +347,7 @@ function PhotoViewer({ photos, start, onClose }) {
                     if (count > 1 && Math.abs(moved) > 50) step(moved < 0 ? 1 : -1);
                 }}
             >
-                <img src={photos[index].url} alt={`Issue photo ${index + 1} of ${count}`} draggable="false" />
+                <img src={photos[index].url} alt={`Job photo ${index + 1} of ${count}`} draggable="false" />
                 {count > 1 && (
                     <>
                         <button type="button" className="Issues-viewerStep is-back" aria-label="Previous Photo" onClick={() => step(-1)}>
@@ -368,7 +378,8 @@ function PhotoViewer({ photos, start, onClose }) {
 
 // All of an issue's photos (private: fetched when they're shown), small; tap
 // one to enlarge it
-export function IssuePhotos({ paths }) {
+//   label: "Before" / "After", shown above them (or nothing)
+export function IssuePhotos({ paths, label = null }) {
     const [urls, setUrls] = useState({});
     const [open, setOpen] = useState(null);
     const key = paths.join("|");
@@ -385,13 +396,14 @@ export function IssuePhotos({ paths }) {
     if (!photos.length) return null;
     return (
         <>
-            <div className="Issues-photos">
+            {label && <p className="Issues-photosLabel">{label}</p>}
+            <div className="Issues-photos" aria-label={label ? `${label} photos` : undefined}>
                 {photos.map(({ path, url }, index) => (
                     <button
                         key={path}
                         type="button"
                         className="Issues-photo"
-                        aria-label={`See photo ${index + 1} of ${photos.length}`}
+                        aria-label={`See ${label ? `${label.toLowerCase()} ` : ""}photo ${index + 1} of ${photos.length}`}
                         onClick={() => setOpen(index)}
                     >
                         <img src={url} alt="" />
@@ -411,7 +423,7 @@ export function AddPhotosButton({ issue, onAdded }) {
     async function pick(event) {
         const { files, tooMany } = photosWithRoom(event.target.files ?? [], issue.photoPaths.length);
         event.target.value = "";
-        setProblem(tooMany ? `An issue can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
+        setProblem(tooMany ? `A job can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
         if (!files.length) return;
         setBusy(true);
         try {
@@ -426,7 +438,7 @@ export function AddPhotosButton({ issue, onAdded }) {
         <>
             <input ref={fileRef} type="file" accept="image/*" multiple hidden aria-label={`Photos for: ${issue.details}`} onChange={pick} />
             <button type="button" className="Modal-edit is-sickbay" disabled={busy} onClick={() => fileRef.current?.click()}>
-                <IconCamera size={16} aria-hidden="true" />
+                <IconPhotoPlus size={16} aria-hidden="true" />
                 {busy ? "Adding…" : "Add Photos"}
             </button>
             {problem && (
@@ -466,7 +478,8 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
                     {issue.urgent && isOpen(issue) && <UrgentBadge />}
                 </div>
                 <p className="Issues-details">{issue.details}</p>
-                <IssuePhotos paths={issue.photoPaths} />
+                {/* (with After photos: these are Before) */}
+                <IssuePhotos paths={issue.photoPaths} label={issue.donePhotoPaths?.length ? "Before" : null} />
                 <span className="MaintenanceLog-who">{reportedWords(issue)}</span>
                 {issue.status === "fixed" && (
                     <span className="MaintenanceLog-who">
@@ -474,6 +487,7 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
                         {when && `, ${when}`}
                     </span>
                 )}
+                {issue.donePhotoPaths?.length > 0 && <IssuePhotos paths={issue.donePhotoPaths} label="After" />}
                 {issue.status === "closed" && (
                     <span className="MaintenanceLog-who">
                         Closed{issue.closedByName ? ` by ${issue.closedByName}` : ""}
@@ -485,12 +499,12 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
                 {(onEdit || onDelete) && !me.offline && (
                     <span className="MaintenanceLog-icons">
                         {onEdit && isOpen(issue) && (
-                            <button type="button" className="MaintenanceLog-icon is-edit" aria-label={`Change the issue: ${issue.details}`} title="Change" onClick={() => onEdit(issue)}>
+                            <button type="button" className="MaintenanceLog-icon is-edit" aria-label={`Change the job: ${issue.details}`} title="Change" onClick={() => onEdit(issue)}>
                                 <IconPencil size={16} aria-hidden="true" />
                             </button>
                         )}
                         {onDelete && me.isAdmin && (
-                            <button type="button" className="MaintenanceLog-icon is-delete" aria-label={`Delete the issue: ${issue.details}`} title="Delete" onClick={() => onDelete(issue)}>
+                            <button type="button" className="MaintenanceLog-icon is-delete" aria-label={`Delete the job: ${issue.details}`} title="Delete" onClick={() => onDelete(issue)}>
                                 <IconTrash size={16} aria-hidden="true" />
                             </button>
                         )}
@@ -524,7 +538,7 @@ function DeleteDialog({ issue, onConfirm, onCancel }) {
         }
     }
     return (
-        <Dialog title="Delete this issue?" onClose={onCancel} busy={busy} firstRef={cancelRef}>
+        <Dialog title="Delete this job?" onClose={onCancel} busy={busy} firstRef={cancelRef}>
             <p>{issue.details}</p>
             {problem && (
                 <p className="RecordsPage-problem" role="alert">
@@ -545,7 +559,7 @@ function DeleteDialog({ issue, onConfirm, onCancel }) {
 
 const placed = (list, issue) => (list.some((i) => i.id === issue.id) ? list.map((i) => (i.id === issue.id ? issue : i)) : [issue, ...list]);
 
-// Records → Maintenance → Issues: Open or Closed, and Report Issue
+// Records → Maintenance → Issues: Open or Closed, and Add Job
 export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     const [issues, setIssues] = useState(null); // null (loading), "failed", or the list
     const [show, setShow] = useState("open");
@@ -560,7 +574,7 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     }, []);
     if (issues === null) return <p className="RecordsPage-none">Loading…</p>;
     if (issues === "failed") {
-        return <p className="RecordsPage-none RecordsPage-problem">Couldn't load the maintenance issues. Please check your connection and try again.</p>;
+        return <p className="RecordsPage-none RecordsPage-problem">Couldn't load the maintenance jobs. Please check your connection and try again.</p>;
     }
     const waiting = openIssues(issues);
     const shown = show === "open" ? waiting : pastIssues(issues);
@@ -586,7 +600,7 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                 </div>
                 <button type="button" className="Modal-edit is-action-outline" onClick={() => setOpen({ report: true })}>
                     <IconPlus size={16} aria-hidden="true" />
-                    Report Issue
+                    Add Job
                 </button>
             </div>
             {shown.length ? (
@@ -605,7 +619,7 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                     ))}
                 </ol>
             ) : (
-                <p className="RecordsPage-none">{show === "open" ? "No open issues." : "No closed issues yet."}</p>
+                <p className="RecordsPage-none">{show === "open" ? "No open jobs." : "No closed jobs yet."}</p>
             )}
             {show === "open" && waiting.length > 0 && (
                 <div className="Issues-copy">
@@ -678,7 +692,7 @@ export function EnclosureIssues({ enclosure, enclosures, me = {}, onReportAdded 
         <div className="Issues-enclosure">
             {here.length > 0 && (
                 <>
-                    <h4>Open Issues ({here.length})</h4>
+                    <h4>Open Jobs ({here.length})</h4>
                     <ol className="Issues-list">
                         {here.map((issue) => (
                             <IssueItem
@@ -696,7 +710,7 @@ export function EnclosureIssues({ enclosure, enclosures, me = {}, onReportAdded 
             )}
             <button type="button" className="Modal-edit is-action-outline" onClick={() => setOpen({ report: true })}>
                 <IconPlus size={16} aria-hidden="true" />
-                Report Issue
+                Add Job
             </button>
             {open?.report && (
                 <IssueReportDialog

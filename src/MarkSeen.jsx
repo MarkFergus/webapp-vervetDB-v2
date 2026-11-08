@@ -17,12 +17,32 @@ import "./MarkSeen.css";
 
 export const NOTE_MAX = 200;
 const longDate = (date) => summaryDate(new Date(`${date}T00:00:00`));
+// "12th Oct" (Monitoring's lists: no year, so each stays on a line)
+const shortDate = (date) => longDate(date).replace(/ \d{4}$/, "");
 
-// Why it's missing: "Not seen last 2 sessions · last seen 12th Oct
-// 2026" (never: "not seen in a session yet")
+// What a sighting came from, in words: "Dewormed" (last-seen.sql)
+export const SEEN_SOURCES = {
+    dewormed: "Dewormed",
+    observation: "Observation",
+    behaviour: "Behaviour",
+    injury: "Injury",
+    injury_update: "Injury Update",
+    condition: "Condition",
+    microchip: "Microchip",
+    food_monitoring: "Food Monitoring",
+    medicine: "Medicine",
+    treatment: "Treatment",
+    vet_visit: "Vet Visit",
+    movement: "Movement",
+    escape: "Escape",
+    trapped: "Trapped",
+};
+
+// Why it's missing: "Not seen last 2 sessions · last seen 12th Oct"
+// (never: "not seen in a session yet")
 export function missingText(record) {
     const sessions = record.missed === 1 ? "Not seen last session" : `Not seen last ${record.missed} sessions`;
-    return `${sessions} · ${record.lastSeen ? `last seen ${longDate(record.lastSeen)}` : "not seen in a session yet"}`;
+    return `${sessions} · ${record.lastSeen ? `last seen ${shortDate(record.lastSeen)}` : "not seen in a session yet"}`;
 }
 
 // The date (today unless changed) and an optional note, then Confirm.
@@ -136,6 +156,8 @@ export function LastSeen({ monkey, record, canMark, onMarked, muted = false }) {
         <div className="MarkSeen-lastSeen">
             <span>
                 {record.lastSeen ? longDate(record.lastSeen) : "Not seen in a session yet"}
+                {/* (from a record: what it was, "(Dewormed)") */}
+                {SEEN_SOURCES[record.spot?.source] && ` (${SEEN_SOURCES[record.spot.source]})`}
                 {record.spot && (
                     <span className="MarkSeen-by">
                         {" "}

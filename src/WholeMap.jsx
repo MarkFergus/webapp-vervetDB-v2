@@ -39,7 +39,7 @@ import "./WholeMap.css";
 // a circle for how sure it is. The position stays on the phone, and it's
 // only followed while the map is open with My Location on.
 // Staff (canIssues): open maintenance issues as pins, with an eye to hide them,
-// and Report Issue: tap the spot (again to move it), then say what's wrong.
+// and Add Job: tap the spot (again to move it), then say what's wrong.
 
 // The whole page, until the drawing on it has been measured (the map file
 // is an A4 page with empty margins around the drawing)
@@ -465,7 +465,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                         >
                             <IconCurrentLocation size={24} stroke={2} aria-hidden="true" />
                         </button>
-                        {/* Staff: Report Issue, and Issues to show or hide the
+                        {/* Staff: Add Job, and Issues to show or hide the
                             pins, bottom left */}
                         {canIssues && !reporting && (
                             <div className="WholeMap-issueTools">
@@ -479,15 +479,15 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                     }}
                                 >
                                     <IconMapPinExclamation size={18} aria-hidden="true" />
-                                    Report Issue
+                                    Add Job
                                 </button>
                                 {/* The pins: an eye, crossed out while they're hidden */}
                                 <button
                                     type="button"
                                     className="Modal-edit is-soft is-icon WholeMap-issueToggle"
                                     aria-pressed={pinsOn}
-                                    aria-label={`${pinsOn ? "Hide" : "Show"} Issues (${issues.length})`}
-                                    title={`${pinsOn ? "Hide" : "Show"} Issues (${issues.length})`}
+                                    aria-label={`${pinsOn ? "Hide" : "Show"} Jobs (${issues.length})`}
+                                    title={`${pinsOn ? "Hide" : "Show"} Jobs (${issues.length})`}
                                     onClick={() => {
                                         setPinsOn((on) => !on);
                                         closeIssueCard();
@@ -509,7 +509,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                             Tap again to move the pin.
                                         </>
                                     ) : (
-                                        "Tap the map where the issue is."
+                                        "Tap the map where the job is."
                                     )}
                                 </p>
                                 <div>
@@ -531,7 +531,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                     key={pickedIssue.id}
                                     className={`WholeMap-card WholeMap-issueCard${pickedIssue.urgent ? " is-urgent" : ""}${issueLeaving ? " is-leaving" : ""}`}
                                     role="region"
-                                    aria-label={`Issue: ${pickedIssue.details}`}
+                                    aria-label={`Job: ${pickedIssue.details}`}
                                 >
                                     {pickedIssue.urgent && <UrgentBadge />}
                                     <div className="WholeMap-cardText">
@@ -556,7 +556,7 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                         type="button"
                                         className="WholeMap-cardClose"
                                         onClick={closeIssueCard}
-                                        aria-label="Close the issue"
+                                        aria-label="Close the job"
                                         title="Close"
                                     >
                                         <IconChevronLeft size={20} stroke={2} aria-hidden="true" />

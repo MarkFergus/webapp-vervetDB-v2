@@ -74,7 +74,7 @@ export function checkIssue({ place, details, urgent }) {
 
 // A Job Done's report: what the issue was, then what was done, so the report
 // makes sense by itself in History, an enclosure's log and the Weekly Reports
-export const issueReport = (issue, done) => `Issue: ${issue.details}\nDone: ${done.trim()}`;
+export const issueReport = (issue, done) => `Job: ${issue.details}\nDone: ${done.trim()}`;
 
 // The open Job List, to paste into WhatsApp (the title in bold: *…*):
 //   *Maintenance List 08.11*

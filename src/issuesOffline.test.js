@@ -145,7 +145,7 @@ test("the database not ready for 4 photos yet: no issues shown, and a report say
     await addIssue(details);
     online = true;
     await flushOutbox();
-    expect(outboxProblems().map((e) => e.problem)).toEqual([expect.stringContaining("isn't ready yet")]);
+    expect(outboxProblems().map((e) => e.problem)).toEqual([expect.stringContaining("aren't ready yet")]);
 });
 
 test("a database refusal of a photo goes to Needs Attention rather than holding everything up", async () => {

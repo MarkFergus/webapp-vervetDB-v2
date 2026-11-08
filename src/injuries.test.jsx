@@ -2,7 +2,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
-import { addCondition, addInjury, addInjuryUpdate, addObservation, addSpotSighting, loadLastMoves, loadMonkeySightings, recordSeen, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
+import { addCondition, addInjury, addInjuryUpdate, addObservation, addSpotSighting, loadLastMoves, loadMonkeySightings, deleteInjuryUpdate, loadInjuries, loadMonitoring, setInjuryHealed } from "./monkeyData";
 import { PLACEHOLDER_PHOTO } from "./monkeyFormChecks";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -21,7 +21,6 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadMonitoring: vi.fn(),
     addObservation: vi.fn(),
     addCondition: vi.fn(),
-    recordSeen: vi.fn(),
     addSpotSighting: vi.fn(),
     loadMonkeySightings: vi.fn(),
     loadLastMoves: vi.fn(),
@@ -64,7 +63,6 @@ test("New Injury asks the date (today) and a description, then lists it under In
     await userEvent.type(screen.getByLabelText("Description"), "  Bite on left arm ");
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
     expect(addInjury).toHaveBeenCalledWith(7, { date: date.value, description: "Bite on left arm" });
-    expect(recordSeen).toHaveBeenCalledWith(7, { date: date.value, description: "Bite on left arm" });
     expect(await screen.findByRole("button", { name: /Injuries \(1\)/ })).toBeInTheDocument();
     expect(screen.getByText("Bite on left arm")).toBeInTheDocument();
 });
@@ -265,7 +263,6 @@ test("New Condition (Quick Actions): below New Injury, saved to the monkey's con
     await userEvent.type(screen.getByLabelText("Condition"), "Looking thin");
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
     expect(addCondition).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
-    expect(recordSeen).toHaveBeenCalledWith(7, { date: date.value, description: "Looking thin" });
     expect(screen.queryByLabelText("Condition")).toBeNull();
 });
 
