@@ -5,7 +5,7 @@ import { addMaintenance, deleteMaintenance, loadAllMaintenance, maintenanceKinds
 import { EntryForm, MAINTENANCE_TYPES } from "./MaintenanceLog";
 import { PlacePicker, TypeButtons } from "./MaintenancePickers";
 import { IssuesTab } from "./MaintenanceIssues";
-import { enclosureHash } from "./enclosures";
+import { enclosureHash, isBuilding } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { summaryDate } from "./feeding";
@@ -213,7 +213,10 @@ function ViewList({ reports, enclosures, canLog, me, onSaved, onDeleted }) {
                                     ) : (
                                         // The place, then what was done, on one line
                                         <div className="MaintenancePage-details">
-                                            {place ? (
+                                            {place && isBuilding(place) ? (
+                                                // (a building: no page of its own)
+                                                <span className="MaintenancePage-place">{fullName(place.name)}</span>
+                                            ) : place ? (
                                                 <a className="MaintenancePage-place" href={enclosureHash(place)}>
                                                     {fullName(place.name)}
                                                 </a>

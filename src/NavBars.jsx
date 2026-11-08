@@ -13,6 +13,7 @@ import {
     IconPhotoPlus,
     IconPlus,
     IconScan,
+    IconTool,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
 import EnclosuresNavIcon from "./EnclosuresNavIcon";
@@ -157,12 +158,15 @@ export function SideRail({ onAddMonkey, showAdmin = false, showRecords = false, 
 // on computers.)
 //   editors / admins:  Records in the circle, then Photos (Add Photos, the
 //                      photo picker straight away) and Map
+//   maintenance:       Maintenance (Records > Maintenance) in the circle,
+//                      then Scan QR Code and Map (Documents: in ☰)
 //   everyone else:     Map in the circle, then Scan QR Code, then Documents
 //                      (staff) or Game
 //   onAddPhotos: editors / admins; onProfileBook: staff (any role)
 //   recordsCircle: Records in the middle (editors, with no signal too, when
 //   there's no Add Photos: Monitoring still works)
-export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = false, onProfileBook, isGeneratingPDF, onScan, inert }) {
+//   maintenanceCircle: Maintenance in the middle (maintenance accounts)
+export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = false, maintenanceCircle = false, onProfileBook, isGeneratingPDF, onScan, inert }) {
     const tab = (props, Icon, text) => (
         <a className="BottomBar-tab" {...props}>
             <span className="BottomBar-icon">
@@ -185,8 +189,8 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = fa
             {tab({ href: "#enclosures", "aria-current": page === "enclosures" ? "page" : undefined }, EnclosuresNavIcon, "Enclosures")}
             {/* The highlight in the middle: a bigger green circle that stands
                 out (no label: its name is read out). Editors / admins: the
-                Records page; everyone else: the Interactive Map (the whole
-                sanctuary map) */}
+                Records page; maintenance: Records > Maintenance; everyone
+                else: the Interactive Map (the whole sanctuary map) */}
             {onAddPhotos || recordsCircle ? (
                 <a
                     className="BottomBar-map"
@@ -196,6 +200,17 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = fa
                 >
                     <span className="BottomBar-mapCircle" aria-hidden="true">
                         <IconClipboardList stroke={1.75} size={30} />
+                    </span>
+                </a>
+            ) : maintenanceCircle ? (
+                <a
+                    className="BottomBar-map"
+                    href="#records/maintenance"
+                    aria-label="Maintenance"
+                    aria-current={page === "records" ? "page" : undefined}
+                >
+                    <span className="BottomBar-mapCircle" aria-hidden="true">
+                        <IconTool stroke={1.75} size={28} />
                     </span>
                 </a>
             ) : (
@@ -210,8 +225,8 @@ export function BottomBar({ page, onHome, onMap, onAddPhotos, recordsCircle = fa
                   button(onAddPhotos, <IconPhotoPlus stroke={1.75} size={24} />, "Photos", { "aria-label": "Add Photos" })
                 : // Everyone else: an Introcage Sign's QR code → its page
                   button(onScan, <IconScan stroke={1.75} size={24} />, "Scan", { "aria-label": "Scan QR Code" })}
-            {onAddPhotos || recordsCircle
-                ? // Editors / admins: the Interactive Map (Documents: in ☰)
+            {onAddPhotos || recordsCircle || maintenanceCircle
+                ? // Editors / admins / maintenance: the Interactive Map (Documents: in ☰)
                   button(onMap, <IconMap2 stroke={1.75} size={24} />, "Map", { "aria-label": "Interactive Map" })
                 : onProfileBook
                   ? button(onProfileBook, <ProfileBookIcon busy={isGeneratingPDF} size={24} />, isGeneratingPDF ? "Creating…" : "Documents", {

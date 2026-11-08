@@ -41,6 +41,7 @@ function App() {
         troops,
         troopIds,
         enclosures,
+        buildings,
         sections,
         enclosuresLive,
         monkeySaved,
@@ -86,6 +87,7 @@ function App() {
                 <ShowPage
                     route={route}
                     enclosures={enclosures}
+                    buildings={buildings}
                     sections={sections}
                     enclosuresLive={status === "live" && Boolean(enclosuresLive)}
                     onEnclosureSaved={enclosureSaved}

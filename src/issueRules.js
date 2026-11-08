@@ -5,6 +5,7 @@
 //   ("open", "fixed", "closed"), closeReason, reportId, closedAt, closedByName,
 //   reportedBy (their name), reportedById, reportedAt }
 import { isSoleArea } from "./enclosures";
+import { fullName } from "./places";
 
 export const isOpen = (issue) => issue.status === "open";
 
@@ -74,3 +75,23 @@ export function checkIssue({ place, details, urgent }) {
 // A Job Done's report: what the issue was, then what was done, so the report
 // makes sense by itself in History, an enclosure's log and the Weekly Reports
 export const issueReport = (issue, done) => `Issue: ${issue.details}\nDone: ${done.trim()}`;
+
+// The open Job List, to paste into WhatsApp (the title in bold: *…*):
+//   *Maintenance List 08.11*
+//
+//   1. ⚠️ Dreamland: Fence wire loose (3 days ago)
+//   2. Robert: Tap dripping by the gate (Today)
+export function jobListText(issues, enclosures, now = new Date()) {
+    const two = (n) => String(n).padStart(2, "0");
+    const lines = [`*Maintenance List ${two(now.getDate())}.${two(now.getMonth() + 1)}*`, ""];
+    const jobs = openIssues(issues);
+    if (!jobs.length) lines.push("No open jobs");
+    jobs.forEach((issue, i) => {
+        const place = enclosures.find((e) => e.id === issue.enclosureId);
+        const details = issue.details.split("\n").map((l) => l.trim()).filter(Boolean).join(" ");
+        lines.push(
+            `${i + 1}. ${issue.urgent ? "⚠️ " : ""}${place ? fullName(place.name) : "Unknown place"}: ${details} (${daysAgo(issue.reportedAt, now)})`,
+        );
+    });
+    return lines.join("\n");
+}

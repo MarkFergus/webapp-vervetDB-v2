@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.2.0",
+        date: "2026-11-08",
+        changes: [
+            "New Buildings: log maintenance to buildings and tap them on the Interactive Map",
+            "Added Maintenance to the middle of the phone bar for the maintenance team",
+            "Improved the Interactive Map: cabin names added",
+        ],
+    },
+    {
         version: "2.1.1",
         date: "2026-11-07",
         changes: [

@@ -109,6 +109,15 @@
     margin-bottom: 12px;
 }
 
+/* Copy for WhatsApp: under the Job List */
+.Issues-copy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
 .Issues-list {
     display: flex;
     flex-direction: column;

@@ -17,8 +17,10 @@ export const isInside = (place) => place.type === "introcage" || place.type === 
 export const isEnclosure = (place) => !isInside(place);
 export const hasTroop = (place) => place.type === "troop";
 export const isCareUnit = (place) => place.type === "care_unit";
+// A building: for maintenance only (no monkeys, no page of its own)
+export const isBuilding = (place) => place.type === "building";
 export const TYPE_NAMES = {
-    troop: "Troop Enclosure", block: "Block", care_unit: "Care Unit", introcage: "Introcage", area: "Area",
+    troop: "Troop Enclosure", block: "Block", care_unit: "Care Unit", building: "Building", introcage: "Introcage", area: "Area",
 };
 
 // Links: by id, so renaming an enclosure never breaks a link or a QR code

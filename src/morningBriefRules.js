@@ -228,10 +228,12 @@ function babyPart({ monkeys, enclosures, milk, weights, today }) {
 
 // Issues waiting: New (reported today or yesterday) and Outstanding (longer);
 // urgent ones first, in red
-function maintenancePart({ maintenanceIssues = [], enclosures, today }) {
+// (the places: the enclosures and the buildings)
+function maintenancePart({ maintenanceIssues = [], enclosures, buildings = [], today }) {
     const [y, m, d] = today.split("-").map(Number);
     const yesterday = new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10);
-    const placeOf = (issue) => fullName(enclosures.find((e) => e.id === issue.enclosureId)?.name ?? "Unknown place");
+    const places = [...enclosures, ...buildings];
+    const placeOf = (issue) => fullName(places.find((e) => e.id === issue.enclosureId)?.name ?? "Unknown place");
     const open = maintenanceIssues
         .filter((i) => i.status === "open")
         .map((i) => ({ ...i, day: sanctuaryToday(new Date(i.reportedAt)) }))

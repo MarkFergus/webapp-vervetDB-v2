@@ -6,6 +6,7 @@ import { isPlaceholderPhoto } from "./photoPaths";
 import {
     TYPE_NAMES,
     hasTroop,
+    isBuilding,
     introcageMonkeys,
     isInside,
     isSoleArea,
@@ -22,8 +23,9 @@ export function placesByLabel(enclosures) {
     for (const place of enclosures) {
         if (isInside(place) && !isSoleArea(place, enclosures)) byLabel.set(place.name, place);
     }
+    // (buildings: labelled with their own names)
     for (const place of enclosures) {
-        if (!isInside(place)) byLabel.set(mapLabel(place.name), place);
+        if (!isInside(place)) byLabel.set(isBuilding(place) ? place.name : mapLabel(place.name), place);
     }
     return byLabel;
 }
@@ -39,6 +41,8 @@ export function monkeysIn(place, monkeys) {
 // Goliath", "Troop Enclosure"), count (how many monkeys) }. The photo: the
 // place's own, or else one of its monkeys'.
 export function placeCard(place, enclosures, monkeys) {
+    // (a building: no monkeys, and no page to open)
+    if (isBuilding(place)) return { photo: place.photos?.[0] ?? null, name: place.name, kind: TYPE_NAMES.building, count: null };
     const living = monkeysIn(place, monkeys);
     const parent = isInside(place) ? enclosures.find((e) => e.id === place.parentId) : null;
     const monkeyPhoto = living.map((m) => m.img?.[0]).find((url) => url && !isPlaceholderPhoto(url));

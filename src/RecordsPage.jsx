@@ -721,7 +721,8 @@ function KindPage({ kind, monkeys, enclosures, canEnter }) {
 
 // ---- The page: the team, what to record, then Enter / View ----
 
-// maintenance: { live, canLog, me } for Maintenance (MaintenanceRecordsPage);
+// maintenance: { live, canLog, me, places (the enclosures and buildings) }
+// for Maintenance (MaintenanceRecordsPage);
 // staff: the pop-up's { canSee, canAdd, userId, isAdmin, readOnly }, for
 // Sections' injuries
 function RecordsPage({
@@ -779,7 +780,7 @@ function RecordsPage({
                 <p className="RecordsPage-intro">Coming soon…</p>
             ) : team.page ? (
                 <MaintenanceRecordsPage
-                    enclosures={enclosures}
+                    enclosures={maintenance.places ?? enclosures}
                     live={Boolean(maintenance.live)}
                     canLog={Boolean(maintenance.canLog)}
                     me={maintenance.me}

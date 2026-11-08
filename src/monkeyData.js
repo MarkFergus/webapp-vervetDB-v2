@@ -26,6 +26,7 @@ export const BUILT_IN_DATA = {
     troops: groupsArr,
     troopIds: {},
     enclosures: enclosuresArr,
+    buildings: [],
     sections: SECTION_NAMES,
 };
 
@@ -314,7 +315,10 @@ async function loadWithEnclosures() {
     ]);
     throwIfError(troops, monkeys, sections, enclosures);
     const sectionNames = Object.fromEntries(sections.data.map((s) => [s.id, s.name]));
-    const list = enclosures.data.map((row) => toAppEnclosure(row, sectionNames));
+    // (buildings: places for maintenance only, kept apart from the monkeys'
+    // enclosures, buildings.sql)
+    const all = enclosures.data.map((row) => toAppEnclosure(row, sectionNames));
+    const list = all.filter((e) => e.type !== "building");
     const sectionList = sections.data.map((s) => s.name);
     // Introcages and areas: the same section as their enclosure
     const byId = Object.fromEntries(list.map((e) => [e.id, e]));
@@ -325,6 +329,7 @@ async function loadWithEnclosures() {
         troops: troops.data,
         monkeys: monkeys.data,
         enclosures: list,
+        buildings: all.filter((e) => e.type === "building"),
         sections: sectionList,
         enclosuresLive: true,
     };
@@ -349,7 +354,7 @@ async function loadWithoutEnclosures() {
 }
 
 // Loads the troops, monkeys, sections and enclosures from Supabase.
-// Returns { monkeys, troops, troopIds, enclosures, sections, enclosuresLive
+// Returns { monkeys, troops, troopIds, enclosures, buildings, sections, enclosuresLive
 // (false: the database hasn't got enclosures yet, so they can't be edited) }:
 // troops starts
 // with "All Troops" (like groupsArr); troopIds maps troop name → id (needed
@@ -362,13 +367,14 @@ export async function loadMonkeyData() {
     const timeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("The database took too long to respond")), TIMEOUT_MS)
     );
-    const { troops, monkeys, enclosures, sections, enclosuresLive } = await Promise.race([request, timeout]);
+    const { troops, monkeys, enclosures, buildings = [], sections, enclosuresLive } = await Promise.race([request, timeout]);
     return {
         enclosuresLive,
         troops: ["All Troops", ...troops.map((t) => t.name)],
         troopIds: Object.fromEntries(troops.map((t) => [t.name, t.id])),
         monkeys: monkeys.map(toAppMonkey),
         enclosures,
+        buildings,
         sections,
     };
 }

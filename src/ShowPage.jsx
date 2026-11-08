@@ -172,6 +172,8 @@ function ShowPage({
     troops = BUILT_IN_DATA.troops,
     troopIds = BUILT_IN_DATA.troopIds,
     enclosures = BUILT_IN_DATA.enclosures,
+    // places for maintenance only: the office, sheds, cabins… (buildings.sql)
+    buildings = [],
     sections = BUILT_IN_DATA.sections,
     route = "",
     enclosuresLive = false,
@@ -281,6 +283,9 @@ function ShowPage({
     // Which Profile Book to make: a troop, or BABIES_BOOK
     const troopNames = troops.filter((t) => t !== "All Troops");
     // A Movement record's From and To (the Full Profile's Records)
+    // Every place maintenance can be logged on (the Interactive Map, Records
+    // → Maintenance): the enclosures and the buildings
+    const maintenanceSpots = useMemo(() => [...enclosures, ...buildings], [enclosures, buildings]);
     const recordPlaces = useMemo(
         () => movementPlaces(troops.filter((t) => t !== "All Troops"), enclosures, troopHome),
         [troops, enclosures]
@@ -942,7 +947,7 @@ function ShowPage({
                 inert={isModalOpen || Boolean(editing) || Boolean(quickPhotos)}
             >
                 <Nav
-                    enclosures={enclosures}
+                    enclosures={maintenanceSpots}
                     canIssues={enclosureEditing.canLog || (fieldWork && canLogMaintenance)}
                     monkeys={monkeys}
                     createPDF={createPDF}
@@ -993,6 +998,7 @@ function ShowPage({
                     showRecords={Boolean(role)}
                     onAddPhotos={canEdit ? () => startAddPhotos() : undefined}
                     recordsCircle={isEditor && fieldWork}
+                    maintenanceCircle={role === "maintenance"}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
                     page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onNews ? "news" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
@@ -1029,6 +1035,7 @@ function ShowPage({
                                 live: enclosureEditing.live || (fieldWork && Boolean(role)),
                                 canLog: enclosureEditing.canLog || (fieldWork && canLogMaintenance),
                                 me: { userId: enclosureEditing.userId ?? user?.id, isAdmin, offline: !editable },
+                                places: maintenanceSpots,
                             }}
                             staff={staff}
                             inert={isAnyModalOpen}

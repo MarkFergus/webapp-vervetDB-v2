@@ -101,6 +101,20 @@ test("loads troops (All Troops first), monkeys, sections and enclosures", async 
     expect(inC1).toMatchObject({ name: "Aroha", troop: null, introcage: "H&B C1", introcageId: 41, enclosure: "H&B" });
 });
 
+test("buildings (buildings.sql): kept apart from the enclosures, for maintenance and the map", async () => {
+    const office = { id: 90, name: "Office & Gift Shop", type: "building", parent_id: null, section_id: null, established: null,
+        description: "", features: "", size: null, photos: [], sort_order: 1001 };
+    fakeDatabase({
+        troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }]),
+        monkeys: answer([hbMonkey]),
+        sections: answer(SECTIONS),
+        enclosures: answer([...ENCLOSURES, office]),
+    });
+    const data = await loadMonkeyData();
+    expect(data.enclosures.map((e) => e.name)).toEqual(["H&B", "H&B C1"]);
+    expect(data.buildings).toEqual([expect.objectContaining({ id: 90, name: "Office & Gift Shop", type: "building" })]);
+});
+
 test("once introcage-fields.sql has run: an introcage's Troop Door, Plate Slot and Sleeping Perches", async () => {
     const extra = { troop_door: null, plate_slot: null, sleeping_perches: null };
     fakeDatabase({

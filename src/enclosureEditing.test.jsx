@@ -160,14 +160,15 @@ describe("editing an enclosure", () => {
         expect(screen.getByRole("dialog", { name: "Edit Robert" })).toBeInTheDocument();
     });
 
-    test("no Add Photos for those who can't edit monkeys (maintenance): Scan instead, then Documents", async () => {
+    test("no Add Photos for those who can't edit monkeys (maintenance): Maintenance in the middle, Scan, then Map", async () => {
         setup({ role: "maintenance", admin: false });
         await screen.findByRole("heading", { level: 1, name: "Robert" });
         await screen.findByText("Section");
         const bar = screen.getByRole("navigation", { name: "Main" });
         expect(within(bar).queryByRole("button", { name: "Add Photos" })).toBeNull();
         expect(within(bar).getByRole("button", { name: "Scan QR Code" })).toBeInTheDocument();
-        expect(within(bar).getByRole("button", { name: "Documents" })).toBeInTheDocument();
+        expect(within(bar).getByRole("link", { name: "Maintenance" })).toHaveAttribute("href", "#records/maintenance");
+        expect(within(bar).queryByRole("button", { name: "Documents" })).toBeNull();
         expect(within(bar).getByRole("button", { name: "Interactive Map" })).toBeInTheDocument();
     });
 

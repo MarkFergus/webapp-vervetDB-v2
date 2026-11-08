@@ -593,13 +593,18 @@ function WholeMap({ onClose, enclosures = [], monkeys = [], canIssues = false })
                                             <PlaceName name={card.name} />
                                         </h3>
                                         <p>{card.kind}</p>
-                                        <p className="WholeMap-cardCount">
-                                            {card.count} {card.count === 1 ? "monkey" : "monkeys"}
-                                        </p>
-                                        <a className="WholeMap-cardLink" href={enclosureHash(picked)} onClick={onClose}>
-                                            Open Page
-                                            <IconArrowRight size={16} aria-hidden="true" />
-                                        </a>
+                                        {/* (a building: no monkeys, no page of its own) */}
+                                        {card.count != null && (
+                                            <>
+                                                <p className="WholeMap-cardCount">
+                                                    {card.count} {card.count === 1 ? "monkey" : "monkeys"}
+                                                </p>
+                                                <a className="WholeMap-cardLink" href={enclosureHash(picked)} onClick={onClose}>
+                                                    Open Page
+                                                    <IconArrowRight size={16} aria-hidden="true" />
+                                                </a>
+                                            </>
+                                        )}
                                     </div>
                                     {/* Closes it: a chevron back the way it came */}
                                     <button

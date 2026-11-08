@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconAlertTriangle, IconCamera, IconChevronLeft, IconChevronRight, IconDownload, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import { IconAlertTriangle, IconCamera, IconChevronLeft, IconChevronRight, IconCopy, IconDownload, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import useDialog, { lockScroll, unlockScroll } from "./useDialog";
 import CloseButton from "./CloseButton";
 import ImagePreview from "./ImagePreview";
 import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
 import { addIssue, addIssuePhotos, deleteIssue, fixIssue, issuePhotoUrl, loadMaintenanceIssues, saveIssue } from "./monkeyData";
 import { PlacePicker, TypeButtons } from "./MaintenancePickers";
-import { enclosureHash } from "./enclosures";
+import { enclosureHash, isBuilding } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { maintenancePlaces } from "./maintenanceRecords";
-import { MAX_ISSUE_PHOTOS, checkIssue, daysAgo, isOpen, issueReport, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
+import { MAX_ISSUE_PHOTOS, checkIssue, daysAgo, isOpen, issueReport, jobListText, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
 import "./RecordsPage.css"; // (its pop-ups, hints and messages)
 import "./MaintenanceLog.css";
 import "./MaintenanceIssues.css";
@@ -453,7 +453,10 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
             <div className="Issues-itemMain">
                 <div className="Issues-itemTop">
                     {showPlace &&
-                        (place ? (
+                        (place && isBuilding(place) ? (
+                            // (a building: no page of its own)
+                            <span className="MaintenancePage-place">{fullName(place.name)}</span>
+                        ) : place ? (
                             <a className="MaintenancePage-place" href={enclosureHash(place)}>
                                 {fullName(place.name)}
                             </a>
@@ -546,6 +549,8 @@ const placed = (list, issue) => (list.some((i) => i.id === issue.id) ? list.map(
 export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     const [issues, setIssues] = useState(null); // null (loading), "failed", or the list
     const [show, setShow] = useState("open");
+    // Copy for WhatsApp: null, "copied" or "failed"
+    const [copied, setCopied] = useState(null);
     // Open: { report: true }, { fix }, { edit } or { remove }
     const [open, setOpen] = useState(null);
     useEffect(() => {
@@ -559,6 +564,14 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     }
     const waiting = openIssues(issues);
     const shown = show === "open" ? waiting : pastIssues(issues);
+    async function copyList() {
+        try {
+            await navigator.clipboard.writeText(jobListText(issues, enclosures));
+            setCopied("copied");
+        } catch {
+            setCopied("failed");
+        }
+    }
     return (
         <>
             <p className="RecordsPage-hint">Something needs fixing? Report it here, then press Job Done when it's finished.</p>
@@ -593,6 +606,19 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                 </ol>
             ) : (
                 <p className="RecordsPage-none">{show === "open" ? "No open issues." : "No closed issues yet."}</p>
+            )}
+            {show === "open" && waiting.length > 0 && (
+                <div className="Issues-copy">
+                    <button type="button" className="Modal-edit is-blue" onClick={copyList}>
+                        <IconCopy size={18} aria-hidden="true" />
+                        {copied === "copied" ? "Copied" : "Copy for WhatsApp"}
+                    </button>
+                    {copied === "failed" && (
+                        <span className="RecordsPage-problem" role="alert">
+                            Couldn't copy on this device.
+                        </span>
+                    )}
+                </div>
             )}
             {(open?.report || open?.edit) && (
                 <IssueReportDialog

@@ -954,7 +954,7 @@
 </g><g
    id="g9312-9"
    transform="matrix(0.57517885,0,0,0.58294439,142.19667,235.72943)"
-   inkscape:label="Surgery"
+   inkscape:label="Sickbay building"
    style="fill:#c59bdf;fill-opacity:1">
 	<polygon
    id="polygon9310-4"
@@ -7076,7 +7076,7 @@
    inkscape:label="Buildings &amp; areas"
    inkscape:groupmode="layer"
    id="layer-buildings-areas"
-   transform="translate(0,-47.060)"><polygon
+   transform="translate(0,-47.060)"><rect id="area-staff-village" inkscape:label="Staff Village" x="30" y="353.060" width="56" height="51" style="fill:none;stroke:none" /><rect id="area-volunteer-village" inkscape:label="Volunteer Village" x="122.8" y="615.760" width="80.5" height="66.5" style="fill:none;stroke:none" /><polygon
    inkscape:label="Quarantine"
    id="grp-quarantine"
    transform="translate(-1.3750757,26.189612)"
@@ -7098,7 +7098,7 @@
    width="16.068758"
    height="14.388011"
    style="fill:#f7c48f;stroke:#000000;stroke-width:0.846615;stroke-miterlimit:9.9995"
-   inkscape:label="Office &amp; gift shop" />
+   inkscape:label="Office &amp; Gift Shop" />
 <g
    inkscape:label="Volunteer Village fence"
    id="grp-volunteer-village-fence"
@@ -7158,12 +7158,12 @@
    width="11.000031"
    height="6.1000175"
    style="fill:#f7c48f;stroke:#000000;stroke-width:0.750002;stroke-miterlimit:10"
-   inkscape:label="Edu centre" />
+   inkscape:label="Education Centre" />
 <polygon
    id="rect9498"
    points="250,432.2 262.2,463 240.4,473.1 228.2,442.2 "
-   style="fill:none;stroke:#000000;stroke-width:0.8088;stroke-miterlimit:10"
-   inkscape:label="Main feed"
+   style="fill:#a9d4f2;fill-opacity:0.75;stroke:none"
+   inkscape:label="Mainfeed"
    transform="matrix(0.95917766,0,0,0.89084401,7.2785482,75.192464)" />
 
 <rect
@@ -7174,12 +7174,12 @@
    width="10.399795"
    height="30.099407"
    style="fill:#f7c48f;stroke:#000000;stroke-width:0.749985;stroke-miterlimit:9.9998"
-   inkscape:label="Volunteer cottage" />
+   inkscape:label="Volunteer Cottage" />
 <polygon
    id="rect9772-2"
    points="264.6,483.5 261,477.7 275.7,470.3 279.4,476.1 "
    style="fill:#8d8c81;stroke:#000000;stroke-width:0.8343;stroke-miterlimit:10"
-   inkscape:label="Tool shed / section shed"
+   inkscape:label="Section &amp; Tool Shed"
    transform="translate(-1.3750757,26.189612)" />
 <line
    id="line11816"
@@ -7274,7 +7274,7 @@
    width="5.5001664"
    height="4.7001419"
    style="fill:#f4d0b5;stroke:#000000;stroke-width:0.500015;stroke-miterlimit:10.0003"
-   inkscape:label="Laundry room" />
+   inkscape:label="Laundry Room" />
 </g><g
    inkscape:label="Icons"
    inkscape:groupmode="layer"
@@ -7537,7 +7537,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path45" /></g><g
        id="g13464-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="Mana Hut"
        transform="matrix(0.9959,0,0,0.9959,67.760924,420.53661)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.552;stroke-linejoin:round"
@@ -7573,7 +7573,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path51" /></g><g
        id="g13502-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="Lankora Landing"
        transform="matrix(1.0004,0,0,1.0004,131.23593,456.69461)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.55;stroke-linejoin:round"
@@ -7591,7 +7591,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path54" /></g><g
        id="g13540-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="D&amp;D Cabin"
        transform="matrix(1.0004,0,0,1.0004,169.83593,466.59461)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.55;stroke-linejoin:round"
@@ -7609,7 +7609,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path57" /></g><g
        id="g13578-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="Woods Cabin"
        transform="matrix(1.0004,0,0,1.0004,108.83593,488.39461)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.55;stroke-linejoin:round"
@@ -7627,7 +7627,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path60" /></g><g
        id="g13616-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="COTH Cabin"
        transform="matrix(0.9979,0,0,0.9979,126.43493,521.61861)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.551;stroke-linejoin:round"
@@ -7645,7 +7645,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path63" /></g><g
        id="g13654-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="Libelela Cabin"
        transform="matrix(0.9979,0,0,0.9979,170.53493,501.51861)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.551;stroke-linejoin:round"
@@ -7663,7 +7663,7 @@
          style="fill:none;stroke:#5c4128;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:miter"
          id="path66" /></g><g
        id="g13708-hut"
-       inkscape:label="Private cabin"
+       inkscape:label="Skrow Cabin"
        transform="matrix(1.0004,0,0,1.0004,178.90825,549.44859)"><path
          d="M 1.4,9.7 V 4.6 L 5,1.4 8.6,4.6 v 5.1 z"
          style="fill:#b5824a;stroke:#1d1d1b;stroke-width:0.55;stroke-linejoin:round"
@@ -8010,7 +8010,7 @@
 <g
    id="g9530"
    transform="matrix(0.7872,0,0,0.7872,30.33886,119.91036)"
-   inkscape:label="Shower">
+   inkscape:label="Lankora Shower">
 	<g
    id="g9526">
 		<path
@@ -8110,7 +8110,7 @@
 <g
    id="g9632"
    transform="matrix(0.804,0,0,0.804,21.710555,111.2071)"
-   inkscape:label="Toilet">
+   inkscape:label="Lankora Toilet">
 	<path
    id="path9600"
    d="m 126.3,457.5 h -1 c -2.3,0 -4.1,-1.9 -4.1,-4.1 v -1 c 0,-2.3 1.9,-4.1 4.1,-4.1 h 1 c 2.3,0 4.1,1.9 4.1,4.1 v 1 c 0.1,2.2 -1.8,4.1 -4.1,4.1 z"
@@ -8168,7 +8168,7 @@
 <g
    id="g9666"
    transform="matrix(0.7182,0,0,0.7182,28.50133,119.54018)"
-   inkscape:label="Toilet">
+   inkscape:label="Cottage Toilet">
 	<path
    id="path9634"
    d="m 98.8,352 h -1.1 c -2.6,0 -4.6,-2.1 -4.6,-4.6 v -1.1 c 0,-2.6 2.1,-4.6 4.6,-4.6 h 1.1 c 2.6,0 4.6,2.1 4.6,4.6 v 1.1 c 0.1,2.5 -2,4.6 -4.6,4.6 z"
@@ -8284,7 +8284,7 @@
 <g
    id="g9734"
    transform="matrix(0.9487,0,0,0.9487,14.367373,48.278989)"
-   inkscape:label="Toilet">
+   inkscape:label="Sickbay Toilet">
 	<path
    id="path9702"
    d="m 264.2,520.1 v 0 c -2.2,0 -3.9,-1.8 -3.9,-3.9 v 0 c 0,-2.2 1.8,-3.9 3.9,-3.9 v 0 c 2.2,0 3.9,1.8 3.9,3.9 v 0 c 0,2.2 -1.8,3.9 -3.9,3.9 z"
@@ -8338,7 +8338,7 @@
 <g
    id="g9530-1"
    transform="matrix(0.8604894,0,0,0.79349278,33.462338,150.52626)"
-   inkscape:label="Shower">
+   inkscape:label="Private Shower/Toilet">
 	<g
    id="g9526-9">
 		<path
@@ -8359,7 +8359,7 @@
 <g
    id="g9632_1_"
    transform="matrix(0.7182,0,0,0.7182,43.809146,159.40352)"
-   inkscape:label="Toilet">
+   inkscape:label="Private Shower/Toilet">
 	<path
    id="path9600_1_"
    d="m 144.6,486.5 h -1.1 c -2.6,0 -4.6,-2.1 -4.6,-4.6 v -1.1 c 0,-2.6 2.1,-4.6 4.6,-4.6 h 1.1 c 2.6,0 4.6,2.1 4.6,4.6 v 1.1 c 0.1,2.4 -2,4.6 -4.6,4.6 z"
@@ -10028,7 +10028,7 @@
    transform="translate(0,-47.060)"><g
      inkscape:label="Place &amp; troop names"
      inkscape:groupmode="layer"
-     id="layer-place-troop-names"><text
+     id="layer-place-troop-names"><text id="label-mana-hut" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:end" inkscape:label="Mana Hut" x="67.2" y="416.53"><tspan x="67.2">Mana</tspan><tspan x="67.2" dy="5.5">Hut</tspan></text><text id="label-lankora-landing" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:start" inkscape:label="Lankora Landing" x="142.5" y="459.56"><tspan x="142.5">Lankora</tspan><tspan x="142.5" dy="5.5">Landing</tspan></text><text id="label-dandd-cabin" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:start" inkscape:label="D&amp;D Cabin" x="180.85" y="471.26"><tspan x="180.85">D&amp;D</tspan><tspan x="180.85" dy="5.5">Cabin</tspan></text><text id="label-woods-cabin" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:end" inkscape:label="Woods Cabin" x="108.3" y="484.36"><tspan x="108.3">Woods</tspan><tspan x="108.3" dy="5.5">Cabin</tspan></text><text id="label-coth-cabin" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:end" inkscape:label="COTH Cabin" x="125.9" y="517.61"><tspan x="125.9">COTH</tspan><tspan x="125.9" dy="5.5">Cabin</tspan></text><text id="label-libelela-cabin" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:start" inkscape:label="Libelela Cabin" x="181.0" y="497.51"><tspan x="181.0">Libelela</tspan><tspan x="181.0" dy="5.5">Cabin</tspan></text><text id="label-skrow-cabin" style="font-weight:400;font-size:5px;font-family:'Hanken Grotesk', sans-serif;text-anchor:middle" inkscape:label="Skrow Cabin" x="186.8" y="564.46"><tspan x="186.8">Skrow</tspan><tspan x="186.8" dy="5.5">Cabin</tspan></text><text
    id="text9738"
    style="font-weight:600;font-size:13.3333px;font-family:Bitter, serif;text-anchor:middle"
    inkscape:label="Koko"
@@ -10040,18 +10040,13 @@
    inkscape:label="troop"
    x="343.4874"
    y="605.36627">troop</text>
-<text
-   id="text9748"
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.0406px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
-   inkscape:label="feed"
-   x="243.5209"
-   y="482.60468">feed</text>
+
 <text
    id="text9752"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.0406px;font-family:'Hanken Grotesk', sans-serif;-inkscape-font-specification:'Hanken Grotesk, sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle"
-   inkscape:label="Main"
+   inkscape:label="Mainfeed"
    x="240.30727"
-   y="475.9202">Main</text>
+   y="479.2624">Mainfeed</text>
 
 <text
    id="text9760"

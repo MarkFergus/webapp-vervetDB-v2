@@ -40,7 +40,7 @@ async function loadNews(monkeys, today) {
 // one that wrongly looks all clear.
 export async function loadMorningBrief(now = new Date()) {
     const today = sanctuaryToday(now);
-    const { monkeys, enclosures } = await loadMonkeyData();
+    const { monkeys, enclosures, buildings = [] } = await loadMonkeyData();
     const ids = monkeys.map((m) => m.id);
     const [sessions, spots, lastMoves, monitoring, injuries, calendar, sheets, milk, weights, maintenanceIssues, news] = await Promise.all([
         loadMonitoringSessions(),
@@ -58,6 +58,7 @@ export async function loadMorningBrief(now = new Date()) {
     return buildMorningBrief({
         monkeys,
         enclosures,
+        buildings,
         sessions,
         spots,
         lastMoves,
