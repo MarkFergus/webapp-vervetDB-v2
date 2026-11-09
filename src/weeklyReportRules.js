@@ -20,6 +20,11 @@ export const SECTIONS = [
         sub: "Troops monitored, anyone not seen, alerts, new injuries, and what needs attention",
     },
     {
+        id: "meds_sickbay",
+        title: "Meds & Sickbay",
+        sub: "Who's in Sickbay or an introcage, and who came in, left or went back to their troop",
+    },
+    {
         id: "baby_care",
         title: "Baby Care",
         sub: "Milk totals, weights and moves",

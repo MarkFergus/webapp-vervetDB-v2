@@ -74,6 +74,18 @@ const SECTION_LINES = {
         ],
         missing: [],
     },
+    meds_sickbay: {
+        id: "meds_sickbay",
+        title: "Meds & Sickbay",
+        groups: [
+            { title: "In Sickbay", lines: [{ text: "Bobo (Robert) · since Mon 19 Oct · 13 days", sub: ["limping"] }] },
+            { title: "Came Into Sickbay", lines: [] },
+            { title: "Left Sickbay", lines: [] },
+            { title: "In an Introcage", lines: [] },
+            { title: "Back to Troop", lines: [] },
+        ],
+        missing: [],
+    },
     maintenance: {
         id: "maintenance",
         title: "Maintenance",
@@ -207,7 +219,7 @@ describe("the settings", () => {
                 week_starts: 2,
                 send_day: 2,
                 send_hour: 6,
-                sections: ["monitoring", "baby_care", "integration", "deworming"],
+                sections: ["monitoring", "meds_sickbay", "baby_care", "integration", "deworming"],
             },
         ]);
         // (a change: Save again)
@@ -311,6 +323,10 @@ describe("Past Reports", () => {
         expect(deworming).toHaveTextContent("24 monkeys");
         expect(deworming).toHaveTextContent("Bruno: Day 2 1/2 dose, Day 3 Skipped");
         expect(within(report).queryByRole("group", { name: "Deworming: Missing" })).not.toBeInTheDocument();
+        // (Meds & Sickbay: after Monitoring, who's in, and the empty parts say so)
+        const sickbay = within(report).getByRole("region", { name: "Meds & Sickbay" });
+        expect(sickbay).toHaveTextContent("Bobo (Robert) · since Mon 19 Oct · 13 days");
+        expect(sickbay).toHaveTextContent("Back to Troop");
     });
 
     test("Email Me: sent to your sign-in email", async () => {
@@ -322,7 +338,7 @@ describe("Past Reports", () => {
         expect(await card.findByRole("status")).toHaveTextContent("Sent to me@example.com.");
         expect(supabase.rpc).toHaveBeenCalledWith("email_me_weekly_report", {
             week_from: pastWeeks(1)[1].from,
-            sections: ["monitoring", "baby_care", "integration", "deworming", "maintenance"],
+            sections: ["monitoring", "meds_sickbay", "baby_care", "integration", "deworming", "maintenance"],
         });
     });
 
