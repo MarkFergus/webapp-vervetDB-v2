@@ -3,7 +3,10 @@
 -- open at its end, then each of those (urgent first, in red, then whichever
 -- has waited longest). Job Done's "Issue: … / Done: …" now shows on two lines.
 -- Updated 2026-11-08: Not Seen lines say "not seen last 3 sessions" instead of
--- "Must See" (facts, as the Monitoring checklist does). Run it again.
+-- "Must See" (facts, as the Monitoring checklist does).
+-- Updated 2026-11-09: Not Seen lists only those still missing at the week's
+-- end; the ones seen again since are one count ("14 others missed a session
+-- but were seen again"). Camelot's the same. Run it again.
 -- Safe to run more than once.
 --
 -- Run once in Supabase: SQL Editor → New query → paste all of this → Run.
@@ -71,6 +74,24 @@ $$;
 revoke all on function private.wr_details(text) from public, anon, authenticated;
 revoke all on function private.wr_jobs(date) from public, anon, authenticated;
 
+-- Not Seen: those who missed a session but were seen again by the week's end,
+-- as one line ("14 others missed a session but were seen again"), or none
+--   camelot: Camelot's (true) or everyone else's (false)
+create or replace function private.wr_seen_again(not_seen jsonb, camelot boolean)
+returns jsonb
+language sql
+immutable
+set search_path = ''
+as $$
+    select case when count(*) = 0 then '[]'::jsonb else jsonb_build_array(private.wr_line(
+        count(*) || case when count(*) = 1 then ' other missed a session but was' else ' others missed a session but were' end
+            || ' seen again'
+    )) end
+    from jsonb_array_elements(not_seen) n
+    where ((n ->> 'troop') = 'Camelot') = camelot and (n ->> 'missed')::int = 0
+$$;
+revoke all on function private.wr_seen_again(jsonb, boolean) from public, anon, authenticated;
+
 create or replace function private.weekly_report_view(week_from date, sections text[])
 returns jsonb
 language plpgsql
@@ -112,18 +133,20 @@ begin
                                 ])
                         end)
                     from jsonb_array_elements(m -> 'sessions') s), '[]')),
+                -- (still missing at the week's end; the rest, seen again since,
+                -- as one count)
                 jsonb_build_object('title', 'Not Seen', 'lines', coalesce((
                     select jsonb_agg(private.wr_line(
                         private.wr_who(n ->> 'name', n ->> 'troop') || ': not seen '
                             || (select string_agg(private.wr_day(d::date), ', ') from jsonb_array_elements_text(n -> 'dates') d)
                             || ' · ' || case
                                 when (n ->> 'missed')::int >= 2 then 'not seen last ' || (n ->> 'missed') || ' sessions'
-                                when (n ->> 'missed')::int > 0 then 'still not seen at the week''s end'
-                                else 'seen again ' || private.wr_day((n ->> 'last_seen')::date)
+                                else 'still not seen at the week''s end'
                             end,
-                        null, (n ->> 'missed')::int > 0))
+                        null, true))
                     from jsonb_array_elements(m -> 'not_seen') n
-                    where n ->> 'troop' <> 'Camelot'), '[]')),
+                    where n ->> 'troop' <> 'Camelot' and (n ->> 'missed')::int > 0), '[]')
+                    || private.wr_seen_again(m -> 'not_seen', false)),
                 jsonb_build_object('title', 'Alerts', 'lines', coalesce((
                     select jsonb_agg(private.wr_line(
                         private.wr_day((a ->> 'date')::date) || ' · ' || (a ->> 'troop') || ' · '
@@ -151,12 +174,12 @@ begin
                         (n ->> 'name') || ': not seen '
                             || (select string_agg(private.wr_day(d::date), ', ') from jsonb_array_elements_text(n -> 'dates') d)
                             || ' · ' || case
-                                when (n ->> 'missed')::int >= 2 then 'not seen in ' || (n ->> 'missed') || ' sessions'
-                                when (n ->> 'missed')::int > 0 then 'still not seen at the week''s end'
-                                else 'seen again ' || private.wr_day((n ->> 'last_seen')::date)
+                                when (n ->> 'missed')::int >= 2 then 'not seen last ' || (n ->> 'missed') || ' sessions'
+                                else 'still not seen at the week''s end'
                             end))
                     from jsonb_array_elements(m -> 'not_seen') n
-                    where n ->> 'troop' = 'Camelot'), '[]'))
+                    where n ->> 'troop' = 'Camelot' and (n ->> 'missed')::int > 0), '[]')
+                    || private.wr_seen_again(m -> 'not_seen', true))
             )
         ));
     end if;

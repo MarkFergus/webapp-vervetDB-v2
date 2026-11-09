@@ -46,6 +46,14 @@ body {
     background-color: #ffb454;
 }
 
+/* Still loading from the database (the saved copy showing meanwhile): quiet */
+.App-notice.is-loading {
+    padding: 4px 16px;
+    font-size: 13px;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+}
+
 .App-needsAttention {
     text-align: left;
     background-color: var(--danger);

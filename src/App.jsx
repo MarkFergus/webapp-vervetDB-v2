@@ -37,6 +37,7 @@ function App() {
     const {
         status,
         savedAt,
+        waiting,
         monkeys,
         troops,
         troopIds,
@@ -61,7 +62,11 @@ function App() {
     }
 
     let notice = null;
-    if (status === "saved") {
+    // (the database is just slow: the saved copy shows meanwhile, quietly)
+    const loadingLate = status === "saved" && waiting && online;
+    if (loadingLate) {
+        notice = "Loading…";
+    } else if (status === "saved") {
         notice = online
             ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off for now.`
             : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off until you're back online.`;
@@ -76,7 +81,7 @@ function App() {
         <AuthProvider>
             <div className="App">
                 {notice && (
-                    <p className="App-notice" role="alert">
+                    <p className={`App-notice${loadingLate ? " is-loading" : ""}`} role={loadingLate ? "status" : "alert"}>
                         {notice}
                     </p>
                 )}

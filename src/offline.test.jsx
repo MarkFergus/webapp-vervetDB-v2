@@ -87,6 +87,43 @@ describe("the app with and without a connection", () => {
         expect(screen.getByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
     });
 
+    test("database slow (e.g. a phone woken after a while): the saved copy with a quiet Loading…, then live", async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            saveCopy(LIVE);
+            let arrive;
+            vi.mocked(loadMonkeyData).mockReturnValue(new Promise((done) => (arrive = done)));
+            render(<App />);
+            await vi.advanceTimersByTimeAsync(4100);
+            expect(await screen.findByText("Loading…")).toHaveClass("is-loading");
+            expect(screen.queryByRole("alert")).toBeNull();
+            expect(screen.getByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
+            arrive({ ...LIVE, monkeys: [{ ...LIVE.monkeys[0], id: 2, name: "Fresh One" }] });
+            expect(await screen.findByRole("button", { name: /^Fresh One/ })).toBeInTheDocument();
+            expect(screen.queryByText("Loading…")).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test("database slow, then it fails: the Couldn't reach the database note after all", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            saveCopy(LIVE);
+            let fail;
+            vi.mocked(loadMonkeyData).mockReturnValue(new Promise((_, no) => (fail = no)));
+            render(<App />);
+            await vi.advanceTimersByTimeAsync(4100);
+            expect(await screen.findByText("Loading…")).toBeInTheDocument();
+            fail(new Error("The database took too long to respond"));
+            expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the database");
+            expect(screen.queryByText("Loading…")).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     test("opened offline: the saved copy straight away, then live data once back online", async () => {
         saveCopy(LIVE);
         online = false;
