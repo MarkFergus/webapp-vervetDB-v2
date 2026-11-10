@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>vervetDB on Kindle</title>
 <!--
@@ -22,11 +21,12 @@
 -->
 <style>
     html, body { margin: 0; padding: 0; background: #fff; color: #000; }
-    body { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.35; padding: 0.7em 0.9em 3em; }
+    body { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.35; padding: 0.6em 0.9em 0.6em; }
     h1 { margin: 0; font-size: 1.5em; }
     .top { display: table; width: 100%; border-bottom: 0.1em solid #000; padding-bottom: 0.25em; margin-bottom: 0.1em; }
-    .top h1, .top .updated { display: table-cell; vertical-align: bottom; }
-    .updated { text-align: right; font-size: 0.75em; color: #333; }
+    .top h1, .top .side { display: table-cell; vertical-align: bottom; }
+    .side { text-align: right; }
+    .updated { font-size: 0.7em; color: #333; }
     h2 { margin: 0.95em 0 0.3em; font-size: 0.83em; text-transform: uppercase; letter-spacing: 1px; color: #333; border-bottom: 1px solid #999; padding-bottom: 0.1em; }
     ul { margin: 0; padding: 0; list-style: none; }
     li { margin: 0 0 0.5em; }
@@ -50,16 +50,15 @@
     .day .range { width: 28%; }
     .day .rain { width: 38%; text-align: right; color: #222; }
     .sun { margin-top: 0.6em; font-size: 0.9em; color: #333; }
-    /* The page line, along the bottom */
-    .pages { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 0.07em solid #000; text-align: center; font-size: 0.87em; padding: 0.45em 0 0.6em; color: #555; }
-    .pages { letter-spacing: 2px; color: #000; }
+    /* The pages: dots in the top bar (the one showing filled) */
+    .pages { font-size: 0.8em; letter-spacing: 2px; white-space: nowrap; }
     .alerts li.is-alert { font-weight: bold; }
+    .more { margin-top: 0.4em; font-size: 0.85em; color: #333; font-style: italic; }
 </style>
 </head>
 <body>
-<div class="top"><h1 id="title">Latest News</h1><div class="updated" id="updated"></div></div>
+<div class="top"><h1 id="title">Latest News</h1><div class="side"><div class="pages" id="pages"></div><div class="updated" id="updated"></div></div></div>
 <div id="page"><p class="note">Loading…</p></div>
-<div class="pages" id="pages"></div>
 <script>
 (function () {
     var NEWS_FEED = "https://demlwtsrnlkiskcntbcc.supabase.co/functions/v1/kindle";
@@ -110,21 +109,61 @@
     function dayLabel(text) {
         var p = text.split("-");
         var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-        var today = new Date();
+        var today = sanctuaryNow();
         var near = function (n) { return dayKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + n)); };
         if (text === near(0)) return "Today";
         if (text === near(-1)) return "Yesterday";
         if (text === near(1)) return "Tomorrow";
         return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()];
     }
+    // A moment → "07:45" in South African time (UTC+2, all year), whatever
+    // time zone the Kindle's browser thinks it's in
     function timeOf(iso) {
-        var d = new Date(iso);
-        return pad(d.getHours()) + ":" + pad(d.getMinutes());
+        var d = new Date(new Date(iso).getTime() + 2 * 3600 * 1000);
+        return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+    }
+    // Today in South Africa, as a date in this browser (for Today / Yesterday)
+    function sanctuaryNow() {
+        var d = new Date(new Date().getTime() + 2 * 3600 * 1000);
+        return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
     }
     // "2026-11-10T05:07" (the sanctuary's own time) → "05:07"
     function clock(text) { return String(text || "").slice(11, 16); }
 
-    function show(html) { el("page").innerHTML = html; }
+    // The page's content, trimmed to fit the screen (no scrolling on the wall):
+    // the last items go first, then "+3 more"
+    function show(html) {
+        var page = el("page");
+        page.innerHTML = html;
+        var room = window.innerHeight || document.documentElement.clientHeight;
+        if (!room) return;
+        var items = page.getElementsByTagName("li");
+        var cut = 0;
+        while (items.length > 1 && document.body.scrollHeight > room) {
+            var last = items[items.length - 1];
+            var list = last.parentNode;
+            list.removeChild(last);
+            cut++;
+            // (a heading left with nothing under it goes too)
+            if (!list.getElementsByTagName("li").length && list.previousSibling && list.previousSibling.tagName === "H2") {
+                list.parentNode.removeChild(list.previousSibling);
+                list.parentNode.removeChild(list);
+            }
+        }
+        if (cut) {
+            var more = document.createElement("p");
+            more.className = "more";
+            more.innerHTML = "+" + cut + " more";
+            page.appendChild(more);
+            // (and room for that line too)
+            while (items.length > 1 && document.body.scrollHeight > room) {
+                var again = items[items.length - 1];
+                again.parentNode.removeChild(again);
+                cut++;
+                more.innerHTML = "+" + cut + " more";
+            }
+        }
+    }
     function note(words) { show('<p class="note">' + esc(words) + "</p>"); }
     function updated(iso) { el("updated").innerHTML = iso ? "Updated " + timeOf(iso) : ""; }
 
@@ -254,11 +293,11 @@
     }
 
     // ---- The pages ----
-    // ◀ ○ ● ○ ○ ○ ▶ (the page's name is its title, at the top)
+    // ○ ● ○ ○ ○ (the page's name is its title, beside them)
     function pageLine() {
         var dots = [];
         for (var i = 0; i < PAGES.length; i++) dots.push(i === current ? "&#9679;" : "&#9675;");
-        el("pages").innerHTML = "&#9664;&nbsp;&nbsp; " + dots.join("&nbsp; ") + " &nbsp;&nbsp;&#9654;";
+        el("pages").innerHTML = dots.join("&nbsp;");
     }
     function open(index) {
         current = (index + PAGES.length) % PAGES.length;
