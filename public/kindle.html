@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>vervetDB on Kindle</title>
+<!--
+    vervetDB on a Kindle (a Kindle Voyage on the cabin wall): Latest News, in
+    plain black and white for e-ink, refreshing itself every 15 minutes.
+    Private: the news comes from supabase/functions/kindle, which only answers
+    to the secret code after the # in the address:
+        https://vervetdb.com/kindle.html#YOUR-CODE
+    (after the #, the code is never sent to vervetdb.com, only to the feed).
+    Written in plain old JavaScript: the Kindle's browser is from 2014.
+-->
+<style>
+    html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+    body { font-family: Georgia, "Times New Roman", serif; font-size: 22px; line-height: 1.35; padding: 18px 22px 30px; }
+    h1 { margin: 0; font-size: 34px; }
+    .top { display: table; width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 4px; }
+    .top h1, .top .updated { display: table-cell; vertical-align: bottom; }
+    .updated { text-align: right; font-size: 17px; color: #333; }
+    h2 { margin: 18px 0 6px; font-size: 19px; text-transform: uppercase; letter-spacing: 1px; color: #333; border-bottom: 1px solid #999; padding-bottom: 3px; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    li { margin: 0 0 12px; }
+    .kind { font-weight: bold; }
+    .name { font-weight: bold; }
+    .place { color: #333; }
+    .details { display: block; font-size: 19px; color: #222; margin-top: 2px; }
+    .note { margin-top: 24px; font-size: 21px; color: #333; }
+</style>
+</head>
+<body>
+<div class="top"><h1>Latest News</h1><div class="updated" id="updated"></div></div>
+<div id="news"><p class="note">Loading…</p></div>
+<script>
+(function () {
+    var FEED = "https://demlwtsrnlkiskcntbcc.supabase.co/functions/v1/kindle";
+    var REFRESH_MINUTES = 15;
+    var KINDS = { arrival: "New Arrival", released: "Released", status: "Status Change", movement: "Moved", injury: "New Injury" };
+    var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var code = (location.hash || "").replace(/^#/, "");
+
+    function el(id) { return document.getElementById(id); }
+    function esc(text) {
+        return String(text == null ? "" : text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    // As on the website: D&D → Dino & Daniel, H&B → Holt & Barrington
+    function fullName(name) {
+        return String(name || "").replace(/\bD&D\b/g, "Dino & Daniel").replace(/\bH&B\b/g, "Holt & Barrington");
+    }
+    function pad(n) { return n < 10 ? "0" + n : String(n); }
+    function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+    // "2026-11-09" → "Today", "Yesterday" or "Mon 9 Nov"
+    function dayLabel(text) {
+        var p = text.split("-");
+        var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+        var today = new Date();
+        var yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        if (text === dayKey(today)) return "Today";
+        if (text === dayKey(yesterday)) return "Yesterday";
+        return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()];
+    }
+
+    function show(data) {
+        var now = new Date(data.updated);
+        el("updated").innerHTML = "Updated " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+        var news = data.news || [];
+        if (!news.length) {
+            el("news").innerHTML = '<p class="note">Nothing new in the last ' + (data.days === 2 ? "48 hours" : data.days + " days") + ".</p>";
+            return;
+        }
+        var html = "";
+        var day = null;
+        for (var i = 0; i < news.length; i++) {
+            var item = news[i];
+            if (item.happened_on !== day) {
+                if (day !== null) html += "</ul>";
+                day = item.happened_on;
+                html += "<h2>" + esc(dayLabel(day)) + "</h2><ul>";
+            }
+            html += '<li><span class="kind">' + esc(KINDS[item.kind] || "News") + ":</span> " +
+                '<span class="name">' + esc(item.name) + "</span>" +
+                (item.place ? ' <span class="place">· ' + esc(fullName(item.place)) + "</span>" : "") +
+                (item.details ? '<span class="details">' + esc(fullName(item.details)) + "</span>" : "") + "</li>";
+        }
+        el("news").innerHTML = html + "</ul>";
+    }
+
+    function problem(words) {
+        el("news").innerHTML = '<p class="note">' + esc(words) + "</p>";
+    }
+
+    function load() {
+        if (!code) {
+            problem("Add your code to the end of the address, after #.");
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", FEED + "?token=" + encodeURIComponent(code) + "&_=" + new Date().getTime(), true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+            if (xhr.status === 200) {
+                try {
+                    show(JSON.parse(xhr.responseText));
+                } catch (e) {
+                    problem("Couldn't read the news. Trying again soon.");
+                }
+            } else if (xhr.status === 404) {
+                problem("That code isn't right. Check the address.");
+            } else {
+                problem("Couldn't reach vervetDB. Trying again soon.");
+            }
+        };
+        xhr.send();
+    }
+
+    load();
+    setInterval(load, REFRESH_MINUTES * 60 * 1000);
+})();
+</script>
+</body>
+</html>

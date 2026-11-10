@@ -21,7 +21,8 @@
         "preview": "vite preview",
         "test": "vitest",
         "brief:build": "node scripts/buildMorningBrief.js",
-        "brief:deploy": "npm run brief:build && npx supabase functions deploy morning-brief --project-ref demlwtsrnlkiskcntbcc --no-verify-jwt"
+        "brief:deploy": "npm run brief:build && npx supabase functions deploy morning-brief --project-ref demlwtsrnlkiskcntbcc --no-verify-jwt",
+        "kindle:deploy": "npx supabase functions deploy kindle --project-ref demlwtsrnlkiskcntbcc --no-verify-jwt"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.2",
