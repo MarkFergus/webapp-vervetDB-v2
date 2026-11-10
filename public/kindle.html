@@ -6,42 +6,95 @@
 <meta name="robots" content="noindex, nofollow">
 <title>vervetDB on Kindle</title>
 <!--
-    vervetDB on a Kindle (a Kindle Voyage on the cabin wall): Latest News, in
-    plain black and white for e-ink, refreshing itself every 15 minutes.
-    Private: the news comes from supabase/functions/kindle, which only answers
-    to the secret code after the # in the address:
+    vervetDB on a Kindle (a Kindle Voyage on the cabin wall), in plain black
+    and white for e-ink. Five pages: Latest News, Alerts, Monitoring,
+    Deworming and Weather. Tap the right half of the screen for the next page,
+    the left half for the one before; the dots at the bottom show which. The page showing refreshes
+    itself every 15 minutes.
+    Private: the news comes from supabase/functions/kindle, the rest from the
+    Morning Brief function (?kindle=alerts, monitoring, deworming:
+    scripts/kindlePages.js), which only answer to the secret
+    code after the # in the address:
         https://vervetdb.com/kindle.html#YOUR-CODE
-    (after the #, the code is never sent to vervetdb.com, only to the feed).
+    (after the #, the code is never sent to vervetdb.com, only to the feeds).
+    The weather is Open-Meteo's (free, no account), for Letsitele, Limpopo.
     Written in plain old JavaScript: the Kindle's browser is from 2014.
 -->
 <style>
     html, body { margin: 0; padding: 0; background: #fff; color: #000; }
-    body { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.35; padding: 22px 28px 36px; }
-    h1 { margin: 0; font-size: 46px; }
-    .top { display: table; width: 100%; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 4px; }
+    body { font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.35; padding: 0.7em 0.9em 3em; }
+    h1 { margin: 0; font-size: 1.5em; }
+    .top { display: table; width: 100%; border-bottom: 0.1em solid #000; padding-bottom: 0.25em; margin-bottom: 0.1em; }
     .top h1, .top .updated { display: table-cell; vertical-align: bottom; }
-    .updated { text-align: right; font-size: 23px; color: #333; }
-    h2 { margin: 24px 0 8px; font-size: 25px; text-transform: uppercase; letter-spacing: 1px; color: #333; border-bottom: 1px solid #999; padding-bottom: 3px; }
+    .updated { text-align: right; font-size: 0.75em; color: #333; }
+    h2 { margin: 0.95em 0 0.3em; font-size: 0.83em; text-transform: uppercase; letter-spacing: 1px; color: #333; border-bottom: 1px solid #999; padding-bottom: 0.1em; }
     ul { margin: 0; padding: 0; list-style: none; }
-    li { margin: 0 0 16px; }
+    li { margin: 0 0 0.5em; }
     .kind { font-weight: bold; }
     .name { font-weight: bold; }
     .place { color: #333; }
-    .details { display: block; font-size: 26px; color: #222; margin-top: 2px; }
-    .note { margin-top: 28px; font-size: 28px; color: #333; }
+    .details { display: block; font-size: 0.87em; color: #222; margin-top: 0.05em; }
+    .note { margin-top: 1em; font-size: 0.93em; color: #333; }
+    /* Alerts: each item with a marker */
+    .alerts li { padding-left: 1.1em; text-indent: -1.1em; }
+    .alerts li:before { content: "\25B8\00a0\00a0"; }
+    .clear { margin-top: 1em; font-size: 1.33em; font-weight: bold; text-align: center; }
+    /* Weather: now, big; then the days */
+    .now { margin: 0.7em 0 0.35em; }
+    .now .temp { font-size: 4em; font-weight: bold; line-height: 1; }
+    .now .what { font-size: 1.25em; }
+    .now .more { font-size: 0.9em; color: #333; margin-top: 0.2em; }
+    .day { display: table; width: 100%; border-top: 1px solid #999; padding: 0.4em 0; }
+    .day > span { display: table-cell; vertical-align: middle; }
+    .day .when { width: 34%; font-weight: bold; }
+    .day .range { width: 28%; }
+    .day .rain { width: 38%; text-align: right; color: #222; }
+    .sun { margin-top: 0.6em; font-size: 0.9em; color: #333; }
+    /* The page line, along the bottom */
+    .pages { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 0.07em solid #000; text-align: center; font-size: 0.87em; padding: 0.45em 0 0.6em; color: #555; }
+    .pages { letter-spacing: 2px; color: #000; }
+    .alerts li.is-alert { font-weight: bold; }
 </style>
 </head>
 <body>
-<div class="top"><h1>Latest News</h1><div class="updated" id="updated"></div></div>
-<div id="news"><p class="note">Loading…</p></div>
+<div class="top"><h1 id="title">Latest News</h1><div class="updated" id="updated"></div></div>
+<div id="page"><p class="note">Loading…</p></div>
+<div class="pages" id="pages"></div>
 <script>
 (function () {
-    var FEED = "https://demlwtsrnlkiskcntbcc.supabase.co/functions/v1/kindle";
+    var NEWS_FEED = "https://demlwtsrnlkiskcntbcc.supabase.co/functions/v1/kindle";
+    var BRIEF_FEED = "https://demlwtsrnlkiskcntbcc.supabase.co/functions/v1/morning-brief?kindle=";
+    // (Letsitele, Limpopo: the sanctuary's nearest town)
+    var WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-23.88&longitude=30.40" +
+        "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m" +
+        "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,sunrise,sunset" +
+        "&timezone=Africa%2FJohannesburg&forecast_days=3";
     var REFRESH_MINUTES = 15;
+    var PAGES = [
+        { id: "news", title: "Latest News", load: loadNews },
+        { id: "alerts", title: "Alerts", load: loadAlerts },
+        { id: "monitoring", title: "Monitoring", load: function (s) { loadList("monitoring", "No troops to show.", s); } },
+        { id: "deworming", title: "Deworming", load: function (s) { loadList("deworming", "No dewormings coming up.", s); } },
+        { id: "weather", title: "Weather", load: loadWeather }
+    ];
     var KINDS = { arrival: "New Arrival", released: "Released", status: "Status Change", movement: "Moved", injury: "New Injury" };
     var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var code = (location.hash || "").replace(/^#/, "");
+    // Text sized from the width the browser reports (the Kindle's lays the page
+    // out wider than its screen and shrinks it, so fixed sizes come out tiny):
+    // about 24 characters' worth across. ?size=1.2 in the address makes it
+    // bigger (or smaller), e.g. kindle.html?size=1.2#CODE
+    function sizeText() {
+        var w = window.innerWidth || document.documentElement.clientWidth || 758;
+        var m = /[?&]size=([0-9.]+)/.exec(location.search);
+        var factor = m ? Math.min(Math.max(Number(m[1]) || 1, 0.5), 3) : 1;
+        document.body.style.fontSize = Math.round((w / 24) * factor) + "px";
+    }
+    sizeText();
+    window.onresize = sizeText;
+    var current = 0;
+    var loading = 0;
 
     function el(id) { return document.getElementById(id); }
     function esc(text) {
@@ -53,72 +106,188 @@
     }
     function pad(n) { return n < 10 ? "0" + n : String(n); }
     function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
-    // "2026-11-09" → "Today", "Yesterday" or "Mon 9 Nov"
+    // "2026-11-09" → "Today", "Yesterday", "Tomorrow" or "Mon 9 Nov"
     function dayLabel(text) {
         var p = text.split("-");
         var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
         var today = new Date();
-        var yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-        if (text === dayKey(today)) return "Today";
-        if (text === dayKey(yesterday)) return "Yesterday";
+        var near = function (n) { return dayKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + n)); };
+        if (text === near(0)) return "Today";
+        if (text === near(-1)) return "Yesterday";
+        if (text === near(1)) return "Tomorrow";
         return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()];
     }
-
-    function show(data) {
-        var now = new Date(data.updated);
-        el("updated").innerHTML = "Updated " + pad(now.getHours()) + ":" + pad(now.getMinutes());
-        var news = data.news || [];
-        if (!news.length) {
-            el("news").innerHTML = '<p class="note">Nothing new in the last ' + (data.days === 2 ? "48 hours" : data.days + " days") + ".</p>";
-            return;
-        }
-        var html = "";
-        var day = null;
-        for (var i = 0; i < news.length; i++) {
-            var item = news[i];
-            if (item.happened_on !== day) {
-                if (day !== null) html += "</ul>";
-                day = item.happened_on;
-                html += "<h2>" + esc(dayLabel(day)) + "</h2><ul>";
-            }
-            html += '<li><span class="kind">' + esc(KINDS[item.kind] || "News") + ":</span> " +
-                '<span class="name">' + esc(item.name) + "</span>" +
-                (item.place ? ' <span class="place">· ' + esc(fullName(item.place)) + "</span>" : "") +
-                (item.details ? '<span class="details">' + esc(fullName(item.details)) + "</span>" : "") + "</li>";
-        }
-        el("news").innerHTML = html + "</ul>";
+    function timeOf(iso) {
+        var d = new Date(iso);
+        return pad(d.getHours()) + ":" + pad(d.getMinutes());
     }
+    // "2026-11-10T05:07" (the sanctuary's own time) → "05:07"
+    function clock(text) { return String(text || "").slice(11, 16); }
 
-    function problem(words) {
-        el("news").innerHTML = '<p class="note">' + esc(words) + "</p>";
-    }
+    function show(html) { el("page").innerHTML = html; }
+    function note(words) { show('<p class="note">' + esc(words) + "</p>"); }
+    function updated(iso) { el("updated").innerHTML = iso ? "Updated " + timeOf(iso) : ""; }
 
-    function load() {
-        if (!code) {
-            problem("Add your code to the end of the address, after #.");
-            return;
-        }
+    // GET some JSON → done(data) or failed(status)
+    function getJson(url, done, failed) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", FEED + "?token=" + encodeURIComponent(code) + "&_=" + new Date().getTime(), true);
+        xhr.open("GET", url + (url.indexOf("?") === -1 ? "?" : "&") + "_=" + new Date().getTime(), true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== 4) return;
             if (xhr.status === 200) {
-                try {
-                    show(JSON.parse(xhr.responseText));
-                } catch (e) {
-                    problem("Couldn't read the news. Trying again soon.");
-                }
-            } else if (xhr.status === 404) {
-                problem("That code isn't right. Check the address.");
+                var data;
+                try { data = JSON.parse(xhr.responseText); } catch (e) { failed(0); return; }
+                done(data);
             } else {
-                problem("Couldn't reach vervetDB. Trying again soon.");
+                failed(xhr.status);
             }
         };
         xhr.send();
     }
+    function failedWords(status) {
+        if (status === 404) return "That code isn't right. Check the address.";
+        return "Couldn't reach vervetDB. Trying again soon.";
+    }
 
-    load();
-    setInterval(load, REFRESH_MINUTES * 60 * 1000);
+    // ---- Latest News ----
+    function loadNews(stillShowing) {
+        if (!code) return note("Add your code to the end of the address, after #.");
+        getJson(NEWS_FEED + "?token=" + encodeURIComponent(code), function (data) {
+            if (!stillShowing()) return;
+            updated(data.updated);
+            var news = data.news || [];
+            if (!news.length) return note("Nothing new in the last " + (data.days === 2 ? "48 hours" : data.days + " days") + ".");
+            var html = "";
+            var day = null;
+            for (var i = 0; i < news.length; i++) {
+                var item = news[i];
+                if (item.happened_on !== day) {
+                    if (day !== null) html += "</ul>";
+                    day = item.happened_on;
+                    html += "<h2>" + esc(dayLabel(day)) + "</h2><ul>";
+                }
+                html += '<li><span class="kind">' + esc(KINDS[item.kind] || "News") + ":</span> " +
+                    '<span class="name">' + esc(item.name) + "</span>" +
+                    (item.place ? ' <span class="place">· ' + esc(fullName(item.place)) + "</span>" : "") +
+                    (item.details ? '<span class="details">' + esc(fullName(item.details)) + "</span>" : "") + "</li>";
+            }
+            show(html + "</ul>");
+        }, function (status) { if (stillShowing()) note(failedWords(status)); });
+    }
+
+    // ---- Alerts (the Morning Brief's To Do, and what's in red) ----
+    function loadAlerts(stillShowing) {
+        if (!code) return note("Add your code to the end of the address, after #.");
+        getJson(BRIEF_FEED + "alerts&token=" + encodeURIComponent(code), function (data) {
+            if (!stillShowing()) return;
+            updated(data.updated);
+            if (data.allClear) return show('<p class="clear">All clear</p><p class="note" style="text-align:center">Nothing to do and nothing in red.</p>');
+            var html = "";
+            for (var i = 0; i < data.groups.length; i++) {
+                var group = data.groups[i];
+                html += "<h2>" + esc(group.title) + '</h2><ul class="alerts">';
+                for (var j = 0; j < group.lines.length; j++) html += "<li>" + esc(fullName(group.lines[j])) + "</li>";
+                html += "</ul>";
+            }
+            show(html);
+        }, function (status) { if (stillShowing()) note(failedWords(status)); });
+    }
+
+    // ---- Monitoring and Deworming: headed lists (alerts in bold) ----
+    function loadList(which, none, stillShowing) {
+        if (!code) return note("Add your code to the end of the address, after #.");
+        getJson(BRIEF_FEED + which + "&token=" + encodeURIComponent(code), function (data) {
+            if (!stillShowing()) return;
+            updated(data.updated);
+            if (!data.groups || !data.groups.length) return note(none);
+            var html = "";
+            for (var i = 0; i < data.groups.length; i++) {
+                var group = data.groups[i];
+                html += "<h2>" + esc(group.title) + '</h2><ul class="alerts">';
+                for (var j = 0; j < group.lines.length; j++) {
+                    var l = group.lines[j];
+                    html += (l.alert ? '<li class="is-alert">' : "<li>") + esc(fullName(l.text)) + "</li>";
+                }
+                html += "</ul>";
+            }
+            show(html);
+        }, function (status) { if (stillShowing()) note(failedWords(status)); });
+    }
+
+    // ---- Weather (Open-Meteo) ----
+    // The weather code, in words (WMO codes)
+    function sky(c) {
+        if (c === 0) return "Clear";
+        if (c === 1) return "Mostly clear";
+        if (c === 2) return "Partly cloudy";
+        if (c === 3) return "Cloudy";
+        if (c === 45 || c === 48) return "Fog";
+        if (c >= 51 && c <= 57) return "Drizzle";
+        if (c >= 61 && c <= 67) return "Rain";
+        if (c >= 71 && c <= 77) return "Snow";
+        if (c >= 80 && c <= 82) return "Showers";
+        if (c >= 95) return "Thunderstorms";
+        return "";
+    }
+    function deg(n) { return Math.round(n) + "°"; }
+    function loadWeather(stillShowing) {
+        getJson(WEATHER, function (data) {
+            if (!stillShowing()) return;
+            updated(new Date().toISOString());
+            var now = data.current;
+            var d = data.daily;
+            var html = '<div class="now"><div class="temp">' + deg(now.temperature_2m) + "</div>" +
+                '<div class="what">' + esc(sky(now.weather_code)) + "</div>" +
+                '<div class="more">Feels like ' + deg(now.apparent_temperature) + " · Wind " + Math.round(now.wind_speed_10m) +
+                " km/h · Humidity " + Math.round(now.relative_humidity_2m) + "%</div></div>";
+            for (var i = 0; i < d.time.length; i++) {
+                var mm = d.precipitation_sum[i];
+                html += '<div class="day"><span class="when">' + esc(dayLabel(d.time[i])) + "<br>" +
+                    '<span style="font-weight:normal;font-size:0.83em">' + esc(sky(d.weather_code[i])) + "</span></span>" +
+                    '<span class="range">' + deg(d.temperature_2m_max[i]) + " / " + deg(d.temperature_2m_min[i]) + "</span>" +
+                    '<span class="rain">Rain ' + Math.round(d.precipitation_probability_max[i] || 0) + "%" +
+                    (mm >= 0.5 ? " · " + Math.round(mm) + " mm" : "") + "</span></div>";
+            }
+            html += '<p class="sun">Sunrise ' + clock(d.sunrise[0]) + " · Sunset " + clock(d.sunset[0]) + " · Letsitele</p>";
+            show(html);
+        }, function () { if (stillShowing()) note("Couldn't get the weather. Trying again soon."); });
+    }
+
+    // ---- The pages ----
+    // ◀ ○ ● ○ ○ ○ ▶ (the page's name is its title, at the top)
+    function pageLine() {
+        var dots = [];
+        for (var i = 0; i < PAGES.length; i++) dots.push(i === current ? "&#9679;" : "&#9675;");
+        el("pages").innerHTML = "&#9664;&nbsp;&nbsp; " + dots.join("&nbsp; ") + " &nbsp;&nbsp;&#9654;";
+    }
+    function open(index) {
+        current = (index + PAGES.length) % PAGES.length;
+        var page = PAGES[current];
+        var mine = ++loading;
+        el("title").innerHTML = esc(page.title);
+        updated(null);
+        note("Loading…");
+        pageLine();
+        try { localStorage.setItem("vervetdb-kindle-page", page.id); } catch (e) {}
+        page.load(function () { return mine === loading; });
+    }
+
+    // Tap: the right half for the next page, the left half for the one before
+    document.onclick = function (e) {
+        e = e || window.event;
+        var x = e.clientX != null ? e.clientX : (e.pageX || 0);
+        var w = window.innerWidth || document.documentElement.clientWidth;
+        open(x > w / 2 ? current + 1 : current - 1);
+    };
+
+    // (back to the page it was on, after a restart)
+    var start = 0;
+    try {
+        var saved = localStorage.getItem("vervetdb-kindle-page");
+        for (var i = 0; i < PAGES.length; i++) if (PAGES[i].id === saved) start = i;
+    } catch (e) {}
+    open(start);
+    setInterval(function () { open(current); }, REFRESH_MINUTES * 60 * 1000);
 })();
 </script>
 </body>
