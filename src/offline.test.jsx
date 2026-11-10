@@ -151,12 +151,40 @@ describe("the app with and without a connection", () => {
         expect(await screen.findByRole("button", { name: /^Aroha/ })).toBeInTheDocument();
     });
 
-    test("losing the connection after loading: a note that editing is off", async () => {
+    test("couldn't reach the database: coming back to the app tries again straight away", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        saveCopy(LIVE);
+        vi.mocked(loadMonkeyData).mockRejectedValueOnce(new Error("paused"));
+        render(<App />);
+        expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the database");
+        vi.mocked(loadMonkeyData).mockResolvedValue({ ...LIVE, monkeys: [{ ...LIVE.monkeys[0], id: 2, name: "Fresh One" }] });
+        document.dispatchEvent(new Event("visibilitychange"));
+        expect(await screen.findByRole("button", { name: /^Fresh One/ })).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    test("a moment without a connection (a phone waking up): no note", async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            vi.mocked(loadMonkeyData).mockResolvedValue(LIVE);
+            render(<App />);
+            await screen.findByRole("button", { name: /^Brand New/ });
+            goOnline(false);
+            await vi.advanceTimersByTimeAsync(1000);
+            goOnline(true);
+            await vi.advanceTimersByTimeAsync(3000);
+            expect(screen.queryByRole("alert")).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test("losing the connection after loading: a note that editing is off (once it's lasted a few seconds)", async () => {
         vi.mocked(loadMonkeyData).mockResolvedValue(LIVE);
         render(<App />);
         await screen.findByRole("button", { name: /^Brand New/ });
         goOnline(false);
-        expect(screen.getByRole("alert")).toHaveTextContent(
+        expect(await screen.findByRole("alert", {}, { timeout: 4000 })).toHaveTextContent(
             "You're offline. Daily entries still save and send later. Photos you haven't opened before may not show, and other editing is off"
         );
         goOnline(true);

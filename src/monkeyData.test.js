@@ -165,12 +165,16 @@ test("a database error is passed on, so the site can fall back", async () => {
     await expect(loadMonkeyData()).rejects.toThrow("permission denied");
 });
 
-test("gives up after 10 seconds if the database doesn't answer", async () => {
+test("gives up after 20 seconds if the database doesn't answer (not before)", async () => {
     vi.useFakeTimers();
     const never = new Promise(() => {});
     fakeDatabase({ troops: never, monkeys: never, sections: never, enclosures: never });
     const loading = loadMonkeyData();
+    let settled = false;
+    loading.catch(() => {}).finally(() => (settled = true));
     const check = expect(loading).rejects.toThrow("took too long");
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(10000);
     await check;
 });

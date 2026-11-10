@@ -30,8 +30,9 @@ export const BUILT_IN_DATA = {
     sections: SECTION_NAMES,
 };
 
-// Give up on the database after this long and use the built-in copy
-const TIMEOUT_MS = 10000;
+// Give up on the database after this long and use the built-in copy (a phone
+// woken after a while can take a good few seconds: its sign-in renewed first)
+const TIMEOUT_MS = 20000;
 
 // The columns loaded for each monkey (troops (name): its troop's name;
 // introcage_id: its introcage, for monkeys in one)

@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.4.1",
+        date: "2026-11-10",
+        changes: ["Fixed the offline warning showing when opening the app after a while"],
+    },
+    {
         version: "2.4.0",
         date: "2026-11-10",
         changes: [

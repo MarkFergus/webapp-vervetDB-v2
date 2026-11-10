@@ -34,8 +34,15 @@ export default function useMonkeyData() {
 
     useEffect(() => {
         let cancelled = false;
+        // (one load at a time)
+        let loading = false;
         function load() {
+            if (loading) return;
+            loading = true;
             loadMonkeyData()
+                .finally(() => {
+                    loading = false;
+                })
                 .then((live) => {
                     if (!cancelled) setData({ status: "live", ...live });
                 })
@@ -58,6 +65,12 @@ export default function useMonkeyData() {
             if (status.current !== "live") load();
         }
         window.addEventListener("online", retry);
+        // (coming back to the app, e.g. the phone woken: straight away, not up
+        // to a minute later)
+        const returned = () => {
+            if (document.visibilityState === "visible" && navigator.onLine !== false) retry();
+        };
+        document.addEventListener("visibilitychange", returned);
         // (and now and then: phones don't always know when signal's back)
         const again = setInterval(() => {
             if (navigator.onLine !== false) retry();
@@ -67,6 +80,7 @@ export default function useMonkeyData() {
             clearTimeout(waited);
             clearInterval(again);
             window.removeEventListener("online", retry);
+            document.removeEventListener("visibilitychange", returned);
         };
     }, []);
 
