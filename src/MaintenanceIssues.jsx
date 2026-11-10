@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconAlertTriangle, IconChevronLeft, IconChevronRight, IconCopy, IconDownload, IconPencil, IconPhotoPlus, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import { IconAlertTriangle, IconChevronDown, IconChevronLeft, IconChevronRight, IconChevronUp, IconCopy, IconDownload, IconPencil, IconPhotoPlus, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import useDialog, { lockScroll, unlockScroll } from "./useDialog";
 import CloseButton from "./CloseButton";
 import ImagePreview from "./ImagePreview";
 import { downloadBlob, isFirefoxAndroidApp } from "./canvasHelpers";
-import { addIssue, addIssuePhotos, deleteIssue, fixIssue, issuePhotoUrl, loadMaintenanceIssues, saveIssue } from "./monkeyData";
+import { addIssue, addIssuePhotos, deleteIssue, fixIssue, issuePhotoUrl, loadMaintenanceIssues, saveIssue, saveJobOrder } from "./monkeyData";
 import { PlacePicker, TypeButtons } from "./MaintenancePickers";
 import { enclosureHash, isBuilding } from "./enclosures";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
 import { maintenancePlaces } from "./maintenanceRecords";
-import { MAX_ISSUE_PHOTOS, checkIssue, daysAgo, isOpen, issueReport, jobListText, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
+import { MAX_ISSUE_PHOTOS, checkIssue, daysAgo, isOpen, issueReport, jobListText, moveJob, issuesAt, openIssues, pastIssues, photosWithRoom } from "./issueRules";
 import "./RecordsPage.css"; // (its pop-ups, hints and messages)
 import "./MaintenanceLog.css";
 import "./MaintenanceIssues.css";
@@ -455,13 +455,15 @@ export const reportedWords = (issue, now = new Date()) =>
     `${issue.reportedBy ? `Reported by ${issue.reportedBy}` : "Reported"} · ${daysAgo(issue.reportedAt, now)}`;
 
 // One issue in a list
-function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onDelete, onChanged }) {
+//   onMove(issue, step): admins on the Job List, moving it up (-1) or down
+//   (1); canUp / canDown: there's room to (within urgent, or the rest)
+function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onDelete, onChanged, onMove, canUp = false, canDown = false }) {
     const place = enclosures.find((e) => e.id === issue.enclosureId);
     const when = issue.closedAt
         ? new Date(issue.closedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
         : "";
     return (
-        <li className={`Issues-item${issue.urgent && isOpen(issue) ? " is-urgent" : ""}`}>
+        <li className={`Issues-item${issue.urgent && isOpen(issue) ? " is-urgent" : ""}`} data-job={issue.id}>
             <div className="Issues-itemMain">
                 <div className="Issues-itemTop">
                     {showPlace &&
@@ -496,8 +498,32 @@ function IssueItem({ issue, enclosures, me, showPlace = true, onFix, onEdit, onD
                 )}
             </div>
             <div className="Issues-itemSide">
-                {(onEdit || onDelete) && !me.offline && (
+                {(onEdit || onDelete || onMove) && !me.offline && (
                     <span className="MaintenanceLog-icons">
+                        {onMove && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="MaintenanceLog-icon is-move"
+                                    aria-label={`Move up: ${issue.details}`}
+                                    title="Move Up"
+                                    disabled={!canUp}
+                                    onClick={() => onMove(issue, -1)}
+                                >
+                                    <IconChevronUp size={16} aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="MaintenanceLog-icon is-move"
+                                    aria-label={`Move down: ${issue.details}`}
+                                    title="Move Down"
+                                    disabled={!canDown}
+                                    onClick={() => onMove(issue, 1)}
+                                >
+                                    <IconChevronDown size={16} aria-hidden="true" />
+                                </button>
+                            </>
+                        )}
                         {onEdit && isOpen(issue) && (
                             <button type="button" className="MaintenanceLog-icon is-edit" aria-label={`Change the job: ${issue.details}`} title="Change" onClick={() => onEdit(issue)}>
                                 <IconPencil size={16} aria-hidden="true" />
@@ -565,6 +591,42 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     const [show, setShow] = useState("open");
     // Copy for WhatsApp: null, "copied" or "failed"
     const [copied, setCopied] = useState(null);
+    // A move that didn't save: why
+    const [moveProblem, setMoveProblem] = useState(null);
+    // Moving: each job slides from where it was to its new place (and the one
+    // moved lights up for a moment), rather than jumping
+    const listRef = useRef(null);
+    const before = useRef(null);
+    const rows = () => [...(listRef.current?.querySelectorAll("[data-job]") ?? [])];
+    useLayoutEffect(() => {
+        const was = before.current;
+        if (!was) return;
+        before.current = null;
+        if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+        for (const row of rows()) {
+            const from = was.tops.get(row.dataset.job);
+            if (from == null) continue;
+            const dy = from - row.getBoundingClientRect().top;
+            if (dy) {
+                row.style.transition = "none";
+                row.style.transform = `translateY(${dy}px)`;
+            }
+        }
+        // (the next frame: off they go, to where they now belong)
+        requestAnimationFrame(() => {
+            for (const row of rows()) {
+                if (!row.style.transform) continue;
+                row.style.transition = "transform 260ms ease";
+                row.style.transform = "";
+            }
+            const moved = rows().find((row) => row.dataset.job === was.moved);
+            if (moved) {
+                moved.classList.remove("is-moved");
+                void moved.offsetWidth;
+                moved.classList.add("is-moved");
+            }
+        });
+    }, [issues]);
     // Open: { report: true }, { fix }, { edit } or { remove }
     const [open, setOpen] = useState(null);
     useEffect(() => {
@@ -578,6 +640,28 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
     }
     const waiting = openIssues(issues);
     const shown = show === "open" ? waiting : pastIssues(issues);
+    // Admins, with a signal: move a job up or down (shared by everyone)
+    const canMove = show === "open" && Boolean(me.isAdmin) && !me.offline;
+    const partOf = (issue) => waiting.filter((i) => i.urgent === issue.urgent);
+    async function move(issue, step) {
+        const changes = moveJob(issues, issue.id, step);
+        if (!changes.length) return;
+        // (where each job is now: they slide from here)
+        before.current = {
+            moved: String(issue.id),
+            tops: new Map(rows().map((row) => [row.dataset.job, row.getBoundingClientRect().top])),
+        };
+        const previous = issues;
+        const order = Object.fromEntries(changes.map((c) => [c.id, c.jobOrder]));
+        setIssues((list) => list.map((i) => (i.id in order ? { ...i, jobOrder: order[i.id] } : i)));
+        setMoveProblem(null);
+        try {
+            await saveJobOrder(changes);
+        } catch (failure) {
+            setIssues(previous);
+            setMoveProblem(failure.message);
+        }
+    }
     async function copyList() {
         try {
             await navigator.clipboard.writeText(jobListText(issues, enclosures));
@@ -604,7 +688,7 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                 </button>
             </div>
             {shown.length ? (
-                <ol className="Issues-list">
+                <ol className="Issues-list" ref={listRef}>
                     {shown.map((issue) => (
                         <IssueItem
                             key={issue.id}
@@ -615,11 +699,19 @@ export function IssuesTab({ enclosures, me = {}, onReportAdded = () => {} }) {
                             onEdit={(edit) => setOpen({ edit })}
                             onDelete={(remove) => setOpen({ remove })}
                             onChanged={(changed) => setIssues((list) => placed(list, changed))}
+                            onMove={canMove ? move : undefined}
+                            canUp={canMove && partOf(issue).indexOf(issue) > 0}
+                            canDown={canMove && partOf(issue).indexOf(issue) < partOf(issue).length - 1}
                         />
                     ))}
                 </ol>
             ) : (
                 <p className="RecordsPage-none">{show === "open" ? "No open jobs." : "No closed jobs yet."}</p>
+            )}
+            {moveProblem && (
+                <p className="RecordsPage-problem" role="alert">
+                    {moveProblem}
+                </p>
             )}
             {show === "open" && waiting.length > 0 && (
                 <div className="Issues-copy">

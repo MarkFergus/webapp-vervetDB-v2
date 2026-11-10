@@ -1,6 +1,6 @@
 // Feeding and the AM Plates List (examples from the plates board's sheet)
 import enclosuresArr from "./enclosuresArr";
-import { AM_GROUPS, DEFAULT_FEEDING, amSummary, amText, fedBy, groupOf, hasFeeding, namesText, pmText, summaryDate } from "./feeding";
+import { AM_GROUPS, DEFAULT_FEEDING, amSummary, amText, fedBy, groupOf, hasFeeding, namesText, pmText, summaryDate, troopFeeding } from "./feeding";
 
 const TODAY = new Date(2026, 8, 10); // 10 Sep 2026: babies are the 2025 season
 const byName = (name) => enclosuresArr.find((e) => e.name === name);
@@ -192,5 +192,21 @@ describe("the AM Plates List", () => {
         ]);
         expect(groups.map((g) => g.plates)).toEqual([0, 0, 0, 0]);
         expect(groups.every((g) => g.rows.length === 0 && g.sickbay === "")).toBe(true);
+    });
+});
+
+describe("a troop's feeding, in totals (the Monitoring Notes)", () => {
+    test("the troop's PM bowls, then each introcage's AM plates and PM bowls; Sickbay's left out", () => {
+        const goliath = byName("Goliath");
+        const enclosures = enclosuresArr.map((e) => (e.id === goliath.id ? { ...e, bowls: { small: 0, medium: 3, large: 2 } } : e));
+        const monkeys = [
+            monkey("Nita", "Goliath A", { amPlates: 2, pmBowls: 1 }),
+            monkey("Hope", "Goliath A", { amPlates: 1, pmBowls: 2 }),
+            monkey("Ash", "Goliath B", { fedBy: "sickbay" }),
+        ];
+        const fed = troopFeeding("Goliath", monkeys, enclosures, TODAY);
+        expect(fed.troopBowls).toBe("3 medium, 2 large");
+        expect(fed.introcages).toEqual([{ name: "Goliath A", plates: 3, bowls: 3 }]);
+        expect(troopFeeding("Nowhere", monkeys, enclosures, TODAY)).toBeNull();
     });
 });

@@ -18,9 +18,34 @@ export function photosWithRoom(files, already) {
     return { files: [...files].slice(0, room), tooMany: files.length > room };
 }
 
-// Open ones: urgent first, then whichever's waited longest
+// Open ones: urgent first; within each, in the order admins have put them
+// (jobOrder), then those not moved yet, the longest waiting first
+const orderOf = (i) => (i.jobOrder == null ? Infinity : i.jobOrder);
 export const openIssues = (issues) =>
-    issues.filter(isOpen).sort((a, b) => Number(b.urgent) - Number(a.urgent) || a.reportedAt.localeCompare(b.reportedAt));
+    issues
+        .filter(isOpen)
+        .sort(
+            (a, b) =>
+                Number(b.urgent) - Number(a.urgent) ||
+                orderOf(a) - orderOf(b) ||
+                a.reportedAt.localeCompare(b.reportedAt)
+        );
+
+// Moving an open job up (-1) or down (1) the Job List, within its own part
+// (urgent, or the rest) → its part in the new order, numbered from 0:
+// [{ id, jobOrder }] (only the ones that change), or [] (it can't move)
+export function moveJob(issues, id, step) {
+    const list = openIssues(issues);
+    const job = list.find((i) => i.id === id);
+    if (!job) return [];
+    const part = list.filter((i) => i.urgent === job.urgent);
+    const at = part.indexOf(job);
+    const to = at + step;
+    if (to < 0 || to >= part.length) return [];
+    const moved = [...part];
+    [moved[at], moved[to]] = [moved[to], moved[at]];
+    return moved.map((i, n) => ({ id: i.id, jobOrder: n })).filter((c) => c.jobOrder !== part.find((i) => i.id === c.id).jobOrder);
+}
 
 // Fixed or closed ones: the latest first
 export const pastIssues = (issues) =>

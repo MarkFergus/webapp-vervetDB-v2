@@ -10,8 +10,8 @@ import { sheetTitle } from "./dewormingRules";
 // Blank rows after the troop's monkeys, for anyone added on the day, then
 // those in introcages under their own heading (the monkeys staff added, if
 // printed again: marked, at the end of their part).
-//   sheet: a deworming sheet; lines: its monkeys with their names, in
-//   printOrder
+//   sheet: a deworming sheet; lines: its monkeys with their names (and
+//   introcageShort, beside an introcage monkey's name), in printOrder
 
 const LINE = "0.75pt solid #000";
 const BLANK_ROWS = 4;
@@ -99,7 +99,8 @@ function MonkeyRow({ line: l }) {
     return (
         <Row
             cells={[
-                l.name,
+                // (living in an introcage: which, short: "Bruno (Gol A)")
+                l.introcage && l.introcageShort ? `${l.name} (${l.introcageShort})` : l.name,
                 "",
                 l.days === 1 ? "N/A" : "",
                 l.days === 1 ? "N/A" : "",

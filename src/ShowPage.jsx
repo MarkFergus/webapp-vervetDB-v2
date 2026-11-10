@@ -50,7 +50,7 @@ const RecordsPage = lazy(() => import("./RecordsPage"));
 import { isRecordsRoute } from "./babyRecords";
 import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
-import { amSummary, summaryDate } from "./feeding";
+import { amSummary, summaryDate, troopFeeding } from "./feeding";
 import { monitoredTroops, monitoringGroups } from "./monitoring";
 import { signChoices, signFor, signPages } from "./introcageSigns";
 import { ageInYears } from "./ages";
@@ -677,6 +677,8 @@ function ShowPage({
                     title: `${troop} Monitoring Notes`,
                     date: summaryDate(),
                     notes: monitoringNotes({ groups: monitoring, monitoring: byMonkey, injuries }),
+                    // (the troop's PM bowls and each introcage's totals)
+                    feeding: troopFeeding(pdfBook, monkeys, enclosures),
                 };
             }
             const sheet = parts.sheet ? { title: `${troop} Monitoring Sheet`, groups: monitoring } : null;

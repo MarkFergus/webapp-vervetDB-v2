@@ -32,7 +32,9 @@ import {
     doseText,
     nextSession,
     introcageRanks,
+    isCustom,
     printOrder,
+    shortIntrocage,
     sheetTitle,
     splitDose,
     startingLines,
@@ -76,7 +78,8 @@ const OTHER = "other";
 
 // The sheet's monkeys by name, with their names (a monkey no longer in the
 // list: "Unknown")
-// (placeRank: where its introcage comes, for the sheet's order)
+// (placeRank: where its introcage comes, for the sheet's order;
+// introcageShort: its short name, for the paper sheet)
 function namedLines(sheet, monkeys, enclosures = []) {
     const rank = introcageRanks(enclosures);
     return sheet.lines.map((l) => {
@@ -86,6 +89,8 @@ function namedLines(sheet, monkeys, enclosures = []) {
             name: monkey?.name ?? "Unknown",
             introcage: Boolean(monkey?.introcage),
             placeRank: monkey?.introcage ? rank(monkey.introcage) : 0,
+            // (the paper sheet: "Bruno (Gol A)")
+            introcageShort: monkey?.introcage ? shortIntrocage(monkey.introcage, enclosures) : null,
         };
     });
 }
@@ -108,10 +113,14 @@ function formLine(line, on) {
     };
 }
 
-function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
+//   custom: a custom list (one-off, not on the schedule): its own title and
+//   any monkeys, searched for and added, instead of a group and session
+function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSaved, onCancel }) {
     const [groupKey, setGroupKey] = useState(editing?.groupKey ?? groups[0]?.key ?? "");
-    const group = groups.find((g) => g.key === groupKey) ?? null;
-    const [session, setSession] = useState(editing?.session ?? nextSession(sheets, groupKey));
+    const group = custom ? null : (groups.find((g) => g.key === groupKey) ?? null);
+    const [customTitle, setCustomTitle] = useState(custom ? (editing?.groupName ?? "") : "");
+    const [search, setSearch] = useState("");
+    const [session, setSession] = useState(editing?.session ?? (custom ? "custom" : nextSession(sheets, groupKey)));
     const [startDate, setStartDate] = useState(editing?.startDate ?? dayText(new Date()));
     const [instructions, setInstructions] = useState(editing ? editing.instructions : DEFAULT_INSTRUCTIONS);
     // every monkey on the form: the group's, and (editing) any already on
@@ -129,6 +138,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
         [sheets]
     );
     const [lines, setLines] = useState(() => {
+        if (custom && !editing) return {};
         if (!editing) return fresh(group, session);
         const own = Object.fromEntries(editing.lines.map((l) => [l.monkeyId, formLine(l, true)]));
         const rest = Object.fromEntries(
@@ -159,7 +169,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
     const others = editing ? sheets.filter((s) => s.id !== editing.id) : sheets;
     const expectedFor = (key) =>
         events ? expectedSession(events, groups, others, key, startDate) : { session: nextSession(sheets, key) };
-    const expected = events && group ? expectedFor(group.key) : null;
+    const expected = events && group && !custom ? expectedFor(group.key) : null;
     // (editing: not flagged again unless something's changed)
     const unchanged =
         editing && session === editing.session && groupKey === editing.groupKey && startDate === editing.startDate;
@@ -180,6 +190,20 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
         .map(Number)
         .map((id) => ({ id, monkey: monkeys.find((m) => m.id === id) ?? null }))
         .sort((a, b) => (a.monkey?.name ?? "").localeCompare(b.monkey?.name ?? ""));
+    // A custom list: monkeys found by name, not on it yet (at most 8)
+    const term = search.trim().toLowerCase();
+    const found =
+        custom && term
+            ? monkeys
+                  .filter((m) => m.name.toLowerCase().includes(term) && !(m.id in lines))
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .slice(0, 8)
+            : [];
+    function addMonkey(monkey) {
+        setLines((ls) => ({ ...ls, [monkey.id]: formLine({ medication: "", dose: "", days: 3 }, true) }));
+        setSearch("");
+        setProblem(null);
+    }
     const ticked = rows.filter((r) => lines[r.id].on).length;
 
     const restart = (g, s) => {
@@ -223,7 +247,8 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
 
     async function save(checked = false) {
         const chosen = rows.filter((r) => lines[r.id].on);
-        if (!group) return setProblem("Please choose the group.");
+        if (custom && !customTitle.trim()) return setProblem("Please give the list a title.");
+        if (!custom && !group) return setProblem("Please choose the group.");
         if (!startDate) return setProblem("Please choose the start date.");
         if (!chosen.length) return setProblem("Please tick at least one monkey.");
         const missing = chosen.filter((r) => !medicationOf(lines[r.id]) || !lines[r.id].amount);
@@ -252,9 +277,10 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
         try {
             await saveDewormingSheet({
                 id: editing?.id,
-                groupKey: group.key,
-                groupName: group.name,
-                session,
+                // (a custom list: a key of its own, its title as the name)
+                groupKey: custom ? (editing?.groupKey ?? `custom:${Date.now()}`) : group.key,
+                groupName: custom ? customTitle.trim() : group.name,
+                session: custom ? "custom" : session,
                 startDate,
                 instructions,
                 lines: chosen.map((r) => ({
@@ -272,10 +298,23 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
     }
 
     return (
-        <section className="Deworming-prepare" aria-label={editing ? "Edit List" : "New Deworming List"}>
+        <section className="Deworming-prepare" aria-label={editing ? "Edit List" : custom ? "New Custom List" : "New Deworming List"}>
             {/* (the page's title, "New Deworming List" / "Edit List", and the way back
                 above it: onTitle) */}
             <div className="Deworming-fields">
+                {custom ? (
+                    <label className="IntegrationPage-choose Deworming-customTitle">
+                        <span>Title</span>
+                        <input
+                            type="text"
+                            value={customTitle}
+                            maxLength={60}
+                            placeholder="e.g. Full Moon Deworming"
+                            onChange={(e) => setCustomTitle(e.target.value)}
+                        />
+                    </label>
+                ) : (
+                    <>
                 <label className="IntegrationPage-choose">
                     <span>Group</span>
                     <select
@@ -305,13 +344,17 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                             restart(group, e.target.value);
                         }}
                     >
-                        {Object.entries(SESSIONS).map(([id, label]) => (
-                            <option key={id} value={id}>
-                                {label}
-                            </option>
-                        ))}
+                        {Object.entries(SESSIONS)
+                            .filter(([id]) => id !== "custom")
+                            .map(([id, label]) => (
+                                <option key={id} value={id}>
+                                    {label}
+                                </option>
+                            ))}
                     </select>
                 </label>
+                    </>
+                )}
                 <label className="IntegrationPage-choose">
                     <span>Start Date</span>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -388,6 +431,35 @@ function PrepareSheet({ groups, sheets, monkeys, editing, onSaved, onCancel }) {
                 </button>
             </div>
 
+            {custom && (
+                <div className="Deworming-addMonkey">
+                    <label className="IntegrationPage-choose">
+                        <span>Add Monkey</span>
+                        <input
+                            type="search"
+                            value={search}
+                            placeholder="Search by name"
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </label>
+                    {found.length > 0 && (
+                        <ul className="Deworming-found" aria-label="Monkeys found">
+                            {found.map((m) => (
+                                <li key={m.id}>
+                                    <button type="button" onClick={() => addMonkey(m)}>
+                                        <b>{m.name}</b>
+                                        <span className="Deworming-about">
+                                            {ageLabel(m.year)}
+                                            {m.introcage ? ` · ${fullName(m.introcage)}` : m.troop ? ` · ${fullName(m.troop)}` : ""}
+                                        </span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    {term && !found.length && <p className="RecordsPage-hint">No monkeys found.</p>}
+                </div>
+            )}
             <p className="Deworming-count">
                 {ticked} of {rows.length} ticked
             </p>
@@ -1153,7 +1225,8 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
     const groups = useMemo(() => dewormingGroups(enclosures, monkeys), [enclosures, monkeys]);
     // null: loading; { problem }; or the sheets
     const [sheets, setSheets] = useState(null);
-    // null (the list), { prepare: true }, { edit: id } or { view: id }
+    // null (the list), { prepare: true } (custom: true, a custom list),
+    // { edit: id } or { view: id }
     const [open, setOpen] = useState(null);
     // Lists (the deworming lists) or Schedule (when each group's due)
     const [tab, setTab] = useState("lists");
@@ -1172,7 +1245,9 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
     const openId = open?.view ?? open?.edit;
     const openSheet = openId && Array.isArray(sheets) ? sheets.find((s) => s.id === openId) : null;
     const title = open?.prepare
-        ? "New Deworming List"
+        ? open.custom
+            ? "New Custom List"
+            : "New Deworming List"
         : open?.edit
           ? "Edit List"
           : openSheet
@@ -1205,6 +1280,7 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                 sheets={sheets.filter((s) => s.id !== open.edit)}
                 monkeys={monkeys}
                 editing={open.edit ? sheet : null}
+                custom={Boolean(open.custom) || isCustom(sheet)}
                 onCancel={() => setOpen(open.edit ? { view: open.edit } : null)}
                 onSaved={async () => {
                     await reload();
@@ -1258,15 +1334,26 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
             ) : (
                 <>
                     <h3 className="RecordsPage-subhead Deworming-listsHead">Deworming Lists</h3>
+                    {/* New Deworming List and New Custom List, side by side (admins) */}
                     {canPrepare && (
-                        <button
-                            type="button"
-                            className="Modal-edit is-action Deworming-new"
-                            onClick={() => setOpen({ prepare: true })}
-                        >
-                            <IconPlus size={16} aria-hidden="true" />
-                            New Deworming List
-                        </button>
+                        <div className="Deworming-newRow">
+                            <button
+                                type="button"
+                                className="Modal-edit is-action Deworming-new"
+                                onClick={() => setOpen({ prepare: true })}
+                            >
+                                <IconPlus size={16} aria-hidden="true" />
+                                New Deworming List
+                            </button>
+                            <button
+                                type="button"
+                                className="Modal-edit is-action-outline Deworming-new"
+                                onClick={() => setOpen({ prepare: true, custom: true })}
+                            >
+                                <IconPlus size={16} aria-hidden="true" />
+                                New Custom List
+                            </button>
+                        </div>
                     )}
                     <p className="RecordsPage-hint Deworming-hint">
                         Upcoming, current, and completed deworming lists. Click to view summary and enter results.

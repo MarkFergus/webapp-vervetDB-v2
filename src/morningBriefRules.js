@@ -162,7 +162,7 @@ function dewormingPart({ monkeys, enclosures, calendarEvents, sheets, today }) {
         .map((u) => line(`${dewormingLabel(u)}: around ${briefDay(u.date)}`));
     const awaiting = sheets
         .filter((s) => s.status === "submitted")
-        .map((s) => line(`${groupLabel(s.groupName)} ${SESSIONS[s.session]}`));
+        .map((s) => line(s.session === "custom" ? s.groupName : `${groupLabel(s.groupName)} ${SESSIONS[s.session]}`));
     const soon = due
         .filter((e) => daysTo(e.date) >= 0 && daysTo(e.date) <= DUE_SOON_DAYS)
         // (already done: nothing to do)

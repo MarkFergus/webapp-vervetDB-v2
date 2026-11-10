@@ -300,9 +300,43 @@
     gap: 4px;
 }
 
-/* (a long name stops short of them) */
+/* (a long name stops short of them; admins also have the move arrows) */
 .Issues-itemTop {
     padding-right: 64px;
+}
+
+.Issues-item:has(.is-move) .Issues-itemTop {
+    padding-right: 128px;
+}
+
+/* Just moved: a brief glow, so it's clear where it went */
+.Issues-item.is-moved {
+    animation: Issues-moved 900ms ease-out;
+}
+
+@keyframes Issues-moved {
+    from {
+        box-shadow: 0 0 0 2px var(--accent);
+    }
+    to {
+        box-shadow: 0 0 0 2px transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Issues-item.is-moved {
+        animation: none;
+    }
+}
+
+/* Move Up / Move Down: quiet, and faded when it can't go further */
+.MaintenanceLog-icon.is-move {
+    color: var(--text-2);
+}
+
+.MaintenanceLog-icon.is-move:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
 
 /* (nothing to press on a closed one: no empty row) */
@@ -310,26 +344,14 @@
     display: contents;
 }
 
-/* Phones: Change and Delete in the bottom row, beside Add Photos and Job Done
-   (on a closed one, with nothing else to press: still the corner) */
+/* Phones: Add Photos and Job Done in the bottom row, on the right (Change
+   and Delete stay in the top right corner) */
 @media (max-width: 459px) {
     .Issues-itemSide:has(.Issues-itemButtons) {
         display: flex;
         align-items: center;
         justify-content: flex-end;
         gap: 8px;
-    }
-
-    .Issues-itemSide:has(.Issues-itemButtons) .MaintenanceLog-icons {
-        position: static;
-    }
-
-    .Issues-itemTop {
-        padding-right: 0;
-    }
-
-    .Issues-item:has(.MaintenanceLog-icons):not(:has(.Issues-itemButtons)) .Issues-itemTop {
-        padding-right: 64px;
     }
 }
 

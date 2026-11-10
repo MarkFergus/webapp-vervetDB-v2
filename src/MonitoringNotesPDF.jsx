@@ -72,6 +72,9 @@ const styles = StyleSheet.create({
         fontStyle: "italic",
         color: "#555",
     },
+    feeding: {
+        marginBottom: 4,
+    },
     injury: {
         marginBottom: 9,
         lineHeight: 1.35,
@@ -89,7 +92,10 @@ function Bullet() {
     );
 }
 
-export function MonitoringNotesPage({ title, date, notes }) {
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+//   feeding: troopFeeding() (or null: none shown)
+export function MonitoringNotesPage({ title, date, notes, feeding = null }) {
     const checks = priorityChecks(notes);
     return (
         <Page size="A4" style={styles.page}>
@@ -117,6 +123,24 @@ export function MonitoringNotesPage({ title, date, notes }) {
                 ))
             ) : (
                 <Text style={styles.none}>Nothing to check this time.</Text>
+            )}
+
+            {/* Feeding, in totals: the troop's PM bowls, then each introcage's */}
+            {feeding && (feeding.troopBowls || feeding.introcages.length > 0) && (
+                <>
+                    <Text style={styles.heading}>Feeding</Text>
+                    {feeding.troopBowls && (
+                        <Text style={styles.feeding}>
+                            <Text style={styles.checkTitle}>Troop:</Text> PM bowls {feeding.troopBowls}
+                        </Text>
+                    )}
+                    {feeding.introcages.map((c) => (
+                        <Text key={c.name} style={styles.feeding}>
+                            <Text style={styles.checkTitle}>{c.name}:</Text> AM {plural(c.plates, "plate")} · PM{" "}
+                            {plural(c.bowls, "bowl")}
+                        </Text>
+                    ))}
+                </>
             )}
 
             <Text style={styles.heading}>Monitoring Notes:</Text>

@@ -4,8 +4,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { IssuesTab } from "./MaintenanceIssues";
 import WholeMap from "./WholeMap";
-import { addIssue, addIssuePhotos, deleteIssue, fixIssue, loadMaintenanceIssues } from "./monkeyData";
-import { checkIssue, daysAgo, issuePlace, issueReport, issuesAt, openIssues, pastIssues, photosWithRoom, pinAt } from "./issueRules";
+import { addIssue, addIssuePhotos, deleteIssue, fixIssue, loadMaintenanceIssues, saveJobOrder } from "./monkeyData";
+import { checkIssue, daysAgo, issuePlace, issueReport, issuesAt, moveJob, openIssues, pastIssues, photosWithRoom, pinAt } from "./issueRules";
 import { buildMorningBrief } from "./morningBriefRules";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -17,6 +17,7 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     fixIssue: vi.fn(),
     saveIssue: vi.fn(),
     deleteIssue: vi.fn(),
+    saveJobOrder: vi.fn(),
     // (not known yet, as on the map before the reports have loaded)
     maintenanceKindsAvailable: () => false,
 }));
@@ -61,6 +62,20 @@ describe("the rules", () => {
         ];
         expect(openIssues(list).map((i) => i.details)).toEqual(["urgent", "older", "newer"]);
         expect(pastIssues(list).map((i) => i.details)).toEqual(["fixed late", "fixed early"]);
+    });
+
+    test("the Job List's order: urgent first; within each, as admins put them, then the longest waiting", () => {
+        const list = [
+            issue(1, 1, "old", { reportedAt: "2026-11-01T09:00:00Z" }),
+            issue(2, 1, "moved second", { jobOrder: 1 }),
+            issue(3, 1, "moved first", { jobOrder: 0 }),
+            issue(4, 1, "urgent", { urgent: true }),
+        ];
+        expect(openIssues(list).map((i) => i.details)).toEqual(["urgent", "moved first", "moved second", "old"]);
+        // (moving "old" up: the part numbered again; urgent can't move out of its part)
+        expect(moveJob(list, 1, -1)).toEqual([{ id: 1, jobOrder: 1 }, { id: 2, jobOrder: 2 }]);
+        expect(moveJob(list, 4, 1)).toEqual([]);
+        expect(moveJob(list, 3, -1)).toEqual([]);
     });
 
     test("an enclosure's: its own and its introcages'", () => {
@@ -207,6 +222,26 @@ describe("the Issues tab", () => {
         const tap = screen.getByText("Tap dripping").closest("li");
         expect(await within(tap).findByRole("button", { name: "See photo 1 of 1" })).toBeInTheDocument();
         expect(within(tap).queryByText("Before")).toBeNull();
+    });
+
+    test("admins move jobs with arrows (saved for everyone); others have none", async () => {
+        loadMaintenanceIssues.mockResolvedValue([
+            issue(1, 1, "First job", { reportedAt: "2026-11-01T09:00:00Z" }),
+            issue(2, 3, "Second job", { reportedAt: "2026-11-02T09:00:00Z" }),
+        ]);
+        saveJobOrder.mockResolvedValue();
+        const { unmount } = render(<IssuesTab enclosures={ENCLOSURES} me={{ isAdmin: true }} />);
+        const user = userEvent.setup();
+        await screen.findByText("Second job");
+        expect(screen.getByRole("button", { name: "Move up: First job" })).toBeDisabled();
+        await user.click(screen.getByRole("button", { name: "Move up: Second job" }));
+        await waitFor(() => expect(saveJobOrder).toHaveBeenCalledWith([{ id: 2, jobOrder: 0 }, { id: 1, jobOrder: 1 }]));
+        const items = screen.getAllByRole("listitem").map((li) => within(li).getByText(/job$/).textContent);
+        expect(items).toEqual(["Second job", "First job"]);
+        unmount();
+        render(<IssuesTab enclosures={ENCLOSURES} me={{ isAdmin: false }} />);
+        await screen.findAllByText("First job");
+        expect(screen.queryByRole("button", { name: /^Move up/ })).not.toBeInTheDocument();
     });
 
     test("Report Issue takes up to 4 photos, and one can be removed", async () => {

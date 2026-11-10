@@ -771,7 +771,7 @@ export async function deleteMaintenance(id) {
 const ISSUE_BUCKET = "maintenance-issues";
 const ISSUE_PHOTO_WIDTH = 1600;
 const ISSUE_COLUMNS =
-    "id, enclosure_id, map_x, map_y, details, urgent, photo_paths, done_photo_paths, status, close_reason, report_id, closed_at, closed_by_name, reported_by, reported_by_name, reported_at";
+    "id, enclosure_id, map_x, map_y, details, urgent, photo_paths, done_photo_paths, job_order, status, close_reason, report_id, closed_at, closed_by_name, reported_by, reported_by_name, reported_at";
 
 const toAppIssue = (row) => ({
     id: row.id,
@@ -783,6 +783,8 @@ const toAppIssue = (row) => ({
     photoPaths: row.photo_paths ?? [],
     // After photos: added with Job Done (maintenance-done-photos.sql)
     donePhotoPaths: row.done_photo_paths ?? [],
+    // its place on the Job List (null: not moved yet; maintenance-job-order.sql)
+    jobOrder: row.job_order ?? null,
     status: row.status,
     closeReason: row.close_reason,
     reportId: row.report_id,
@@ -996,6 +998,23 @@ registerSender(
     },
     (error) => saveProblem(error).message
 );
+
+// The Job List's order (admins; with a signal): saves each job's new place
+// ([{ id, jobOrder }], from moveJob). Throws a message to show.
+export async function saveJobOrder(changes) {
+    for (const { id, jobOrder } of changes) {
+        const { data, error } = await supabase
+            .from("maintenance_issues")
+            .update({ job_order: jobOrder })
+            .eq("id", resolveId(id))
+            .select("id");
+        if (error) {
+            console.error("Saving the Job List's order failed:", error);
+            throw saveProblem(error);
+        }
+        if (!data?.length) throw new Error("The database didn't allow this. Only admins can change the order.");
+    }
+}
 
 // Changes an issue's place, details or urgency. Returns the saved issue.
 export async function saveIssue(id, { enclosureId, details, urgent }) {

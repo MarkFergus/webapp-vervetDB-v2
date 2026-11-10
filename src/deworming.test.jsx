@@ -33,6 +33,7 @@ import {
     onDay,
     introcageRanks,
     printOrder,
+    shortIntrocage,
     recordText,
     sheetTitle,
     startingLines,
@@ -214,6 +215,22 @@ describe("a new sheet's starting point", () => {
         expect(ticks(lines)).toEqual({ 1: true, 2: false, 3: false, 4: false });
         expect(lines[1]).toEqual({ on: true, medication: "Panacur", dose: "1/2 tsp", days: 3 });
         expect(lastDose(sheets, 1)).toEqual({ medication: "Panacur", dose: "1/2 tsp", days: 3 });
+    });
+
+    test("the paper sheet's short introcage names: Gol A, Bach B, Rob B1; others as they are", () => {
+        const place = (id, name, parentId = null) => ({ id, name, parentId, type: parentId ? "introcage" : "troop" });
+        const enclosures = [
+            place(1, "Goliath"), place(11, "Goliath A", 1), place(2, "Bachelor Block"), place(21, "Bachelor Block B", 2),
+            place(3, "Robert"), place(31, "Robert B1", 3), place(4, "Engeltjie"), place(41, "Calypso's Corner A", 4),
+            place(5, "Global"), place(51, "Global A", 5), place(6, "Jalamango"), place(61, "Jalamango A", 6),
+        ];
+        expect(shortIntrocage("Goliath A", enclosures)).toBe("Gol A");
+        expect(shortIntrocage("Bachelor Block B", enclosures)).toBe("Bach B");
+        expect(shortIntrocage("Robert B1", enclosures)).toBe("Rob B1");
+        expect(shortIntrocage("Jalamango A", enclosures)).toBe("Jala A");
+        expect(shortIntrocage("Calypso's Corner A", enclosures)).toBe("Calypso's Corner A");
+        expect(shortIntrocage("Global A", enclosures)).toBe("Global A");
+        expect(shortIntrocage("Nowhere", enclosures)).toBe("Nowhere");
     });
 
     test("introcage sheets: by introcage in the sanctuary's order (Skrow, Robert, Skunkey, H&B, Jalamango), then by name", () => {
@@ -398,6 +415,42 @@ describe("the page", () => {
         // (from the list, without opening it)
         await user.click(await screen.findByRole("button", { name: "Download PDF" }));
         await waitFor(() => expect(names).toEqual(["deworming_D_D_Troop_6_Month_F_U_2026-11-20.pdf"]));
+    });
+
+    test("New Custom List: a title of its own, monkeys searched for and added, then saved as custom", async () => {
+        const user = userEvent.setup();
+        open(ADMIN);
+        await user.click(await screen.findByRole("button", { name: "New Custom List" }));
+        const form = within(screen.getByRole("region", { name: "New Custom List" }));
+        // (no group or session: a title instead, and no one on it yet)
+        expect(form.queryByLabelText("Group")).not.toBeInTheDocument();
+        expect(form.queryByLabelText("Session")).not.toBeInTheDocument();
+        expect(form.getByText("0 of 0 ticked")).toBeInTheDocument();
+        await user.click(form.getByRole("button", { name: "Save List" }));
+        expect(form.getByRole("alert")).toHaveTextContent("Please give the list a title.");
+        await user.type(form.getByLabelText("Title"), "Full Moon Deworming");
+        await user.type(form.getByLabelText("Add Monkey"), "meg");
+        await user.click(form.getByRole("button", { name: /^Meggy/ }));
+        expect(form.getByLabelText("Add Monkey")).toHaveValue("");
+        expect(form.getByRole("checkbox", { name: "Meggy" })).toBeChecked();
+        await user.selectOptions(form.getByLabelText("Dewormer for Meggy"), "Milbeworm");
+        await user.click(form.getByRole("button", { name: "Save List" }));
+        await waitFor(() => expect(saveDewormingSheet).toHaveBeenCalled());
+        const saved = saveDewormingSheet.mock.calls[0][0];
+        expect(saved).toMatchObject({
+            groupName: "Full Moon Deworming",
+            session: "custom",
+            lines: [{ monkeyId: 2, medication: "Milbeworm", dose: "1/2 tab", days: 1 }],
+        });
+        expect(saved.groupKey).toMatch(/^custom:\d+$/);
+    });
+
+    test("a custom list's title and records: its own words", () => {
+        const custom = { ...sheet(9, "custom", "2026-11-10", []), groupName: "Full Moon Deworming" };
+        expect(sheetTitle(custom)).toBe("Full Moon Deworming");
+        expect(recordText("custom", withDoses(line(1, "Milbeworm", "1/2 tab", 1), { 1: "full" }), "Full Moon Deworming")).toBe(
+            "Full Moon Deworming - 1/2 tab Milbeworm, one dose only"
+        );
     });
 
     test("Prepare Sheet: the group's next session, its adults ticked, a dewormer and dose each, then saved", async () => {
@@ -634,7 +687,17 @@ describe("the records' words", () => {
                     3: { result: "full", medication: "Milbeworm", dose: "1/2 tab" },
                 })
             )
-        ).toBe("6-Month - 1/2 tsp Panacur on Day 1, then 1/2 tab Milbeworm on Day 3");
+        ).toBe("6-Month - 1/2 tsp Panacur on Day 1, missed Day 2, then 1/2 tab Milbeworm on Day 3");
+        // (no day missed between: straight on)
+        expect(
+            recordText(
+                "6_month",
+                withDoses(line(2, "Panacur", "1/2 tsp"), {
+                    1: "full",
+                    2: { result: "full", medication: "Milbeworm", dose: "1/2 tab" },
+                })
+            )
+        ).toBe("6-Month - 1/2 tsp Panacur on Day 1, then 1/2 tab Milbeworm on Day 2");
         expect(recordText("3_month", withDoses(line(1, "Albendazole", "1/4 tab"), { 1: "none" }))).toBe(
             "3-Month - 1/4 tab Albendazole, not taken"
         );

@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.4.0",
+        date: "2026-11-10",
+        changes: [
+            "New custom deworming lists for one-off dewormings",
+            "Added feeding totals to the Monitoring Notes",
+            "Improved deworming sheets: introcage beside each name, and dewormer changes in pink",
+            "Improved the Maintenance Job List on phones",
+        ],
+    },
+    {
         version: "2.3.2",
         date: "2026-11-10",
         changes: ["Improved Deworming lists: introcage monkeys sorted by introcage"],

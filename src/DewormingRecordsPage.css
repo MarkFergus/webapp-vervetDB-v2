@@ -17,6 +17,18 @@
     margin-bottom: 16px;
 }
 
+/* New Deworming List and New Custom List: side by side */
+.Deworming-newRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.Deworming-newRow .Modal-edit.Deworming-new {
+    margin-bottom: 0;
+}
+
 /* The line about the lists, just above them */
 .RecordsPage-hint.Deworming-hint {
     margin: 0 0 8px;
@@ -398,6 +410,18 @@
 
 .Deworming-results td {
     white-space: nowrap;
+}
+
+/* A change of dewormer that day: under the result, in pink (apart from
+   the amber partial doses and skips) */
+.Deworming-changed {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pink);
 }
 
 .Deworming-results td.is-none {
@@ -1192,4 +1216,49 @@
 
 .Deworming-emailed .Deworming-meta {
     margin: 0;
+}
+
+/* A custom list: its title, wide */
+.Deworming-customTitle {
+    flex: 1 1 260px;
+}
+
+/* A custom list: Add Monkey, a search, and the monkeys found to add */
+.Deworming-addMonkey {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0 4px;
+    max-width: 420px;
+}
+
+.Deworming-found {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.Deworming-found li + li {
+    border-top: 1px solid var(--border);
+}
+
+.Deworming-found button {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font: inherit;
+    text-align: left;
+    color: var(--text);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.Deworming-found button:hover {
+    background-color: var(--surface-2);
 }

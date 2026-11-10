@@ -6,6 +6,7 @@ import {
     IconEraser,
     IconLoader2,
     IconPencil,
+    IconSwitchHorizontal,
     IconPlus,
     IconTrash,
     IconX,
@@ -89,10 +90,25 @@ function AddedTag({ line }) {
     ) : null;
 }
 
-// A day's cell: "✓ Banana", "3/4 JS", "✗", "Skipped" (and "→ Milbeworm")
+// A day's cell: "✓ Banana", "3/4 JS", "✗", "Skipped", and a change of
+// dewormer that day under it, in amber with the switch arrows
 function cellText(dose) {
     if (!dose) return "";
-    const what = !dose.result
+    const what = cellResult(dose);
+    if (!dose.medication) return what;
+    return (
+        <>
+            {what}
+            <span className="Deworming-changed">
+                <IconSwitchHorizontal size={14} aria-label="Changed to" />
+                {dose.medication}
+            </span>
+        </>
+    );
+}
+
+function cellResult(dose) {
+    return !dose.result
         ? ""
         : dose.result === "full"
           ? `✓${dose.food ? ` ${dose.food}` : ""}`
@@ -101,7 +117,6 @@ function cellText(dose) {
             : dose.result === "skipped"
               ? "Skipped"
               : `${dose.result}${dose.food ? ` ${dose.food}` : ""}`;
-    return dose.medication ? `${what} → ${dose.medication}` : what;
 }
 
 export function ResultsTable({ lines }) {
@@ -1169,7 +1184,7 @@ const notesOf = (line) =>
 // monkey's notes can be added to its record (e.g. an extra dose)
 export function Review({ sheet, lines, onDone }) {
     const [texts, setTexts] = useState(() =>
-        Object.fromEntries(lines.map((l) => [l.id, l.recordText ?? recordText(sheet.session, l)]))
+        Object.fromEntries(lines.map((l) => [l.id, l.recordText ?? recordText(sheet.session, l, sheet.groupName)]))
     );
     const [approving, setApproving] = useState(false);
     const [sending, setSending] = useState(false);

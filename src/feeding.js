@@ -246,6 +246,30 @@ function plateSummary(monkeys, enclosures, groups, inGroup, today) {
     });
 }
 
+// A troop's feeding, in totals (the Monitoring Notes): the troop's PM bowls
+// ("2 large, 3 medium", or null), then each of its enclosure's introcages
+// with anyone in it fed by Mainfeed: its AM plates (worked out as on the AM
+// Plates List: babies share one) and PM bowls.
+//   → { troopBowls, introcages: [{ name, plates, bowls }] }, or null (no
+//   such troop enclosure)
+export function troopFeeding(troopName, monkeys, enclosures, today = new Date()) {
+    const enclosure = enclosures.find((e) => e.name === troopName && e.type === "troop");
+    if (!enclosure) return null;
+    const introcages = introcagesInOrder(enclosures).filter((e) => e.parentId === enclosure.id);
+    const plates = plateSummary(monkeys, enclosures, introcages, (introcage, parent, group) => introcage.id === group.id, today);
+    const fed = monkeys.filter(hasFeeding);
+    return {
+        troopBowls: bowlsText(enclosure.bowls),
+        introcages: introcages
+            .map((introcage, i) => {
+                const local = fed.filter((m) => currentIntrocage(m) === introcage.name && fedBy(m) !== "sickbay");
+                const bowls = local.reduce((n, m) => n + feedingOf(m, today, monkeys).pmBowls, 0);
+                return { name: introcage.name, plates: plates[i].plates, bowls };
+            })
+            .filter((c) => c.plates || c.bowls),
+    };
+}
+
 // The sections, as everywhere but the AM Plates List (its groups follow how the
 // plates are delivered). Not the care units: they make their own food.
 const FEEDING_SECTIONS = ["Top", "Middle", "Bottom", "Sickbay"].map((section) => ({ section, title: `${section} Section` }));

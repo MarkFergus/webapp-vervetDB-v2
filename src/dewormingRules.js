@@ -13,6 +13,8 @@ export const SESSIONS = {
     "6_month_fu": "6-Month F/U",
     "3_month": "3-Month",
     "3_month_fu": "3-Month F/U",
+    // (a custom list: one-off, not in the cycle; its title says what it is)
+    custom: "Custom",
 };
 const CYCLE = ["6_month", "6_month_fu", "3_month", "3_month_fu"];
 // The session after one in the cycle ("3_month_fu" → "6_month")
@@ -67,6 +69,37 @@ const byName = (a, b) => a.name.localeCompare(b.name);
 // introcages included): each troop (Top, Middle, Bottom), the
 // three sections' introcages, then the troops done with their introcages
 //   → [{ key, name, monkeys: [{ monkey, introcage: true if it lives in one }] }]
+// The paper sheet's short names for enclosures, for an introcage beside a
+// monkey's name: "Bruno (Gol A)". (Others: their full name.)
+export const SHORT_ENCLOSURE_NAMES = {
+    Goliath: "Gol",
+    Gismo: "Gis",
+    "D&D": "D&D",
+    Royal: "Roy",
+    "Bachelor Block": "Bach",
+    Camelot: "Cam",
+    Engeltjie: "Eng",
+    Lankora: "Lank",
+    Koko: "Koko",
+    Robert: "Rob",
+    Skrow: "Skrow",
+    Skunkey: "Sku",
+    "H&B": "H&B",
+    Jalamango: "Jala",
+};
+
+// An introcage's short name: "Goliath A" → "Gol A", "Robert B1" → "Rob B1"
+// (its enclosure's short name, then what's after it). Not known, or not
+// named after its enclosure: as it is.
+export function shortIntrocage(name, enclosures) {
+    if (!name) return name;
+    const place = enclosures.find((e) => e.name === name && e.parentId != null);
+    const parent = place && enclosures.find((e) => e.id === place.parentId);
+    const short = parent && SHORT_ENCLOSURE_NAMES[parent.name];
+    if (!short || !name.startsWith(`${parent.name} `)) return name;
+    return `${short}${name.slice(parent.name.length)}`;
+}
+
 // Introcages (and areas) in the sanctuary's order: their enclosure's (as the
 // Enclosures page lists them: Skrow, Robert, Skunkey, H&B, Jalamango…), then
 // their own. → name → its place in that order (unknown: after them all)
@@ -124,7 +157,9 @@ export function dewormingGroups(enclosures, monkeys) {
 }
 
 // A sheet's title: "D&D Troop 6-Month F/U Deworming"
-export const sheetTitle = (sheet) => `${sheet.groupName} ${SESSIONS[sheet.session]} Deworming`;
+// (a custom list: its own title, "Full Moon Deworming")
+export const isCustom = (sheet) => sheet?.session === "custom";
+export const sheetTitle = (sheet) => (isCustom(sheet) ? sheet.groupName : `${sheet.groupName} ${SESSIONS[sheet.session]} Deworming`);
 
 // A group's sheets, newest first
 const groupSheets = (sheets, groupKey) =>
@@ -329,25 +364,45 @@ export const nameList = (names) =>
 //   3 days from Day 2: "… once a day for 3 days (Day 2–4, missed dose on
 //   Day 1)"; an accidental dose: "… - Accidental dose: 1/4 tab Albendazole
 //   on Day 1" ("1/2 dose of 1/4 tab…" when partial)
-export function recordText(session, line) {
+//   title: a custom list's title (its records start with it)
+export function recordText(session, line, title = null) {
+    const prefix = session === "custom" ? (title ?? "Custom Deworming") : SESSIONS[session];
     if (line.kind === "accidental") {
         const day = line.fromDay ?? 1;
         const given = givenOn(line, day);
         const result = doseOf(line, day)?.result;
         const part = PARTIALS.includes(result) ? `${result} dose of ` : "";
-        return `${SESSIONS[session]} - Accidental dose: ${part}${given.dose} ${given.medication} on Day ${day}`;
+        return `${prefix} - Accidental dose: ${part}${given.dose} ${given.medication} on Day ${day}`;
     }
     const fulls = DAYS.filter((d) => isFull(line, d));
     const partials = DAYS.filter((d) => PARTIALS.includes(doseOf(line, d)?.result));
     const meds = [...new Set(fulls.map((d) => givenOn(line, d).medication))];
     let words;
     if (meds.length > 1) {
-        words = meds
-            .map((m) => {
-                const days = fulls.filter((d) => givenOn(line, d).medication === m);
-                return `${givenOn(line, days[0]).dose} ${m} on ${dayList(days)}`;
+        // Day by day: each dewormer's run of full doses, and any day missed
+        // (or skipped) in between: "1/2 tsp Panacur on Day 1, missed Day 2,
+        // then 1/2 tab Milbeworm on Day 3"
+        const parts = [];
+        for (const d of DAYS) {
+            const result = doseOf(line, d)?.result;
+            if (isFull(line, d)) {
+                const { medication, dose } = givenOn(line, d);
+                const last = parts.at(-1);
+                if (last?.medication === medication) last.days.push(d);
+                else parts.push({ medication, dose, days: [d] });
+            } else if (result === "none" || result === "skipped") {
+                parts.push({ missed: d, word: result === "none" ? "missed" : "skipped" });
+            }
+        }
+        let seenDewormer = false;
+        words = parts
+            .map((p) => {
+                if (p.missed) return `${p.word} Day ${p.missed}`;
+                const text = `${seenDewormer ? "then " : ""}${p.dose} ${p.medication} on ${dayList(p.days)}`;
+                seenDewormer = true;
+                return text;
             })
-            .join(", then ");
+            .join(", ");
     } else {
         const given = givenOn(line, fulls[0] ?? 1);
         const need = daysNeeded(line, given.medication);
@@ -373,7 +428,7 @@ export function recordText(session, line) {
         words = `${given.dose} ${given.medication}, ${how}`;
     }
     const partial = partials.map((d) => `; ${doseOf(line, d).result} dose on Day ${d}`).join("");
-    return `${SESSIONS[session]} - ${words}${partial}`;
+    return `${prefix} - ${words}${partial}`;
 }
 
 // A day's WhatsApp summary:
