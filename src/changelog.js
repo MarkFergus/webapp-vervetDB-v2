@@ -21,6 +21,11 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.3.2",
+        date: "2026-11-10",
+        changes: ["Improved Deworming lists: introcage monkeys sorted by introcage"],
+    },
+    {
         version: "2.3.1",
         date: "2026-11-09",
         changes: ["Improved opening the app: a quiet Loading… note instead of the offline warning while it connects"],

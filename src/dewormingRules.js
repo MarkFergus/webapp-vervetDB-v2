@@ -67,6 +67,22 @@ const byName = (a, b) => a.name.localeCompare(b.name);
 // introcages included): each troop (Top, Middle, Bottom), the
 // three sections' introcages, then the troops done with their introcages
 //   → [{ key, name, monkeys: [{ monkey, introcage: true if it lives in one }] }]
+// Introcages (and areas) in the sanctuary's order: their enclosure's (as the
+// Enclosures page lists them: Skrow, Robert, Skunkey, H&B, Jalamango…), then
+// their own. → name → its place in that order (unknown: after them all)
+export function introcageRanks(enclosures) {
+    const byId = new Map(enclosures.map((e) => [e.id, e]));
+    const inside = enclosures
+        .filter((e) => e.parentId != null)
+        .sort((a, b) => {
+            const pa = byId.get(a.parentId);
+            const pb = byId.get(b.parentId);
+            return (pa?.sortOrder ?? 0) - (pb?.sortOrder ?? 0) || (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name);
+        });
+    const ranks = new Map(inside.map((e, i) => [e.name, i]));
+    return (name) => (name && ranks.has(name) ? ranks.get(name) : inside.length);
+}
+
 export function dewormingGroups(enclosures, monkeys) {
     const sectionOrder = (e) => {
         const i = IC_SECTIONS.indexOf(e.section);
@@ -76,6 +92,7 @@ export function dewormingGroups(enclosures, monkeys) {
         (a, b) => sectionOrder(a) - sectionOrder(b) || (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
     );
     const entry = (m) => ({ monkey: m, introcage: Boolean(m.introcage) });
+    const rank = introcageRanks(enclosures);
     const groups = [];
     for (const troop of ordered.filter((e) => hasTroop(e) && IC_SECTIONS.includes(e.section))) {
         groups.push({
@@ -89,9 +106,10 @@ export function dewormingGroups(enclosures, monkeys) {
         groups.push({
             key: `ics:${section}`,
             name: `${section} Section ICs`,
+            // (by introcage, in the sanctuary's order, then by name)
             monkeys: places
                 .flatMap((p) => monkeysIn(monkeys, p, "introcages"))
-                .sort(byName)
+                .sort((a, b) => rank(a.introcage) - rank(b.introcage) || byName(a, b))
                 .map(entry),
         });
     }
@@ -157,14 +175,16 @@ export function startingLines(group, session, sheets, today = new Date()) {
 }
 
 // A sheet's order, on paper and on screen: the troop's monkeys, then those
-// living in introcages; each by name, with the monkeys staff added at the end
-// of their part (added, then accidental)
+// living in introcages, by introcage in the sanctuary's order (placeRank:
+// introcageRanks'); each by name, with the monkeys staff added at the end of
+// their part (added, then accidental)
 const KIND_ORDER = ["list", "added", "accidental"];
 export function printOrder(lines) {
     return [...lines].sort(
         (a, b) =>
             Number(Boolean(a.introcage)) - Number(Boolean(b.introcage)) ||
             KIND_ORDER.indexOf(a.kind ?? "list") - KIND_ORDER.indexOf(b.kind ?? "list") ||
+            (a.placeRank ?? 0) - (b.placeRank ?? 0) ||
             a.name.localeCompare(b.name)
     );
 }

@@ -31,6 +31,7 @@ import {
     dewormingGroups,
     doseText,
     nextSession,
+    introcageRanks,
     printOrder,
     sheetTitle,
     splitDose,
@@ -75,10 +76,17 @@ const OTHER = "other";
 
 // The sheet's monkeys by name, with their names (a monkey no longer in the
 // list: "Unknown")
-function namedLines(sheet, monkeys) {
+// (placeRank: where its introcage comes, for the sheet's order)
+function namedLines(sheet, monkeys, enclosures = []) {
+    const rank = introcageRanks(enclosures);
     return sheet.lines.map((l) => {
         const monkey = monkeys.find((m) => m.id === l.monkeyId);
-        return { ...l, name: monkey?.name ?? "Unknown", introcage: Boolean(monkey?.introcage) };
+        return {
+            ...l,
+            name: monkey?.name ?? "Unknown",
+            introcage: Boolean(monkey?.introcage),
+            placeRank: monkey?.introcage ? rank(monkey.introcage) : 0,
+        };
     });
 }
 
@@ -560,13 +568,13 @@ export function listStatus(sheet) {
 }
 
 // Download PDF: the paper sheet as a PDF. Throws a message to show.
-async function printSheet(sheet, monkeys) {
+async function printSheet(sheet, monkeys, enclosures) {
     try {
         const [{ pdf }, { default: DewormingSheetPDF }] = await Promise.all([
             import("@react-pdf/renderer"),
             import("./DewormingSheetPDF"),
         ]);
-        const lines = printOrder(namedLines(sheet, monkeys));
+        const lines = printOrder(namedLines(sheet, monkeys, enclosures));
         const blob = await pdf(<DewormingSheetPDF sheet={sheet} lines={lines} />).toBlob();
         const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
         downloadBlob(blob, `deworming_${name}_${sheet.startDate}.pdf`);
@@ -578,7 +586,7 @@ async function printSheet(sheet, monkeys) {
 
 // A sheet in the list: its title and where it's up to (opens it), then
 // Download PDF and (admins) Delete, as icons
-function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
+function SheetRow({ sheet, monkeys, enclosures, canPrepare, onOpen, onDeleted }) {
     const [deleting, setDeleting] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
@@ -590,7 +598,7 @@ function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
         setBusy(true);
         setProblem(null);
         try {
-            await printSheet(sheet, monkeys);
+            await printSheet(sheet, monkeys, enclosures);
         } catch (error) {
             setProblem(error.message);
         } finally {
@@ -678,12 +686,12 @@ function SheetRow({ sheet, monkeys, canPrepare, onOpen, onDeleted }) {
 // (staff, until it's submitted: each once the one before is done); the
 // results and photos; Review (admins, once submitted); and (admins, before
 // any results) Edit
-function SheetView({ sheet, monkeys, canPrepare, canRecord, onEdit, onChanged }) {
+function SheetView({ sheet, monkeys, enclosures, canPrepare, canRecord, onEdit, onChanged }) {
     const [recording, setRecording] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
-    const lines = printOrder(namedLines(sheet, monkeys));
+    const lines = printOrder(namedLines(sheet, monkeys, enclosures));
     const stopSubmitting = useCallback(() => setSubmitting(false), []);
     // (results entered, or a monkey added: Edit would lose them)
     const started = lines.some((l) => Object.keys(l.doses ?? {}).length || (l.kind && l.kind !== "list"));
@@ -1210,6 +1218,7 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
             <SheetView
                 sheet={sheet}
                 monkeys={monkeys}
+                enclosures={enclosures}
                 canPrepare={canPrepare}
                 canRecord={canRecord}
                 onChanged={reload}
@@ -1268,6 +1277,7 @@ export default function DewormingRecordsPage({ monkeys = [], enclosures = [], st
                         <ul className="Deworming-list">
                             {sheets.map((s) => (
                                 <SheetRow
+                                    enclosures={enclosures}
                                     key={s.id}
                                     sheet={s}
                                     monkeys={monkeys}

@@ -31,6 +31,7 @@ import {
     needsDay4,
     nextSession,
     onDay,
+    introcageRanks,
     printOrder,
     recordText,
     sheetTitle,
@@ -157,7 +158,8 @@ describe("the groups", () => {
         ]);
         const names = (key) => groups.find((g) => g.key === key).monkeys.map((m) => m.monkey.name);
         expect(names("troop:1")).toEqual(["Ash", "Meggy", "Oldie", "Tiny"]);
-        expect(names("ics:Top")).toEqual(["Leeloo", "Sybil"]);
+        // (by introcage, in the enclosures' order: D&D before the Bachelor Block)
+        expect(names("ics:Top")).toEqual(["Sybil", "Leeloo"]);
         expect(names("enclosure:6")).toEqual(["Gia", "Gus"]);
     });
 });
@@ -212,6 +214,21 @@ describe("a new sheet's starting point", () => {
         expect(ticks(lines)).toEqual({ 1: true, 2: false, 3: false, 4: false });
         expect(lines[1]).toEqual({ on: true, medication: "Panacur", dose: "1/2 tsp", days: 3 });
         expect(lastDose(sheets, 1)).toEqual({ medication: "Panacur", dose: "1/2 tsp", days: 3 });
+    });
+
+    test("introcage sheets: by introcage in the sanctuary's order (Skrow, Robert, Skunkey, H&B, Jalamango), then by name", () => {
+        const place = (id, name, sortOrder, parentId = null) => ({ id, name, sortOrder, parentId, type: parentId ? "introcage" : "troop" });
+        const enclosures = [
+            place(5, "Jalamango", 13), place(1, "Skrow", 9), place(4, "H&B", 12), place(2, "Robert", 10), place(3, "Skunkey", 11),
+            place(51, "Jalamango A", 1, 5), place(11, "Skrow B", 2, 1), place(12, "Skrow A", 1, 1), place(21, "Robert B1", 1, 2),
+            place(31, "Skunkey A", 1, 3), place(41, "H&B C1", 1, 4),
+        ];
+        const rank = introcageRanks(enclosures);
+        const lines = [
+            ["Zara", "Jalamango A"], ["Moss", "H&B C1"], ["Abe", "Skunkey A"], ["Kip", "Robert B1"], ["Bo", "Skrow B"], ["Al", "Skrow A"], ["Cal", "Skrow A"],
+        ].map(([name, ic], i) => ({ ...line(i + 1, "Panacur", "1/2 tsp"), name, introcage: true, placeRank: rank(ic) }));
+        expect(printOrder(lines).map((l) => l.name)).toEqual(["Al", "Cal", "Bo", "Kip", "Abe", "Moss", "Zara"]);
+        expect(rank("Nowhere")).toBe(6);
     });
 
     test("the sheet's order: the troop by name, then introcages by name; added monkeys last in their part", () => {
