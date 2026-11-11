@@ -456,6 +456,7 @@ function DoseEntry({ line, day, onChange, onRemove }) {
                         {otherFood && (
                             <input
                                 type="text"
+                                className="Deworming-otherFood"
                                 aria-label={`Other food for ${line.name}`}
                                 placeholder="e.g. Grape"
                                 maxLength={40}
@@ -1091,7 +1092,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
             {day <= 3 && (
                 <button
                     type="button"
-                    className="Modal-edit is-action-outline Deworming-addMonkey"
+                    className="Modal-edit is-action-outline Deworming-addMonkeyButton"
                     onClick={() => setAdding(true)}
                 >
                     <IconPlus size={16} aria-hidden="true" />

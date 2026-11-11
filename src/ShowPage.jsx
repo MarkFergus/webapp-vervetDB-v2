@@ -61,6 +61,7 @@ import OfflineModal from "./OfflineModal";
 import SortMenu from "./SortMenu";
 import useFavourites from "./favourites";
 import LatestNewsPage from "./LatestNewsPage";
+import ErrorBoundary from "./ErrorBoundary";
 import "./ShowPage.css";
 
 // Monkeys added at a time as the page scrolls (continuous scroll)
@@ -1008,6 +1009,9 @@ function ShowPage({
                     barsInert={isAnyModalOpen}
                 />
             </div>
+            {/* (a page that crashes: "Something went wrong" in its place, the
+                bars still working; another page clears it) */}
+            <ErrorBoundary page resetOn={route}>
             {onGame ? (
                 <div inert={isAnyModalOpen}>
                     <Game monkeys={monkeys} troops={troops} />
@@ -1279,6 +1283,7 @@ function ShowPage({
             )}
             </>
             )}
+            </ErrorBoundary>
             {/* (the monkey list only: not the game or the enclosures) */}
             {navOutOfView && !offList && !isAnyModalOpen && (
                 <button

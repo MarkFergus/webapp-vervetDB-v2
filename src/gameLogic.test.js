@@ -1,4 +1,4 @@
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import {
     averageSeconds,
     resultMessage,

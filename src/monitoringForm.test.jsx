@@ -9,6 +9,8 @@ import { STAFF } from "./testStaff";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
+    // (the pages' default monkeys: the sample ones, as in setupTests.js)
+    BUILT_IN_DATA: { ...(await importOriginal()).BUILT_IN_DATA, monkeys: (await import("./testMonkeys")).default },
     saveMonkey: vi.fn(),
     loadArrivalInfo: vi.fn().mockRejectedValue(new Error("none")),
     loadMonitoring: vi.fn(),

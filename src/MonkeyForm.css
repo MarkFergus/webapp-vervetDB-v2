@@ -561,6 +561,25 @@
     color: var(--text-strong);
 }
 
+/* Arrival Date | Arrival Reason | Condition Received: one row (the date a
+   little wider, for the date box) */
+.MonkeyForm-row.is-trio {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.MonkeyForm-row.is-trio select,
+.MonkeyForm-row.is-trio input {
+    min-width: 0;
+}
+
+/* Phones: three don't fit without cutting off the date, so Condition
+   Received goes under Arrival Date (half the width) */
+@media (max-width: 520px) {
+    .MonkeyForm-row.is-trio {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
 @media (max-width: 420px) {
     .MonkeyForm-row:not(.is-pair) {
         grid-template-columns: 1fr;

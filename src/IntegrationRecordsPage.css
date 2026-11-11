@@ -380,3 +380,40 @@
         text-align: right;
     }
 }
+
+/* ---- Reports, View: each monkey's past reports, newest first ---- */
+
+.IntegrationPage-past {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.IntegrationPage-past > li {
+    min-width: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+}
+
+.IntegrationPage-pastWhen {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+.IntegrationPage-pastWhen strong {
+    color: var(--text-2);
+}
+
+.IntegrationPage-pastText {
+    margin: 0;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.IntegrationPage-more {
+    align-self: flex-start;
+}

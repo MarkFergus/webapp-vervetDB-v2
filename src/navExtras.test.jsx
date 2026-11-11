@@ -3,7 +3,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 
 const search = () => screen.getByRole("textbox", { name: "Search by name or chip number" });
 

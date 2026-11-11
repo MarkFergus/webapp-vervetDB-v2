@@ -651,6 +651,16 @@
     flex: 1 1 180px;
 }
 
+/* Phones: Other food's box fills the rest of the row beside Food (the
+   Note goes on the line below) */
+@media (max-width: 599px) {
+    .Deworming-entryMore .Deworming-otherFood {
+        flex: 1 1 140px;
+        min-width: 0;
+        width: auto;
+    }
+}
+
 /* Change Dewormer (a pop-up) and Reset, at the row's end */
 .Deworming-rowIcons {
     display: inline-flex;
@@ -934,7 +944,9 @@
     background-color: var(--amber);
 }
 
-.Modal-edit.Deworming-addMonkey {
+/* (its own name: .Deworming-addMonkey is the custom list's search, a
+   column, which put the + above the words) */
+.Modal-edit.Deworming-addMonkeyButton {
     margin-top: 12px;
 }
 

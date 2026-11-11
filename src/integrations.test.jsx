@@ -3,7 +3,14 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RecordsPage from "./RecordsPage";
-import { addIntegrationReports, loadIntegrations, loadLatestReportDates, startIntegration, updateIntegrationStatus } from "./monkeyData";
+import {
+    addIntegrationReports,
+    loadIntegrationReportsFor,
+    loadIntegrations,
+    loadLatestReportDates,
+    startIntegration,
+    updateIntegrationStatus,
+} from "./monkeyData";
 import { checkReports, integrationChoices, integrationPlace, reportFrom } from "./integrations";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
@@ -11,6 +18,7 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     loadIntegrations: vi.fn(),
     startIntegration: vi.fn(),
     loadLatestReportDates: vi.fn(),
+    loadIntegrationReportsFor: vi.fn(),
     addIntegrationReports: vi.fn(),
     updateIntegrationStatus: vi.fn(),
 }));
@@ -35,6 +43,7 @@ beforeEach(() => {
     vi.clearAllMocks();
     loadIntegrations.mockResolvedValue([]);
     loadLatestReportDates.mockResolvedValue({});
+    loadIntegrationReportsFor.mockResolvedValue({});
     addIntegrationReports.mockResolvedValue(1);
 });
 
@@ -159,13 +168,13 @@ describe("Current Integrations", () => {
         expect(ask).toHaveTextContent("stays in Current Integrations, as On Hold from 26th Oct 2026");
         expect(updateIntegrationStatus).not.toHaveBeenCalled();
         await user.click(within(ask).getByRole("button", { name: "Confirm" }));
-        await waitFor(() => expect(updateIntegrationStatus).toHaveBeenCalledWith(10, { status: "on_hold", date: "2026-10-26" }));
+        await waitFor(() => expect(updateIntegrationStatus).toHaveBeenCalledWith(10, { status: "on_hold", date: "2026-10-26", notes: expect.any(String) }));
         expect(await screen.findByText("Poppy's integration is now On Hold.")).toBeInTheDocument();
         expect(within(screen.getByText("Poppy").closest("[role='row']")).getByText("On Hold")).toHaveClass("is-on_hold");
         expect(screen.queryByRole("dialog")).toBeNull();
     });
 
-    test("Update → On Hold with notes: adds an entry to the integration record on that date", async () => {
+    test("Update → On Hold with notes: sent with the status (for the Rehabilitation record) and added to the Integration reports on that date", async () => {
         loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-20")]);
         updateIntegrationStatus.mockResolvedValue({ ...active(10, 1, "2026-10-20"), status: "on_hold" });
         addIntegrationReports.mockResolvedValue(1);
@@ -178,14 +187,14 @@ describe("Current Integrations", () => {
         expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
         await user.type(screen.getByLabelText("Notes"), "  Rudi is unwell ");
         await user.click(screen.getByRole("button", { name: "Confirm" }));
-        expect(screen.getByRole("dialog")).toHaveTextContent(`Adds "Integration on hold: Rudi is unwell" to Poppy's integration record.`);
+        expect(screen.getByRole("dialog")).toHaveTextContent(`Adds "Integration placed on hold: Rudi is unwell" to Poppy's Rehabilitation records and Integration reports.`);
         await user.click(screen.getByRole("button", { name: "Confirm" }));
         await waitFor(() =>
             expect(addIntegrationReports).toHaveBeenCalledWith([
                 { monkeyId: 1, from: "2026-10-26", to: "2026-10-26", report: "Integration on hold: Rudi is unwell" },
             ])
         );
-        expect(updateIntegrationStatus).toHaveBeenCalledWith(10, { status: "on_hold", date: "2026-10-26" });
+        expect(updateIntegrationStatus).toHaveBeenCalledWith(10, { status: "on_hold", date: "2026-10-26", notes: "  Rudi is unwell " });
         expect(await screen.findByText("Poppy's integration is now On Hold.")).toBeInTheDocument();
     });
 
@@ -197,6 +206,9 @@ describe("Current Integrations", () => {
         await user.click(await screen.findByRole("button", { name: "Update, Poppy" }));
         await user.selectOptions(screen.getByLabelText("New Status"), "active");
         expect(screen.queryByLabelText("Notes (optional)")).toBeNull();
+        await user.click(screen.getByRole("button", { name: "Confirm" }));
+        expect(screen.getByRole("dialog")).toHaveTextContent(`Adds "Integration resumed" to Poppy's Rehabilitation records.`);
+        await user.click(screen.getByRole("button", { name: "Back" }));
         await user.selectOptions(screen.getByLabelText("New Status"), "completed");
         await user.click(screen.getByRole("button", { name: "Confirm" }));
         await user.click(screen.getByRole("button", { name: "Confirm" }));
@@ -275,7 +287,7 @@ describe("Reports", () => {
         expect(screen.getByLabelText("From, Rudi")).toHaveValue("2026-10-15");
         expect(screen.getByText("Poppy").closest("li")).toHaveTextContent("Last report to 20th Oct 2026");
         expect(screen.getByText("Rudi").closest("li")).toHaveTextContent("No reports yet");
-        expect(screen.getByLabelText("Poppy")).toHaveAttribute("maxLength", "500");
+        expect(screen.getByLabelText("Poppy")).toHaveAttribute("maxLength", "1000");
     });
 
     test("Save All: the ones with a report, together; the rest skipped", async () => {
@@ -283,7 +295,7 @@ describe("Reports", () => {
         addIntegrationReports.mockResolvedValue(1);
         const { user } = open("records/integration/reports");
         await user.type(await screen.findByLabelText("Poppy"), "Groomed by two adults; calm.");
-        expect(screen.getByText("28 / 500")).toBeInTheDocument();
+        expect(screen.getByText("28 / 1000")).toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Save All" }));
         await waitFor(() => expect(addIntegrationReports).toHaveBeenCalledTimes(1));
         expect(addIntegrationReports.mock.calls[0][0]).toEqual([
@@ -308,5 +320,64 @@ describe("Reports", () => {
     test("none going on: points to Current Integrations", async () => {
         open("records/integration/reports");
         expect(await screen.findByRole("link", { name: "Current Integrations" })).toHaveAttribute("href", "#records/integration/current");
+    });
+});
+
+describe("Reports: View (past reports)", () => {
+    const report = (id, from, to, text, by = "Sam") => ({ id, from, to, report: text, loggedByName: by });
+
+    test("Enter and View tabs; View: each monkey's reports newest first, the latest report's monkey at the top", async () => {
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-01"), active(11, 2, "2026-10-15"), active(12, 4, "2026-11-01")]);
+        loadIntegrationReportsFor.mockResolvedValue({
+            1: [report(2, "2026-10-14", "2026-10-20", "Calmer now."), report(1, "2026-10-07", "2026-10-13", "Nervous at first.", "Jo")],
+            2: [report(3, "2026-10-22", "2026-10-28", "Groomed by two adults.")],
+        });
+        const { user } = open("records/integration/reports");
+        expect(await screen.findByRole("tab", { name: "Enter" })).toHaveAttribute("aria-selected", "true");
+        await user.click(screen.getByRole("tab", { name: "View" }));
+        const lists = await screen.findAllByRole("list", { name: /'s reports$/ });
+        // Rudi (latest report 28th Oct), then Poppy (20th Oct); Vera (none) last
+        expect(lists.map((l) => l.getAttribute("aria-label"))).toEqual(["Rudi's reports", "Poppy's reports"]);
+        expect(loadIntegrationReportsFor).toHaveBeenCalledWith([1, 2, 4]);
+        const poppy = within(lists[1]).getAllByRole("listitem");
+        expect(poppy[0]).toHaveTextContent("14th Oct – 20th Oct 2026 · Sam");
+        expect(poppy[0]).toHaveTextContent("Calmer now.");
+        expect(poppy[1]).toHaveTextContent("Nervous at first.");
+        expect(screen.getByText("Poppy").closest("li")).toHaveTextContent("2 reports");
+        expect(screen.getByText("Vera").closest("li")).toHaveTextContent("No reports yet");
+        const cards = screen.getAllByText(/^(Poppy|Rudi|Vera)$/).map((n) => n.textContent);
+        expect(cards).toEqual(["Rudi", "Poppy", "Vera"]);
+    });
+
+    test("more than 3 reports: the latest 3, then Show All", async () => {
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-01")]);
+        loadIntegrationReportsFor.mockResolvedValue({
+            1: [1, 2, 3, 4, 5].map((n) => report(n, `2026-10-0${n}`, `2026-10-0${n}`, `Day ${n}`)),
+        });
+        const { user } = open("records/integration/reports");
+        await user.click(await screen.findByRole("tab", { name: "View" }));
+        const list = await screen.findByRole("list", { name: "Poppy's reports" });
+        expect(within(list).getAllByRole("listitem")).toHaveLength(3);
+        await user.click(screen.getByRole("button", { name: "Show All (5)" }));
+        expect(within(list).getAllByRole("listitem")).toHaveLength(5);
+        await user.click(screen.getByRole("button", { name: "Show Fewer" }));
+        expect(within(list).getAllByRole("listitem")).toHaveLength(3);
+    });
+
+    test("staff who can't enter: View only, no tabs", async () => {
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-01")]);
+        loadIntegrationReportsFor.mockResolvedValue({ 1: [report(1, "2026-10-07", "2026-10-13", "Settling in.")] });
+        open("records/integration/reports", { canEnter: false });
+        expect(await screen.findByText("Settling in.")).toBeInTheDocument();
+        expect(screen.queryByRole("tab")).toBeNull();
+        expect(screen.queryByRole("button", { name: "Save All" })).toBeNull();
+    });
+
+    test("the reports couldn't load: says so", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        loadIntegrations.mockResolvedValue([active(10, 1, "2026-10-01")]);
+        loadIntegrationReportsFor.mockRejectedValue(new Error("offline"));
+        open("records/integration/reports", { canEnter: false });
+        expect(await screen.findByText(/Couldn't load the reports/)).toBeInTheDocument();
     });
 });

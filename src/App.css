@@ -13,13 +13,16 @@ body {
     color: var(--text-2);
 }
 
-.App-loading svg {
+.App-loading > svg {
     width: 64px;
     height: 59px;
     animation: App-breathe 1.6s ease-in-out infinite;
 }
 
 .App-loading p {
+    max-width: 420px;
+    padding: 0 16px;
+    text-align: center;
     margin: 0;
     font-size: 16px;
 }
@@ -31,7 +34,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .App-loading svg {
+    .App-loading > svg {
         animation: none;
     }
 }
@@ -88,4 +91,10 @@ body {
     border: 1px solid currentColor;
     border-radius: 6px;
     cursor: pointer;
+}
+
+/* Couldn't reach the database (nothing saved yet): the logo still, not
+   "breathing" as if loading */
+.App-unreachable > svg {
+    animation: none;
 }

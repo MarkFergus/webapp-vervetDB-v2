@@ -16,13 +16,14 @@ import {
 } from "./outbox";
 import { lastContact } from "./offlineFetch";
 import { forgetPhoto, keepPhoto, keptPhoto } from "./outboxPhotos";
-import monkeysArr from "./monkeysArr";
 import groupsArr from "./groupsArr";
 import enclosuresArr, { SECTION_NAMES } from "./enclosuresArr";
 
-// The built-in copy of the data, used if the database can't be reached
+// The built-in shape of the data before the database answers: no monkeys
+// (an old copy would be out of date), but the troops, sections and
+// enclosures, which pages still lean on
 export const BUILT_IN_DATA = {
-    monkeys: monkeysArr,
+    monkeys: [],
     troops: groupsArr,
     troopIds: {},
     enclosures: enclosuresArr,
@@ -57,10 +58,12 @@ const BIRTH_MONKEY_COLUMNS = `${SPECIES_MONKEY_COLUMNS}, birth_date, birth_date_
 const ARRIVAL_MONKEY_COLUMNS = `${BIRTH_MONKEY_COLUMNS}, arrival_date, arrival_reason`;
 // ...and where they were taken on arrival (once arrival-place.sql has run)
 const ARRIVAL_PLACE_MONKEY_COLUMNS = `${ARRIVAL_MONKEY_COLUMNS}, arrival_place, arrival_place_id`;
+// ...and the condition they arrived in (once arrival-condition.sql has run)
+const ARRIVAL_CONDITION_MONKEY_COLUMNS = `${ARRIVAL_PLACE_MONKEY_COLUMNS}, arrival_condition`;
 // Newest first: each set has all the ones after it (loadMonkeys tries them
 // in turn)
 const COLUMN_SETS = [
-    ARRIVAL_PLACE_MONKEY_COLUMNS, ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
+    ARRIVAL_CONDITION_MONKEY_COLUMNS, ARRIVAL_PLACE_MONKEY_COLUMNS, ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
     FEEDING_MONKEY_COLUMNS,
 ];
 // Whether the database's set includes `columns` (the newer ones do)
@@ -73,6 +76,8 @@ export const speciesAvailable = () => has(SPECIES_MONKEY_COLUMNS);
 export const birthDateAvailable = () => has(BIRTH_MONKEY_COLUMNS);
 // ...and an arrival date and reason (arrival-details.sql has run)
 export const arrivalDetailsAvailable = () => has(ARRIVAL_MONKEY_COLUMNS);
+// ...and a Condition Received (arrival-condition.sql has run)
+export const arrivalConditionAvailable = () => has(ARRIVAL_CONDITION_MONKEY_COLUMNS);
 
 // Looking up places while turning rows into monkeys: enclosures by id, and
 // each troop's home enclosure. Set by loadMonkeyData (built-in until then).
@@ -93,7 +98,7 @@ function makePlaces(enclosures, troopHomes) {
 export const troopHome = (troop) => places.homeOf(troop);
 
 // A database row → the shape the rest of the site uses (the same as the
-// entries in monkeysArr.js, plus where it lives), so pages don't need to
+// entries in the old built-in copy, plus where it lives), so pages don't need to
 // know where data came from. See places.js.
 export function toAppMonkey(row) {
     const troop = row.troops?.name ?? null;
@@ -160,6 +165,9 @@ export function toAppMonkey(row) {
         monkey.arrivalPlace = row.arrival_place;
         monkey.arrivalPlaceId = row.arrival_place_id;
     }
+    // ...and the condition they arrived in: "healthy", "injured", "sick" or
+    // null (not recorded): arrival-condition.sql
+    if ("arrival_condition" in row) monkey.arrivalCondition = row.arrival_condition;
     // Once the database has stays (see introcage-stays.sql): the introcage
     // it's staying in for now, or null (at home)
     if ("stay_introcage_id" in row) {
@@ -204,6 +212,8 @@ export function toDatabaseRow(monkey, troopIds) {
         row.arrival_date = monkey.arrivalDate || null;
         row.arrival_reason = monkey.arrivalReason || null;
     }
+    // (once the database has it)
+    if (monkey.arrivalCondition !== undefined) row.arrival_condition = monkey.arrivalCondition || null;
     // (a stay ends once its introcage becomes home: a move made in Edit)
     if (monkey.stay && monkey.stay.id === monkey.introcageId) {
         Object.assign(row, { stay_introcage_id: null, stay_since: null, stay_note: null });
@@ -567,6 +577,31 @@ export async function saveArrivalInfo(monkeyId, info) {
     if (updated.error) throw saveProblem(updated.error);
     if (updated.data?.length) return;
     const { error } = await supabase.from("arrival_info").insert({ monkey_id: monkeyId, info: text });
+    if (error) throw saveProblem(error);
+}
+
+// ---- Named By: who named a monkey (staff only: named-by.sql) ----
+
+// A monkey's Named By ("" if none). Throws if the database hasn't got it
+// yet, or this isn't staff.
+export async function loadNamedBy(monkeyId) {
+    const { data, error } = await supabase.from("named_by").select("name").eq("monkey_id", monkeyId).maybeSingle();
+    if (error) throw error;
+    return data?.name ?? "";
+}
+
+// Saves it (editors); empty clears it
+export async function saveNamedBy(monkeyId, name) {
+    const text = name.trim();
+    if (!text) {
+        const { error } = await supabase.from("named_by").delete().eq("monkey_id", monkeyId);
+        if (error) throw saveProblem(error);
+        return;
+    }
+    const updated = await supabase.from("named_by").update({ name: text }).eq("monkey_id", monkeyId).select("monkey_id");
+    if (updated.error) throw saveProblem(updated.error);
+    if (updated.data?.length) return;
+    const { error } = await supabase.from("named_by").insert({ monkey_id: monkeyId, name: text });
     if (error) throw saveProblem(error);
 }
 
@@ -1133,6 +1168,22 @@ export async function loadLatestReportDates(monkeyIds) {
     return latest;
 }
 
+// Several monkeys' reports at once (Records → Integration → Reports, View):
+// { monkeyId: [reports, newest period first] }
+export async function loadIntegrationReportsFor(monkeyIds) {
+    if (!monkeyIds.length) return {};
+    const { data, error } = await supabase
+        .from("integration_reports")
+        .select(`monkey_id, ${REPORT_COLUMNS}`)
+        .in("monkey_id", monkeyIds)
+        .order("to_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw error;
+    const byMonkey = {};
+    for (const row of data) (byMonkey[row.monkey_id] ??= []).push(toAppReport(row));
+    return byMonkey;
+}
+
 // ---- Current Integrations (supabase/integrations.sql) ----
 
 const toAppIntegration = (row) => ({
@@ -1178,11 +1229,13 @@ export async function startIntegration(monkeyId, { startedOn, kind }) {
 // Status Update: a new status (INTEGRATION_STATUSES) and the day it
 // changed. Completed and Cancelled end it that day; Active and On Hold clear
 // the end. Returns it.
-export async function updateIntegrationStatus(id, { status, date }) {
+// notes: the Status Update's (kept with it for its Integration record in
+// the monkey's Rehabilitation records: integration-records.sql)
+export async function updateIntegrationStatus(id, { status, date, notes = "" }) {
     const ending = status === "completed" || status === "cancelled";
     const { data, error } = await supabase
         .from("integrations")
-        .update({ status, status_on: date, ended_on: ending ? date : null })
+        .update({ status, status_on: date, ended_on: ending ? date : null, status_note: notes.trim() || null })
         .eq("id", id)
         .select("id, monkey_id, started_on, kind, status, status_on, logged_by_name")
         .maybeSingle();
@@ -1190,6 +1243,9 @@ export async function updateIntegrationStatus(id, { status, date }) {
         console.error("Updating an integration's status failed:", error);
         if (error.code === "23505") throw new Error("This monkey already has another integration going on.");
         if (error.code === "23514" && /ended/.test(error.message)) throw new Error("The date can't be before the integration started.");
+        if (["42703", "PGRST204"].includes(error.code) && /status_note/.test(error.message)) {
+            throw new Error("Please run supabase/integration-records.sql first.");
+        }
         if (["23514", "42703", "PGRST204"].includes(error.code)) throw new Error("Please run supabase/integration-statuses.sql first.");
         throw saveProblem(error);
     }

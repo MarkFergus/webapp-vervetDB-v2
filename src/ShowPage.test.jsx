@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 
 // Signed in as staff: making PDFs is for staff
 vi.mock("./auth", async (importOriginal) => (await import("./testStaff")).staffAuth(await importOriginal()));

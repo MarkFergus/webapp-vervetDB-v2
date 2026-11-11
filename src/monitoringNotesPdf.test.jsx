@@ -3,7 +3,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import { pdf } from "@react-pdf/renderer";
 import { loadCurrentInjuries, loadMonitoringFor } from "./monkeyData";
 

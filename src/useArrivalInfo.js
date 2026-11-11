@@ -7,7 +7,8 @@ import { loadArrivalInfo } from "./monkeyData";
 //   refresh: anything that changes when it may have been saved (the monkey
 //   itself: Edit saves a new one), so it's loaded again
 //   → { available: the database has it (and this is staff), loaded, info }
-export default function useArrivalInfo(monkeyId, enabled, refresh = null) {
+// load: what's loaded (Arrival Info; or Named By: loadNamedBy, the same way)
+export default function useArrivalInfo(monkeyId, enabled, refresh = null, load = loadArrivalInfo) {
     const [state, setState] = useState({ available: false, loaded: false, info: "" });
     useEffect(() => {
         if (!enabled) {
@@ -15,12 +16,12 @@ export default function useArrivalInfo(monkeyId, enabled, refresh = null) {
             return;
         }
         let cancelled = false;
-        loadArrivalInfo(monkeyId ?? 0)
+        load(monkeyId ?? 0)
             .then((info) => !cancelled && setState({ available: true, loaded: true, info }))
             .catch(() => !cancelled && setState({ available: false, loaded: true, info: "" }));
         return () => {
             cancelled = true;
         };
-    }, [monkeyId, enabled, refresh]);
+    }, [monkeyId, enabled, refresh, load]);
     return state;
 }

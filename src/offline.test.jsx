@@ -76,15 +76,42 @@ describe("the app with and without a connection", () => {
         expect(screen.queryByRole("alert")).toBeNull();
     });
 
-    test("database unreachable (but online): the saved copy, with a note", async () => {
+    test("database unreachable (but online): Loading… while it tries again, then the saved copy with a note", async () => {
         vi.spyOn(console, "error").mockImplementation(() => {});
-        saveCopy(LIVE);
-        vi.mocked(loadMonkeyData).mockRejectedValue(new Error("paused"));
-        render(<App />);
-        expect(await screen.findByRole("alert")).toHaveTextContent(
-            "Couldn't reach the database, so these are the monkeys saved on this device just now."
-        );
-        expect(screen.getByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            saveCopy(LIVE);
+            vi.mocked(loadMonkeyData).mockRejectedValue(new Error("paused"));
+            render(<App />);
+            expect(await screen.findByText("Loading…")).toBeInTheDocument();
+            expect(screen.queryByRole("alert")).toBeNull();
+            await vi.advanceTimersByTimeAsync(6100);
+            expect(await screen.findByRole("alert")).toHaveTextContent(
+                "Couldn't reach the database, so these are the monkeys saved on this device just now."
+            );
+            expect(loadMonkeyData).toHaveBeenCalledTimes(3);
+            expect(screen.getByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test("the first load fails (a phone just woken), the next works: no note", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            saveCopy(LIVE);
+            vi.mocked(loadMonkeyData)
+                .mockRejectedValueOnce(new Error("Failed to fetch"))
+                .mockResolvedValue({ ...LIVE, monkeys: [{ ...LIVE.monkeys[0], id: 2, name: "Fresh One" }] });
+            render(<App />);
+            await vi.advanceTimersByTimeAsync(1100);
+            expect(await screen.findByRole("button", { name: /^Fresh One/ })).toBeInTheDocument();
+            expect(screen.queryByRole("alert")).toBeNull();
+            expect(screen.queryByText("Loading…")).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test("database slow (e.g. a phone woken after a while): the saved copy with a quiet Loading…, then live", async () => {
@@ -116,7 +143,10 @@ describe("the app with and without a connection", () => {
             render(<App />);
             await vi.advanceTimersByTimeAsync(4100);
             expect(await screen.findByText("Loading…")).toBeInTheDocument();
+            vi.mocked(loadMonkeyData).mockRejectedValue(new Error("still nothing"));
             fail(new Error("The database took too long to respond"));
+            // (after its quick tries again)
+            await vi.advanceTimersByTimeAsync(6100);
             expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the database");
             expect(screen.queryByText("Loading…")).toBeNull();
         } finally {
@@ -144,18 +174,21 @@ describe("the app with and without a connection", () => {
         expect(screen.queryByRole("alert")).toBeNull();
     });
 
-    test("opened offline with nothing saved: the built-in copy", async () => {
+    test("opened offline with nothing saved: says the database couldn't be reached", async () => {
         online = false;
         render(<App />);
-        expect(screen.getByRole("alert")).toHaveTextContent("Couldn't reach the database, so this is a saved copy");
-        expect(await screen.findByRole("button", { name: /^Aroha/ })).toBeInTheDocument();
+        expect(screen.getByRole("alert")).toHaveTextContent("Couldn't reach the database. Check your connection and try again.");
+        expect(screen.queryByRole("button", { name: /^Aroha/ })).toBeNull();
     });
 
     test("couldn't reach the database: coming back to the app tries again straight away", async () => {
         vi.spyOn(console, "error").mockImplementation(() => {});
+        vi.useFakeTimers({ shouldAdvanceTime: true });
         saveCopy(LIVE);
-        vi.mocked(loadMonkeyData).mockRejectedValueOnce(new Error("paused"));
+        vi.mocked(loadMonkeyData).mockRejectedValue(new Error("paused"));
         render(<App />);
+        await vi.advanceTimersByTimeAsync(6100);
+        vi.useRealTimers();
         expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the database");
         vi.mocked(loadMonkeyData).mockResolvedValue({ ...LIVE, monkeys: [{ ...LIVE.monkeys[0], id: 2, name: "Fresh One" }] });
         document.dispatchEvent(new Event("visibilitychange"));

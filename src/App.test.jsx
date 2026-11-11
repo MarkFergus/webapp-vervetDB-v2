@@ -50,14 +50,18 @@ test("shows the monkeys from the database", async () => {
     expect(screen.queryByRole("alert")).toBeNull();
 });
 
-test("if the database can't be reached, shows the built-in copy with a notice", async () => {
+test("if the database can't be reached and nothing's saved: says so, with Try Again", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(loadMonkeyData).mockRejectedValue(new Error("offline"));
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     render(<App />);
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-        "Couldn't reach the database, so this is a saved copy"
-    );
-    expect(screen.getByRole("button", { name: /^Aroha/ })).toBeInTheDocument();
+    // (after trying again a couple of times, on the loading screen)
+    await vi.advanceTimersByTimeAsync(6100);
+    vi.useRealTimers();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the database. Check your connection and try again.");
+    expect(screen.getByRole("button", { name: "Try Again" })).toBeInTheDocument();
+    // (no out-of-date monkeys)
+    expect(screen.queryByRole("button", { name: /^Aroha/ })).toBeNull();
 });
 
 test("while loading, grey placeholder shapes show where the monkeys will be", async () => {

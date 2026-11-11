@@ -41,6 +41,8 @@ export function formFromMonkey(monkey, choices = []) {
             arrivalDate: monkey.arrivalDate ?? "",
             arrivalReason: monkey.arrivalReason ?? "",
         }),
+        // ...or a Condition Received: "" = not recorded
+        ...(monkey.arrivalCondition !== undefined && { arrivalCondition: monkey.arrivalCondition ?? "" }),
         // ...or birth dates: "" = unknown
         ...(monkey.birthDate !== undefined && {
             birthDate: monkey.birthDate ?? "",
@@ -176,6 +178,7 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
             ...(form.feeding && { feeding: form.feeding }),
             ...(form.species !== undefined && { species: form.species }),
             ...(form.arrivalDate !== undefined && { arrivalDate: form.arrivalDate, arrivalReason: form.arrivalReason }),
+            ...(form.arrivalCondition !== undefined && { arrivalCondition: form.arrivalCondition }),
             ...(form.birthDate !== undefined && {
                 birthDate: birthDate || null,
                 birthDateApprox: Boolean(birthDate && form.birthDateApprox),

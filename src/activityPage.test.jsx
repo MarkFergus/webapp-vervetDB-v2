@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import AdminPage from "./AdminPage";
 import StaffActivity from "./StaffActivity";
 import { loadStaff, loadStaffActivity } from "./monkeyData";
-import { changeLines, inGroup, periodFor, valueText } from "./activityWords";
+import { changeLines, inGroup, periodFor, tidyChanges, valueText } from "./activityWords";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
@@ -48,6 +48,18 @@ describe("putting a change into words", () => {
         expect(changeLines({ source: "new_table", action: "added", new_row: { id: 1, colour_code: "red", logged_by: "x" } })).toEqual([
             "Colour Code: red",
         ]);
+    });
+    test("a monitoring session: once, when it's completed (not its start or saves in progress); later changes still show", () => {
+        const row = (status, extra = {}) => ({ id: 5, enclosure_id: 2, session_date: "2026-11-11", status, notes: null, ...extra });
+        const session = (action, old_row, new_row) => ({ changed_at: now, source: "monitoring_sessions", action, title: "Goliath", old_row, new_row });
+        const started = session("added", null, row("in_progress"));
+        const saved = session("changed", row("in_progress"), row("in_progress", { notes: "Rain" }));
+        const finished = session("changed", row("in_progress", { notes: "Rain" }), row("finished", { notes: "Rain", fence: "good" }));
+        const later = session("changed", row("finished"), row("finished", { notes: "Fixed" }));
+        const tidied = tidyChanges([started, saved, finished, later, CHANGES[1]]);
+        expect(tidied.map((c) => c.action)).toEqual(["completed", "changed", "changed"]);
+        expect(changeLines(tidied[0])).toEqual(["Fence: (blank) → Good"]);
+        expect(tidied[2]).toBe(CHANGES[1]);
     });
     test("values: grams, yes / no, words, long text shortened", () => {
         expect(valueText(1512, "g")).toBe("1,512 g");
@@ -123,6 +135,19 @@ test("Custom: From and To dates (the whole of each day); From after To asks agai
     fireEvent.change(from, { target: { value: "2026-10-25" } });
     expect(screen.getByRole("alert")).toHaveTextContent("Please choose a From date on or before the To date.");
     expect(loadStaffActivity.mock.calls.length).toBe(calls);
+});
+
+test("the page: a finished monitoring session shows as Completed Monitoring Session", async () => {
+    const row = (status) => ({ id: 5, enclosure_id: 2, session_date: "2026-11-11", status });
+    loadStaffActivity.mockResolvedValue([
+        { changed_at: now, changed_by_name: "Sam Smith", source: "monitoring_sessions", action: "changed", title: "Goliath",
+            old_row: row("in_progress"), new_row: row("finished") },
+        { changed_at: now, changed_by_name: "Sam Smith", source: "monitoring_sessions", action: "added", title: "Goliath",
+            old_row: null, new_row: row("in_progress") },
+    ]);
+    render(<StaffActivity />);
+    expect(await screen.findByText("Completed Monitoring Session")).toBeInTheDocument();
+    expect(screen.queryByText("Added Monitoring Session")).toBeNull();
 });
 
 test("nothing, or a problem: says so", async () => {

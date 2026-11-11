@@ -1,6 +1,6 @@
 // Checks every monkey entry, so typos are caught when new monkeys are added.
 // If one of these fails, the message names the monkey to fix.
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import groupsArr from "./groupsArr";
 
 const ALLOWED_FIELDS = ["name", "sex", "chip", "troop", "year", "img", "bio", "desc"];

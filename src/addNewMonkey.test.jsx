@@ -5,16 +5,22 @@ import userEvent from "@testing-library/user-event";
 import MonkeyForm from "./MonkeyForm";
 import Modal from "./Modal";
 import MonkeyPage from "./MonkeyPage";
-import { BUILT_IN_DATA, arrivalDetailsAvailable, loadArrivalInfo, saveArrivalInfo, saveMonkey } from "./monkeyData";
+import { BUILT_IN_DATA, arrivalConditionAvailable, arrivalDetailsAvailable, loadArrivalInfo, loadNamedBy, saveArrivalInfo, saveMonkey, saveNamedBy } from "./monkeyData";
 
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
+    // (the pages' default monkeys: the sample ones, as in setupTests.js)
+    BUILT_IN_DATA: { ...(await importOriginal()).BUILT_IN_DATA, monkeys: (await import("./testMonkeys")).default },
     saveMonkey: vi.fn(),
     loadArrivalInfo: vi.fn(),
     saveArrivalInfo: vi.fn(),
+    loadNamedBy: vi.fn(),
+    saveNamedBy: vi.fn(),
     // (the database has Arrival Date and Reason: arrival-details.sql; off
     // unless a test says)
     arrivalDetailsAvailable: vi.fn(),
+    // (...and Condition Received: arrival-condition.sql)
+    arrivalConditionAvailable: vi.fn(),
 }));
 
 const TROOPS = ["Goliath", "Bandits"];
@@ -39,7 +45,11 @@ beforeEach(() => {
     loadArrivalInfo.mockResolvedValue("");
     saveMonkey.mockImplementation(async (values) => ({ ...values, id: 500, img: values.img }));
     saveArrivalInfo.mockResolvedValue();
+    // (no Named By unless a test says: as if named-by.sql hasn't run)
+    loadNamedBy.mockRejectedValue(new Error("No named_by table"));
+    saveNamedBy.mockResolvedValue();
     arrivalDetailsAvailable.mockReturnValue(false);
+    arrivalConditionAvailable.mockReturnValue(false);
 });
 
 describe("New Arrival (the first choice)", () => {
@@ -166,6 +176,33 @@ describe("a new arrival's Arrival Date and Arrival Reason", () => {
         editMonkey({});
         expect(screen.queryByLabelText(/Arrival Date/)).not.toBeInTheDocument();
     });
+
+    test("Condition Received (arrival-condition.sql): beside them, optional; Healthy, Injured or Sick", async () => {
+        const user = userEvent.setup();
+        editMonkey({ arrivalDate: "2019-03-02", arrivalReason: "orphaned", arrivalCondition: null });
+        const condition = field("Condition Received");
+        expect(within(condition).getAllByRole("option").map((o) => o.textContent)).toEqual(["Not recorded", "Healthy", "Injured", "Sick"]);
+        // (one row with the date and reason)
+        expect(condition.closest(".MonkeyForm-row")).toContainElement(field("Arrival Reason"));
+        await user.selectOptions(condition, "injured");
+        await user.click(screen.getByRole("button", { name: /Save/ }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalReason: "orphaned", arrivalCondition: "injured" });
+    });
+
+    test("Condition Received: a new arrival can leave it blank; not there before the database has it", async () => {
+        const user = userEvent.setup();
+        arrivalConditionAvailable.mockReturnValue(true);
+        add();
+        expect(field("Condition Received")).toHaveValue("");
+        await user.type(field("Name"), "Rescue Three");
+        await user.selectOptions(field("Care Unit"), `enclosure:${QUARANTINE.id}`);
+        await user.selectOptions(field("Arrival Reason"), "injured");
+        await user.selectOptions(field("Condition Received"), "sick");
+        await user.click(screen.getByRole("button", { name: "Add Monkey" }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveMonkey.mock.calls[0][0]).toMatchObject({ arrivalReason: "injured", arrivalCondition: "sick" });
+    });
 });
 
 describe("Other", () => {
@@ -264,6 +301,64 @@ describe("editing", () => {
         await user.click(screen.getByRole("button", { name: "Save" }));
         await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
         expect(saveArrivalInfo).not.toHaveBeenCalled();
+    });
+});
+
+describe("Named By (staff only: named-by.sql)", () => {
+    const PIP = {
+        id: 12, name: "Pip", sex: "female", chip: "", year: 2020, img: [], bio: "A bio", desc: "",
+        troop: "Goliath", enclosure: "Goliath", introcage: null, introcageId: null, introcageType: null,
+    };
+    const edit = (props = {}) =>
+        render(
+            <MonkeyForm
+                monkey={PIP} troops={TROOPS} troopIds={TROOP_IDS} enclosures={BUILT_IN_DATA.enclosures}
+                enclosuresLive onClose={() => {}} onSaved={onSaved} onDeleted={() => {}} {...props}
+            />
+        );
+
+    test("beside the Name in Edit, filled in; a change is saved", async () => {
+        const user = userEvent.setup();
+        loadNamedBy.mockResolvedValue("Sophie Lines");
+        saveMonkey.mockImplementation(async (values, _ids, id) => ({ ...values, id, img: values.img }));
+        edit();
+        const box = await screen.findByLabelText("Named By");
+        await waitFor(() => expect(box).toHaveValue("Sophie Lines"));
+        expect(box.closest(".MonkeyForm-row")).toContainElement(screen.getByLabelText(/^Name \(required\)/));
+        await user.clear(box);
+        await user.type(box, "Mayuree Joshi");
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saveNamedBy).toHaveBeenCalledWith(12, "Mayuree Joshi"));
+    });
+
+    test("left alone: not saved again", async () => {
+        const user = userEvent.setup();
+        loadNamedBy.mockResolvedValue("Sophie Lines");
+        saveMonkey.mockImplementation(async (values, _ids, id) => ({ ...values, id, img: values.img }));
+        edit();
+        await waitFor(() => expect(screen.getByLabelText("Named By")).toHaveValue("Sophie Lines"));
+        await user.type(screen.getByLabelText("Bio"), "!");
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(saveMonkey).toHaveBeenCalledTimes(1));
+        expect(saveNamedBy).not.toHaveBeenCalled();
+    });
+
+    test("not there before named-by.sql, nor in the pop-up's quick Edit", async () => {
+        const { unmount } = edit();
+        await waitFor(() => expect(loadNamedBy).toHaveBeenCalled());
+        expect(screen.queryByLabelText("Named By")).toBeNull();
+        unmount();
+        loadNamedBy.mockClear();
+        loadNamedBy.mockResolvedValue("Sophie Lines");
+        edit({ quick: true });
+        expect(screen.queryByLabelText("Named By")).toBeNull();
+        expect(loadNamedBy).not.toHaveBeenCalled();
+    });
+
+    test("the Full Profile: in the Arrival section, for staff", async () => {
+        loadNamedBy.mockResolvedValue("Sophie Lines");
+        render(<MonkeyPage monkey={{ ...PIP, img: ["x.jpg"] }} staff={{ canSee: true, canAdd: false, userId: "u1", isAdmin: false }} />);
+        await waitFor(() => expect(screen.getByText("Named By").closest("div")).toHaveTextContent("Sophie Lines"));
     });
 });
 

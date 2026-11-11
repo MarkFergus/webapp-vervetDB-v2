@@ -62,6 +62,8 @@ function recordEntry(r) {
         };
     }
     if (r.category === "status") return { ...base, kind: "status", label: "Status Change", filters: ["milestones"] };
+    // (added by the database for each integration started and Status Update)
+    if (r.category === "integration") return { ...base, kind: "integration", label: "Integration", filters: ["milestones"] };
     if (r.category === "microchip") {
         const chip = parseMicrochip(r.details);
         return {
@@ -110,7 +112,8 @@ const conditionEntry = (c) => ({
     by: c.loggedByName ?? null,
 });
 
-// Each integration: when it started, and when it finished
+// Each integration: when it started, and when it finished (only when the
+// monkey has no Integration records: from before integration-records.sql)
 function integrationEntries(integration) {
     const kind = (INTEGRATION_KINDS[integration.kind] ?? integration.kind ?? "").toLowerCase();
     const entry = (when, label, verb) => ({
@@ -241,7 +244,7 @@ export function timelineMonths(monkey, { records = [], injuries = [], conditions
         ...records.map(recordEntry),
         ...injuries.map(injuryEntry),
         ...conditions.map(conditionEntry),
-        ...integrations.flatMap(integrationEntries),
+        ...(records.some((r) => r.category === "integration") ? [] : integrations.flatMap(integrationEntries)),
         ...weightEntries(weights, Boolean(arrival)),
         ...seenEntries(sessions, spots, monkey.id),
         ...photoEntries(monkey),

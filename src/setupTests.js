@@ -8,14 +8,23 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 expect.extend(matchers);
 
 // Tests never contact the real database: "loading" it just returns the
-// built-in copy of the data. (monkeyData.test.js checks the real loader.)
+// built-in data with the sample monkeys (testMonkeys.js). BUILT_IN_DATA
+// carries them too in tests, as the pages' defaults. (monkeyData.test.js
+// checks the real loader.)
 vi.mock("./monkeyData", async (importOriginal) => {
     const original = await importOriginal();
+    const { default: testMonkeys } = await import("./testMonkeys");
+    const BUILT_IN_DATA = { ...original.BUILT_IN_DATA, monkeys: testMonkeys };
     return {
         ...original,
-        loadMonkeyData: vi.fn(async () => original.BUILT_IN_DATA),
+        BUILT_IN_DATA,
+        loadMonkeyData: vi.fn(async () => BUILT_IN_DATA),
         // (no Arrival Info: as if arrival-info.sql hasn't run)
         loadArrivalInfo: vi.fn(async () => {
+            throw new Error("No database in tests");
+        }),
+        // (no Named By: as if named-by.sql hasn't run)
+        loadNamedBy: vi.fn(async () => {
             throw new Error("No database in tests");
         }),
     };

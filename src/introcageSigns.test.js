@@ -1,5 +1,5 @@
 import enclosuresArr, { SECTION_NAMES } from "./enclosuresArr";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import {
     FULL_SCALE,
     FULL_SIGN,

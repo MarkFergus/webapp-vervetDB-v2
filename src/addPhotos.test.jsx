@@ -26,6 +26,8 @@ vi.mock("./photoUpload", async (importOriginal) => ({
 }));
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
+    // (the pages' default monkeys: the sample ones, as in setupTests.js)
+    BUILT_IN_DATA: { ...(await importOriginal()).BUILT_IN_DATA, monkeys: (await import("./testMonkeys")).default },
     saveMonkeyPhotos: vi.fn(),
 }));
 // Stand-in crop screen: "Use Photo" hands back a pretend cropped photo

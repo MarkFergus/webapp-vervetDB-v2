@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { IconRefresh } from "@tabler/icons-react";
 import ShowPage from "./ShowPage";
 import MonkeyIcon from "./MonkeyIcon";
 import LoadingSkeleton from "./LoadingSkeleton";
@@ -61,6 +62,21 @@ function App() {
         );
     }
 
+    // The database couldn't be reached, and there's no copy saved on this
+    // device yet (the first visit): nothing to show but that
+    if (status === "built-in") {
+        return (
+            <div className="App App-loading App-unreachable" role="alert">
+                <MonkeyIcon />
+                <p>Couldn't reach the database. Check your connection and try again.</p>
+                <button type="button" className="Modal-edit is-blue" onClick={() => window.location.reload()}>
+                    <IconRefresh size={16} aria-hidden="true" />
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
     let notice = null;
     // (the database is just slow: the saved copy shows meanwhile, quietly)
     const loadingLate = status === "saved" && waiting && online;
@@ -70,8 +86,6 @@ function App() {
         notice = online
             ? `Couldn't reach the database, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off for now.`
             : `You're offline, so these are the monkeys saved on this device ${timeAgo(savedAt)}. Daily entries still save and send later; other editing is off until you're back online.`;
-    } else if (status === "built-in") {
-        notice = "Couldn't reach the database, so this is a saved copy of the monkeys and may be out of date.";
     } else if (!online) {
         notice = "You're offline. Daily entries still save and send later. Photos you haven't opened before may not show, and other editing is off until you're back online.";
     }
@@ -103,7 +117,7 @@ function App() {
                     // and there's a connection to save changes
                     editable={status === "live" && online}
                     // Monitoring carries on with no signal, from the copy
-                    // saved on this phone (the built-in one's too old to use)
+                    // saved on this phone
                     fieldWork={status === "live" || status === "saved"}
                     onMonkeySaved={monkeySaved}
                     onMonkeyDeleted={monkeyDeleted}

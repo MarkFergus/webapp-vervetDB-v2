@@ -68,6 +68,7 @@ export const SOURCES = {
         },
     },
     arrival_info: { label: "Arrival Info", group: "records", fields: { info: field("Arrival Info") } },
+    named_by: { label: "Named By", group: "records", fields: { name: field("Named By") } },
     integrations: {
         label: "Integration",
         group: "records",
@@ -202,7 +203,7 @@ export function changeLines(change) {
     const before = change.old_row ?? null;
     const after = change.new_row ?? null;
     if (!before && !after) return [];
-    const parts = partsOf(sourceOf(change), [before, after]);
+    const parts = partsOf(sourceOf(change), [before, after]).filter(([key]) => !(change.hideStatus && key === "status"));
     const lines = [];
     for (const [key, { label, format }] of parts) {
         if (before && after) {
@@ -215,6 +216,24 @@ export function changeLines(change) {
         }
     }
     return lines;
+}
+
+// A monitoring session shows once, when it's finished: its start ("added")
+// and the saves while it's in progress are left out, and finishing it is
+// "completed" (without the Status line). Changes after that, and deleting
+// one, still show.
+const sessionStatus = (row) => row?.status ?? null;
+export function tidyChanges(changes) {
+    return changes.flatMap((c) => {
+        if (c.source !== "monitoring_sessions") return [c];
+        if (c.action === "added") return [];
+        if (c.action !== "changed") return [c];
+        const was = sessionStatus(c.old_row);
+        const now = sessionStatus(c.new_row);
+        if (now === "in_progress") return [];
+        if (was === "in_progress" && now === "finished") return [{ ...c, action: "completed", hideStatus: true }];
+        return [c];
+    });
 }
 
 // Only the changes in a group ("all": every one)

@@ -5,16 +5,19 @@ import { IconAlertCircle, IconAlertTriangle, IconPencil, IconPlus } from "@table
 import useDialog from "./useDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import {
+    arrivalConditionAvailable,
     arrivalDetailsAvailable,
     birthDateAvailable,
     deleteMonkey,
     saveArrivalInfo,
+    loadNamedBy,
+    saveNamedBy,
     saveMonitoring,
     saveMonkey,
     speciesAvailable,
     troopHome,
 } from "./monkeyData";
-import { ARRIVAL_REASONS } from "./arrival";
+import { ARRIVAL_CONDITIONS, ARRIVAL_REASONS } from "./arrival";
 import { SPECIES } from "./species";
 import { seasonOf } from "./ages";
 import useArrivalInfo from "./useArrivalInfo";
@@ -94,6 +97,7 @@ function MonkeyForm({
                   ...(birthDateAvailable() && { birthDate: "", birthDateApprox: false }),
                   // (a new arrival: arrived today to start with, once it has them)
                   ...(careUnitsOnly && arrivalDetailsAvailable() && { arrivalDate: todayText(), arrivalReason: "", arrivalRequired: true }),
+                  ...(careUnitsOnly && arrivalConditionAvailable() && { arrivalCondition: "" }),
               }
             : formFromMonkey(monkey, careChoices)
     );
@@ -126,6 +130,18 @@ function MonkeyForm({
         }
     }, [isNew, arrivalInfo.available, arrivalInfo.info]);
     const showArrival = arrivalInfo.available && (isNew ? rescue : true);
+    // Named By (staff only; once the database has it: named-by.sql): beside
+    // the Name, not in the quick Edit
+    const namedByInfo = useArrivalInfo(monkey?.id ?? null, !quick, null, loadNamedBy);
+    const [namedBy, setNamedBy] = useState("");
+    const [namedBySaved, setNamedBySaved] = useState("");
+    useEffect(() => {
+        if (!isNew && namedByInfo.available) {
+            setNamedBy(namedByInfo.info);
+            setNamedBySaved(namedByInfo.info);
+        }
+    }, [isNew, namedByInfo.available, namedByInfo.info]);
+    const showNamedBy = namedByInfo.available && !quick;
     // Monitoring (editors and admins, once the database has it: editors since
     // monitoring-editors.sql): Condition Check and
     // Notes for Monitoring, for the Troop Monitoring Notes. Kept apart
@@ -147,7 +163,7 @@ function MonkeyForm({
         monitoring.conditionCheck !== monitoringSaved.conditionCheck ||
         monitoring.notes.trim() !== monitoringSaved.notes.trim() ||
         monitoring.alertsMuted !== monitoringSaved.alertsMuted;
-    const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved || monitoringChanged;
+    const changed = JSON.stringify(form) !== JSON.stringify(initial) || arrival !== arrivalSaved || namedBy !== namedBySaved || monitoringChanged;
     // Photos uploaded while this form is open (tidied up if not kept)
     const uploadedHere = useRef([]);
 
@@ -193,7 +209,7 @@ function MonkeyForm({
         if (next === kind) return;
         setKind(next);
         setErrors({});
-        const { arrivalDate, arrivalReason, arrivalRequired, ...rest } = form;
+        const { arrivalDate, arrivalReason, arrivalRequired, arrivalCondition, ...rest } = form;
         setForm({
             ...rest,
             troop: "",
@@ -202,6 +218,7 @@ function MonkeyForm({
             chipUnknown: false,
             // (Other: no arrival date or reason; back to New Arrival: today again)
             ...(next === "rescue" && arrivalDetailsAvailable() && { arrivalDate: todayText(), arrivalReason: "", arrivalRequired: true }),
+            ...(next === "rescue" && arrivalConditionAvailable() && { arrivalCondition: "" }),
         });
     }
     // Feeding: for a monkey in an introcage (not a troop, or a care unit's
@@ -293,6 +310,14 @@ function MonkeyForm({
                     await saveArrivalInfo(saved.id, arrival);
                 } catch (error) {
                     window.alert(`${saved.name} was saved, but the Arrival Info wasn't: ${error.message} Please open Edit to add it again.`);
+                }
+            }
+            // ...and so is Named By
+            if (showNamedBy && namedBy.trim() !== namedBySaved.trim()) {
+                try {
+                    await saveNamedBy(saved.id, namedBy);
+                } catch (error) {
+                    window.alert(`${saved.name} was saved, but Named By wasn't: ${error.message} Please open Edit to add it again.`);
                 }
             }
             // ...and so is the Monitoring
@@ -397,17 +422,27 @@ function MonkeyForm({
                                 ))}
                             </div>
                         )}
-                        <label className="MonkeyForm-field">
-                            <span>Name <em>(required)</em></span>
-                            <input
-                                ref={nameRef}
-                                value={form.name}
-                                onChange={set("name")}
-                                aria-invalid={Boolean(errors.name)}
-                                aria-describedby={describedBy("name")}
-                            />
-                            {errorFor("name")}
-                        </label>
+                        {/* Name, and beside it Named By (staff, once the
+                            database has it) */}
+                        <div className={showNamedBy ? "MonkeyForm-row is-pair" : undefined}>
+                            <label className="MonkeyForm-field">
+                                <span>Name <em>(required)</em></span>
+                                <input
+                                    ref={nameRef}
+                                    value={form.name}
+                                    onChange={set("name")}
+                                    aria-invalid={Boolean(errors.name)}
+                                    aria-describedby={describedBy("name")}
+                                />
+                                {errorFor("name")}
+                            </label>
+                            {showNamedBy && (
+                                <label className="MonkeyForm-field">
+                                    <span>Named By</span>
+                                    <input value={namedBy} maxLength={100} onChange={(e) => setNamedBy(e.target.value)} />
+                                </label>
+                            )}
+                        </div>
 
                         {/* Where it lives: its enclosure, then with the troop
                             or in one of that enclosure's introcages */}
@@ -460,7 +495,7 @@ function MonkeyForm({
                             them): needed for a new arrival; in Edit, any monkey,
                             and either can be left blank */}
                         {form.arrivalDate !== undefined && (
-                            <div className="MonkeyForm-row is-pair is-lined">
+                            <div className={`MonkeyForm-row is-pair is-lined${form.arrivalCondition !== undefined ? " is-trio" : ""}`}>
                                 <label className="MonkeyForm-field">
                                     <span>Arrival Date {form.arrivalRequired && <em>(required)</em>}</span>
                                     <input
@@ -490,6 +525,20 @@ function MonkeyForm({
                                     </select>
                                     {errorFor("arrivalReason")}
                                 </label>
+                                {/* (once the database has it: optional) */}
+                                {form.arrivalCondition !== undefined && (
+                                    <label className="MonkeyForm-field">
+                                        <span>Condition Received</span>
+                                        <select value={form.arrivalCondition} onChange={set("arrivalCondition")}>
+                                            <option value="">Not recorded</option>
+                                            {Object.entries(ARRIVAL_CONDITIONS).map(([key, label]) => (
+                                                <option key={key} value={key}>
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                )}
                             </div>
                         )}
 

@@ -84,8 +84,10 @@ export function movementPlaces(troops, enclosures, homeOf) {
 
 // Categories never in the drop-down: a Status record for each status
 // change (added by the database: monkey-archive.sql), its arrival (from
-// Arrival Date and Reason) and its weights (the Records page's): otherRows
-const OTHER_CATEGORIES = { status: "Status", arrival: "Arrival", weight: "Weight", condition: "Condition" };
+// Arrival Date and Reason) and its weights (the Records page's): otherRows;
+// and an Integration record for each integration started and Status Update
+// (added by the database: integration-records.sql)
+const OTHER_CATEGORIES = { status: "Status", integration: "Integration", arrival: "Arrival", weight: "Weight", condition: "Condition" };
 
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { IconCirclePlus, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconCircleCheck, IconCirclePlus, IconPencil, IconTrash } from "@tabler/icons-react";
 import { loadStaff, loadStaffActivity } from "./monkeyData";
 import { dayLabel } from "./MyChanges";
 import { fullName } from "./places";
 import { dayText } from "./babyRecords";
-import { ALL_TIME, GROUPS, PERIODS, changeLines, dayWords, inGroup, periodFor, sourceOf } from "./activityWords";
+import { ALL_TIME, GROUPS, PERIODS, changeLines, dayWords, inGroup, periodFor, sourceOf, tidyChanges } from "./activityWords";
 import "./MyChanges.css";
 import "./StaffActivity.css";
 
@@ -20,6 +20,8 @@ const ACTIONS = {
     added: { Icon: IconCirclePlus, word: "Added" },
     changed: { Icon: IconPencil, word: "Changed" },
     deleted: { Icon: IconTrash, word: "Deleted" },
+    // (a monitoring session finished: tidyChanges)
+    completed: { Icon: IconCircleCheck, word: "Completed" },
 };
 
 const timeText = (date) => date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -139,7 +141,7 @@ export default function StaffActivity() {
         };
     }, [person, days, from, to, datesOk]);
 
-    const shown = result?.changes ? inGroup(result.changes, group) : [];
+    const shown = result?.changes ? inGroup(tidyChanges(result.changes), group) : [];
     const byDay = [];
     for (const change of shown) {
         const at = new Date(change.changed_at);

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
 import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import { addRecord, loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
 import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
@@ -11,6 +11,8 @@ import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } fr
 // The records: from a mocked database (none, unless a test says)
 vi.mock("./monkeyData", async (importOriginal) => ({
     ...(await importOriginal()),
+    // (the pages' default monkeys: the sample ones, as in setupTests.js)
+    BUILT_IN_DATA: { ...(await importOriginal()).BUILT_IN_DATA, monkeys: (await import("./testMonkeys")).default },
     loadRecords: vi.fn(),
     addRecord: vi.fn(),
 }));
@@ -58,6 +60,14 @@ test("the page shows the name, the icon bar and the Profile facts", () => {
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
     // (no troop link under the name)
     expect(screen.queryByRole("link", { name: /Troop/ })).not.toBeInTheDocument();
+});
+
+test("Arrival: Condition Received once the database has it (arrival-condition.sql)", () => {
+    const { unmount } = render(<MonkeyPage monkey={{ ...aroha, arrivalCondition: "injured" }} />);
+    expect(screen.getByText("Condition Received").closest("div")).toHaveTextContent("Injured");
+    unmount();
+    render(<MonkeyPage monkey={aroha} />);
+    expect(screen.queryByText("Condition Received")).toBeNull();
 });
 
 test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Profile", async () => {

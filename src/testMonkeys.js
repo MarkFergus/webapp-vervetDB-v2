@@ -1,3 +1,6 @@
+// Sample monkeys for the tests only (an old copy of the real ones, from
+// before the database). The website itself never uses it: with no
+// database and no copy saved on the phone, it says so instead.
 // cSpell:disable
 
 const monkeysArr = [

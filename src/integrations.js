@@ -37,6 +37,18 @@ export const statusReport = (status, notes = "") => {
     return notes.trim() ? `${line}: ${notes.trim()}` : line;
 };
 
+// A Status Update's Integration record in the monkey's Rehabilitation
+// records, as the database writes it (integration-records.sql):
+// "Integration placed on hold: <notes>"
+const RECORD_WORDS = {
+    active: "Integration resumed",
+    on_hold: "Integration placed on hold",
+    completed: "Integration completed",
+    cancelled: "Integration cancelled",
+};
+export const statusRecord = (status, notes = "") =>
+    notes.trim() ? `${RECORD_WORDS[status]}: ${notes.trim()}` : RECORD_WORDS[status];
+
 // Status Update's date box, by the new status
 export const STATUS_DATE_LABELS = {
     active: "Date Resumed",
@@ -46,7 +58,7 @@ export const STATUS_DATE_LABELS = {
 };
 
 // A report's longest (the database's too); most are 200–400
-export const MAX_REPORT = 500;
+export const MAX_REPORT = 1000;
 
 // Where it is now, for integrating: the introcage it's staying in, else its
 // own introcage (an area of a care unit isn't an introcage), else null

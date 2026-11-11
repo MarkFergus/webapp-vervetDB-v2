@@ -6,3 +6,10 @@ export const ARRIVAL_REASONS = {
     confiscated: "Confiscated",
     surrendered: "Surrendered",
 };
+
+// The condition they arrived in, Condition Received (arrival-condition.sql)
+export const ARRIVAL_CONDITIONS = {
+    healthy: "Healthy",
+    injured: "Injured",
+    sick: "Sick",
+};

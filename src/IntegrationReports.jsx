@@ -11,7 +11,7 @@ import "./IntegrationReports.css";
 // or whoever wrote one can change or delete it.
 // (supabase/integration-reports.sql)
 
-export const MAX_REPORT = 500;
+export const MAX_REPORT = 1000;
 
 const dateText = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 

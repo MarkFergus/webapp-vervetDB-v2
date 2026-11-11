@@ -1,4 +1,4 @@
-import { loadChip } from "./monkeyData";
+import { loadChip, loadNamedBy } from "./monkeyData";
 import { useEffect, useRef, useState } from "react";
 import {
     IconAlertTriangle,
@@ -26,6 +26,7 @@ import {
     IconTimelineEvent,
     IconUserCircle,
     IconWorldPin,
+    IconSignature,
 } from "@tabler/icons-react";
 import { BackLink, DetailRow, Fold, PhotoSlides, SectionNav, inPairs, jumpId } from "./EnclosuresPage";
 import { useIntegration } from "./IntegrationReports";
@@ -40,7 +41,7 @@ import BenchTreeIcon from "./BenchTreeIcon";
 import { SPECIES } from "./species";
 import { summaryDate } from "./feeding";
 import { STATUS_WORDS, isArchived } from "./monkeyStatus";
-import { ARRIVAL_REASONS } from "./arrival";
+import { ARRIVAL_CONDITIONS, ARRIVAL_REASONS } from "./arrival";
 import StatusUpdate from "./StatusUpdate";
 import useMonitoring from "./useMonitoring";
 import { LastSeen, useMissing } from "./MarkSeen";
@@ -206,6 +207,8 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Its Arrival Info (staff; written in Add New Monkey or Edit): loaded
     // again whenever it's saved (Edit: a new monkey object)
     const arrival = useArrivalInfo(monkey.id, isStaff, monkey);
+    // ...and who named them (staff; named-by.sql), in the Arrival section
+    const namedBy = useArrivalInfo(monkey.id, isStaff, monkey, loadNamedBy);
     // Its weights (Baby Care's babies: the Records page), in Medical
     const weights = useWeights(monkey.id, isStaff);
     // Its conditions (Monitoring), in Medical
@@ -331,8 +334,14 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const detailRows = inPairs([
         { icon: IconCalendar, label: "Arrival Date", value: monkey.arrivalDate ? dayText(monkey.arrivalDate) : null },
         { icon: IconPlaneArrival, label: "Arrival Reason", value: ARRIVAL_REASONS[monkey.arrivalReason] ?? null },
+        // (once the database has it: arrival-condition.sql)
+        ...(monkey.arrivalCondition !== undefined
+            ? [{ icon: IconHeartbeat, label: "Condition Received", value: ARRIVAL_CONDITIONS[monkey.arrivalCondition] ?? null }]
+            : []),
         { icon: IconMapPin, label: "Arrival Place", value: monkey.arrivalPlace ? <PlaceName name={monkey.arrivalPlace} /> : null },
         { icon: IconWorldPin, label: "Area of Origin", value: null },
+        // (once the database has it: the whole width, after the rest)
+        ...(namedBy.available ? [{ icon: IconSignature, label: "Named By", value: namedBy.info || null, wide: true }] : []),
     ]);
 
     // Monitoring's rows, one each, the whole width

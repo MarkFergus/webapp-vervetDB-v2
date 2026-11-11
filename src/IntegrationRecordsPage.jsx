@@ -3,6 +3,7 @@ import { IconAlertTriangle, IconPencil, IconPlus, IconSearch } from "@tabler/ico
 import useDialog from "./useDialog";
 import {
     addIntegrationReports,
+    loadIntegrationReportsFor,
     loadIntegrations,
     loadLatestReportDates,
     startIntegration,
@@ -25,16 +26,21 @@ import {
     integrationPlace,
     matchesSearch,
     reportFrom,
+    statusRecord,
     statusReport,
 } from "./integrations";
+import { periodText } from "./IntegrationReports";
 import { BabyPhoto } from "./PagePicker";
 import "./IntegrationRecordsPage.css";
 
 // Records → Integration (staff; entering: editors and admins, canEnter):
-//   Reports                the monkeys with an integration going on, each
-//                          with From and To dates and its report (up to 500
-//                          characters), saved together with Save All. They
-//                          show on the monkey's Full Profile (Integration).
+//   Reports                Enter: the monkeys with an integration going on,
+//                          each with From and To dates and its report (up
+//                          to 1000 characters), saved together with Save
+//                          All. They show on the monkey's Full Profile
+//                          (Integration). View: each one's past reports,
+//                          newest first (the monkey with the latest report
+//                          at the top).
 //   Current Integrations   each one going on: the monkey, where it is, when
 //                          it started, its type and status; + New
 //                          Integration starts one (introcage monkeys);
@@ -76,7 +82,132 @@ function LoadProblem({ list }) {
 
 // ---- Reports ----
 
+// Enter | View (editors and admins; other staff: View only)
 function ReportsPage({ monkeys, canEnter }) {
+    const [tab, setTab] = useState(canEnter ? "enter" : "view");
+    const shownTab = canEnter ? tab : "view";
+    return (
+        <>
+            {canEnter && (
+                <div className="RecordsPage-tabRow">
+                    <div className="RecordsPage-tabs" role="tablist" aria-label="Reports">
+                        {[
+                            ["enter", "Enter"],
+                            ["view", "View"],
+                        ].map(([id, label]) => (
+                            <button
+                                key={id}
+                                type="button"
+                                role="tab"
+                                aria-selected={shownTab === id}
+                                className={shownTab === id ? "is-on" : ""}
+                                onClick={() => setTab(id)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {shownTab === "enter" ? <ReportsEnter monkeys={monkeys} /> : <ReportsView monkeys={monkeys} />}
+        </>
+    );
+}
+
+// How many of a monkey's reports show before Show All
+const REPORTS_AT_FIRST = 3;
+
+// View: each monkey being integrated with their past reports, newest first;
+// the monkey with the most recent report at the top (none yet: at the end)
+function ReportsView({ monkeys }) {
+    const { list } = useIntegrations();
+    const ready = Array.isArray(list);
+    // null: loading; "failed"; or { monkeyId: [reports] }
+    const [reports, setReports] = useState(null);
+    // The monkeys showing all their reports
+    const [open, setOpen] = useState({});
+    const ids = useMemo(() => (ready ? list.map((i) => i.monkeyId) : []), [ready, list]);
+    useEffect(() => {
+        if (!ready) return;
+        let cancelled = false;
+        loadIntegrationReportsFor(ids)
+            .then((found) => !cancelled && setReports(found))
+            .catch((error) => {
+                console.error("Loading the integration reports failed:", error);
+                if (!cancelled) setReports("failed");
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [ready, ids]);
+
+    if (!ready) return <LoadProblem list={list} />;
+    if (reports === null) return <p className="RecordsPage-none">Loading…</p>;
+    if (reports === "failed") {
+        return <p className="RecordsPage-none RecordsPage-problem">Couldn't load the reports. Please check your connection and try again.</p>;
+    }
+    const byId = (id) => monkeys.find((m) => m.id === id);
+    const latest = (r) => reports[r.monkey.id]?.[0]?.to ?? "";
+    const rows = list
+        .map((i) => ({ integration: i, monkey: byId(i.monkeyId) }))
+        .filter((r) => r.monkey)
+        .sort((a, b) => latest(b).localeCompare(latest(a)) || a.monkey.name.localeCompare(b.monkey.name));
+    if (!rows.length) return <p className="RecordsPage-none">No integrations going on at the moment.</p>;
+    return (
+        <>
+            <p className="RecordsPage-hint">The past reports for each monkey being integrated, newest first.</p>
+            <ul className="IntegrationPage-cards">
+                {rows.map(({ integration, monkey }) => {
+                    const own = reports[monkey.id] ?? [];
+                    const all = Boolean(open[monkey.id]);
+                    const shown = all ? own : own.slice(0, REPORTS_AT_FIRST);
+                    return (
+                        <li key={integration.id} className="IntegrationPage-card">
+                            <div className="IntegrationPage-who">
+                                <BabyPhoto monkey={monkey} />
+                                <div className="RecordsPage-baby">
+                                    <span className="RecordsPage-name">{monkey.name}</span>
+                                    <span className="RecordsPage-place">
+                                        {fullName(integrationPlace(monkey) ?? "")} · {INTEGRATION_KINDS[integration.kind]}
+                                    </span>
+                                </div>
+                                <span className="IntegrationPage-last">
+                                    {own.length ? `${own.length} ${own.length === 1 ? "report" : "reports"}` : "No reports yet"}
+                                </span>
+                            </div>
+                            {own.length > 0 && (
+                                <ol className="IntegrationPage-past" aria-label={`${monkey.name}'s reports`}>
+                                    {shown.map((r) => (
+                                        <li key={r.id}>
+                                            <p className="IntegrationPage-pastWhen">
+                                                <strong>{periodText(r.from, r.to)}</strong>
+                                                <span> · {r.loggedByName ?? "Staff"}</span>
+                                            </p>
+                                            <p className="IntegrationPage-pastText">{r.report}</p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
+                            {own.length > REPORTS_AT_FIRST && (
+                                <button
+                                    type="button"
+                                    className="Modal-edit is-blue-outline IntegrationPage-more"
+                                    aria-expanded={all}
+                                    onClick={() => setOpen((o) => ({ ...o, [monkey.id]: !all }))}
+                                >
+                                    {all ? "Show Fewer" : `Show All (${own.length})`}
+                                </button>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </>
+    );
+}
+
+// Enter: a report for each monkey being integrated, then Save All
+function ReportsEnter({ monkeys, canEnter = true }) {
     const { list } = useIntegrations();
     const ready = Array.isArray(list);
     // Each one's latest report end ({ monkeyId: date }), for From
@@ -450,7 +581,9 @@ function StatusDialog({ integration, monkey, onSave, onCancel }) {
                             {isCurrent(status)
                                 ? `It stays in Current Integrations, as ${word} from ${longDate(date)}.`
                                 : `It will end on ${longDate(date)} and leave Current Integrations.`}
-                            {withNotes && ` Adds "${statusReport(status, notes)}" to ${monkey.name}'s integration record.`}
+                            {` Adds "${statusRecord(status, withNotes ? notes : "")}" to ${monkey.name}'s Rehabilitation records${
+                                withNotes ? " and Integration reports" : ""
+                            }.`}
                         </span>
                     </p>
                 ) : (
@@ -557,13 +690,15 @@ function CurrentPage({ monkeys, canEnter }) {
     // monkey's integration record: if only that fails, the status stays
     // saved and the message says to add it in Reports
     async function changeStatus(integration, monkey, { status, date, notes = "" }) {
-        const saved = await updateIntegrationStatus(integration.id, { status, date });
+        // (the database adds its Integration record to the monkey's
+        // Rehabilitation records: integration-records.sql)
+        const saved = await updateIntegrationStatus(integration.id, { status, date, notes });
         let entryProblem = "";
         if (NOTE_STATUSES.includes(saved.status)) {
             try {
                 await addIntegrationReports([{ monkeyId: monkey.id, from: date, to: date, report: statusReport(saved.status, notes) }]);
             } catch (error) {
-                entryProblem = ` Its entry couldn't be added to the integration record (${error.message}), so please add it in Reports.`;
+                entryProblem = ` Its entry couldn't be added to the Integration reports (${error.message}), so please add it in Reports.`;
             }
         }
         setList((l) => (isCurrent(saved.status) ? l.map((i) => (i.id === saved.id ? saved : i)) : l.filter((i) => i.id !== saved.id)));

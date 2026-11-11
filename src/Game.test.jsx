@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import Game from "./Game";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import { drawResultImage } from "./resultImage";
 
 // The test browser can't draw pictures: a stand-in results picture

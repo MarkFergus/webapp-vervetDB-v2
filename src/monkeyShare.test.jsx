@@ -6,7 +6,7 @@ import ShowPage from "./ShowPage";
 import { drawMonkeyImage } from "./monkeyImage";
 import { ageLabel, ageText } from "./ages";
 import { monkeyFromHash, monkeyHash } from "./monkeyLink";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 
 // The test browser can't draw pictures: a stand-in for the profile picture
 vi.mock("./monkeyImage", async (importOriginal) => ({

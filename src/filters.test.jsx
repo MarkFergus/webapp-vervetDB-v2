@@ -4,7 +4,7 @@ import { render, screen, within } from "@testing-library/react";
 import { fullName } from "./places";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
-import monkeysArr from "./monkeysArr";
+import monkeysArr from "./testMonkeys";
 import { ageInYears } from "./ages";
 import { SECTIONS } from "./sections";
 

@@ -51,7 +51,8 @@
     border-radius: 50%;
 }
 
-.MyChanges-item.is-added .MyChanges-icon {
+.MyChanges-item.is-added .MyChanges-icon,
+.MyChanges-item.is-completed .MyChanges-icon {
     color: var(--green);
     background-color: var(--green-wash);
 }

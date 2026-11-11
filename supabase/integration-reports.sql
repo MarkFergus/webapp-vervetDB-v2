@@ -2,7 +2,7 @@
 -- (usually a weekly report), shown on the monkey's pop-up for staff.
 --   monkey_id     the monkey it's about
 --   from_date / to_date   the period it covers
---   report       the report itself (up to 500 characters)
+--   report       the report itself (up to 1000 characters: integration-report-1000.sql)
 --   logged_by / logged_by_name / logged_at   who wrote it and when, filled
 --                 in automatically (their full name, as the maintenance log)
 -- Who can do what (the database enforces it, not just the website):

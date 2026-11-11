@@ -104,6 +104,23 @@ describe("the story", () => {
         expect(entries.every((e) => e.filters.includes("milestones"))).toBe(true);
     });
 
+    test("Integration records (integration-records.sql): Milestones, in place of the ones built from the integrations", () => {
+        const entries = entriesOf(
+            timelineMonths({ ...DAISY, arrivalDate: null }, {
+                records: [
+                    { id: 1, section: "rehabilitation", category: "integration", date: "2026-10-28", details: "Foster-Mum integration started at Koko A" },
+                    { id: 2, section: "rehabilitation", category: "integration", date: "2026-11-02", details: "Integration placed on hold: Mum unwell" },
+                ],
+                integrations: [{ id: 1, kind: "foster_mum", startedOn: "2026-10-28", status: "on_hold", statusOn: "2026-11-02" }],
+            })
+        );
+        expect(entries.map((e) => [e.label, e.text])).toEqual([
+            ["Integration", "Integration placed on hold: Mum unwell"],
+            ["Integration", "Foster-Mum integration started at Koko A"],
+        ]);
+        expect(entries.every((e) => e.filters.includes("milestones"))).toBe(true);
+    });
+
     test("sightings: one quiet line a month, not counting sessions they weren't seen in", () => {
         const session = (date, seen) => ({ date, sightings: [{ monkeyId: 7, seen }] });
         const entries = entriesOf(
