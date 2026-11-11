@@ -1,0 +1,106 @@
+/* Monkey Intake (MonkeyIntake.jsx): the year and the downloads (Excel,
+   PDF) on one row, phones too, then a card per list */
+.Intake-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.Intake-year {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-right: auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.Intake-year select {
+    min-width: 88px;
+    height: 36px;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    background-color: var(--surface-1);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+}
+
+.Intake-count {
+    margin-left: 4px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-2);
+    background-color: var(--surface-2);
+    border-radius: 6px;
+}
+
+/* A wide table scrolls sideways on a phone, within the card's padding (so
+   it never runs to the card's edge) */
+.Intake-scroll {
+    margin-top: 10px;
+    overflow-x: auto;
+}
+
+.Intake-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.Intake-table th {
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-2);
+    vertical-align: bottom;
+    border-bottom: 1px solid var(--line-strong);
+}
+
+.Intake-table td {
+    padding: 7px 6px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+}
+
+/* Every row kept short: anything over 2 lines ends in "…" */
+.Intake-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+.Intake-table tr:last-child td {
+    border-bottom: none;
+}
+
+.Intake-table .is-no {
+    width: 1%;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.Intake-table td.is-date,
+.Intake-table td.is-age,
+.Intake-table td.is-name {
+    white-space: nowrap;
+}
+
+.Intake-table td.is-name {
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Intake-table td.is-notes {
+    min-width: 180px;
+    color: var(--text-2);
+}

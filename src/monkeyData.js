@@ -555,6 +555,32 @@ export async function loadArchive() {
     }));
 }
 
+// Monkey Intake (admins): every monkey that arrived in a year, or was
+// released, died, escaped or went missing in it (their current status), as
+// the app's monkeys with statusOn / statusDetails; and their Arrival Info
+// { monkeyId: text } (none if that can't be read). Throws a message if the
+// database hasn't got arrival dates yet.
+export async function loadIntake(year) {
+    if (!arrivalDetailsAvailable()) throw new Error("Please run supabase/arrival-details.sql first.");
+    const from = `${year}-01-01`;
+    const to = `${year}-12-31`;
+    const within = (column) => `and(${column}.gte.${from},${column}.lte.${to})`;
+    const { data, error } = await supabase
+        .from("monkeys")
+        .select(`${monkeyColumns}, status_on, status_details, released_on, release_details`)
+        .or([within("arrival_date"), within("status_on"), within("released_on")].join(","))
+        .order("id");
+    if (error) throw error;
+    const monkeys = data.map(toAppMonkey);
+    const arrived = monkeys.filter((m) => m.arrivalDate?.startsWith(`${year}-`)).map((m) => m.id);
+    const notes = {};
+    if (arrived.length) {
+        const info = await supabase.from("arrival_info").select("monkey_id, info").in("monkey_id", arrived);
+        for (const row of info.data ?? []) notes[row.monkey_id] = row.info;
+    }
+    return { monkeys, notes };
+}
+
 // ---- Arrival Info: a new arrival's arrival details (staff only) ----
 
 // A monkey's Arrival Info ("" if none). Throws if the database hasn't got it

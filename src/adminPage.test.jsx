@@ -44,7 +44,7 @@ const renderPage = () =>
     );
 
 describe("the dashboard's parts", () => {
-    test("Staff Access, Staff Activity, the Monkey Archive, Weekly Reports, then the Morning Brief, each its own page", () => {
+    test("Staff Access, Staff Activity, the Monkey Archive, Monkey Intake, Weekly Reports, then the Morning Brief, each its own page", () => {
         fakeSupabase();
         render(
             <AuthProvider>
@@ -53,12 +53,13 @@ describe("the dashboard's parts", () => {
         );
         expect(screen.getByRole("heading", { level: 1, name: "Admin Dashboard" })).toBeInTheDocument();
         const links = screen.getAllByRole("link");
-        expect(links.map((a) => a.getAttribute("href"))).toEqual(["#admin/staff", "#admin/activity", "#admin/archive", "#admin/reports", "#admin/brief"]);
+        expect(links.map((a) => a.getAttribute("href"))).toEqual(["#admin/staff", "#admin/activity", "#admin/archive", "#admin/intake", "#admin/reports", "#admin/brief"]);
         expect(links[0]).toHaveTextContent("Staff Access");
         expect(links[1]).toHaveTextContent("Staff Activity");
         expect(links[2]).toHaveTextContent("Monkey Archive");
-        expect(links[3]).toHaveTextContent("Weekly Reports");
-        expect(links[4]).toHaveTextContent("Morning Brief");
+        expect(links[3]).toHaveTextContent("Monkey Intake");
+        expect(links[4]).toHaveTextContent("Weekly Reports");
+        expect(links[5]).toHaveTextContent("Morning Brief");
         // (the staff list isn't loaded until its page)
         expect(screen.queryByRole("table")).toBeNull();
     });

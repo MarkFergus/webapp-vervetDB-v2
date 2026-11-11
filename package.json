@@ -13,7 +13,8 @@
         "qrcode-generator": "^2.0.4",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
-        "react-easy-crop": "^6.2.3"
+        "react-easy-crop": "^6.2.3",
+        "write-excel-file": "^4.1.1"
     },
     "scripts": {
         "start": "vite",

@@ -32,6 +32,7 @@ export const CHANGELOG = [
             "Improved Staff Activity: monitoring sessions show once, when completed",
             "Improved opening the app: fewer \"Couldn't reach the database\" warnings",
             "Improved the deworming sheet on phones",
+            "Improved confirm and warning pop-ups to match the app",
         ],
     },
     {

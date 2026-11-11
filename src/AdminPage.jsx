@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconFileText, IconHistory, IconMail, IconMinus, IconUsers } from "@tabler/icons-react";
+import { IconArchive, IconCheck, IconFileText, IconHistory, IconMail, IconMinus, IconPlaneArrival, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
@@ -8,6 +8,7 @@ import MonkeyPage from "./MonkeyPage";
 import StaffActivity from "./StaffActivity";
 import MorningBrief from "./MorningBrief";
 import WeeklyReports from "./WeeklyReports";
+import MonkeyIntake from "./MonkeyIntake";
 import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
 import "./AdminPage.css";
@@ -27,6 +28,9 @@ import "./AdminPage.css";
 //                                   Profile (#admin/archive/<name>-<id>),
 //                                   with Status Update to change its status
 //                                   or restore it (monkey-archive.sql)
+//   Monkey Intake (#admin/intake)   a year's arrivals, releases, deaths,
+//                                   escaped and missing (MonkeyIntake.jsx),
+//                                   as Excel or PDF
 //   Weekly Reports (#admin/reports) your own weekly report email: on or off,
 //                                   when, and what's in it (WeeklyReports.jsx)
 
@@ -63,7 +67,7 @@ export const ACCESS = [
     { what: "Change or delete anyone's records", who: ["admin"] },
     { what: "Status Update and the Monkey Archive", who: ["admin"] },
     { what: "Prepare deworming lists", who: ["admin"] },
-    { what: "Admin Dashboard: user types, Staff Activity and Weekly Reports", who: ["admin"] },
+    { what: "Admin Dashboard: user types, Staff Activity, Monkey Intake and Weekly Reports", who: ["admin"] },
 ];
 
 function AccessTable() {
@@ -229,6 +233,7 @@ const PARTS = [
     { id: "staff", title: "Staff Access", sub: "What each user type can do, and every account's user type", Icon: IconUsers },
     { id: "activity", title: "Staff Activity", sub: "What each staff member has added, changed or deleted", Icon: IconHistory },
     { id: "archive", title: "Monkey Archive", sub: "Monkeys no longer at the sanctuary: deceased, escaped, missing and released", Icon: IconArchive },
+    { id: "intake", title: "Monkey Intake", sub: "A year's arrivals, releases, deaths, escapes and missing monkeys, to download", Icon: IconPlaneArrival },
     { id: "reports", title: "Weekly Reports", sub: "Your weekly report email: when it comes and what's in it", Icon: IconMail },
     { id: "brief", title: "Morning Brief", sub: "Today's brief: what needs doing, as the 06:50 email has it", Icon: IconFileText },
 ];
@@ -321,6 +326,11 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false, p
                 <>
                     <p className="Admin-intro">Being tried out: emailed every day at 06:50.</p>
                     <MorningBrief />
+                </>
+            ) : part.id === "intake" ? (
+                <>
+                    <p className="Admin-intro">Arrivals, releases, deaths, and escaped or missing monkeys, by year.</p>
+                    <MonkeyIntake />
                 </>
             ) : part.id === "reports" ? (
                 <>
