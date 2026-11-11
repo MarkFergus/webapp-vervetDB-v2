@@ -21,6 +21,20 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.5.0",
+        date: "2026-11-11",
+        changes: [
+            "New View tab in Integration Reports, showing each monkey's past reports",
+            "Added Integration records to Rehabilitation for every integration status change",
+            "Added Condition Received and Named By to Arrival",
+            "Added a \"Something went wrong\" screen with Reload if a page fails",
+            "Improved integration reports: up to 1000 characters",
+            "Improved Staff Activity: monitoring sessions show once, when completed",
+            "Improved opening the app: fewer \"Couldn't reach the database\" warnings",
+            "Improved the deworming sheet on phones",
+        ],
+    },
+    {
         version: "2.4.1",
         date: "2026-11-10",
         changes: ["Fixed the offline warning showing when opening the app after a while"],
