@@ -3,6 +3,7 @@ import { fullName } from "./places";
 import { motion } from "motion/react";
 import { IconAlertCircle, IconAlertTriangle, IconPencil, IconPlus } from "@tabler/icons-react";
 import useDialog from "./useDialog";
+import { askDiscard, showNotice } from "./AppDialog";
 import { checkForm, chosenIntrocage, emptyForm, formFromMonkey, MAX_PHOTOS } from "./monkeyFormChecks";
 import {
     arrivalConditionAvailable,
@@ -169,10 +170,11 @@ function MonkeyForm({
 
     // Closing with unsaved changes asks first. (Escape while cropping just
     // closes the crop screen.) Photos uploaded but not saved are deleted.
-    function requestClose() {
+    const asking = useRef(false);
+    async function requestClose() {
         if (photosRef.current?.cancelCrop()) return;
-        if (busy) return;
-        if (changed && !window.confirm("Discard your changes?")) return;
+        if (busy || asking.current) return;
+        if (changed && !(await askDiscard(asking))) return;
         deletePhotos(uploadedHere.current);
         onClose();
     }
@@ -304,12 +306,16 @@ function MonkeyForm({
         try {
             // (its stay goes along: it ends if its introcage is now home)
             const saved = await saveMonkey({ ...values, stay: monkey?.stay }, troopIds, monkey?.id, move);
+            // A part that wasn't saved: said once the form has closed
+            const notSaved = [];
+            const tellNotSaved = () =>
+                notSaved.length && showNotice(notSaved.map((line) => `${saved.name} was saved, but ${line} Please open Edit to add it again.`).join("\n\n"));
             // Arrival Info is kept apart (staff only); the monkey is already saved
             if (showArrival && arrival.trim() !== arrivalSaved.trim()) {
                 try {
                     await saveArrivalInfo(saved.id, arrival);
                 } catch (error) {
-                    window.alert(`${saved.name} was saved, but the Arrival Info wasn't: ${error.message} Please open Edit to add it again.`);
+                    notSaved.push(`the Arrival Info wasn't: ${error.message}`);
                 }
             }
             // ...and so is Named By
@@ -317,7 +323,7 @@ function MonkeyForm({
                 try {
                     await saveNamedBy(saved.id, namedBy);
                 } catch (error) {
-                    window.alert(`${saved.name} was saved, but Named By wasn't: ${error.message} Please open Edit to add it again.`);
+                    notSaved.push(`Named By wasn't: ${error.message}`);
                 }
             }
             // ...and so is the Monitoring
@@ -333,7 +339,7 @@ function MonkeyForm({
                         ...(mute ? { alertsMuted: monitoring.alertsMuted } : {}),
                     });
                 } catch (error) {
-                    window.alert(`${saved.name} was saved, but the Monitoring wasn't: ${error.message} Please open Edit to add it again.`);
+                    notSaved.push(`the Monitoring wasn't: ${error.message}`);
                 }
             }
             // Tidy up: only photos uploaded just now and then taken off, never
@@ -348,9 +354,11 @@ function MonkeyForm({
                     date: status.date,
                     details: `${lastSeen}${status.details.trim()}`,
                 });
+                tellNotSaved();
                 return;
             }
             onSaved(saved);
+            tellNotSaved();
         } catch (error) {
             setProblem(error.message);
             setBusy(false);

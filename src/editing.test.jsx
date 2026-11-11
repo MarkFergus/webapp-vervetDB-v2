@@ -552,6 +552,22 @@ test("the photo menu: arrow keys move, Escape closes just the menu, a click outs
     expect(within(form()).queryByRole("menu")).toBeNull();
 });
 
+test("closing with changes asks in the app's pop-up: Keep Editing stays, Discard closes", async () => {
+    const { user } = setup();
+    await openEditFor(user, "Aroha");
+    await user.type(field("Bio"), "!");
+    await user.click(within(form()).getByRole("button", { name: "Cancel" }));
+    const ask = screen.getByRole("alertdialog", { name: "Discard your changes?" });
+    await user.click(within(ask).getByRole("button", { name: "Keep Editing" }));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(field("Bio").value).toMatch(/!$/);
+
+    await user.keyboard("{Escape}");
+    await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Discard" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Save" })).toBeNull());
+    expect(saved.updates).toHaveLength(0);
+});
+
 test("deleting asks first, then removes the monkey", async () => {
     const { user } = setup();
     await openEditFor(user, "Aroha");
@@ -604,22 +620,12 @@ test("if the database refuses, the form stays open with a clear message", async 
     expect(field("Bio")).toHaveValue("Arrived as an orphan in 2016. More.");
 });
 
-test("closing with unsaved changes asks first", async () => {
+test("closing with no changes closes straight away, without asking", async () => {
     const { user } = setup();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     await openEditFor(user, "Aroha");
-
-    // No changes: closes straight away
     await user.click(within(form()).getByRole("button", { name: "Cancel" }));
-    expect(confirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
     await waitFor(() => expect(screen.queryByRole("dialog", { name: /^Edit/ })).toBeNull());
-
-    // Changes: asks, and "no" keeps the form open
-    await user.click(await screen.findByRole("button", { name: "Edit" }));
-    await user.type(field("Bio"), " x");
-    await user.keyboard("{Escape}");
-    expect(confirm).toHaveBeenCalledWith("Discard your changes?");
-    expect(form()).toBeInTheDocument();
 });
 
 describe("feeding (introcage monkeys)", () => {

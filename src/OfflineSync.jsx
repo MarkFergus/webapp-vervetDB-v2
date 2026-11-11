@@ -1,4 +1,6 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import ConfirmBubble from "./ConfirmBubble";
+import "./Modal.css"; // its buttons
 import { useAuth } from "./auth";
 import { discardEntry, flushOutbox, outboxEntries, retryEntry, subscribeOutbox, waitingCount } from "./outbox";
 import { prefillMonitoring } from "./offlinePrefill";
@@ -73,6 +75,9 @@ const problemsNow = () => JSON.stringify(outboxEntries().filter((e) => e.status 
 // Entries the database refused: never lost without someone saying so
 export function NeedsAttention() {
     useSyncExternalStore(subscribeOutbox, problemsNow);
+    // The entry whose Discard is asking "Discard this entry?"
+    const [discarding, setDiscarding] = useState(null);
+    const stopDiscarding = useCallback(() => setDiscarding(null), []);
     const problems = outboxEntries().filter((e) => e.status === "problem");
     if (!problems.length) return null;
     return (
@@ -88,9 +93,20 @@ export function NeedsAttention() {
                             <button type="button" onClick={() => retryEntry(entry.id)}>
                                 Try Again
                             </button>
-                            <button type="button" onClick={() => window.confirm("Discard this entry? It can't be brought back.") && discardEntry(entry.id)}>
+                            <button type="button" onClick={() => setDiscarding(entry.id)}>
                                 Discard
                             </button>
+                            {discarding === entry.id && (
+                                <ConfirmBubble
+                                    question="Discard this entry? It can't be brought back."
+                                    danger
+                                    onConfirm={() => {
+                                        setDiscarding(null);
+                                        discardEntry(entry.id);
+                                    }}
+                                    onCancel={stopDiscarding}
+                                />
+                            )}
                         </span>
                     </li>
                 ))}

@@ -27,6 +27,7 @@ import {
 import "./MonkeyForm.css";
 import "./QuickPhotos.css";
 import CloseButton from "./CloseButton";
+import { askConfirm } from "./AppDialog";
 
 // The most photos at a time (a batch after a photo round)
 export const MAX_BATCH = 20;
@@ -174,11 +175,18 @@ function QuickPhotos({ files, monkeys, current = null, place = null, recent = []
     const ready = readyToUpload(items, slots);
     const busy = progress !== null;
 
-    function requestClose() {
+    const asking = useRef(false);
+    async function requestClose() {
         if (cropping !== null) return setCropping(null);
         if (choosing !== null) return setChoosing(null);
         if (busy) return;
-        if (!finished && items.length && !window.confirm("Leave without uploading these photos?")) return;
+        if (asking.current) return;
+        if (!finished && items.length) {
+            asking.current = true;
+            const leave = await askConfirm({ message: "Leave without uploading these photos?", confirmLabel: "Leave", cancelLabel: "Keep Uploading" });
+            asking.current = false;
+            if (!leave) return;
+        }
         onClose();
     }
     useDialog(true, titleRef, { onClose: requestClose });

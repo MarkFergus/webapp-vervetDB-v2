@@ -236,9 +236,10 @@ describe("Add Photos", () => {
 
     test("Open at the end opens the monkey; leaving before uploading asks first", async () => {
         const { user, onOpenMonkey, onClose } = showQuickPhotos({ files: [file("a.jpg")], current: byName("Aroha") });
-        const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
         await user.click(screen.getByRole("button", { name: "Close" }));
-        expect(confirm).toHaveBeenCalled();
+        const ask = await screen.findByRole("alertdialog", { name: "Leave without uploading these photos?" });
+        await user.click(within(ask).getByRole("button", { name: "Keep Uploading" }));
+        expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
         expect(onClose).not.toHaveBeenCalled();
         await user.click(uploadButton());
         await user.click(await screen.findByRole("button", { name: "Open Aroha" }));

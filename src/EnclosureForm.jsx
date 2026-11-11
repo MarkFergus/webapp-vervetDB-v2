@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import PlaceName from "./PlaceName";
 import { motion } from "motion/react";
 import useDialog from "./useDialog";
+import { askDiscard } from "./AppDialog";
 import { saveEnclosure } from "./monkeyData";
 import { isInside } from "./enclosures";
 import { deletePhotos } from "./photoUpload";
@@ -82,10 +83,11 @@ function EnclosureForm({ enclosure, onClose, onSaved, noSize = false, noTroopDoo
 
     // Escape while cropping just closes the crop screen. Photos uploaded but
     // not saved are deleted.
-    function requestClose() {
+    const asking = useRef(false);
+    async function requestClose() {
         if (photosRef.current?.cancelCrop()) return;
-        if (busy) return;
-        if (changed && !window.confirm("Discard your changes?")) return;
+        if (busy || asking.current) return;
+        if (changed && !(await askDiscard(asking))) return;
         deletePhotos(uploadedHere.current);
         onClose();
     }

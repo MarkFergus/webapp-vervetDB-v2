@@ -354,11 +354,11 @@ describe("tidying up photos in storage", () => {
         });
 
         test("uploaded but the form closed without saving: the upload is deleted", async () => {
-            vi.spyOn(window, "confirm").mockReturnValue(true);
             const fresh = `${OURS}goliath/nova-unsaved.webp`;
             const { user } = setup();
             await uploadOne(user, fresh);
             await user.click(screen.getByRole("button", { name: "Cancel" }));
+            await user.click(await screen.findByRole("button", { name: "Discard" }));
             expect(deletePhotos).toHaveBeenCalledWith([fresh]);
             expect(onClose).toHaveBeenCalled();
         });

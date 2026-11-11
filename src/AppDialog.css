@@ -1,0 +1,67 @@
+/* The app's small centred pop-up (AppDialog.jsx): over everything, even
+   another pop-up's form */
+.AppDialog {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-color: var(--scrim);
+    animation: AppDialog-fade 0.12s ease-out;
+}
+
+.AppDialog-box {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+    padding: 18px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px var(--shadow);
+    animation: AppDialog-pop 0.12s ease-out;
+}
+
+.AppDialog-message {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    /* (two notices: each its own paragraph) */
+    white-space: pre-line;
+}
+
+/* The buttons on the right, side by side even on phones */
+.AppDialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@keyframes AppDialog-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes AppDialog-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .AppDialog,
+    .AppDialog-box {
+        animation: none;
+    }
+}

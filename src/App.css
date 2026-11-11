@@ -78,12 +78,14 @@ body {
     padding: 6px 0;
 }
 
+/* (relative: Discard's "Discard this entry?" bubble sits above them) */
 .App-needsAttentionButtons {
+    position: relative;
     display: inline-flex;
     gap: 6px;
 }
 
-.App-needsAttentionButtons button {
+.App-needsAttentionButtons > button {
     padding: 4px 10px;
     font: inherit;
     color: inherit;

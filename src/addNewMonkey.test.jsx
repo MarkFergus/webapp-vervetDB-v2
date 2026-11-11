@@ -331,6 +331,25 @@ describe("Named By (staff only: named-by.sql)", () => {
         await waitFor(() => expect(saveNamedBy).toHaveBeenCalledWith(12, "Mayuree Joshi"));
     });
 
+    test("not saved: said in the app's pop-up once the form closes, not the browser's", async () => {
+        const user = userEvent.setup();
+        const browserAlert = vi.spyOn(window, "alert").mockImplementation(() => {});
+        loadNamedBy.mockResolvedValue("Sophie Lines");
+        saveNamedBy.mockRejectedValueOnce(new Error("No connection."));
+        saveMonkey.mockImplementation(async (values, _ids, id) => ({ ...values, id, img: values.img }));
+        edit();
+        const box = await screen.findByLabelText("Named By");
+        await waitFor(() => expect(box).toHaveValue("Sophie Lines"));
+        await user.type(box, "!");
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() => expect(onSaved).toHaveBeenCalled());
+        const notice = await screen.findByRole("dialog", { name: /Pip was saved, but Named By wasn't: No connection\./ });
+        expect(browserAlert).not.toHaveBeenCalled();
+        await user.click(within(notice).getByRole("button", { name: "OK" }));
+        expect(screen.queryByRole("dialog", { name: /was saved, but/ })).not.toBeInTheDocument();
+        browserAlert.mockRestore();
+    });
+
     test("left alone: not saved again", async () => {
         const user = userEvent.setup();
         loadNamedBy.mockResolvedValue("Sophie Lines");
