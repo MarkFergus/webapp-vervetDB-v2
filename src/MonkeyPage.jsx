@@ -1,4 +1,13 @@
-import { loadChip, loadNamedBy } from "./monkeyData";
+import {
+    deleteVasectomy,
+    deleteVetVisit,
+    loadChip,
+    loadNamedBy,
+    loadVasectomyByRecord,
+    loadVetVisitByRecord,
+    saveVasectomy,
+    saveVetVisit,
+} from "./monkeyData";
 import { useEffect, useRef, useState } from "react";
 import {
     IconAlertTriangle,
@@ -241,6 +250,36 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // (admins add them, an archived monkey's too: e.g. what's found out
     // afterwards)
     const records = useRecords(monkey.id, staff, recordsVersion);
+    // Medical's Vet Visits and Vasectomies (boys), for admins: kept in
+    // Meds & Sickbay's tables, which add the record (so they load again)
+    // (a vasectomy just added: Vasectomised? Yes here at once)
+    const [vasectomyAdded, setVasectomyAdded] = useState(false);
+    const vetValues = (v) => ({ monkeyId: monkey.id, date: v.date, details: v.description ?? "" });
+    const vetElsewhere = {
+        vet_visit: {
+            add: (v) =>
+                saveVetVisit(null, { ...vetValues(v), practice: v.vet, practiceOther: v.vetOther, reason: v.vetReason }).then(() => {
+                    if (v.vetReason === "vasectomy") setVasectomyAdded(true);
+                    records.reload();
+                }),
+            update: (id, v) =>
+                saveVetVisit(id, { ...vetValues(v), practice: v.vet, practiceOther: v.vetOther, reason: v.vetReason }).then(records.reload),
+            remove: (id) => deleteVetVisit(id).then(records.reload),
+            find: loadVetVisitByRecord,
+        },
+        ...(monkey.sex === "male" && {
+            vasectomy: {
+                add: (v) =>
+                    saveVasectomy(null, { ...vetValues(v), vet: v.vet, vetOther: v.vetOther }).then(() => {
+                        setVasectomyAdded(true);
+                        records.reload();
+                    }),
+                update: (id, v) => saveVasectomy(id, { ...vetValues(v), vet: v.vet, vetOther: v.vetOther }).then(records.reload),
+                remove: (id) => deleteVasectomy(id).then(records.reload),
+                find: loadVasectomyByRecord,
+            },
+        }),
+    };
     // The Records tab showing
     const [tab, setTab] = useState("rehabilitation");
     // Status Update's form open (archived monkeys, admins)
@@ -268,7 +307,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     const lastWeight = weights.at(-1) ?? null;
     const medicalRows = inPairs([
         ...(monkey.vasectomised !== undefined && monkey.sex === "male"
-            ? [{ icon: IconGenderMale, label: "Vasectomised?", value: monkey.vasectomised ? "Yes" : "No" }]
+            ? [{ icon: IconGenderMale, label: "Vasectomised?", value: monkey.vasectomised || vasectomyAdded ? "Yes" : "No" }]
             : []),
         ...(isStaff && records.available
             ? [
@@ -608,7 +647,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                                     // (admins: Injuries and Conditions too,
                                     // added and changed where the pop-up's and
                                     // Monitoring's are)
-                                    elsewhere={records.canAdd && tab === "medical" ? keptElsewhere : {}}
+                                    elsewhere={records.canAdd && tab === "medical" ? { ...keptElsewhere, ...vetElsewhere } : {}}
                                     // (a Microchip record: the number's on the monkey now)
                                     onChipAdded={() => loadChip(monkey.id).then((chip) => onChipChanged?.(monkey, chip)).catch(() => {})}
                                 />

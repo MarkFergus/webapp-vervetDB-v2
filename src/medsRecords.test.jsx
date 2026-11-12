@@ -113,11 +113,48 @@ describe("Vet Visits", () => {
         await waitFor(() => expect(screen.getByText(`No vet visits in ${THIS_YEAR}.`)).toBeInTheDocument());
     });
 
+    test("Edit: the form filled in, in its place; the vasectomy follows when it's one; saved", async () => {
+        loadVetVisits.mockResolvedValue([{ ...VISIT, reason: "vasectomy" }]);
+        const { user } = show("vet-visits");
+        await user.click(await screen.findByRole("button", { name: "Edit Bruce's vet visit" }));
+        expect(screen.getByRole("heading", { name: "Edit Bruce's Vet Visit" })).toBeInTheDocument();
+        // (the monkey stays: no search)
+        expect(screen.queryByRole("searchbox")).toBeNull();
+        expect(screen.getByLabelText("Details")).toHaveValue("Teeth checked");
+        expect(screen.getByText("Its Vasectomy and Medical records will be changed to match.")).toBeInTheDocument();
+        await user.selectOptions(screen.getByLabelText("Reason"), "Assessment");
+        expect(screen.getByText("Its Vasectomy record will be removed from Medical records.")).toBeInTheDocument();
+        saveVetVisit.mockResolvedValue({});
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() =>
+            expect(saveVetVisit).toHaveBeenCalledWith(9, {
+                monkeyId: 1,
+                date: VISIT.date,
+                practice: "serala",
+                practiceOther: "",
+                reason: "assessment",
+                details: "Teeth checked",
+            })
+        );
+        await waitFor(() => expect(screen.queryByRole("heading", { name: /^Edit/ })).toBeNull());
+    });
+
+    test("an archived monkey's visit: their name and status (admins), else Archived Monkey", async () => {
+        loadVetVisits.mockResolvedValue([
+            { ...VISIT, id: 1, monkeyId: 50, monkey: { name: "Rerun", status: "missing" } },
+            { ...VISIT, id: 2, monkeyId: 51, monkey: null },
+        ]);
+        show("vet-visits");
+        const rows = within(await screen.findByRole("list", { name: `Vet visits in ${THIS_YEAR}` })).getAllByRole("listitem");
+        expect(rows[0]).toHaveTextContent("RerunMissing");
+        expect(rows[1]).toHaveTextContent("Archived Monkey");
+    });
+
     test("someone else's: no Delete (not an admin)", async () => {
         loadVetVisits.mockResolvedValue([{ ...VISIT, loggedBy: "u-2" }]);
         show("vet-visits");
         await screen.findByRole("list", { name: `Vet visits in ${THIS_YEAR}` });
-        expect(screen.queryByRole("button", { name: /^Delete/ })).toBeNull();
+        expect(screen.queryByRole("button", { name: /^(Delete|Edit)/ })).toBeNull();
     });
 
     test("not run yet: said", async () => {
@@ -146,6 +183,22 @@ describe("Vasectomies", () => {
         await user.click(screen.getByRole("button", { name: "Save" }));
         await waitFor(() =>
             expect(saveVasectomy).toHaveBeenCalledWith(null, { monkeyId: 1, date: today(), vet: "tzaneen", vetOther: "", details: "" })
+        );
+    });
+
+    test("Edit: On Site after all → its vet visit is removed (said first)", async () => {
+        loadVasectomies.mockResolvedValue([
+            { id: 3, monkeyId: 1, date: "2026-03-01", vet: "serala", vetOther: "", details: "", vetVisitId: 8, loggedBy: "u-1", loggedByName: "Sam" },
+        ]);
+        const { user } = show("vasectomies");
+        await user.click(await screen.findByRole("button", { name: "Edit Bruce's vasectomy" }));
+        expect(screen.getByText("Its Vet Visit and Medical records will be changed to match.")).toBeInTheDocument();
+        await user.selectOptions(screen.getByLabelText("Vet"), "On Site");
+        expect(screen.getByText("Its Vet Visit will be removed, as it was done on site.")).toBeInTheDocument();
+        saveVasectomy.mockResolvedValue({});
+        await user.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() =>
+            expect(saveVasectomy).toHaveBeenCalledWith(3, { monkeyId: 1, date: "2026-03-01", vet: "on_site", vetOther: "", details: "" })
         );
     });
 

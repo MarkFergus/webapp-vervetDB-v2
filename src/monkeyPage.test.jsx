@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
-import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
+import { RecordList, movementPlaces, movementText, otherRows, parseMovement, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./testMonkeys";
 import { addRecord, loadMonkeyWeights, loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
@@ -272,6 +272,73 @@ test("rehabilitation's drop-down", async () => {
         "Trapped",
         "Behaviour",
     ]);
+});
+
+test("Rehabilitation's arrival row: Born Here says born at the sanctuary", () => {
+    const born = otherRows("rehabilitation", { monkey: { arrivalDate: "2026-01-05", arrivalReason: "born_here" } });
+    expect(born[0].details).toBe("Born at the sanctuary");
+    const orphan = otherRows("rehabilitation", { monkey: { arrivalDate: "2026-01-05", arrivalReason: "orphaned" } });
+    expect(orphan[0].details).toBe("Arrived at the sanctuary: Orphaned");
+});
+
+test("Medical: Vet Visit and Vasectomy too, with the vet (and reason); saved in Meds & Sickbay's tables", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords();
+    const vet_visit = { add: vi.fn(async () => {}) };
+    const vasectomy = { add: vi.fn(async () => {}) };
+    render(<RecordList section="medical" records={records} others={[]} elsewhere={{ vet_visit, vasectomy }} />);
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
+        "Choose…", "Food Monitoring", "Deworming", "Microchip", "Observation", "Vet Visit", "Vasectomy",
+    ]);
+    await user.selectOptions(screen.getByLabelText("Category"), "vet_visit");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Please choose the vet.");
+    await user.selectOptions(screen.getByLabelText("Vet Practice"), "Serala Animal Clinic");
+    await user.selectOptions(screen.getByLabelText("Reason"), "Check-Up");
+    // (details optional)
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(vet_visit.add).toHaveBeenCalledWith(expect.objectContaining({ vet: "serala", vetReason: "check_up", description: "" }));
+    expect(records.add).not.toHaveBeenCalled();
+    // A vasectomy: On Site, and no reason
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    await user.selectOptions(screen.getByLabelText("Category"), "vasectomy");
+    expect(screen.queryByLabelText("Reason")).toBeNull();
+    await user.selectOptions(screen.getByLabelText("Vet"), "On Site");
+    await user.type(screen.getByLabelText("Details (optional)"), "Healing well");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(vasectomy.add).toHaveBeenCalledWith(expect.objectContaining({ vet: "on_site", description: "Healing well" }));
+});
+
+test("a Vasectomy record: changed and deleted where it's kept; one typed in by hand: just its words", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords([
+        { id: 40, section: "medical", date: "2026-03-01", category: "vasectomy", details: "Vasectomised at Serala Animal Clinic", loggedByName: "Sam" },
+        { id: 41, section: "medical", date: "2025-01-01", category: "vet_visit", details: "Check-up by hand", loggedByName: "Sam" },
+    ]);
+    const kept = { id: 7, date: "2026-03-01", vet: "serala", vetOther: "", details: "" };
+    const vasectomy = { add: vi.fn(), update: vi.fn(async () => {}), remove: vi.fn(async () => {}), find: vi.fn(async (id) => (id === 40 ? kept : null)) };
+    const vet_visit = { add: vi.fn(), update: vi.fn(), remove: vi.fn(), find: vi.fn(async () => null) };
+    render(<RecordList section="medical" records={records} others={[]} elsewhere={{ vet_visit, vasectomy }} />);
+    const [vasRow, handRow] = screen.getAllByRole("row").slice(1);
+    await user.click(within(vasRow).getByRole("button", { name: "Edit" }));
+    expect(vasectomy.find).toHaveBeenCalledWith(40);
+    expect(await screen.findByLabelText("Vet")).toHaveValue("serala");
+    expect(screen.getByLabelText("Category")).toBeDisabled();
+    await user.selectOptions(screen.getByLabelText("Vet"), "Tzaneen Animal Clinic");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(vasectomy.update).toHaveBeenCalledWith(7, expect.objectContaining({ vet: "tzaneen", date: "2026-03-01" })));
+    expect(records.update).not.toHaveBeenCalled();
+    // (typed in by hand, before Meds & Sickbay: just its words)
+    await user.click(within(handRow).getByRole("button", { name: "Edit" }));
+    expect(await screen.findByLabelText("Details")).toHaveValue("Check-up by hand");
+    expect(screen.queryByLabelText("Vet Practice")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    // Delete: the vasectomy itself (which takes its record)
+    await user.click(within(screen.getAllByRole("row")[1]).getByRole("button", { name: "Delete" }));
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(vasectomy.remove).toHaveBeenCalledWith(7));
+    expect(records.remove).not.toHaveBeenCalled();
 });
 
 test("Medical: Injury and Condition too, saved in their own tables (Current Injuries, Latest Condition)", async () => {

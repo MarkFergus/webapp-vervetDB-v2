@@ -10,6 +10,7 @@ import { SICKBAY_UNIT, placeChoices } from "./enclosures";
 import { fullName } from "./places";
 import { MAX_CHIP_NOTE, chipNumberProblem, microchipText, parseMicrochip } from "./chipRules";
 import useScrollIntoView from "./useScrollIntoView";
+import { MAX_OTHER_VET, MAX_VET_DETAILS, VASECTOMY_VETS, VET_PRACTICES, VET_REASONS } from "./medsRules";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
 
@@ -40,8 +41,17 @@ export const SECTIONS = {
     },
     medical: {
         title: "Medical",
-        categories: { food_monitoring: "Food Monitoring", injury: "Injury", condition: "Condition", deworming: "Deworming", microchip: "Microchip", observation: "Observation" },
-        older: { medicine: "Medicine", treatment: "Treatment", vet_visit: "Vet Visit" },
+        categories: {
+            food_monitoring: "Food Monitoring",
+            injury: "Injury",
+            condition: "Condition",
+            deworming: "Deworming",
+            microchip: "Microchip",
+            observation: "Observation",
+            vet_visit: "Vet Visit",
+            vasectomy: "Vasectomy",
+        },
+        older: { medicine: "Medicine", treatment: "Treatment" },
     },
 };
 
@@ -49,7 +59,11 @@ export const SECTIONS = {
 // Current Injuries, with updates and Healed?) and a Condition
 // (monitoring-sessions.sql: Latest Condition). Offered, and changed here,
 // only when the page says how (RecordList's elsewhere: admins)
-const SAVED_ELSEWHERE = { injury: 500, condition: 500 };
+// A Vet Visit and a Vasectomy too (vet-visits.sql: Records → Meds &
+// Sickbay), with the vet (and a visit's reason): the database adds their
+// Medical record (and a vasectomy's Vasectomised?)
+const SAVED_ELSEWHERE = { injury: 500, condition: 500, vet_visit: MAX_VET_DETAILS, vasectomy: MAX_VET_DETAILS };
+const VET_KINDS = ["vet_visit", "vasectomy"];
 
 // A Movement record's words, as the database writes them for a move:
 // "Moved from Goliath A to Goliath Troop: integrated" (the reason optional)
@@ -115,6 +129,7 @@ const todayText = () => {
 export function useRecords(monkeyId, staff, version = 0) {
     const enabled = Boolean(staff?.canSee && monkeyId != null);
     const [state, setState] = useState({ entries: [], available: false });
+    const [reloads, setReloads] = useState(0);
     useEffect(() => {
         if (!enabled) {
             setState({ entries: [], available: false });
@@ -127,7 +142,7 @@ export function useRecords(monkeyId, staff, version = 0) {
         return () => {
             cancelled = true;
         };
-    }, [monkeyId, enabled, version]);
+    }, [monkeyId, enabled, version, reloads]);
 
     const sorted = (list) => [...list].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
     const change = (fn) => setState((s) => ({ ...s, entries: sorted(fn(s.entries)) }));
@@ -140,6 +155,8 @@ export function useRecords(monkeyId, staff, version = 0) {
         // and Status records too. Staff enter theirs through the Records
         // page (monkey-records-admin.sql)
         canAdd: admin,
+        // (load them again: e.g. a vet visit's added the record itself)
+        reload: () => setReloads((n) => n + 1),
         canEdit: () => admin,
         canDelete: () => admin,
         async add(values) {
@@ -216,7 +233,12 @@ export function otherRows(section, { injuries, monkey = null, weights = [], cond
                 key: "arrival",
                 date: monkey.arrivalDate,
                 category: "arrival",
-                details: reason ? `Arrived at the sanctuary: ${reason}` : "Arrived at the sanctuary",
+                details:
+                    monkey.arrivalReason === "born_here"
+                        ? "Born at the sanctuary"
+                        : reason
+                          ? `Arrived at the sanctuary: ${reason}`
+                          : "Arrived at the sanctuary",
                 by: "From Arrival Info",
                 first: true,
             },
@@ -417,7 +439,9 @@ function startValues(initial, places) {
 //   (a new record only); locked: the category can't change (an injury or
 //   a condition, edited); onSave(values) async (throws a message to show);
 //   onCancel()
-function RecordForm({ section, initial, places = [], elsewhere = [], locked = false, onSave, onCancel, scrollIntoView = false }) {
+//   plainOnly: a Vet Visit or Vasectomy record typed in by hand (before
+//   Meds & Sickbay): just its words, no vet
+function RecordForm({ section, initial, places = [], elsewhere = [], locked = false, plainOnly = false, onSave, onCancel, scrollIntoView = false }) {
     const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(() => startValues(initial, places));
     const [busy, setBusy] = useState(false);
@@ -444,6 +468,10 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
         : offered;
     const movement = values.category === "movement" && !values.plain;
     const microchip = values.category === "microchip";
+    // (a Vet Visit or Vasectomy: the vet, and a visit's reason; details
+    // optional)
+    const vetKind = VET_KINDS.includes(values.category) && !plainOnly;
+    const vetChoices = values.category === "vasectomy" ? VASECTOMY_VETS : VET_PRACTICES;
     const text = movement ? values.reason : microchip ? values.chipNote : values.details;
     // (an injury's or a condition's description: 500 at most, as their tables)
     const max = microchip ? MAX_CHIP_NOTE : ((locked || elsewhere.includes(values.category)) && SAVED_ELSEWHERE[values.category]) || MAX_RECORD;
@@ -466,6 +494,11 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
             const wrong = chipNumberProblem(values.chipNumber);
             if (wrong) return setProblem(wrong);
             details = microchipText({ number: values.chipNumber, note: values.chipNote });
+        } else if (vetKind) {
+            if (!values.vet) return setProblem("Please choose the vet.");
+            if (values.vet === "other" && !values.vetOther.trim()) return setProblem("Please type the vet's name.");
+            if (values.category === "vet_visit" && !values.vetReason) return setProblem("Please choose the reason.");
+            if (details.length > max) return setProblem(`Please shorten the details (${max} characters at most).`);
         } else if (!details) {
             return setProblem("Please write the details.");
         } else if (details.length > max) {
@@ -474,7 +507,8 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
         setBusy(true);
         setProblem(null);
         try {
-            await onSave({ date: values.date, category: values.category, details, ...movePlaces });
+            const vet = vetKind ? { vet: values.vet, vetOther: values.vetOther ?? "", vetReason: values.vetReason ?? "" } : {};
+            await onSave({ date: values.date, category: values.category, details, ...movePlaces, ...vet });
         } catch (err) {
             setProblem(err.message);
             setBusy(false);
@@ -522,6 +556,44 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                     />
                 </div>
             )}
+            {vetKind && (
+                <div className="Integration-dates">
+                    <label>
+                        <span>{values.category === "vasectomy" ? "Vet" : "Vet Practice"}</span>
+                        <select value={values.vet ?? ""} onChange={set("vet")}>
+                            <option value="" disabled>
+                                Choose…
+                            </option>
+                            {Object.entries(vetChoices).map(([key, label]) => (
+                                <option key={key} value={key}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    {values.category === "vet_visit" && (
+                        <label>
+                            <span>Reason</span>
+                            <select value={values.vetReason ?? ""} onChange={set("vetReason")}>
+                                <option value="" disabled>
+                                    Choose…
+                                </option>
+                                {Object.entries(VET_REASONS).map(([key, label]) => (
+                                    <option key={key} value={key}>
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+                </div>
+            )}
+            {vetKind && values.vet === "other" && (
+                <label>
+                    <span>Vet&apos;s Name</span>
+                    <input type="text" value={values.vetOther ?? ""} maxLength={MAX_OTHER_VET} onChange={set("vetOther")} />
+                </label>
+            )}
             {microchip && (
                 <label>
                     <span>Chip Number</span>
@@ -529,7 +601,7 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                 </label>
             )}
             <label>
-                <span>{movement || microchip ? `${movement ? "Reason" : "Details"} (optional)` : "Details"}</span>
+                <span>{movement || microchip || vetKind ? `${movement ? "Reason" : "Details"} (optional)` : "Details"}</span>
                 <textarea rows={4} value={text} maxLength={max} onChange={set(movement ? "reason" : microchip ? "chipNote" : "details")} />
             </label>
             <span className="Integration-count">
@@ -559,9 +631,30 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
 //   { add(values), update(id, values), remove(id) } in its own table
 //   (values: { date, description }; async, throwing a message to show)
 //   onChipAdded(): a Microchip record's been added (the monkey has a new chip)
+//   (a Vet Visit's or Vasectomy's also find(recordId): the vet visit or
+//   vasectomy behind its record, or null if it was typed in by hand)
 export function RecordList({ section, records, others, places = [], elsewhere = {}, onChipAdded }) {
     const [adding, setAdding] = useState(false);
     const [editing, setEditing] = useState(null); // a row's key
+    // (a Vet Visit or Vasectomy record being changed: the one behind it, or
+    // null: typed in by hand, so just its words)
+    const [linked, setLinked] = useState(null);
+    const [findProblem, setFindProblem] = useState(null);
+    // The vet visit or vasectomy behind a row (its own table), or null
+    async function behind(row) {
+        const kept = elsewhere[row.category];
+        if (!row.entry || !kept?.find) return null;
+        return kept.find(row.entry.id);
+    }
+    async function startEdit(row) {
+        setFindProblem(null);
+        try {
+            setLinked(await behind(row));
+            setEditing(row.key);
+        } catch (err) {
+            setFindProblem(err.message);
+        }
+    }
     const { title, categories, older } = SECTIONS[section];
 
     const own = records.entries
@@ -581,7 +674,7 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                         initial={{ date: todayText(), category: "", details: "" }}
                         onSave={async (values) => {
                             const kept = elsewhere[values.category];
-                            if (kept) await kept.add({ date: values.date, description: values.details });
+                            if (kept) await kept.add({ ...values, description: values.details });
                             else await records.add({ section, ...values });
                             if (values.category === "microchip") onChipAdded?.();
                             setAdding(false);
@@ -594,6 +687,11 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                         New {title} Record
                     </button>
                 ))}
+            {findProblem && (
+                <p className="Integration-problem" role="alert">
+                    {findProblem}
+                </p>
+            )}
             {rows.length ? (
                 <div className="Records-table" role="table" aria-label={`${title} records`}>
                     <div className="Records-row Records-header" role="row">
@@ -605,16 +703,33 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                         // (an injury or a condition: changed in its own table)
                         const own = row.injury ?? row.condition;
                         const kept = own && elsewhere[row.category];
+                        // (a Vet Visit or Vasectomy: changed where it's kept,
+                        // when it's behind the record)
+                        const vetRow = VET_KINDS.includes(row.category) && row.entry;
+                        const behindIt = editing === row.key && vetRow ? linked : null;
                         return editing === row.key ? (
                             <div className="Records-editing" key={row.key}>
                                 <RecordForm
                                     scrollIntoView
                                     section={section}
                                     places={places}
-                                    locked={Boolean(kept)}
-                                    initial={{ date: row.date, category: row.category, details: row.details }}
+                                    locked={Boolean(kept) || Boolean(vetRow)}
+                                    plainOnly={Boolean(vetRow) && !behindIt}
+                                    initial={
+                                        behindIt
+                                            ? {
+                                                  date: behindIt.date,
+                                                  category: row.category,
+                                                  details: behindIt.details,
+                                                  vet: behindIt.practice ?? behindIt.vet,
+                                                  vetOther: behindIt.practiceOther ?? behindIt.vetOther,
+                                                  vetReason: behindIt.reason ?? "",
+                                              }
+                                            : { date: row.date, category: row.category, details: row.details }
+                                    }
                                     onSave={async (values) => {
                                         if (kept) await kept.update(own.id, { date: values.date, description: values.details });
+                                        else if (behindIt) await elsewhere[row.category].update(behindIt.id, { ...values, description: values.details });
                                         else await records.update(row.entry.id, values);
                                         setEditing(null);
                                     }}
@@ -637,8 +752,18 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                                 {row.entry && (records.canEdit(row.entry) || records.canDelete(row.entry)) && (
                                     <RowIcons
                                         question="Delete this record?"
-                                        onEdit={records.canEdit(row.entry) ? () => setEditing(row.key) : undefined}
-                                        onDelete={records.canDelete(row.entry) ? () => records.remove(row.entry.id) : undefined}
+                                        onEdit={records.canEdit(row.entry) ? () => startEdit(row) : undefined}
+                                        onDelete={
+                                            records.canDelete(row.entry)
+                                                ? async () => {
+                                                      // (a vet visit or vasectomy: deleted where
+                                                      // it's kept, which takes its record)
+                                                      const it = vetRow ? await behind(row) : null;
+                                                      if (it) await elsewhere[row.category].remove(it.id);
+                                                      else await records.remove(row.entry.id);
+                                                  }
+                                                : undefined
+                                        }
                                     />
                                 )}
                                 {kept && (

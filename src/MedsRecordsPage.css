@@ -56,72 +56,69 @@
     color: var(--danger);
 }
 
-/* ---- The lists ---- */
+/* ---- The lists: a card for each record, as Injuries'
+   (SectionsRecordsPage.css) ---- */
 
 .Meds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+.Meds-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
     background-color: var(--surface-1);
     border: 1px solid var(--line);
     border-radius: 12px;
 }
 
-.Meds-row {
+/* The photo, name and place; the date and Delete on the right */
+.Meds-who {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line);
+    margin-bottom: 4px;
 }
 
-.Meds-row:last-child {
-    border-bottom: none;
-}
-
-.Meds-main {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
-}
-
-.Meds-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.Meds-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-strong);
+/* (a monkey no longer at the sanctuary: quieter) */
+.RecordsPage-name.Meds-gone {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-3);
 }
 
 .Meds-date {
     flex-shrink: 0;
-    font-size: 13px;
-    color: var(--text-3);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-strong);
     font-variant-numeric: tabular-nums;
 }
 
-.Meds-what {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-/* (2 lines at most, then "…": the whole text on hover) */
-.Meds-details {
+/* What and where in bold, then the details on the same line (wrapping;
+   2 lines at most, then "…": the whole text on hover) */
+.Meds-line {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
+    margin: 0;
     font-size: 14px;
     color: var(--text-2);
+}
+
+.Meds-what {
+    margin-right: 8px;
+    font-weight: 700;
+    color: var(--text-strong);
 }
 
 .Meds-by {
@@ -137,21 +134,17 @@
     align-items: flex-end;
 }
 
-.Meds-icon {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    color: var(--danger);
-    background: none;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    cursor: pointer;
+/* Edit's form, in a record's place: no gap of its own under it */
+.Meds-list > li > .IntegrationPage-new {
+    margin-bottom: 0;
 }
 
-.Meds-icon:hover {
-    background-color: var(--surface-2);
+/* Edit and Delete (Injuries' icons), side by side */
+.Meds-tools {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: -6px;
 }
 
 /* ---- By Birth Year ---- */

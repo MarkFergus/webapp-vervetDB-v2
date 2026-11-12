@@ -107,7 +107,7 @@ describe("a new arrival's Arrival Date and Arrival Reason", () => {
         expect(screen.getByText("New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.")).toBeInTheDocument();
         expect(field("Arrival Date")).toHaveValue(today());
         expect(within(field("Arrival Reason")).getAllByRole("option").map((o) => o.textContent))
-            .toEqual(["Choose…", "Orphaned", "Injured", "Confiscated", "Surrendered"]);
+            .toEqual(["Choose…", "Orphaned", "Injured", "Confiscated", "Surrendered", "Born Here"]);
     });
 
     test("both needed; then saved with the monkey", async () => {

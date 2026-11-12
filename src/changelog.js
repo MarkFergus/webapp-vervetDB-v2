@@ -21,6 +21,17 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.6.1",
+        date: "2026-11-12",
+        changes: [
+            "Added Edit to vet visits and vasectomies",
+            "Added Vet Visit and Vasectomy to Medical records",
+            "Added Born Here to Arrival Reasons",
+            "Improved the Vet Visits and Vasectomies lists: photo cards",
+            "Improved vasectomy records: \"Vasectomised at …\"",
+        ],
+    },
+    {
         version: "2.6.0",
         date: "2026-11-12",
         changes: [

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useState } from "react";
-import { IconCheck, IconCopy, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import { deleteVasectomy, deleteVetVisit, loadVasectomies, loadVetVisits, saveVasectomy, saveVetVisit } from "./monkeyData";
 import {
     MAX_OTHER_VET,
@@ -12,11 +12,15 @@ import {
     vetFormProblems,
     vetName,
 } from "./medsRules";
-import { intakeYears, longDate } from "./intakeReport";
+import { intakeYears } from "./intakeReport";
 import { dayText } from "./babyRecords";
 import MonkeyFind from "./MonkeyFind";
+import { summaryDate } from "./feeding";
+import { BabyPhoto } from "./PagePicker";
+import { STATUS_WORDS } from "./monkeyStatus";
 import ConfirmBubble from "./ConfirmBubble";
 import "./IntegrationRecordsPage.css";
+import "./IntegrationReports.css"; // (Edit and Delete: Injuries' icons)
 import "./MedsRecordsPage.css";
 
 // Records → Meds & Sickbay (RecordsPage.jsx): its own pages.
@@ -29,20 +33,23 @@ import "./MedsRecordsPage.css";
 // (supabase/vet-visits.sql). Adding: editors and admins (canEnter);
 // deleting: admins, or whoever added it.
 
-const dayWords = (date) => longDate(new Date(`${date}T00:00:00`));
+// (the lists: "6th Mar 2026", so the place beside it stays on one line)
+const shortDay = (date) => summaryDate(new Date(`${date}T00:00:00`));
 
 // ---- The form: the monkey, the date, the vet (and reason), details ----
 
 //   kind: "visit" or "vasectomy"; choices: the monkeys to choose from
-function VetForm({ kind, choices, onSave, onCancel }) {
+//   entry: the one being changed (Edit: its monkey stays), or none (new);
+//   name: its monkey's name
+function VetForm({ kind, choices, entry = null, name = "", onSave, onCancel }) {
     const visit = kind === "visit";
     const today = dayText(new Date());
-    const [monkey, setMonkey] = useState(null);
-    const [date, setDate] = useState(today);
-    const [place, setPlace] = useState("");
-    const [other, setOther] = useState("");
-    const [reason, setReason] = useState("");
-    const [details, setDetails] = useState("");
+    const [monkey, setMonkey] = useState(entry ? { id: entry.monkeyId, name } : null);
+    const [date, setDate] = useState(entry?.date ?? today);
+    const [place, setPlace] = useState(entry ? (visit ? entry.practice : entry.vet) : "");
+    const [other, setOther] = useState(entry ? (visit ? entry.practiceOther : entry.vetOther) : "");
+    const [reason, setReason] = useState(entry?.reason ?? "");
+    const [details, setDetails] = useState(entry?.details ?? "");
     const [errors, setErrors] = useState({});
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
@@ -78,7 +85,7 @@ function VetForm({ kind, choices, onSave, onCancel }) {
         );
     const describe = (field) => (errors[field] ? { "aria-describedby": `${id}-${field}-error`, "aria-invalid": true } : {});
     // (what else saving does, to know before saving)
-    const also = visit
+    const also = entry ? editWords(visit, entry, { place, reason }) : visit
         ? reason === "vasectomy"
             ? "A Vet Visit and a Vasectomy record will also be added to Medical records, and Vasectomised? set to Yes."
             : "A Vet Visit record will also be added to Medical records."
@@ -88,17 +95,21 @@ function VetForm({ kind, choices, onSave, onCancel }) {
 
     return (
         <form className="IntegrationPage-new" onSubmit={save} noValidate>
-            <h2 className="RecordsPage-subhead">{visit ? "New Vet Visit" : "New Vasectomy"}</h2>
-            <div>
-                <MonkeyFind
-                    monkeys={choices}
-                    chosen={monkey}
-                    onChoose={setMonkey}
-                    label={visit ? "Search monkeys" : "Search boys"}
-                    none={visit ? "No monkey found." : "No boy found."}
-                />
-                {error("monkey")}
-            </div>
+            <h2 className="RecordsPage-subhead">
+                {entry ? `Edit ${name}'s ${visit ? "Vet Visit" : "Vasectomy"}` : visit ? "New Vet Visit" : "New Vasectomy"}
+            </h2>
+            {!entry && (
+                <div>
+                    <MonkeyFind
+                        monkeys={choices}
+                        chosen={monkey}
+                        onChoose={setMonkey}
+                        label={visit ? "Search monkeys" : "Search boys"}
+                        none={visit ? "No monkey found." : "No boy found."}
+                    />
+                    {error("monkey")}
+                </div>
+            )}
             <div className={`Meds-fields${visit ? " is-visit" : ""}`}>
                 <div className="IntegrationPage-choose">
                     <label htmlFor={`${id}-date`}>Date</label>
@@ -179,6 +190,22 @@ function VetForm({ kind, choices, onSave, onCancel }) {
     );
 }
 
+// Editing: what else the change does (the database keeps a vasectomy and
+// its vet visit in step: meds-edit.sql)
+function editWords(visit, entry, { place, reason }) {
+    if (visit) {
+        if (entry.reason === "vasectomy" && reason !== "vasectomy") return "Its Vasectomy record will be removed from Medical records.";
+        if (entry.reason !== "vasectomy" && reason === "vasectomy")
+            return "A Vasectomy record will also be added to Medical records, and Vasectomised? set to Yes.";
+        if (reason === "vasectomy") return "Its Vasectomy and Medical records will be changed to match.";
+        return "Its Medical record will be changed to match.";
+    }
+    if (entry.vetVisitId && place === "on_site") return "Its Vet Visit will be removed, as it was done on site.";
+    if (entry.vetVisitId) return "Its Vet Visit and Medical records will be changed to match.";
+    if (entry.vet === "on_site" && place && place !== "on_site") return "A Vet Visit record will also be added to Medical records.";
+    return "Its Medical record will be changed to match.";
+}
+
 // ---- A row's Delete (admins, or whoever added it): asks first ----
 
 function DeleteButton({ what, onDelete }) {
@@ -188,8 +215,8 @@ function DeleteButton({ what, onDelete }) {
     const stop = useCallback(() => setAsking(false), []);
     return (
         <span className="Meds-delete">
-            <button type="button" className="Meds-icon" aria-label={`Delete ${what}`} onClick={() => setAsking(true)}>
-                <IconTrash size={16} aria-hidden="true" />
+            <button type="button" className="Integration-icon is-delete" aria-label={`Delete ${what}`} title="Delete" onClick={() => setAsking(true)}>
+                <IconTrash size={17} aria-hidden="true" />
             </button>
             {asking && (
                 <ConfirmBubble
@@ -218,31 +245,61 @@ function DeleteButton({ what, onDelete }) {
     );
 }
 
-// One row: the date and monkey, what and where, the details (2 lines at
-// most, then "…"), and who added it
-function Row({ date, name, what, details, by, canDelete, onDelete, deleteWhat }) {
+// One record, a card as Injuries' (Records → Sections): the monkey's photo
+// (tapped: their pop-up), name and where they live, the date on the right;
+// then what and where in bold, the details (2 lines at most, then "…"),
+// and who added it
+// (archived: { name, status } from the record, admins only; none for
+// others: "Archived Monkey")
+function Row({ monkey, archived, name, date, what, details, by, canChange, onEdit, onDelete, deleteWhat }) {
     return (
         <li className="Meds-row">
-            <div className="Meds-main">
-                <span className="Meds-top">
-                    <span className="Meds-name">{name}</span>
-                    <span className="Meds-date">{dayWords(date)}</span>
+            <div className="Meds-who">
+                {monkey ? <BabyPhoto monkey={monkey} /> : <span className="RecordsPage-photo" />}
+                <span className="RecordsPage-baby">
+                    <span className={`RecordsPage-name${monkey || archived ? "" : " Meds-gone"}`}>{name}</span>
+                    {/* (short, on one line: "H&B Troop", "Goliath C") */}
+                    {monkey ? (
+                        <span className="RecordsPage-place">{shortPlace(monkey)}</span>
+                    ) : (
+                        archived && (
+                            <span className="RecordsPage-place">
+                                {STATUS_WORDS[archived.status] ?? "Archived"}
+                            </span>
+                        )
+                    )}
                 </span>
-                <span className="Meds-what">{what}</span>
+                <span className="Meds-date">{shortDay(date)}</span>
+                {canChange && (
+                    <span className="Meds-tools">
+                        <button type="button" className="Integration-icon is-edit" aria-label={`Edit ${deleteWhat}`} title="Edit" onClick={onEdit}>
+                            <IconPencil size={17} aria-hidden="true" />
+                        </button>
+                        <DeleteButton what={deleteWhat} onDelete={onDelete} />
+                    </span>
+                )}
+            </div>
+            <p className="Meds-line">
+                <b className="Meds-what">{what}</b>
                 {details && (
                     <span className="Meds-details" title={details}>
                         {details}
                     </span>
                 )}
-                {by && <span className="Meds-by">Added by {by}</span>}
-            </div>
-            {canDelete && <DeleteButton what={deleteWhat} onDelete={onDelete} />}
+            </p>
+            {by && <span className="Meds-by">Added by {by}</span>}
         </li>
     );
 }
 
-const nameOf = (monkeys, id) => monkeys.find((m) => m.id === id)?.name ?? "A monkey no longer at the sanctuary";
-const mayDelete = (staff, entry) => Boolean(staff && (staff.isAdmin || entry.loggedBy === staff.userId));
+// Where they live, short: their introcage, else "Goliath Troop"
+const shortPlace = (monkey) => monkey.introcage ?? (monkey.troop ? `${monkey.troop} Troop` : "");
+const monkeyOf = (monkeys, id) => monkeys.find((m) => m.id === id) ?? null;
+// (an archived monkey: their name from the record, admins; else "Archived
+// Monkey")
+const nameOf = (monkeys, entry) => monkeyOf(monkeys, entry.monkeyId)?.name ?? entry.monkey?.name ?? "Archived Monkey";
+const archivedOf = (monkeys, entry) => (monkeyOf(monkeys, entry.monkeyId) ? null : entry.monkey);
+const mayChange = (staff, entry) => Boolean(staff && (staff.isAdmin || entry.loggedBy === staff.userId));
 
 // ---- Vet Visits ----
 
@@ -252,6 +309,8 @@ function VetVisits({ monkeys, canEnter, staff }) {
     // null (loading), [visits] or { problem }
     const [visits, setVisits] = useState(null);
     const [adding, setAdding] = useState(false);
+    // (the one being changed: its id)
+    const [editing, setEditing] = useState(null);
     const [version, setVersion] = useState(0);
 
     useEffect(() => {
@@ -314,16 +373,38 @@ function VetVisits({ monkeys, canEnter, staff }) {
                     </p>
                     <ul className="Meds-list" aria-label={`Vet visits in ${year}`}>
                         {visits.map((v) => {
-                            const name = nameOf(monkeys, v.monkeyId);
+                            const name = nameOf(monkeys, v);
+                            if (editing === v.id) {
+                                return (
+                                    <li key={v.id}>
+                                        <VetForm
+                                            kind="visit"
+                                            choices={monkeys}
+                                            entry={v}
+                                            name={name}
+                                            onCancel={() => setEditing(null)}
+                                            onSave={async (values) => {
+                                                await saveVetVisit(v.id, values);
+                                                setEditing(null);
+                                                setYear(Number(values.date.slice(0, 4)));
+                                                setVersion((n) => n + 1);
+                                            }}
+                                        />
+                                    </li>
+                                );
+                            }
                             return (
                                 <Row
+                                    onEdit={() => setEditing(v.id)}
                                     key={v.id}
                                     date={v.date}
+                                    monkey={monkeyOf(monkeys, v.monkeyId)}
+                                    archived={archivedOf(monkeys, v)}
                                     name={name}
                                     what={`${VET_REASONS[v.reason] ?? v.reason} · ${vetName(v.practice, v.practiceOther)}`}
                                     details={v.details}
                                     by={v.loggedByName}
-                                    canDelete={mayDelete(staff, v)}
+                                    canChange={mayChange(staff, v)}
                                     deleteWhat={`${name}'s vet visit`}
                                     onDelete={async () => {
                                         await deleteVetVisit(v.id);
@@ -397,6 +478,8 @@ function Vasectomies({ monkeys, canEnter, staff }) {
     // null (loading), [vasectomies] or { problem }
     const [list, setList] = useState(null);
     const [adding, setAdding] = useState(false);
+    // (the one being changed: its id)
+    const [editing, setEditing] = useState(null);
     const [version, setVersion] = useState(0);
     const boys = monkeys.filter((m) => m.sex === "male");
 
@@ -455,16 +538,37 @@ function Vasectomies({ monkeys, canEnter, staff }) {
                 ) : (
                     <ul className="Meds-list" aria-label="Vasectomies">
                         {loaded.map((v) => {
-                            const name = nameOf(monkeys, v.monkeyId);
+                            const name = nameOf(monkeys, v);
+                            if (editing === v.id) {
+                                return (
+                                    <li key={v.id}>
+                                        <VetForm
+                                            kind="vasectomy"
+                                            choices={boys}
+                                            entry={v}
+                                            name={name}
+                                            onCancel={() => setEditing(null)}
+                                            onSave={async (values) => {
+                                                await saveVasectomy(v.id, values);
+                                                setEditing(null);
+                                                setVersion((n) => n + 1);
+                                            }}
+                                        />
+                                    </li>
+                                );
+                            }
                             return (
                                 <Row
+                                    onEdit={() => setEditing(v.id)}
                                     key={v.id}
                                     date={v.date}
+                                    monkey={monkeyOf(monkeys, v.monkeyId)}
+                                    archived={archivedOf(monkeys, v)}
                                     name={name}
                                     what={v.vet === "on_site" ? "On Site" : vetName(v.vet, v.vetOther)}
                                     details={v.details}
                                     by={v.loggedByName}
-                                    canDelete={mayDelete(staff, v)}
+                                    canChange={mayChange(staff, v)}
                                     deleteWhat={`${name}'s vasectomy`}
                                     onDelete={async () => {
                                         await deleteVasectomy(v.id);

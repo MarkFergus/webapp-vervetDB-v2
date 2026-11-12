@@ -5,6 +5,8 @@ export const ARRIVAL_REASONS = {
     injured: "Injured",
     confiscated: "Confiscated",
     surrendered: "Surrendered",
+    // (born at the sanctuary: supabase/born-here.sql)
+    born_here: "Born Here",
 };
 
 // The condition they arrived in, Condition Received (arrival-condition.sql)

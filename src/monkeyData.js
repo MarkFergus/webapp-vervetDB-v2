@@ -72,6 +72,11 @@ const COLUMN_SETS = [
 const has = (columns) => COLUMN_SETS.includes(monkeyColumns) && COLUMN_SETS.indexOf(monkeyColumns) <= COLUMN_SETS.indexOf(columns);
 // Which set the database has (the new one once enclosures.sql has run)
 let monkeyColumns = NEW_MONKEY_COLUMNS;
+// (development only: this file knows which columns the database has, found
+// once when the app loads. A change to it while the app is open reloads the
+// page, else that's lost: Edit would miss Birth Date, Arrival… and a save
+// would send back a monkey without them)
+if (import.meta.hot) import.meta.hot.accept(() => window.location.reload());
 // Whether monkeys have a species (species.sql has run): for a new monkey's form
 export const speciesAvailable = () => has(SPECIES_MONKEY_COLUMNS);
 // ...and a birth date (birth-date.sql has run)
@@ -601,8 +606,13 @@ export async function loadIntake(year) {
 // Adding either also adds the monkey's Medical record (and a vasectomy at a
 // vet, or a vet visit for one, adds the other): the database does that.
 
-const VET_VISIT_COLUMNS = "id, monkey_id, visit_date, practice, practice_other, reason, details, logged_by, logged_by_name";
-const VASECTOMY_COLUMNS = "id, monkey_id, done_on, vet, vet_other, details, vet_visit_id, logged_by, logged_by_name";
+// (with the monkey's name and status: an archived monkey isn't in the app's
+// list, so the lists can still name them. Admins only: others can't read
+// archived monkeys, so it's null)
+const MEDS_MONKEY = "monkey:monkeys(name, status)";
+const VET_VISIT_COLUMNS = `id, monkey_id, visit_date, practice, practice_other, reason, details, logged_by, logged_by_name, ${MEDS_MONKEY}`;
+const VASECTOMY_COLUMNS = `id, monkey_id, done_on, vet, vet_other, details, vet_visit_id, logged_by, logged_by_name, ${MEDS_MONKEY}`;
+const medsMonkey = (row) => (row.monkey ? { name: row.monkey.name, status: row.monkey.status } : null);
 
 const toVetVisit = (row) => ({
     id: row.id,
@@ -614,6 +624,7 @@ const toVetVisit = (row) => ({
     details: row.details ?? "",
     loggedBy: row.logged_by,
     loggedByName: row.logged_by_name,
+    monkey: medsMonkey(row),
 });
 const toVasectomy = (row) => ({
     id: row.id,
@@ -625,6 +636,7 @@ const toVasectomy = (row) => ({
     vetVisitId: row.vet_visit_id,
     loggedBy: row.logged_by,
     loggedByName: row.logged_by_name,
+    monkey: medsMonkey(row),
 });
 
 // A missing table (vet-visits.sql not run yet): said plainly
@@ -661,6 +673,20 @@ export async function saveVetVisit(id, values) {
         : await supabase.from("vet_visits").insert({ ...row, monkey_id: values.monkeyId }).select(VET_VISIT_COLUMNS).single();
     if (error) throw error.code === "PGRST205" ? medsProblem(error) : saveProblem(error);
     return toVetVisit(data);
+}
+
+// The vet visit or vasectomy behind a Medical record (the database added
+// the record: its record_id), or null (an older record typed in by hand).
+// For the Full Profile's Medical records: changed where it's kept.
+export async function loadVetVisitByRecord(recordId) {
+    const { data, error } = await supabase.from("vet_visits").select(VET_VISIT_COLUMNS).eq("record_id", recordId).maybeSingle();
+    if (error) throw medsProblem(error);
+    return data ? toVetVisit(data) : null;
+}
+export async function loadVasectomyByRecord(recordId) {
+    const { data, error } = await supabase.from("vasectomies").select(VASECTOMY_COLUMNS).eq("record_id", recordId).maybeSingle();
+    if (error) throw medsProblem(error);
+    return data ? toVasectomy(data) : null;
 }
 
 export async function deleteVetVisit(id) {
