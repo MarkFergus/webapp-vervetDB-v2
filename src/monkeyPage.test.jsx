@@ -4,7 +4,7 @@ import ShowPage from "./ShowPage";
 import MonkeyPage from "./MonkeyPage";
 import { RecordList, movementPlaces, movementText, parseMovement, useRecords } from "./MonkeyRecords";
 import monkeysArr from "./testMonkeys";
-import { addRecord, loadRecords } from "./monkeyData";
+import { addRecord, loadMonkeyWeights, loadRecords } from "./monkeyData";
 import { STAFF } from "./testStaff";
 import { isMonkeyPageRoute, monkeyFromPageRoute, monkeyHash, monkeyPageHash } from "./monkeyLink";
 
@@ -15,9 +15,11 @@ vi.mock("./monkeyData", async (importOriginal) => ({
     BUILT_IN_DATA: { ...(await importOriginal()).BUILT_IN_DATA, monkeys: (await import("./testMonkeys")).default },
     loadRecords: vi.fn(),
     addRecord: vi.fn(),
+    loadMonkeyWeights: vi.fn(),
 }));
 beforeEach(() => {
     loadRecords.mockResolvedValue([]);
+    loadMonkeyWeights.mockResolvedValue([]);
 });
 
 // Signed in as staff (the full profile is staff only), unless a test
@@ -81,10 +83,9 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
     expect(within(bar).getAllByRole("button").map((b) => b.title)).toEqual([
         "Profile",
         "Arrival Info",
+        "Medical Info",
         "Monitoring",
-        "Rehabilitation",
-        "Medical",
-        "Integration",
+        "Records",
     ]);
     expect(screen.getByRole("tab", { name: "Rehabilitation" })).toHaveAttribute("aria-selected", "true");
     // (moves are Movement records of their own, from the database: none
@@ -92,12 +93,12 @@ test("staff see Records: Rehabilitation and Medical tabs; the chip is in the Pro
     expect(screen.getByText("No rehabilitation records yet.")).toBeInTheDocument();
     await user.click(screen.getByRole("tab", { name: "Medical" }));
     expect(screen.getByText("No medical records yet.")).toBeInTheDocument();
-    // Records folds away
-    await user.click(screen.getByRole("button", { name: "Records" }));
+    // Records folds away (its heading's button, not the icon bar's)
+    await user.click(screen.getAllByRole("button", { name: "Records" }).find((b) => !bar.contains(b)));
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
 });
 
-test("the icon bar lights up the Records tab showing, not always Integration (the last)", async () => {
+test("the icon bar: one Records button for all its tabs; it opens Records when folded", async () => {
     const user = userEvent.setup();
     const staff = { canSee: true, canAdd: false, userId: "staff-1", isAdmin: false };
     render(<MonkeyPage monkey={aroha} staff={staff} />);
@@ -105,14 +106,53 @@ test("the icon bar lights up the Records tab showing, not always Integration (th
     const lit = () => within(bar).getAllByRole("button").filter((b) => b.getAttribute("aria-current") === "true").map((b) => b.title);
     // (the test page is all on one screen: the bottom of the page, so the
     // last part that's there)
-    await waitFor(() => expect(lit()).toEqual(["Rehabilitation"]));
-    await user.click(within(bar).getByRole("button", { name: "Integration" }));
-    await waitFor(() => expect(lit()).toEqual(["Integration"]));
-    // (a tab picked below, without scrolling: the bar follows it)
+    await waitFor(() => expect(lit()).toEqual(["Records"]));
+    // (a tab picked below: still Records)
     await user.click(screen.getByRole("tab", { name: "Medical" }));
-    await waitFor(() => expect(lit()).toEqual(["Medical"]));
-    await user.click(within(bar).getByRole("button", { name: "Rehabilitation" }));
-    await waitFor(() => expect(lit()).toEqual(["Rehabilitation"]));
+    await waitFor(() => expect(lit()).toEqual(["Records"]));
+    // (folded away: the button opens it again, on the same tab)
+    const fold = screen.getAllByRole("button", { name: "Records" }).find((b) => !bar.contains(b));
+    await user.click(fold);
+    expect(screen.queryByRole("tab")).toBeNull();
+    await user.click(within(bar).getByRole("button", { name: "Records" }));
+    expect(screen.getByRole("tab", { name: "Medical" })).toHaveAttribute("aria-selected", "true");
+});
+
+test("Medical Info (staff): the last deworming and weight, side by side; none yet: said", async () => {
+    const staff = { canSee: true, canAdd: false, userId: "staff-1", isAdmin: false };
+    const nita = { ...aroha, id: 7 };
+    loadRecords.mockResolvedValue([
+        { id: 1, section: "medical", category: "deworming", date: "2026-09-01", details: "Albendazole 1/4 tab" },
+        { id: 2, section: "medical", category: "deworming", date: "2026-11-01", details: "Milbeworm 1/2 tab" },
+    ]);
+    loadMonkeyWeights.mockResolvedValue([
+        { monkeyId: 7, date: "2026-10-01", value: 2900 },
+        { monkeyId: 7, date: "2026-11-05", value: 3140 },
+    ]);
+    const { unmount } = render(<MonkeyPage monkey={nita} staff={staff} />);
+    const section = screen.getByRole("button", { name: "Medical Info", expanded: true }).closest("section");
+    await waitFor(() => expect(within(section).getByText("Last Deworming").closest("div")).toHaveTextContent("Milbeworm · 1st Nov 2026"));
+    await waitFor(() => expect(within(section).getByText("Last Weight").closest("div")).toHaveTextContent("3.14 kg · 5th Nov 2026"));
+    unmount();
+    loadRecords.mockResolvedValue([]);
+    loadMonkeyWeights.mockResolvedValue([]);
+    render(<MonkeyPage monkey={nita} staff={staff} />);
+    await waitFor(() => expect(screen.getByText("Last Weight").closest("div")).toHaveTextContent("None on record"));
+    expect(screen.getByText("Last Deworming").closest("div")).toHaveTextContent("None on record");
+});
+
+test("Medical Info: a boy's Vasectomised? (not in the Profile facts); none for girls", () => {
+    const boy = { ...aroha, sex: "male", vasectomised: true };
+    const { unmount } = render(<MonkeyPage monkey={boy} />);
+    const bar = screen.getByRole("navigation", { name: "On this page" });
+    expect(within(bar).getAllByRole("button").map((b) => b.title)).toEqual(["Profile", "Arrival Info", "Medical Info"]);
+    const row = screen.getByText("Vasectomised?").closest("div");
+    expect(row).toHaveTextContent("Yes");
+    expect(row.closest(".MonkeyPage-facts")).toBeNull();
+    unmount();
+    render(<MonkeyPage monkey={{ ...aroha, sex: "female", vasectomised: false }} />);
+    expect(screen.queryByText("Vasectomised?")).toBeNull();
+    expect(screen.queryByText("Medical Info")).toBeNull();
 });
 
 // A records list's data, without the database

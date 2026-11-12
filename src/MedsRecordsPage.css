@@ -1,0 +1,266 @@
+/* Records → Meds & Sickbay (MedsRecordsPage.jsx): Vet Visits and
+   Vasectomies. The form and search as New Integration's
+   (IntegrationRecordsPage.css). */
+
+/* The year and + New on one row */
+.Meds-bar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 14px 0 12px;
+}
+
+.Meds-year select {
+    min-width: 100px;
+}
+
+/* The form's Date, Vet (and Reason) side by side, phones too */
+.Meds-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 10px;
+    max-width: 560px;
+}
+
+.Meds-fields.is-visit {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
+    max-width: 680px;
+}
+
+/* Phones: Date and Reason side by side, the practice the whole width under
+   them (its names are long); a vasectomy's Date and Vet half each */
+@media (max-width: 559px) {
+    .Meds-fields,
+    .Meds-fields.is-visit {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .Meds-fields.is-visit > :nth-child(2) {
+        grid-column: 1 / -1;
+        order: 3;
+    }
+}
+
+.Meds-fields input[type="date"] {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .Meds-fields input[type="date"] {
+    color-scheme: light;
+}
+
+.Meds-error {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--danger);
+}
+
+/* ---- The lists ---- */
+
+.Meds-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Meds-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.Meds-row:last-child {
+    border-bottom: none;
+}
+
+.Meds-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.Meds-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.Meds-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.Meds-date {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.Meds-what {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* (2 lines at most, then "…": the whole text on hover) */
+.Meds-details {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.Meds-by {
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+/* Delete: a small red bin, its question in a bubble above */
+.Meds-delete {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.Meds-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--danger);
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.Meds-icon:hover {
+    background-color: var(--surface-2);
+}
+
+/* ---- By Birth Year ---- */
+
+.Meds-yearCard {
+    margin-bottom: 12px;
+    padding: 12px 14px 14px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.Meds-yearTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.Meds-yearTop h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.Meds-done {
+    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+}
+
+.Meds-copy.Modal-edit {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+/* Each place on one line (wrapping), its boys as small tags */
+.Meds-home {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+}
+
+/* (short names: H&B, D&D, so it fits beside the boys, phones too) */
+.Meds-homeName {
+    flex: 0 0 72px;
+    padding-top: 3px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.Meds-boys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+
+.Meds-boy {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+}
+
+/* Vasectomised: green, with a tick */
+.Meds-boy.is-done {
+    color: var(--green);
+    background-color: var(--green-wash);
+    border-color: transparent;
+}
+
+.Meds-notYet {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--amber-text);
+}
+
+/* Other's name: as wide as the Vet box's row, no wider */
+.Meds-other {
+    max-width: 560px;
+}
+
+/* The tabs and + New on one row, each on one line, phones too */
+.Meds .RecordsPage-tabs button,
+.Meds .RecordsPage-tabRow .Modal-edit,
+.Meds-bar .Modal-edit {
+    white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+    .Meds .RecordsPage-tabs button {
+        padding: 0 11px;
+    }
+
+    .Meds .RecordsPage-tabRow .Modal-edit {
+        gap: 4px;
+        padding: 0 10px;
+    }
+}

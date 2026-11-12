@@ -1,5 +1,5 @@
 import { microchipText } from "./chipRules";
-import { supabase } from "./supabase";
+import { isExpiredSignIn, signInRenewed, supabase } from "./supabase";
 import {
     displayId,
     dropEntries,
@@ -60,10 +60,12 @@ const ARRIVAL_MONKEY_COLUMNS = `${BIRTH_MONKEY_COLUMNS}, arrival_date, arrival_r
 const ARRIVAL_PLACE_MONKEY_COLUMNS = `${ARRIVAL_MONKEY_COLUMNS}, arrival_place, arrival_place_id`;
 // ...and the condition they arrived in (once arrival-condition.sql has run)
 const ARRIVAL_CONDITION_MONKEY_COLUMNS = `${ARRIVAL_PLACE_MONKEY_COLUMNS}, arrival_condition`;
+// ...and Vasectomised? (once vet-visits.sql has run)
+const VASECTOMY_MONKEY_COLUMNS = `${ARRIVAL_CONDITION_MONKEY_COLUMNS}, vasectomised`;
 // Newest first: each set has all the ones after it (loadMonkeys tries them
 // in turn)
 const COLUMN_SETS = [
-    ARRIVAL_CONDITION_MONKEY_COLUMNS, ARRIVAL_PLACE_MONKEY_COLUMNS, ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
+    VASECTOMY_MONKEY_COLUMNS, ARRIVAL_CONDITION_MONKEY_COLUMNS, ARRIVAL_PLACE_MONKEY_COLUMNS, ARRIVAL_MONKEY_COLUMNS, BIRTH_MONKEY_COLUMNS, SPECIES_MONKEY_COLUMNS, STAY_MONKEY_COLUMNS, STATUS_MONKEY_COLUMNS, SICKBAY_MONKEY_COLUMNS,
     FEEDING_MONKEY_COLUMNS,
 ];
 // Whether the database's set includes `columns` (the newer ones do)
@@ -78,6 +80,8 @@ export const birthDateAvailable = () => has(BIRTH_MONKEY_COLUMNS);
 export const arrivalDetailsAvailable = () => has(ARRIVAL_MONKEY_COLUMNS);
 // ...and a Condition Received (arrival-condition.sql has run)
 export const arrivalConditionAvailable = () => has(ARRIVAL_CONDITION_MONKEY_COLUMNS);
+// ...and Vasectomised?, Vet Visits and Vasectomies (vet-visits.sql has run)
+export const vasectomyAvailable = () => has(VASECTOMY_MONKEY_COLUMNS);
 
 // Looking up places while turning rows into monkeys: enclosures by id, and
 // each troop's home enclosure. Set by loadMonkeyData (built-in until then).
@@ -168,6 +172,8 @@ export function toAppMonkey(row) {
     // ...and the condition they arrived in: "healthy", "injured", "sick" or
     // null (not recorded): arrival-condition.sql
     if ("arrival_condition" in row) monkey.arrivalCondition = row.arrival_condition;
+    // ...and Vasectomised? (true, or false: not recorded): vet-visits.sql
+    if ("vasectomised" in row) monkey.vasectomised = Boolean(row.vasectomised);
     // Once the database has stays (see introcage-stays.sql): the introcage
     // it's staying in for now, or null (at home)
     if ("stay_introcage_id" in row) {
@@ -214,6 +220,7 @@ export function toDatabaseRow(monkey, troopIds) {
     }
     // (once the database has it)
     if (monkey.arrivalCondition !== undefined) row.arrival_condition = monkey.arrivalCondition || null;
+    if (monkey.vasectomised !== undefined) row.vasectomised = monkey.vasectomised || null;
     // (a stay ends once its introcage becomes home: a move made in Edit)
     if (monkey.stay && monkey.stay.id === monkey.introcageId) {
         Object.assign(row, { stay_introcage_id: null, stay_since: null, stay_note: null });
@@ -371,9 +378,18 @@ async function loadWithoutEnclosures() {
 // with "All Troops" (like groupsArr); troopIds maps troop name → id (needed
 // for saving). Throws if the database can't be reached.
 export async function loadMonkeyData() {
-    const request = loadWithEnclosures().catch((error) => {
-        if (isOlderDatabase(error)) return loadWithoutEnclosures();
-        throw error;
+    const attempt = () =>
+        loadWithEnclosures().catch((error) => {
+            if (isOlderDatabase(error)) return loadWithoutEnclosures();
+            throw error;
+        });
+    // Turned down for a run-out sign-in (opening the app after a while: the
+    // renewal's still going): once it's renewed, again, rather than "Couldn't
+    // reach the database"
+    const request = attempt().catch(async (error) => {
+        if (!isExpiredSignIn(error)) throw error;
+        await signInRenewed();
+        return attempt();
     });
     const timeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("The database took too long to respond")), TIMEOUT_MS)
@@ -579,6 +595,109 @@ export async function loadIntake(year) {
         for (const row of info.data ?? []) notes[row.monkey_id] = row.info;
     }
     return { monkeys, notes };
+}
+
+// ---- Meds & Sickbay: Vet Visits and Vasectomies (vet-visits.sql) ----
+// Adding either also adds the monkey's Medical record (and a vasectomy at a
+// vet, or a vet visit for one, adds the other): the database does that.
+
+const VET_VISIT_COLUMNS = "id, monkey_id, visit_date, practice, practice_other, reason, details, logged_by, logged_by_name";
+const VASECTOMY_COLUMNS = "id, monkey_id, done_on, vet, vet_other, details, vet_visit_id, logged_by, logged_by_name";
+
+const toVetVisit = (row) => ({
+    id: row.id,
+    monkeyId: row.monkey_id,
+    date: row.visit_date,
+    practice: row.practice,
+    practiceOther: row.practice_other ?? "",
+    reason: row.reason,
+    details: row.details ?? "",
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+});
+const toVasectomy = (row) => ({
+    id: row.id,
+    monkeyId: row.monkey_id,
+    date: row.done_on,
+    vet: row.vet,
+    vetOther: row.vet_other ?? "",
+    details: row.details ?? "",
+    vetVisitId: row.vet_visit_id,
+    loggedBy: row.logged_by,
+    loggedByName: row.logged_by_name,
+});
+
+// A missing table (vet-visits.sql not run yet): said plainly
+function medsProblem(error) {
+    if (error?.code === "PGRST205" || error?.code === "42P01") return new Error("Please run supabase/vet-visits.sql first.");
+    return error;
+}
+
+// One year's vet visits, newest first
+export async function loadVetVisits(year) {
+    const { data, error } = await supabase
+        .from("vet_visits")
+        .select(VET_VISIT_COLUMNS)
+        .gte("visit_date", `${year}-01-01`)
+        .lte("visit_date", `${year}-12-31`)
+        .order("visit_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw medsProblem(error);
+    return data.map(toVetVisit);
+}
+
+// A new vet visit (id null) or a change to one. values: { monkeyId, date,
+// practice, practiceOther, reason, details }
+export async function saveVetVisit(id, values) {
+    const row = {
+        visit_date: values.date,
+        practice: values.practice,
+        practice_other: values.practice === "other" ? values.practiceOther.trim() || null : null,
+        reason: values.reason,
+        details: values.details.trim() || null,
+    };
+    const { data, error } = id
+        ? await supabase.from("vet_visits").update(row).eq("id", id).select(VET_VISIT_COLUMNS).single()
+        : await supabase.from("vet_visits").insert({ ...row, monkey_id: values.monkeyId }).select(VET_VISIT_COLUMNS).single();
+    if (error) throw error.code === "PGRST205" ? medsProblem(error) : saveProblem(error);
+    return toVetVisit(data);
+}
+
+export async function deleteVetVisit(id) {
+    const { error } = await supabase.from("vet_visits").delete().eq("id", id);
+    if (error) throw saveProblem(error);
+}
+
+// Every vasectomy, newest first
+export async function loadVasectomies() {
+    const { data, error } = await supabase
+        .from("vasectomies")
+        .select(VASECTOMY_COLUMNS)
+        .order("done_on", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw medsProblem(error);
+    return data.map(toVasectomy);
+}
+
+// A new vasectomy (id null) or a change to one. values: { monkeyId, date,
+// vet, vetOther, details }
+export async function saveVasectomy(id, values) {
+    const row = {
+        done_on: values.date,
+        vet: values.vet,
+        vet_other: values.vet === "other" ? values.vetOther.trim() || null : null,
+        details: values.details.trim() || null,
+    };
+    const { data, error } = id
+        ? await supabase.from("vasectomies").update(row).eq("id", id).select(VASECTOMY_COLUMNS).single()
+        : await supabase.from("vasectomies").insert({ ...row, monkey_id: values.monkeyId }).select(VASECTOMY_COLUMNS).single();
+    if (error) throw error.code === "PGRST205" ? medsProblem(error) : saveProblem(error);
+    return toVasectomy(data);
+}
+
+export async function deleteVasectomy(id) {
+    const { error } = await supabase.from("vasectomies").delete().eq("id", id);
+    if (error) throw saveProblem(error);
 }
 
 // ---- Arrival Info: a new arrival's arrival details (staff only) ----

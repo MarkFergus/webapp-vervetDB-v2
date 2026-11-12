@@ -78,6 +78,9 @@ function recordEntry(r) {
     if (r.category === "behaviour") return { ...base, kind: "behaviour", label: "Behaviour", filters: ["seen"] };
     if (r.category === "trapped" || r.category === "escape") return { ...base, kind: "other", label: titleWords(r.category), filters: ["seen"] };
     if (r.category === "deworming") return { ...base, kind: "deworming", label: "Deworming", filters: ["medical"] };
+    // (added by the database for each vet visit and vasectomy: vet-visits.sql)
+    if (r.category === "vet_visit") return { ...base, kind: "vet", label: "Vet Visit", filters: ["medical"] };
+    if (r.category === "vasectomy") return { ...base, kind: "vasectomy", label: "Vasectomy", filters: ["medical", "milestones"] };
     if (r.category === "observation") {
         return { ...base, kind: "observation", label: "Observation", filters: ["medical", "seen"] };
     }

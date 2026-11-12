@@ -7,6 +7,7 @@ import {
     IconFirstAidKit,
     IconFlag,
     IconFriends,
+    IconGenderMale,
     IconHeartbeat,
     IconHome,
     IconPaw,
@@ -15,6 +16,7 @@ import {
     IconPlaneArrival,
     IconReportMedical,
     IconScale,
+    IconStethoscope,
 } from "@tabler/icons-react";
 import { BackLink } from "./EnclosuresPage";
 import { dayText } from "./babyRecords";
@@ -70,6 +72,8 @@ const ICONS = {
     other: IconClipboardText,
     seen: IconEye,
     status: IconFlag,
+    vasectomy: IconGenderMale,
+    vet: IconStethoscope,
     weight: IconScale,
 };
 

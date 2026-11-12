@@ -53,7 +53,7 @@ test("Monitoring, above Records: Last Seen, Current Injuries, Latest Condition, 
     const section = (await screen.findByRole("button", { name: "Monitoring", expanded: true })).closest("section");
     expect(section.nextElementSibling).toHaveTextContent(/^Records/);
     await waitFor(() => expect(within(section).getAllByRole("term").map((t) => t.textContent)).toEqual([
-        "Last Seen", "Current Injuries", "Latest Condition", "Last Deworming", "Priority Check", "Notes for Monitoring",
+        "Last Seen", "Current Injuries", "Latest Condition", "Priority Check", "Notes for Monitoring",
     ]));
     await waitFor(() => expect(row("Last Seen")).toHaveTextContent("26th Oct 2026"));
     await waitFor(() => expect(row("Current Injuries")).toHaveTextContent("Bite on tail · 10th Oct 2026Latest Update: Healing well · 20th Oct 2026"));

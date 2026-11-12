@@ -183,6 +183,9 @@ function ShowPage({
     fieldWork = false,
     onMonkeySaved = () => {},
     onMonkeyDeleted = () => {},
+    // App's notes (offline, couldn't reach the database, Needs Attention):
+    // under the top bar, beside the side rail, so they never push the bar down
+    notices = null,
 }) {
     const { user, role, ready, isEditor, isAdmin, canLogMaintenance, passwordSetup } = useAuth();
     // The ★ monkeys (favourites.js)
@@ -1009,6 +1012,7 @@ function ShowPage({
                     barsInert={isAnyModalOpen}
                 />
             </div>
+            {notices}
             {/* (a page that crashes: "Something went wrong" in its place, the
                 bars still working; another page clears it) */}
             <ErrorBoundary page resetOn={route}>

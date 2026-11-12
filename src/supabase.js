@@ -50,3 +50,18 @@ supabase.auth.getSession = async () => {
     const answer = renewing.then((result) => (result.data.session || !result.error ? result : stillThem));
     return Promise.race([answer, new Promise((resolve) => setTimeout(() => resolve(stillThem), RENEW_WAIT_MS))]);
 };
+
+// A request the database turned down because the sign-in it carried had run
+// out (the phone was asleep past the hour, and the renewal's still going)
+export const isExpiredSignIn = (error) =>
+    ["PGRST301", "PGRST303"].includes(error?.code) || /jwt|token is expired/i.test(String(error?.message));
+
+// Waits (up to `ms`) for a run-out sign-in to be renewed, so a request
+// turned down for it can go again with the new one. Straight back if the
+// sign-in's fine, or there isn't one.
+export async function signInRenewed(ms = 15000) {
+    const kept = keptSession();
+    if (!kept || kept.expires_at * 1000 >= Date.now()) return;
+    const renewal = renewing ?? realGetSession();
+    await Promise.race([Promise.resolve(renewal).catch(() => {}), new Promise((resolve) => setTimeout(resolve, ms))]);
+}

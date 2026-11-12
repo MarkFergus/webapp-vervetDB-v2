@@ -87,7 +87,17 @@ export function movementPlaces(troops, enclosures, homeOf) {
 // Arrival Date and Reason) and its weights (the Records page's): otherRows;
 // and an Integration record for each integration started and Status Update
 // (added by the database: integration-records.sql)
-const OTHER_CATEGORIES = { status: "Status", integration: "Integration", arrival: "Arrival", weight: "Weight", condition: "Condition" };
+// A Vet Visit and Vasectomy record for each vet visit and vasectomy (added
+// by the database: vet-visits.sql, from Records → Meds & Sickbay)
+const OTHER_CATEGORIES = {
+    status: "Status",
+    integration: "Integration",
+    arrival: "Arrival",
+    weight: "Weight",
+    condition: "Condition",
+    vet_visit: "Vet Visit",
+    vasectomy: "Vasectomy",
+};
 
 const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 

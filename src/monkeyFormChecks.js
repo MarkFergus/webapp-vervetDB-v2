@@ -43,6 +43,8 @@ export function formFromMonkey(monkey, choices = []) {
         }),
         // ...or a Condition Received: "" = not recorded
         ...(monkey.arrivalCondition !== undefined && { arrivalCondition: monkey.arrivalCondition ?? "" }),
+        // ...or Vasectomised? (males): "yes" / "no"
+        ...(monkey.vasectomised !== undefined && { vasectomised: monkey.vasectomised ? "yes" : "no" }),
         // ...or birth dates: "" = unknown
         ...(monkey.birthDate !== undefined && {
             birthDate: monkey.birthDate ?? "",
@@ -179,6 +181,8 @@ export function checkForm(form, choices, thisYear = new Date().getFullYear()) {
             ...(form.species !== undefined && { species: form.species }),
             ...(form.arrivalDate !== undefined && { arrivalDate: form.arrivalDate, arrivalReason: form.arrivalReason }),
             ...(form.arrivalCondition !== undefined && { arrivalCondition: form.arrivalCondition }),
+            // (only boys can be: anyone else, no)
+            ...(form.vasectomised !== undefined && { vasectomised: sex === "male" && form.vasectomised === "yes" }),
             ...(form.birthDate !== undefined && {
                 birthDate: birthDate || null,
                 birthDateApprox: Boolean(birthDate && form.birthDateApprox),

@@ -69,6 +69,21 @@ export const RECORD_KINDS = {
         title: "Feeding",
         hint: "See every introcage monkey's feeding on one page, and download the AM Plates List.",
     },
+    // Meds & Sickbay's (their own pages: MedsRecordsPage.jsx); soon: shown
+    // as "Coming soon…", not open yet
+    "vet-visits": {
+        id: "vet-visits",
+        title: "Vet Visits",
+        hint: "Record a vet visit, and see past visits by year.",
+    },
+    vasectomies: {
+        id: "vasectomies",
+        title: "Vasectomies",
+        hint: "Record a vasectomy, and check each year's boys.",
+    },
+    microchips: { id: "microchips", title: "Microchips", soon: true },
+    medications: { id: "medications", title: "Medications", soon: true },
+    "food-monitoring": { id: "food-monitoring", title: "Food Monitoring", soon: true },
 };
 
 // The teams (in alphabetical order), and what each records. page: its own page, no kinds to
@@ -78,7 +93,7 @@ export const TEAMS = [
     { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] },
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
-    { id: "meds-sickbay", name: "Meds & Sickbay", kinds: [], soon: true },
+    { id: "meds-sickbay", name: "Meds & Sickbay", kinds: ["vet-visits", "vasectomies", "microchips", "medications", "food-monitoring"] },
     { id: "sections", name: "Sections", kinds: ["monitoring", "injuries", "deworming", "feeding"] },
 ];
 
@@ -87,7 +102,7 @@ export const TEAMS = [
 export function parseRecordsRoute(route) {
     const [, teamId, kindId] = route.split("/");
     const team = TEAMS.find((t) => t.id === teamId) ?? null;
-    const kind = team && team.kinds.includes(kindId) ? RECORD_KINDS[kindId] : null;
+    const kind = team && team.kinds.includes(kindId) && !RECORD_KINDS[kindId].soon ? RECORD_KINDS[kindId] : null;
     return { team, kind };
 }
 

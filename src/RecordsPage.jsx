@@ -5,18 +5,23 @@ import {
     IconBinoculars,
     IconBottle,
     IconBowl,
+    IconApple,
     IconBuildingHospital,
     IconChartLine,
     IconChevronDown,
     IconCopy,
+    IconCpu,
     IconFileText,
     IconFirstAidKit,
     IconFriends,
+    IconGenderMale,
     IconLayoutGrid,
+    IconMedicineSyrup,
     IconMinus,
     IconPill,
     IconPlus,
     IconScale,
+    IconStethoscope,
     IconTool,
 } from "@tabler/icons-react";
 import useDialog from "./useDialog";
@@ -45,6 +50,7 @@ import FeedingRecordsPage from "./FeedingRecordsPage";
 import SectionsRecordsPage from "./SectionsRecordsPage";
 import DewormingRecordsPage from "./DewormingRecordsPage";
 import MonitoringRecordsPage from "./MonitoringRecordsPage";
+import MedsRecordsPage from "./MedsRecordsPage";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
@@ -58,7 +64,9 @@ import "./RecordsPage.css";
 // Sections: Monitoring, each troop's sessions (MonitoringRecordsPage.jsx),
 // Injuries, each troop's current and past ones (SectionsRecordsPage.jsx), and
 // Deworming, the deworming sheets (DewormingRecordsPage.jsx);
-// entering: editors and admins. Meds & Sickbay: coming soon.
+// entering: editors and admins. Meds & Sickbay: Vet Visits and Vasectomies
+// (MedsRecordsPage.jsx; entering: editors and admins); Microchips,
+// Medications and Food Monitoring coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
 const TEAM_ICONS = {
@@ -77,6 +85,11 @@ const KIND_ICONS = {
     monitoring: IconBinoculars,
     deworming: IconPill,
     feeding: IconBowl,
+    "vet-visits": IconStethoscope,
+    vasectomies: IconGenderMale,
+    microchips: IconCpu,
+    medications: IconMedicineSyrup,
+    "food-monitoring": IconApple,
 };
 
 // ---- Already saved: replace them, keep the old ones, or cancel ----
@@ -770,7 +783,11 @@ function RecordsPage({
                                 href={t.soon ? null : `#records/${t.id}`}
                                 Icon={TEAM_ICONS[t.id]}
                                 title={t.name}
-                                sub={t.soon ? "Coming soon…" : (t.sub ?? t.kinds.map((k) => RECORD_KINDS[k].title).join(" · "))}
+                                sub={
+                                    t.soon
+                                        ? "Coming soon…"
+                                        : (t.sub ?? t.kinds.filter((k) => !RECORD_KINDS[k].soon).map((k) => RECORD_KINDS[k].title).join(" · "))
+                                }
                             />
                         ))}
                     </ul>
@@ -791,17 +808,19 @@ function RecordsPage({
                         {team.kinds.map((k) => (
                             <Choice
                                 key={k}
-                                href={`#records/${team.id}/${k}`}
+                                href={RECORD_KINDS[k].soon ? null : `#records/${team.id}/${k}`}
                                 Icon={KIND_ICONS[k]}
                                 title={RECORD_KINDS[k].title}
-                                sub={RECORD_KINDS[k].hint}
+                                sub={RECORD_KINDS[k].soon ? "Coming soon…" : RECORD_KINDS[k].hint}
                             />
                         ))}
                     </ul>
                 </>
             ) : (
                 // (Integration's: its own page)
-                team.id === "integration" ? (
+                team.id === "meds-sickbay" ? (
+                    <MedsRecordsPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} staff={staff} />
+                ) : team.id === "integration" ? (
                     <IntegrationRecordsPage key={kind.id} kind={kind} monkeys={monkeys} canEnter={canEnter} />
                 ) : team.id === "sections" ? (
                     kind.id === "monitoring" ? (

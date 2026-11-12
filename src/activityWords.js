@@ -114,6 +114,22 @@ export const SOURCES = {
         group: "medical",
         fields: { condition_date: field("Date", "date"), description: field("Condition") },
     },
+    vet_visits: {
+        label: "Vet Visit",
+        group: "medical",
+        fields: {
+            visit_date: field("Date", "date"),
+            practice: field("Vet Practice", "words"),
+            practice_other: field("Other Vet"),
+            reason: field("Reason", "words"),
+            details: field("Details"),
+        },
+    },
+    vasectomies: {
+        label: "Vasectomy",
+        group: "medical",
+        fields: { done_on: field("Date", "date"), vet: field("Vet", "words"), vet_other: field("Other Vet"), details: field("Details") },
+    },
     profiles: { label: "Staff Name", group: "admin", fields: { full_name: field("Name") } },
     editors: { label: "User Type", group: "admin", fields: { role: field("User Type", "words"), is_admin: field("Admin", "yesno") } },
     troops: { label: "Troop", group: "admin", fields: { name: field("Name"), sort_order: field("Order") } },
@@ -223,8 +239,15 @@ export function changeLines(change) {
 // "completed" (without the Status line). Changes after that, and deleting
 // one, still show.
 const sessionStatus = (row) => row?.status ?? null;
+// (vet visits and vasectomies: the database linking one to its record, or
+// to each other, isn't a change anyone made)
+const LINKED_ONLY = ["vet_visits", "vasectomies"];
+const changedFields = (c) =>
+    Object.keys(SOURCES[c.source].fields).some((key) => (c.old_row?.[key] ?? null) !== (c.new_row?.[key] ?? null));
+
 export function tidyChanges(changes) {
     return changes.flatMap((c) => {
+        if (LINKED_ONLY.includes(c.source)) return c.action === "changed" && !changedFields(c) ? [] : [c];
         if (c.source !== "monitoring_sessions") return [c];
         if (c.action === "added") return [];
         if (c.action !== "changed") return [c];

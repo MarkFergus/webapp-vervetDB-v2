@@ -166,6 +166,9 @@ describe("the app with and without a connection", () => {
         expect(screen.getByRole("alert")).toHaveTextContent(
             "You're offline, so these are the monkeys saved on this device just now. Daily entries still save and send later; other editing is off until you're back online."
         );
+        // (under the top bar, never pushing it down behind the side rail)
+        const bar = document.querySelector(".ShowPage-nav");
+        expect(bar.compareDocumentPosition(screen.getByRole("alert")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(await screen.findByRole("button", { name: /^Brand New/ })).toBeInTheDocument();
         expect(loadMonkeyData).not.toHaveBeenCalled();
 

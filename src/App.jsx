@@ -94,13 +94,6 @@ function App() {
         // AuthProvider: lets any page know who's signed in
         <AuthProvider>
             <div className="App">
-                {notice && (
-                    <p className={`App-notice${loadingLate ? " is-loading" : ""}`} role={loadingLate ? "status" : "alert"}>
-                        {notice}
-                    </p>
-                )}
-                <WaitingNotice />
-                <NeedsAttention />
                 {/* Every page (the monkeys, the enclosures, the game) under
                     the same top bar */}
                 <ShowPage
@@ -121,6 +114,18 @@ function App() {
                     fieldWork={status === "live" || status === "saved"}
                     onMonkeySaved={monkeySaved}
                     onMonkeyDeleted={monkeyDeleted}
+                    // (under the top bar, never pushing it down)
+                    notices={
+                        <>
+                            {notice && (
+                                <p className={`App-notice${loadingLate ? " is-loading" : ""}`} role={loadingLate ? "status" : "alert"}>
+                                    {notice}
+                                </p>
+                            )}
+                            <WaitingNotice />
+                            <NeedsAttention />
+                        </>
+                    }
                 />
                 <UpdatePrompt />
                 <SaveThumbnails live={status === "live"} monkeys={monkeys} />

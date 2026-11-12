@@ -237,3 +237,14 @@ describe("birth date (once the database has them)", () => {
     });
 });
 
+
+describe("Vasectomised? (boys; vet-visits.sql)", () => {
+    test("from the monkey as yes / no, saved as true or false; only boys can be", () => {
+        expect(formFromMonkey({ name: "Bruce", sex: "male", year: 2020, img: [], vasectomised: true })).toMatchObject({ vasectomised: "yes" });
+        expect(formFromMonkey({ name: "Bruce", sex: "male", year: 2020, img: [] })).not.toHaveProperty("vasectomised");
+        expect(check({ sex: "male", vasectomised: "yes" }).values.vasectomised).toBe(true);
+        expect(check({ sex: "male", vasectomised: "no" }).values.vasectomised).toBe(false);
+        expect(check({ sex: "female", vasectomised: "yes" }).values.vasectomised).toBe(false);
+        expect(check({}).values).not.toHaveProperty("vasectomised");
+    });
+});

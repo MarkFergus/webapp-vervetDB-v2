@@ -85,21 +85,34 @@ describe("the workings", () => {
     });
 });
 
-test("Records: Maintenance and Sections, then Meds & Sickbay (coming soon, not a link)", () => {
+test("Records: Maintenance, Sections and Meds & Sickbay", () => {
     open("records");
     expect(screen.getByRole("link", { name: /Maintenance/ })).toHaveAttribute("href", "#records/maintenance");
     expect(screen.getByRole("link", { name: /Maintenance/ })).toHaveTextContent("Reports");
     expect(screen.getByRole("link", { name: /Sections/ })).toHaveAttribute("href", "#records/sections");
     expect(screen.getByRole("link", { name: /Sections/ })).toHaveTextContent("Injuries");
-    const card = screen.getByText("Meds & Sickbay").closest(".RecordsPage-choice");
-    expect(card.tagName).not.toBe("A");
-    expect(card).toHaveTextContent("Coming soon…");
+    // (only what's open, under its name)
+    const meds = screen.getByRole("link", { name: /Meds & Sickbay/ });
+    expect(meds).toHaveAttribute("href", "#records/meds-sickbay");
+    expect(meds).toHaveTextContent("Vet Visits · Vasectomies");
+    expect(meds).not.toHaveTextContent("Microchips");
 });
 
-test("a team coming soon: says so", () => {
+test("Meds & Sickbay: Vet Visits and Vasectomies open; Microchips, Medications and Food Monitoring coming soon", () => {
     open("records/meds-sickbay");
     expect(screen.getByRole("heading", { level: 1, name: "Meds & Sickbay" })).toBeInTheDocument();
-    expect(screen.getByText("Coming soon…")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Vet Visits/ })).toHaveAttribute("href", "#records/meds-sickbay/vet-visits");
+    expect(screen.getByRole("link", { name: /Vasectomies/ })).toHaveAttribute("href", "#records/meds-sickbay/vasectomies");
+    for (const soon of ["Microchips", "Medications", "Food Monitoring"]) {
+        const card = screen.getByText(soon).closest(".RecordsPage-choice");
+        expect(card.tagName).not.toBe("A");
+        expect(card).toHaveTextContent("Coming soon…");
+    }
+});
+
+test("a part coming soon can't be opened by its address", () => {
+    open("records/meds-sickbay/medications");
+    expect(screen.getByRole("heading", { level: 1, name: "Meds & Sickbay" })).toBeInTheDocument();
 });
 
 describe("Log Job", () => {

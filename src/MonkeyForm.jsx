@@ -550,7 +550,8 @@ function MonkeyForm({
                             </div>
                         )}
 
-                        {/* Species (once the database has species) and Sex */}
+                        {/* Species (once the database has species), Sex and
+                            Vasectomised? (boys) */}
                         <div className="MonkeyForm-row">
                             {form.species !== undefined && (
                                 <label className="MonkeyForm-field">
@@ -572,6 +573,17 @@ function MonkeyForm({
                                     <option value="">Unknown</option>
                                 </select>
                             </label>
+                            {/* Vasectomised? (males; once the database has it:
+                                vet-visits.sql). A vasectomy record sets it to Yes */}
+                            {form.vasectomised !== undefined && form.sex === "male" && (
+                                <label className="MonkeyForm-field">
+                                    <span>Vasectomised?</span>
+                                    <select value={form.vasectomised} onChange={set("vasectomised")}>
+                                        <option value="no">No</option>
+                                        <option value="yes">Yes</option>
+                                    </select>
+                                </label>
+                            )}
                         </div>
 
                         {/* Birth Date (once the database has them; blank:

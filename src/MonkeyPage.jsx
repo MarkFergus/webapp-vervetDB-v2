@@ -6,7 +6,9 @@ import {
     IconBinoculars,
     IconCalendar,
     IconCalendarEvent,
+    IconClipboardList,
     IconCpu,
+    IconGenderMale,
     IconDna2,
     IconEye,
     IconFirstAidKit,
@@ -23,6 +25,7 @@ import {
     IconPill,
     IconPlaneArrival,
     IconReportMedical,
+    IconScale,
     IconTimelineEvent,
     IconUserCircle,
     IconWorldPin,
@@ -46,7 +49,7 @@ import StatusUpdate from "./StatusUpdate";
 import useMonitoring from "./useMonitoring";
 import { LastSeen, useMissing } from "./MarkSeen";
 import { isNewArrival } from "./enclosures";
-import { lastDeworming } from "./timelineRules";
+import { lastDeworming, weightText } from "./timelineRules";
 import "./EnclosuresPage.css";
 import "./MonkeyPage.css";
 
@@ -61,7 +64,9 @@ import "./MonkeyPage.css";
 //                   daily as part of its care): Last Seen (Mark As Seen when
 //                   missing), Current Injuries, Latest Condition, Priority
 //                   Check, Notes for Monitoring
-//   Records         staff only, folding: two tabs, like a browser's, each
+//   Medical Info    folding, once there's something in it: Vasectomised?
+//                   (boys)
+//   Records         staff only, folding: tabs, like a browser's, each
 //                   a list of records (MonkeyRecords.jsx)
 //     Rehabilitation  movements, escapes, behaviour, integration
 //     Medical         injuries, medicine, treatment, vet visits, observations
@@ -241,7 +246,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Status Update's form open (archived monkeys, admins)
     const [statusOpen, setStatusOpen] = useState(false);
     // Which folding parts are open: both to start with
-    const [open, setOpen] = useState({ arrival: true, monitoring: true, records: true });
+    const [open, setOpen] = useState({ arrival: true, medicalInfo: true, monitoring: true, records: true });
     const foldProps = (key) => ({
         open: open[key],
         onToggle: () => setOpen((o) => ({ ...o, [key]: !o[key] })),
@@ -256,21 +261,59 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         ...(integration.available && { integration: integration.entries.length }),
     };
 
-    // In the page's order (Profile: the top of the page). Rehabilitation
-    // and Medical: the Records part, on that tab (the part takes the tab's
-    // name, so the bar lights up the one showing)
+    // Medical Info: its medical facts, side by side (boys: Vasectomised?,
+    // once the database has it: vet-visits.sql; staff: the last deworming
+    // and weight); the part shows once there's one
+    const lastDewormed = lastDeworming(records.entries);
+    const lastWeight = weights.at(-1) ?? null;
+    const medicalRows = inPairs([
+        ...(monkey.vasectomised !== undefined && monkey.sex === "male"
+            ? [{ icon: IconGenderMale, label: "Vasectomised?", value: monkey.vasectomised ? "Yes" : "No" }]
+            : []),
+        ...(isStaff && records.available
+            ? [
+                  {
+                      icon: IconPill,
+                      label: "Last Deworming",
+                      value: lastDewormed ? (
+                          <>
+                              {lastDewormed.dewormer} <span className="MonkeyPage-monitoringDate">· {dayText(lastDewormed.date)}</span>
+                          </>
+                      ) : (
+                          "None on record"
+                      ),
+                  },
+              ]
+            : []),
+        ...(isStaff
+            ? [
+                  {
+                      icon: IconScale,
+                      label: "Last Weight",
+                      value: lastWeight ? (
+                          <>
+                              {weightText(lastWeight.value)} <span className="MonkeyPage-monitoringDate">· {dayText(lastWeight.date)}</span>
+                          </>
+                      ) : (
+                          "None on record"
+                      ),
+                  },
+              ]
+            : []),
+    ]);
+
+    // In the page's order (Profile: the top of the page); Records: one
+    // button for all its tabs
     const jumps = [
         { key: "profile", label: "Profile", icon: IconUserCircle },
         { key: "arrival", label: "Arrival Info", icon: IconPlaneArrival },
+        ...(medicalRows.length > 0 ? [{ key: "medicalInfo", label: "Medical Info", icon: IconReportMedical }] : []),
         ...(monitored ? [{ key: "monitoring", label: "Monitoring", icon: IconBinoculars }] : []),
-        ...(isStaff ? TABS : []),
+        ...(isStaff ? [{ key: "records", label: "Records", icon: IconClipboardList }] : []),
     ];
     // Scroll down to a part, opening it first if it's folded away
     function jump(key) {
-        const tabKey = TABS.some((t) => t.key === key);
-        if (tabKey) setTab(key);
-        const fold = tabKey ? "records" : key;
-        if (fold in open) setOpen((o) => ({ ...o, [fold]: true }));
+        if (key in open) setOpen((o) => ({ ...o, [key]: true }));
         requestAnimationFrame(() => {
             const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
             if (key === "profile") window.scrollTo?.({ top: 0, behavior });
@@ -347,7 +390,6 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
     // Monitoring's rows, one each, the whole width
     const latestCondition = conditions[0] ?? null;
     const { conditionCheck, notes: monitoringNotes } = monitoring.value;
-    const lastDewormed = lastDeworming(records.entries);
     const monitoringRows = [
         {
             icon: IconEye,
@@ -397,17 +439,6 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     <span className="MonkeyPage-monitoringDate">· {dayText(latestCondition.date)}</span>
                 </>
             ) : null,
-        },
-        {
-            icon: IconPill,
-            label: "Last Deworming",
-            value: lastDewormed ? (
-                <>
-                    {lastDewormed.dewormer} <span className="MonkeyPage-monitoringDate">· {dayText(lastDewormed.date)}</span>
-                </>
-            ) : (
-                "None on record"
-            ),
         },
         { icon: IconAlertTriangle, label: "Priority Check", value: monitoring.loaded ? (conditionCheck ? "Yes" : "No") : null },
         {
@@ -527,6 +558,17 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
                     </div>
                 </Fold>
 
+                {/* Medical Info: its medical facts (once there's one) */}
+                {medicalRows.length > 0 && (
+                    <Fold title="Medical Info" jumpId={jumpId("medicalInfo")} {...foldProps("medicalInfo")}>
+                        <dl className="Enclosures-details MonkeyPage-rows">
+                            {medicalRows.map((row) => (
+                                <DetailRow key={row.label} {...row} />
+                            ))}
+                        </dl>
+                    </Fold>
+                )}
+
                 {/* Monitoring (staff; monkeys in monitoring sessions) */}
                 {monitored && (
                     <Fold title="Monitoring" jumpId={jumpId("monitoring")} {...foldProps("monitoring")}>
@@ -546,7 +588,7 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
 
                 {/* Records (staff): Rehabilitation and Medical, a tab each */}
                 {isStaff && (
-                    <Fold title="Records" jumpId={jumpId(tab)} {...foldProps("records")}>
+                    <Fold title="Records" jumpId={jumpId("records")} {...foldProps("records")}>
                         <Tabs tab={tab} onTab={setTab} counts={counts} />
                         <div
                             className="MonkeyPage-tabPanel"

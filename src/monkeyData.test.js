@@ -74,6 +74,39 @@ const ENCLOSURES = [
 const aroha = { ...row, id: 9, name: "Aroha", troops: null, introcage_id: 41 };
 const hbMonkey = { ...row, id: 8, name: "Bobo", troops: { name: "H&B" }, introcage_id: null };
 
+test("turned down for a run-out sign-in (the app opened after a while): loads again, not \"couldn't reach\"", async () => {
+    let tries = 0;
+    fakeDatabase({
+        troops: () => {
+            tries += 1;
+            return tries === 1
+                ? Promise.resolve({ data: null, error: { code: "PGRST303", message: "JWT expired" } })
+                : answer([{ id: 3, name: "H&B", enclosure_id: 40 }]);
+        },
+        monkeys: answer([hbMonkey]),
+        sections: answer(SECTIONS),
+        enclosures: answer(ENCLOSURES),
+    });
+    const data = await loadMonkeyData();
+    expect(tries).toBe(2);
+    expect(data.monkeys.map((m) => m.name)).toEqual(["Bobo"]);
+});
+
+test("any other problem: not tried again here", async () => {
+    let tries = 0;
+    fakeDatabase({
+        troops: () => {
+            tries += 1;
+            return Promise.resolve({ data: null, error: { code: "08000", message: "Connection refused" } });
+        },
+        monkeys: answer([hbMonkey]),
+        sections: answer(SECTIONS),
+        enclosures: answer(ENCLOSURES),
+    });
+    await expect(loadMonkeyData()).rejects.toMatchObject({ message: "Connection refused" });
+    expect(tries).toBe(1);
+});
+
 test("loads troops (All Troops first), monkeys, sections and enclosures", async () => {
     fakeDatabase({
         troops: answer([{ id: 3, name: "H&B", enclosure_id: 40 }, { id: 4, name: "Bandits", enclosure_id: null }]),
