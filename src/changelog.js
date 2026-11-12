@@ -21,6 +21,18 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.6.0",
+        date: "2026-11-12",
+        changes: [
+            "New Meds & Sickbay in Records: Vet Visits and Vasectomies",
+            "Added Vasectomised? to boys' profiles",
+            "Added Medical Info to Full Profiles",
+            "Improved the Full Profile icon bar: one Records button",
+            "Fixed the database warning when opening the app after a while",
+            "Fixed notices pushing the top bar under the side rail",
+        ],
+    },
+    {
         version: "2.5.0",
         date: "2026-11-11",
         changes: [
