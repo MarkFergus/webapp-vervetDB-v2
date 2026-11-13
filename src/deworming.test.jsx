@@ -34,6 +34,7 @@ import {
     introcageRanks,
     printOrder,
     shortIntrocage,
+    differentScheduleText,
     recordText,
     sheetTitle,
     startingLines,
@@ -217,7 +218,7 @@ describe("a new sheet's starting point", () => {
         expect(lastDose(sheets, 1)).toEqual({ medication: "Panacur", dose: "1/2 tsp", days: 3 });
     });
 
-    test("the paper sheet's short introcage names: Gol A, Bach B, Rob B1; others as they are", () => {
+    test("the paper sheet's short introcage names: Gol A, Bach B, Rob B1, Cal A; others as they are", () => {
         const place = (id, name, parentId = null) => ({ id, name, parentId, type: parentId ? "introcage" : "troop" });
         const enclosures = [
             place(1, "Goliath"), place(11, "Goliath A", 1), place(2, "Bachelor Block"), place(21, "Bachelor Block B", 2),
@@ -228,7 +229,8 @@ describe("a new sheet's starting point", () => {
         expect(shortIntrocage("Bachelor Block B", enclosures)).toBe("Bach B");
         expect(shortIntrocage("Robert B1", enclosures)).toBe("Rob B1");
         expect(shortIntrocage("Jalamango A", enclosures)).toBe("Jala A");
-        expect(shortIntrocage("Calypso's Corner A", enclosures)).toBe("Calypso's Corner A");
+        // (Calypso's Corner: Cal, so the row fits on one line)
+        expect(shortIntrocage("Calypso's Corner A", enclosures)).toBe("Cal A");
         expect(shortIntrocage("Global A", enclosures)).toBe("Global A");
         expect(shortIntrocage("Nowhere", enclosures)).toBe("Nowhere");
     });
@@ -400,6 +402,14 @@ describe("the page", () => {
         expect(screen.getByRole("button", { name: /3-Month Deworming/ })).toHaveTextContent(/Started on Mon 2 Nov/);
     });
 
+    test("On different schedule: under the sheet, by name; ticked again, it's off", async () => {
+        expect(differentScheduleText({ differentSchedule: [4, 2, 99] }, [{ id: 2, name: "Pantshula" }, { id: 4, name: "Barry" }])).toBe(
+            "On different schedule: Barry, Pantshula."
+        );
+        expect(differentScheduleText({ differentSchedule: [] }, [])).toBeNull();
+        expect(differentScheduleText({}, [])).toBeNull();
+    });
+
     test("Download PDF: the paper sheet", async () => {
         loadDewormingSheets.mockResolvedValue([
             sheet(1, "6_month_fu", "2026-11-20", [line(1, "Albendazole", "1/4 tab")]),
@@ -466,6 +476,9 @@ describe("the page", () => {
         // (Tiny is 1: not ticked)
         expect(form.getByRole("checkbox", { name: "Tiny" })).not.toBeChecked();
         expect(form.getByText("3 of 4 ticked")).toBeInTheDocument();
+        // (Tiny, not ticked: On different schedule; only the unticked have it)
+        expect(form.queryByRole("checkbox", { name: "Ash: On different schedule" })).not.toBeInTheDocument();
+        await user.click(form.getByRole("checkbox", { name: "Tiny: On different schedule" }));
 
         // nothing chosen yet: asked for
         await user.click(form.getByRole("button", { name: "Save List" }));
@@ -494,6 +507,7 @@ describe("the page", () => {
             groupKey: "troop:1",
             groupName: "D&D Troop",
             session: "6_month",
+            differentSchedule: [3],
             lines: [
                 { monkeyId: 1, medication: "Albendazole", dose: "1/4 tab", days: 3 },
                 { monkeyId: 2, medication: "Milbeworm", dose: "1/2 tab", days: 1 },

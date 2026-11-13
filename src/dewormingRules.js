@@ -93,11 +93,23 @@ export const SHORT_ENCLOSURE_NAMES = {
 // named after its enclosure: as it is.
 export function shortIntrocage(name, enclosures) {
     if (!name) return name;
+    // (inside Engeltjie, but not named after it: "Calypso's Corner A" → "Cal A")
+    if (name.startsWith("Calypso's Corner")) return `Cal${name.slice("Calypso's Corner".length)}`;
     const place = enclosures.find((e) => e.name === name && e.parentId != null);
     const parent = place && enclosures.find((e) => e.id === place.parentId);
     const short = parent && SHORT_ENCLOSURE_NAMES[parent.name];
     if (!short || !name.startsWith(`${parent.name} `)) return name;
     return `${short}${name.slice(parent.name.length)}`;
+}
+
+// The monkeys left off a sheet on purpose, for under it: "On different
+// schedule: Barry, Pantshula." (by name; none, or none still known: null)
+export function differentScheduleText(sheet, monkeys) {
+    const names = (sheet.differentSchedule ?? [])
+        .map((id) => monkeys.find((m) => m.id === id)?.name)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+    return names.length ? `On different schedule: ${names.join(", ")}.` : null;
 }
 
 // Introcages (and areas) in the sanctuary's order: their enclosure's (as the

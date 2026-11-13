@@ -2763,6 +2763,8 @@ const toAppSheet = (row) => ({
     approvedByName: row.approved_by_name ?? null,
     returnNote: row.return_note ?? null,
     photoEmailedAt: row.photo_emailed_at ?? null,
+    // (deworming-different-schedule.sql: those left off on purpose)
+    differentSchedule: row.different_schedule ?? [],
     lines: (row.deworming_lines ?? []).map((l) => ({
         id: l.id,
         monkeyId: l.monkey_id,
@@ -2806,7 +2808,8 @@ export async function loadDewormingSheets() {
             .select(columns)
             .order("start_date", { ascending: false })
             .order("id", { ascending: false });
-    let { data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns(ADDED_COLUMNS)}`);
+    let { data, error } = await load(`${SHEET_COLUMNS}, different_schedule, ${resultColumns(ADDED_COLUMNS)}`);
+    if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns(ADDED_COLUMNS)}`));
     if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns("")}`));
     if (isOlderDatabase(error)) {
         ({ data, error } = await load(`${SHEET_COLUMNS}, deworming_lines (id, monkey_id, medication, dose, days)`));
@@ -2863,6 +2866,7 @@ export async function saveDewormingSheet(sheet) {
             session: sheet.session,
             start_date: sheet.startDate,
             instructions: sheet.instructions,
+            different_schedule: sheet.differentSchedule ?? [],
             lines: sheet.lines.map((l) => ({
                 monkey_id: l.monkeyId,
                 medication: l.medication,

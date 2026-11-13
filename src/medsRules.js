@@ -1,6 +1,7 @@
 // Meds & Sickbay's workings (MedsRecordsPage.jsx, supabase/vet-visits.sql):
 // the vets and reasons, their words, and the Vasectomies page's birth years.
 import { BANDITS } from "./stats";
+import { dayText } from "./babyRecords";
 
 // The vet practices, in the form's order (Other: typed in)
 export const VET_PRACTICES = {
@@ -66,21 +67,41 @@ function homeRank(home) {
     return i === -1 ? TROOP_ORDER.length : i;
 }
 
+// When a boy's vasectomy is due: about 2.5 years old, but it's more by
+// size, so by the season instead (born in the 2023/24 season: year 2023).
+// 1 July three years on (2026), Due; a year after that (2027, when he's 3),
+// Overdue. today: "2026-11-13".
+//   → "done" (vasectomised), "not_due", "due", "overdue", or "unknown" (no
+//     birth year)
+export const VASECTOMY_DUE_DATE = "07-01";
+export function vasectomyStatus(year, done, today) {
+    if (done) return "done";
+    if (year === "" || year == null || Number.isNaN(Number(year))) return "unknown";
+    const y = Number(year);
+    if (today >= `${y + 4}-${VASECTOMY_DUE_DATE}`) return "overdue";
+    if (today >= `${y + 3}-${VASECTOMY_DUE_DATE}`) return "due";
+    return "not_due";
+}
+
+// The tags' words, beside each boy's name ("done": a tick instead)
+export const VASECTOMY_STATUS_WORDS = { not_due: "Not Due", due: "Due", overdue: "Overdue", unknown: "Not Yet" };
+
 // The Vasectomies page's By Birth Year: every boy at the sanctuary, by the
 // season he was born in (newest first; unknown last), each year's boys by
 // where they live (troops in section order, anywhere else, then the
 // Bandits), then by name. done: Vasectomised? Yes, or a vasectomy on
-// record.
+// record; status: vasectomyStatus's.
 //   → [{ year (2026, or null), label ("2026/27", "Unknown"), boys: [{
-//       monkey, home, done }], total, doneCount }]
-export function vasectomyYears(monkeys, vasectomies = []) {
+//       monkey, home, done, status }], total, doneCount }]
+export function vasectomyYears(monkeys, vasectomies = [], today = dayText(new Date())) {
     const vasectomised = new Set(vasectomies.map((v) => v.monkeyId));
     const groups = new Map();
     for (const monkey of monkeys) {
         if (monkey.sex !== "male") continue;
         const year = monkey.year === "" || monkey.year == null ? null : Number(monkey.year);
         if (!groups.has(year)) groups.set(year, []);
-        groups.get(year).push({ monkey, home: homeOf(monkey), done: Boolean(monkey.vasectomised) || vasectomised.has(monkey.id) });
+        const done = Boolean(monkey.vasectomised) || vasectomised.has(monkey.id);
+        groups.get(year).push({ monkey, home: homeOf(monkey), done, status: vasectomyStatus(year, done, today) });
     }
     return [...groups.entries()]
         .sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : b - a))

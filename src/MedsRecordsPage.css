@@ -229,10 +229,25 @@
     border-color: transparent;
 }
 
-.Meds-notYet {
+/* Not vasectomised yet: Not Due grey, Due amber, Overdue red (by birth
+   season: medsRules.js's vasectomyStatus) */
+.Meds-due {
     font-size: 11px;
     font-weight: 700;
+    color: var(--text-3);
+}
+
+.Meds-boy.is-due .Meds-due,
+.Meds-boy.is-unknown .Meds-due {
     color: var(--amber-text);
+}
+
+.Meds-boy.is-overdue .Meds-due {
+    color: var(--danger);
+}
+
+.Meds-boy.is-not_due {
+    color: var(--text-2);
 }
 
 /* Other's name: as wide as the Vet box's row, no wider */

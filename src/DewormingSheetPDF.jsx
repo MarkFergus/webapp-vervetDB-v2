@@ -11,7 +11,9 @@ import { sheetTitle } from "./dewormingRules";
 // those in introcages under their own heading (the monkeys staff added, if
 // printed again: marked, at the end of their part).
 //   sheet: a deworming sheet; lines: its monkeys with their names (and
-//   introcageShort, beside an introcage monkey's name), in printOrder
+//   introcageShort, beside an introcage monkey's name), in printOrder;
+//   different: "On different schedule: Barry, Pantshula." (under the table)
+//   or null
 
 const LINE = "0.75pt solid #000";
 const BLANK_ROWS = 4;
@@ -74,6 +76,9 @@ const styles = StyleSheet.create({
     details: {
         width: "25%",
     },
+    different: {
+        marginTop: 8,
+    },
     band: {
         width: "100%",
         textAlign: "center",
@@ -116,7 +121,7 @@ function MonkeyRow({ line: l }) {
     );
 }
 
-export default function DewormingSheetPDF({ sheet, lines }) {
+export default function DewormingSheetPDF({ sheet, lines, different = null }) {
     const title = sheetTitle(sheet);
     const troop = lines.filter((l) => !l.introcage);
     const introcages = lines.filter((l) => l.introcage);
@@ -148,6 +153,7 @@ export default function DewormingSheetPDF({ sheet, lines }) {
                         <MonkeyRow key={l.monkeyId} line={l} />
                     ))}
                 </View>
+                {different && <Text style={styles.different}>{different}</Text>}
             </Page>
         </Document>
     );

@@ -269,8 +269,34 @@
     border-bottom: 1px solid var(--line);
 }
 
-.Deworming-line:not(.is-on) {
+.Deworming-line:not(.is-on):not(.is-different) {
     opacity: 0.6;
+}
+
+/* Not ticked: On different schedule, on the right (as the dose would be) */
+.Deworming-different {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.Deworming-different input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--amber, #d97706);
+}
+
+.Deworming-line.is-different .Deworming-different {
+    color: var(--amber-text);
+}
+
+.Deworming-differentNote {
+    margin-top: 8px;
 }
 
 /* (flex-basis, not the name's width: a long name wraps onto a second line

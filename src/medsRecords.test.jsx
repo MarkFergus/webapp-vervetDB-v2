@@ -220,7 +220,8 @@ describe("Vasectomies", () => {
         const year = screen.getByRole("region", { name: "Born 2025/26" });
         expect(year).toHaveTextContent("1 of 2 done");
         expect(within(year).getByLabelText("Vasectomised")).toBeInTheDocument();
-        expect(year).toHaveTextContent("Not Yet");
+        // (born 2025/26: not due until 1 July 2028)
+        expect(year).toHaveTextContent("Not Due");
         expect(year).not.toHaveTextContent("Daisy");
         await user.click(within(year).getByRole("button", { name: "Copy" }));
         expect(writeText).toHaveBeenCalledWith("*Troop Vasectomies 2025/26*\n_Troop: 2 - Bandits: 0 · Done: 1_\nGoliath: Bruce, Hermit ✅");

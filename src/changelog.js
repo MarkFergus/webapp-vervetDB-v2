@@ -21,6 +21,15 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.6.2",
+        date: "2026-11-13",
+        changes: [
+            "Added On Different Schedule to deworming lists",
+            "Added Not Due, Due and Overdue to Vasectomies by birth year",
+            "Improved deworming sheets: Calypso's Corner shortened to Cal",
+        ],
+    },
+    {
         version: "2.6.1",
         date: "2026-11-12",
         changes: [

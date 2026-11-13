@@ -35,6 +35,7 @@ import {
     isCustom,
     printOrder,
     shortIntrocage,
+    differentScheduleText,
     sheetTitle,
     splitDose,
     startingLines,
@@ -99,8 +100,8 @@ function namedLines(sheet, monkeys, enclosures = []) {
 const medicationOf = (line) => (line.choice === OTHER ? line.other.trim() : line.choice);
 
 // A line to edit: { on, choice (a dewormer's name, OTHER or ""), other,
-// amount, unit, days }
-function formLine(line, on) {
+// amount, unit, days, different (not ticked: On different schedule) }
+function formLine(line, on, different = false) {
     const known = DEWORMERS.some((d) => d.name === line.medication);
     const { amount, unit } = splitDose(line.dose);
     return {
@@ -110,6 +111,7 @@ function formLine(line, on) {
         amount,
         unit,
         days: line.days ?? 3,
+        different: !on && different,
     };
 }
 
@@ -144,7 +146,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
         const rest = Object.fromEntries(
             (group?.monkeys ?? [])
                 .filter(({ monkey }) => !(monkey.id in own))
-                .map(({ monkey }) => [monkey.id, formLine({}, false)])
+                .map(({ monkey }) => [monkey.id, formLine({}, false, editing.differentSchedule?.includes(monkey.id))])
         );
         return { ...rest, ...own };
     });
@@ -212,7 +214,8 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
     };
     const change = (id, values) => {
         touched.current = true;
-        setLines((ls) => ({ ...ls, [id]: { ...ls[id], ...values } }));
+        // (ticked: on this list after all, not a different schedule)
+        setLines((ls) => ({ ...ls, [id]: { ...ls[id], ...values, ...(values.on && { different: false }) } }));
         setProblem(null);
         setUnusual(null);
     };
@@ -283,6 +286,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
                 session: custom ? "custom" : session,
                 startDate,
                 instructions,
+                differentSchedule: rows.filter((r) => !lines[r.id].on && lines[r.id].different).map((r) => r.id),
                 lines: chosen.map((r) => ({
                     monkeyId: r.id,
                     medication: medicationOf(lines[r.id]),
@@ -468,7 +472,7 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
                     const line = lines[id];
                     const name = monkey?.name ?? "Unknown";
                     return (
-                        <li key={id} className={`Deworming-line${line.on ? " is-on" : ""}`}>
+                        <li key={id} className={`Deworming-line${line.on ? " is-on" : line.different ? " is-different" : ""}`}>
                             <label className="Deworming-who">
                                 <input
                                     type="checkbox"
@@ -484,6 +488,17 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
                                     </span>
                                 </span>
                             </label>
+                            {!line.on && (
+                                <label className="Deworming-different">
+                                    <input
+                                        type="checkbox"
+                                        checked={line.different}
+                                        onChange={(e) => change(id, { different: e.target.checked })}
+                                        aria-label={`${name}: On different schedule`}
+                                    />
+                                    On different schedule
+                                </label>
+                            )}
                             {line.on && (
                                 <div className="Deworming-dose">
                                     <select
@@ -647,7 +662,9 @@ async function printSheet(sheet, monkeys, enclosures) {
             import("./DewormingSheetPDF"),
         ]);
         const lines = printOrder(namedLines(sheet, monkeys, enclosures));
-        const blob = await pdf(<DewormingSheetPDF sheet={sheet} lines={lines} />).toBlob();
+        const blob = await pdf(
+            <DewormingSheetPDF sheet={sheet} lines={lines} different={differentScheduleText(sheet, monkeys)} />
+        ).toBlob();
         const name = `${sheet.groupName}_${SESSIONS[sheet.session]}`.replace(/[^a-z0-9]+/gi, "_");
         downloadBlob(blob, `deworming_${name}_${sheet.startDate}.pdf`);
     } catch (error) {
@@ -881,6 +898,9 @@ function SheetView({ sheet, monkeys, enclosures, canPrepare, canRecord, onEdit, 
                         ))}
                     </tbody>
                 </table>
+            )}
+            {differentScheduleText(sheet, monkeys) && (
+                <p className="Deworming-meta Deworming-differentNote">{differentScheduleText(sheet, monkeys)}</p>
             )}
             {photos.length > 0 && (
                 <>

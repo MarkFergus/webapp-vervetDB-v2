@@ -7,6 +7,7 @@ import {
     VASECTOMY_VETS,
     VET_PRACTICES,
     VET_REASONS,
+    VASECTOMY_STATUS_WORDS,
     vasectomyWhatsApp,
     vasectomyYears,
     vetFormProblems,
@@ -456,13 +457,13 @@ function BirthYear({ group }) {
                     <span className="Meds-boys">
                         {group.boys
                             .filter((b) => b.home === home)
-                            .map(({ monkey, done }) => (
-                                <span key={monkey.id} className={`Meds-boy${done ? " is-done" : ""}`}>
+                            .map(({ monkey, done, status }) => (
+                                <span key={monkey.id} className={`Meds-boy is-${status}`}>
                                     {monkey.name}
                                     {done ? (
                                         <IconCheck size={14} stroke={2.5} aria-label="Vasectomised" />
                                     ) : (
-                                        <span className="Meds-notYet">Not Yet</span>
+                                        <span className="Meds-due">{VASECTOMY_STATUS_WORDS[status]}</span>
                                     )}
                                 </span>
                             ))}

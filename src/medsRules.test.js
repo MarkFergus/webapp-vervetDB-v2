@@ -1,4 +1,4 @@
-import { seasonLabel, vasectomyWhatsApp, vasectomyYears, vetFormProblems, vetName } from "./medsRules";
+import { seasonLabel, vasectomyStatus, vasectomyWhatsApp, vasectomyYears, vetFormProblems, vetName } from "./medsRules";
 import { timelineMonths } from "./timelineRules";
 import { tidyChanges } from "./activityWords";
 
@@ -62,6 +62,18 @@ test("By Birth Year: boys only, newest season first, unknown last; by troop then
     expect(years[2].boys[0].home).toBe("Dreamland");
     // (D&D first; somewhere that isn't a troop after the troops)
     expect(years[1].boys.map((b) => b.home)).toEqual(["D&D", "H&B", "Dreamland"]);
+});
+
+test("when a vasectomy's due: 1 July three years after the birth season, Overdue a year on", () => {
+    // (born 2023/24: Due from 1 July 2026, Overdue from 1 July 2027, at 3)
+    expect(vasectomyStatus(2023, false, "2026-06-30")).toBe("not_due");
+    expect(vasectomyStatus(2023, false, "2026-07-01")).toBe("due");
+    expect(vasectomyStatus("2023", false, "2027-06-30")).toBe("due");
+    expect(vasectomyStatus(2023, false, "2027-07-01")).toBe("overdue");
+    expect(vasectomyStatus(2010, true, "2027-07-01")).toBe("done");
+    expect(vasectomyStatus("", false, "2027-07-01")).toBe("unknown");
+    const [, y2019] = vasectomyYears(MONKEYS, [], "2026-11-13");
+    expect(y2019.boys.map((b) => b.status)).toEqual(["overdue", "overdue", "overdue"]);
 });
 
 test("the WhatsApp copy: every boy by troop, ✅ after the done ones", () => {
