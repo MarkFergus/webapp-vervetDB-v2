@@ -24,7 +24,7 @@ const dayText = (daysAgo) => {
 
 // signedIn: as staff (an editor); favourites: their saved ★ monkeys; rpc:
 // what each database function answers
-function fakeSupabase({ signedIn = false, favourites = [], rpc = {} } = {}) {
+function fakeSupabase({ signedIn = false, favourites = [], rpc = {}, role = "editor" } = {}) {
     vi.spyOn(supabase.auth, "getSession").mockResolvedValue({ data: { session: signedIn ? { user: STAFF } : null } });
     vi.spyOn(supabase.auth, "onAuthStateChange").mockReturnValue({
         data: { subscription: { unsubscribe: () => {} } },
@@ -37,7 +37,7 @@ function fakeSupabase({ signedIn = false, favourites = [], rpc = {} } = {}) {
             Object.assign(Promise.resolve({ data: table === "favourites" ? favourites : [], error: null }), {
                 eq: () => ({
                     maybeSingle: async () => ({
-                        data: table === "editors" ? { user_id: STAFF.id, role: "editor" } : null,
+                        data: table === "editors" ? { user_id: STAFF.id, role } : null,
                         error: null,
                     }),
                 }),
@@ -109,6 +109,28 @@ describe("Latest News", () => {
         expect(screen.getByText("New Injury")).toBeInTheDocument();
         expect(screen.getByText("Bite on tail")).toBeInTheDocument();
         expect(screen.queryByText(/sign in to see/i)).toBeNull();
+    });
+
+    test("a status change for a monkey who's left: admins open their Full Profile in the Archive; editors just see the name", async () => {
+        const news = [{ happened_on: dayText(0), kind: "status", monkey_id: 9, name: "Bella", place: "Goliath", details: "Status changed from Sanctuary to Deceased" }];
+        fakeSupabase({ signedIn: true, role: "admin", rpc: { latest_news: news } });
+        const { unmount } = render(
+            <AuthProvider>
+                <LatestNewsPage monkeys={MONKEYS} onOpenMonkey={() => {}} />
+            </AuthProvider>
+        );
+        expect(await screen.findByRole("link", { name: "Bella" })).toHaveAttribute("href", "#admin/archive/bella-9");
+        unmount();
+        vi.restoreAllMocks();
+        fakeSupabase({ signedIn: true, role: "editor", rpc: { latest_news: news } });
+        render(
+            <AuthProvider>
+                <LatestNewsPage monkeys={MONKEYS} onOpenMonkey={() => {}} />
+            </AuthProvider>
+        );
+        expect(await screen.findByText("Status changed from Sanctuary to Deceased")).toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "Bella" })).toBeNull();
+        expect(screen.getByText("Bella")).toHaveClass("LatestNews-name");
     });
 
     test("nothing in the period", async () => {

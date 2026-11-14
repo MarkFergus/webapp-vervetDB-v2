@@ -21,6 +21,14 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.8.0",
+        date: "2026-11-14",
+        changes: [
+            "New My Dashboard in the account menu",
+            "Added photos to new injuries, conditions and records",
+        ],
+    },
+    {
         version: "2.7.0",
         date: "2026-11-14",
         changes: [

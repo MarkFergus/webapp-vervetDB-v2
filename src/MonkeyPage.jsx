@@ -237,7 +237,12 @@ function MonkeyRecord({ monkey, staff, onEdit, onOpenCard, inert, back, onStatus
         }),
         condition: {
             add: (values) => addCondition(monkey.id, values).then(conditionsChanged),
-            update: (id, values) => saveCondition(id, values).then(conditionsChanged),
+            update: (id, values) =>
+                saveCondition(id, values).then(conditionsChanged, (error) => {
+                    // (deleted by someone else: the list loads again without it)
+                    if (error.gone) conditionsChanged();
+                    throw error;
+                }),
             remove: (id) => deleteCondition(id).then(conditionsChanged),
         },
     };

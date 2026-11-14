@@ -63,8 +63,8 @@ export const UrgentBadge = () => (
 // Photos picked to send with a job (Add Job, Job Done): up to 4, each shown
 // small with a ✕ to take it off. → { photos (files), pick (the file
 // input's onChange), remove(index), list (the small ones, or null) }
-//   onProblem(words or null): too many picked
-function usePickedPhotos(onProblem) {
+//   onProblem(words or null): too many picked; what: "A job", "A record"…
+export function usePickedPhotos(onProblem, what = "A job") {
     const [photos, setPhotos] = useState([]);
     const [previews, setPreviews] = useState([]);
     useEffect(() => {
@@ -76,7 +76,7 @@ function usePickedPhotos(onProblem) {
     function pick(event) {
         const { files, tooMany } = photosWithRoom(event.target.files ?? [], photos.length);
         setPhotos((list) => [...list, ...files]);
-        onProblem(tooMany ? `A job can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
+        onProblem(tooMany ? `${what} can have up to ${MAX_ISSUE_PHOTOS} photos.` : null);
         // (the same photo can be picked again)
         event.target.value = "";
     }
@@ -98,7 +98,7 @@ function usePickedPhotos(onProblem) {
 }
 
 // The hidden file input and its Add Photos button (gone once there are 4)
-function PickPhotosButton({ picked, label = "Add Photos" }) {
+export function PickPhotosButton({ picked, label = "Add Photos" }) {
     const fileRef = useRef(null);
     return (
         <>
@@ -379,13 +379,14 @@ function PhotoViewer({ photos, start, onClose }) {
 // All of an issue's photos (private: fetched when they're shown), small; tap
 // one to enlarge it
 //   label: "Before" / "After", shown above them (or nothing)
-export function IssuePhotos({ paths, label = null }) {
+//   urlOf(path): where to fetch each (a record's photos: recordPhotoUrl)
+export function IssuePhotos({ paths, label = null, urlOf = issuePhotoUrl }) {
     const [urls, setUrls] = useState({});
     const [open, setOpen] = useState(null);
     const key = paths.join("|");
     useEffect(() => {
         let cancelled = false;
-        Promise.all(paths.map(async (path) => [path, await issuePhotoUrl(path).catch(() => null)])).then(
+        Promise.all(paths.map(async (path) => [path, await urlOf(path).catch(() => null)])).then(
             (found) => !cancelled && setUrls(Object.fromEntries(found))
         );
         return () => {

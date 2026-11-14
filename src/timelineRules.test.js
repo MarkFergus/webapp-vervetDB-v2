@@ -121,17 +121,15 @@ describe("the story", () => {
         expect(entries.every((e) => e.filters.includes("milestones"))).toBe(true);
     });
 
-    test("sightings: one quiet line a month, not counting sessions they weren't seen in", () => {
+    test("sightings (sessions, Mark As Seen) aren't in the story: Right Now's Last Seen has them", () => {
         const session = (date, seen) => ({ date, sightings: [{ monkeyId: 7, seen }] });
         const entries = entriesOf(
             timelineMonths({ ...DAISY, arrivalDate: null }, {
-                sessions: [session("2026-10-05", true), session("2026-10-29", true), session("2026-10-12", false)],
-                spots: [{ monkeyId: 7, date: "2026-10-20" }, { monkeyId: 9, date: "2026-10-21" }],
+                sessions: [session("2026-10-05", true), session("2026-10-29", true)],
+                spots: [{ monkeyId: 7, date: "2026-10-20" }],
             })
         );
-        expect(entries).toHaveLength(1);
-        expect(entries[0]).toMatchObject({ quiet: true, filters: ["seen"] });
-        expect(entries[0].text).toBe("Seen in 2 sessions and 1 other time · 5 Oct – 29 Oct");
+        expect(entries).toEqual([]);
     });
 });
 

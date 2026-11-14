@@ -85,6 +85,7 @@ function NewInjury({ monkeys, injuries, today, onDone }) {
             <InjuryForm
                 initial={{ date: today, description: "" }}
                 max={today}
+                withPhotos
                 onSave={async (values) => {
                     if (!monkeyId) throw new Error("Please choose the monkey.");
                     await injuries.add(Number(monkeyId), values);

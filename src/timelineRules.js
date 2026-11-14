@@ -154,39 +154,6 @@ function weightEntries(weights, hasArrival) {
         });
 }
 
-// A month's sightings as one quiet line: "Seen in 6 sessions · 5 Oct – 29 Oct"
-function seenEntries(sessions, spots, monkeyId) {
-    const dates = [
-        ...sessions.filter((s) => s.sightings.some((x) => x.monkeyId === monkeyId && x.seen)).map((s) => ({ date: s.date, session: true })),
-        // (Mark As Seen's: a record's own sighting is the record, already listed)
-        ...spots.filter((s) => s.monkeyId === monkeyId && !s.source).map((s) => ({ date: s.date, session: false })),
-    ];
-    const months = new Map();
-    for (const d of dates) {
-        const key = d.date.slice(0, 7);
-        months.set(key, [...(months.get(key) ?? []), d]);
-    }
-    return [...months].map(([key, list]) => {
-        const sorted = list.map((d) => d.date).sort();
-        const short = (date) => dayWords(date).replace(/^\w+ /, "");
-        const sessionCount = list.filter((d) => d.session).length;
-        const others = list.length - sessionCount;
-        const parts = [
-            sessionCount && `in ${sessionCount} ${sessionCount === 1 ? "session" : "sessions"}`,
-            others && `${others} other ${others === 1 ? "time" : "times"}`,
-        ].filter(Boolean);
-        const when = sorted[0] === sorted.at(-1) ? short(sorted[0]) : `${short(sorted[0])} – ${short(sorted.at(-1))}`;
-        return {
-            id: `seen-${key}`,
-            date: sorted.at(-1),
-            kind: "seen",
-            filters: ["seen"],
-            quiet: true,
-            text: `Seen ${parts.join(" and ")} · ${when}`,
-        };
-    });
-}
-
 // Photos added: one entry a day, from their upload time
 function photoEntries(monkey) {
     const days = new Map();
@@ -240,8 +207,9 @@ function arrivalEntry(monkey, weights, enclosures) {
 }
 
 // The story, newest first: [{ key, title ("October 2026"), entries }]
-//   data: { records, injuries, conditions, integrations, weights, sessions, spots }
-export function timelineMonths(monkey, { records = [], injuries = [], conditions = [], integrations = [], weights = [], sessions = [], spots = [], enclosures = [] }) {
+// (sightings aren't in it: Right Now's Last Seen says when they were last seen)
+//   data: { records, injuries, conditions, integrations, weights, enclosures }
+export function timelineMonths(monkey, { records = [], injuries = [], conditions = [], integrations = [], weights = [], enclosures = [] }) {
     const arrival = arrivalEntry(monkey, weights, enclosures);
     const entries = [
         ...records.map(recordEntry),
@@ -249,7 +217,6 @@ export function timelineMonths(monkey, { records = [], injuries = [], conditions
         ...conditions.map(conditionEntry),
         ...(records.some((r) => r.category === "integration") ? [] : integrations.flatMap(integrationEntries)),
         ...weightEntries(weights, Boolean(arrival)),
-        ...seenEntries(sessions, spots, monkey.id),
         ...photoEntries(monkey),
         ...(arrival ? [arrival] : []),
     ].sort((a, b) => b.date.localeCompare(a.date));

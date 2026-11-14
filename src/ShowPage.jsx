@@ -47,6 +47,7 @@ const StatisticsPage = lazy(() => import("./StatisticsPage"));
 const MonkeyTimeline = lazy(() => import("./MonkeyTimeline"));
 const AdminPage = lazy(() => import("./AdminPage"));
 const RecordsPage = lazy(() => import("./RecordsPage"));
+const StaffDashboard = lazy(() => import("./StaffDashboard"));
 import { isRecordsRoute } from "./babyRecords";
 import MonkeysNavIcon from "./MonkeysNavIcon";
 import { BABIES_BOOK, bookMonkeys, bookSections, bookTitle } from "./profileBook";
@@ -358,6 +359,12 @@ function ShowPage({
     const onStats = route === "statistics";
     // Latest News (#news): arrivals, releases, moves…
     const onNews = route === "news";
+    // My Dashboard (#dashboard): staff only (any role)
+    const onDashboard = route === "dashboard";
+    const dashboardLocked = onDashboard && !role;
+    useEffect(() => {
+        if (dashboardLocked && ready) window.location.replace("#");
+    }, [dashboardLocked, ready]);
     // The Admin Dashboard (#admin, and its parts: #admin/staff,
     // #admin/archive…): admins only; anyone else is sent home (once we know
     // who's signed in)
@@ -385,11 +392,11 @@ function ShowPage({
         window.location.replace(pageMonkey ? monkeyHash(pageMonkey) : "#");
     }, [pageLocked, ready, pageMonkey]);
     // Another page than the monkey list (going home goes back to it)
-    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onNews || onAdmin || onRecords;
+    const offList = onEnclosures || onGame || onUpdates || onMonkeyPage || onStats || onNews || onAdmin || onRecords || onDashboard;
     // The game starts at the top
     useEffect(() => {
-        if (onGame || onUpdates || onStats || onNews) window.scrollTo?.(0, 0);
-    }, [onGame, onUpdates, onStats, onNews]);
+        if (onGame || onUpdates || onStats || onNews || onDashboard) window.scrollTo?.(0, 0);
+    }, [onGame, onUpdates, onStats, onNews, onDashboard]);
     const [modalList, setModalList] = useState(null);
     const neighbours = modalList ?? visibleMonkeys;
     const selectedIndex = neighbours.indexOf(selectedMonkey);
@@ -462,9 +469,9 @@ function ShowPage({
     const pageAddress = () => window.location.pathname + window.location.search;
 
     function showInAddress(m) {
-        // (on the Enclosures pages, a monkey's page, Latest News and Records,
-        // the address stays on that page)
-        if (onEnclosures || onMonkeyPage || onNews || onRecords) return;
+        // (on the Enclosures pages, a monkey's page, Latest News, Records and
+        // My Dashboard, the address stays on that page)
+        if (onEnclosures || onMonkeyPage || onNews || onRecords || onDashboard) return;
         const hash = monkeyHash(m);
         if (window.location.hash === hash) return;
         if (isMonkeyHash(window.location.hash)) {
@@ -1007,7 +1014,7 @@ function ShowPage({
                     maintenanceCircle={role === "maintenance"}
                     togglePDFModal={togglePDFModal}
                     onHome={goHome}
-                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onNews ? "news" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
+                    page={onGame ? "game" : onEnclosures ? "enclosures" : onUpdates ? "updates" : onStats ? "statistics" : onNews ? "news" : onDashboard ? "dashboard" : onAdmin ? "admin" : onRecords ? "records" : "monkeys"}
                     showSearch={!onGame}
                     barsInert={isAnyModalOpen}
                 />
@@ -1025,6 +1032,13 @@ function ShowPage({
             ) : onNews ? (
                 // (a name opens its pop-up, on its own: no previous / next)
                 <LatestNewsPage monkeys={monkeys} onOpenMonkey={(m) => openModal(m, [m])} inert={isAnyModalOpen} />
+            ) : onDashboard ? (
+                // (nothing while checking who's signed in, or leaving)
+                dashboardLocked ? null : (
+                    <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
+                        <StaffDashboard monkeys={monkeys} enclosures={enclosures} onOpenMonkey={(m) => openModal(m, [m])} inert={isAnyModalOpen} />
+                    </Suspense>
+                )
             ) : onStats ? (
                 <Suspense fallback={<p className="ShowPage-loading">Loading statistics…</p>}>
                     <StatisticsPage monkeys={monkeys} enclosures={enclosures} sections={sections} inert={isAnyModalOpen} />

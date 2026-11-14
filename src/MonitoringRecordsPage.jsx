@@ -426,6 +426,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                 details: values.description,
                 sessionId: session.id,
                 monkeyId: monkey.id,
+                photos: values.photos,
             });
         else if (mode === "healed") {
             // (a last update first, so it's in the session's summary and the
@@ -546,6 +547,7 @@ function CheckRow({ monkey, facts, seen, onSeen, notes, session, today, onAdded 
                         kind={mode}
                         initial={{ date: session.date, description: "" }}
                         max={today}
+                        withPhotos={mode !== "healed"}
                         onSave={save}
                         onCancel={close}
                     />

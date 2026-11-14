@@ -4,6 +4,7 @@ import { supabase } from "./supabase";
 import { useAuth } from "./auth";
 import { dayLabel } from "./MyChanges";
 import { fullName } from "./places";
+import { archivePageHash } from "./monkeyStatus";
 import "./LatestNewsPage.css";
 
 // Latest News (#news, in the menu): what's happened at the sanctuary in
@@ -47,7 +48,7 @@ function savedPeriod() {
 //   monkeys: the monkeys at the sanctuary (a news item's name opens its
 //   pop-up, if it's one of them); onOpenMonkey(monkey)
 function LatestNewsPage({ monkeys = [], onOpenMonkey, inert = false }) {
-    const { user, role, ready } = useAuth();
+    const { user, role, ready, isAdmin } = useAuth();
     const staff = Boolean(user && role);
     const [days, setDays] = useState(savedPeriod);
     // null while loading; then { news } or { problem }
@@ -144,7 +145,9 @@ function LatestNewsPage({ monkeys = [], onOpenMonkey, inert = false }) {
                                     <div className="LatestNews-body">
                                         <p className="LatestNews-heading">
                                             <span className="LatestNews-kind">{kind.word}</span>
-                                            {/* (still at the sanctuary: tap for its pop-up) */}
+                                            {/* (still at the sanctuary: tap for its pop-up; archived
+                                                (released, deceased…): admins open their Full Profile in
+                                                the Monkey Archive; always in blue) */}
                                             {monkey && onOpenMonkey ? (
                                                 <button
                                                     type="button"
@@ -153,6 +156,10 @@ function LatestNewsPage({ monkeys = [], onOpenMonkey, inert = false }) {
                                                 >
                                                     {item.name}
                                                 </button>
+                                            ) : !monkey && isAdmin && item.monkey_id != null ? (
+                                                <a className="LatestNews-name" href={archivePageHash({ id: item.monkey_id, name: item.name })}>
+                                                    {item.name}
+                                                </a>
                                             ) : (
                                                 <span className="LatestNews-name">{item.name}</span>
                                             )}

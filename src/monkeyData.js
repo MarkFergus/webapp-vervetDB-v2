@@ -411,6 +411,25 @@ export async function loadMonkeyData() {
     };
 }
 
+// An edit that found nothing to change: deleted by someone else in the
+// meantime (→ an error with gone: true, "This injury was deleted by someone
+// else."), or not this account's to change (the usual message)
+async function goneProblem(error, table, id, what) {
+    if (error?.code !== "PGRST116") return saveProblem(error);
+    const { data, error: lookError } = await supabase.from(table).select("id").eq("id", id).maybeSingle();
+    if (lookError || data) return saveProblem(error);
+    const gone = new Error(`This ${what} was deleted by someone else.`);
+    gone.gone = true;
+    return gone;
+}
+
+// A delete that found nothing: fine if it's already gone (someone else
+// deleted it), else not this account's to delete
+async function isGone(table, id) {
+    const { data, error } = await supabase.from(table).select("id").eq("id", id).maybeSingle();
+    return !error && !data;
+}
+
 // Turns a database refusal into something readable
 function saveProblem(error) {
     // No row came back: the database wouldn't let this account change it
@@ -1265,6 +1284,121 @@ export async function issuePhotoUrl(path) {
     return data.signedUrl;
 }
 
+// ---- Photos on records: a new Injury, Injury Update, Condition or record
+// (supabase/record-photos.sql) ----
+
+const RECORD_PHOTO_BUCKET = "record-photos";
+export const MAX_RECORD_PHOTOS = 4;
+
+// Photos added with a record just saved (its id may still be this phone's
+// own: each photo waits for it). A photo that can't be kept doesn't undo
+// the record. kind: "injury", "injury_update", "condition" or "record"
+async function attachRecordPhotos(kind, recordId, monkeyId, photos = []) {
+    for (const photo of [...photos].slice(0, MAX_RECORD_PHOTOS)) {
+        const path = `${newRef()}.jpg`;
+        try {
+            await keepPhoto(path, await shrunkPhoto(photo, ISSUE_PHOTO_WIDTH));
+            const payload = { kind, recordId, monkeyId, path };
+            await submit("record-photo", payload, payload, { needs: [recordId] });
+        } catch (error) {
+            console.error("Adding a record's photo failed:", error);
+            await forgetPhoto(path).catch(() => {});
+        }
+    }
+    recordPhotoCache.clear();
+}
+
+registerSender(
+    "record-photo",
+    async ({ kind, recordId, monkeyId, path }) => {
+        const blob = await keptPhoto(path);
+        if (!blob) throw { code: "P0001", message: "A record's photo has gone from this phone." };
+        const sent = await supabase.storage.from(RECORD_PHOTO_BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        if (sent.error && !/already exists|duplicate/i.test(sent.error.message ?? "") && String(sent.error.statusCode) !== "409") {
+            console.error("Uploading a record's photo failed:", sent.error);
+            throw { code: /^4/.test(String(sent.error.statusCode ?? "")) ? "P0001" : "", message: sent.error.message };
+        }
+        const { error } = await supabase
+            .from("record_photos")
+            .insert({ kind, record_id: resolveId(recordId), monkey_id: monkeyId ?? null, path });
+        // (23505: sent before the answer got back)
+        if (error && error.code !== "23505") throw error;
+        await forgetPhoto(path);
+        recordPhotoCache.clear();
+        return { path };
+    },
+    (error) => saveProblem(error).message
+);
+
+// Each record's photos ({ recordId (as asked): [paths] }), the ones still on
+// this phone too. (Before record-photos.sql has run: none.)
+const recordPhotoCache = new Map();
+export async function loadRecordPhotos(kind, recordIds) {
+    const real = new Map();
+    for (const id of recordIds) {
+        const now = resolveId(id);
+        if (now != null && !isLocalId(now)) real.set(now, id);
+    }
+    const found = {};
+    if (real.size) {
+        const ids = [...real.keys()].sort((x, y) => x - y);
+        const key = `${kind}:${ids.join(",")}`;
+        if (!recordPhotoCache.has(key)) {
+            recordPhotoCache.set(
+                key,
+                supabase
+                    .from("record_photos")
+                    .select("record_id, path")
+                    .eq("kind", kind)
+                    .in("record_id", ids)
+                    .order("id")
+                    .then(({ data, error }) => (error ? [] : data))
+            );
+        }
+        for (const row of await recordPhotoCache.get(key)) (found[real.get(row.record_id)] ??= []).push(row.path);
+    }
+    for (const { payload, status } of outboxEntries("record-photo")) {
+        if (status === "sent" || payload.kind !== kind) continue;
+        const id = recordIds.find((r) => sameId(r, payload.recordId));
+        if (id == null) continue;
+        if (!(found[id] ?? []).includes(payload.path)) (found[id] ??= []).push(payload.path);
+    }
+    return found;
+}
+
+// One record's photos ([paths]): the asks made together (a list's records)
+// go as one
+const photoAsks = new Map();
+export function recordPhotosOf(kind, recordId) {
+    return new Promise((resolve) => {
+        if (!photoAsks.has(kind)) {
+            photoAsks.set(kind, []);
+            setTimeout(() => {
+                const asks = photoAsks.get(kind);
+                photoAsks.delete(kind);
+                loadRecordPhotos(kind, asks.map((a) => a.id)).then(
+                    (found) => asks.forEach((a) => a.resolve(found[a.id] ?? [])),
+                    () => asks.forEach((a) => a.resolve([]))
+                );
+            }, 0);
+        }
+        photoAsks.get(kind).push({ id: recordId, resolve });
+    });
+}
+
+// A record's photo, to show: from this phone while it's waiting to send; null
+// if it can't be fetched just now
+export async function recordPhotoUrl(path) {
+    const waiting = outboxEntries("record-photo").some((e) => e.status !== "sent" && e.payload.path === path);
+    if (waiting) {
+        const blob = await keptPhoto(path).catch(() => null);
+        if (blob) return URL.createObjectURL(blob);
+    }
+    const { data, error } = await supabase.storage.from(RECORD_PHOTO_BUCKET).createSignedUrl(path, 3600);
+    if (error) return null;
+    return data.signedUrl;
+}
+
 // ---- Integration reports: staff reports on how a monkey's integration is going ----
 
 // An entry, as the site uses it: { id, from ("2026-10-04"), to, report,
@@ -1490,7 +1624,7 @@ const movePlaces = ({ fromPlace, toPlace }) =>
 
 // Adds a record ({ section, date, category, details, fromPlace?, toPlace? });
 // who and when are filled in by the database. Returns the saved record.
-export async function addRecord(monkeyId, { section, date, category, details, fromPlace, toPlace }) {
+export async function addRecord(monkeyId, { section, date, category, details, fromPlace, toPlace, photos = [] }) {
     const { data, error } = await supabase
         .from("monkey_records")
         .insert({ monkey_id: monkeyId, section, record_date: date, category, details, ...movePlaces({ fromPlace, toPlace }) })
@@ -1500,6 +1634,7 @@ export async function addRecord(monkeyId, { section, date, category, details, fr
         console.error("Adding a record failed:", error);
         throw saveProblem(error);
     }
+    await attachRecordPhotos("record", data.id, monkeyId, photos);
     return toAppRecord(data);
 }
 
@@ -1697,7 +1832,7 @@ export async function loadPastInjuries(monkeyIds, since) {
 // Adds an injury ({ date, description }); who and when are filled in by the
 // database. Returns the saved injury.
 //   sessionId: added during a monitoring session (its WhatsApp summary)
-export async function addInjury(monkeyId, { date, description, sessionId = null }) {
+export async function addInjury(monkeyId, { date, description, sessionId = null, photos = [] }) {
     if (!sessionId) refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
@@ -1715,6 +1850,7 @@ export async function addInjury(monkeyId, { date, description, sessionId = null 
         updates: [],
     };
     const { result } = await submit("injury-add", payload, optimistic, { needs: [sessionId] });
+    await attachRecordPhotos("injury", localId, monkeyId, photos);
     return { ...result, id: localId };
 }
 
@@ -1755,7 +1891,7 @@ export async function saveInjury(id, { date, description }) {
         .single();
     if (error) {
         console.error("Saving an injury failed:", error);
-        throw saveProblem(error);
+        throw await goneProblem(error, "injuries", resolveId(id), "injury");
     }
     return toAppInjury(data);
 }
@@ -1815,14 +1951,14 @@ export async function deleteInjury(id) {
         console.error("Deleting an injury failed:", error);
         throw saveProblem(error);
     }
-    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
+    if (!data?.length && !(await isGone("injuries", resolveId(id)))) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
 }
 
 // An update on an injury ({ date, details }); who and when are filled in by
 // the database. Returns the saved update.
 //   sessionId: added during a monitoring session (its WhatsApp summary)
 //   monkeyId: whose it is (for the session's summary, before it's sent)
-export async function addInjuryUpdate(injuryId, { date, details, sessionId = null, monkeyId = null }) {
+export async function addInjuryUpdate(injuryId, { date, details, sessionId = null, monkeyId = null, photos = [] }) {
     const me = outboxUser();
     const localId = newLocalId();
     const optimistic = {
@@ -1839,6 +1975,7 @@ export async function addInjuryUpdate(injuryId, { date, details, sessionId = nul
         optimistic,
         { needs: [injuryId, sessionId] }
     );
+    await attachRecordPhotos("injury_update", localId, monkeyId, photos);
     return { ...result, id: localId };
 }
 
@@ -1867,7 +2004,7 @@ export async function saveInjuryUpdate(id, { date, details }) {
         .single();
     if (error) {
         console.error("Saving an injury update failed:", error);
-        throw saveProblem(error);
+        throw await goneProblem(error, "injury_updates", resolveId(id), "update");
     }
     return toAppUpdate(data);
 }
@@ -1879,7 +2016,7 @@ export async function deleteInjuryUpdate(id) {
         console.error("Deleting an injury update failed:", error);
         throw saveProblem(error);
     }
-    if (!data?.length) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
+    if (!data?.length && !(await isGone("injury_updates", resolveId(id)))) throw new Error("The database didn't allow this. Only admins, or whoever added it, can delete it.");
 }
 
 // ---- Monitoring: Condition Check and Notes for Monitoring (staff only) ----
@@ -2214,7 +2351,7 @@ export async function loadConditions(monkeyIds) {
 }
 
 // A new condition ({ date, description, sessionId })
-export async function addCondition(monkeyId, { date, description, sessionId = null }) {
+export async function addCondition(monkeyId, { date, description, sessionId = null, photos = [] }) {
     if (!sessionId) refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
@@ -2231,6 +2368,7 @@ export async function addCondition(monkeyId, { date, description, sessionId = nu
     const { result } = await submit("condition-add", { ref: newRef(), localId, monkeyId, date, description, sessionId }, optimistic, {
         needs: [sessionId],
     });
+    await attachRecordPhotos("condition", localId, monkeyId, photos);
     return { ...result, id: localId };
 }
 
@@ -2255,7 +2393,7 @@ export async function saveCondition(id, { date, description }) {
         .eq("id", resolveId(id))
         .select(CONDITION_COLUMNS)
         .single();
-    if (error) throw saveProblem(error);
+    if (error) throw await goneProblem(error, "monkey_conditions", resolveId(id), "condition");
     return toAppCondition(data);
 }
 
@@ -2263,7 +2401,7 @@ export async function saveCondition(id, { date, description }) {
 export async function deleteCondition(id) {
     const { data, error } = await supabase.from("monkey_conditions").delete().eq("id", resolveId(id)).select("id");
     if (error) throw saveProblem(error);
-    if (!data?.length) throw saveProblem({ code: "PGRST116" });
+    if (!data?.length && !(await isGone("monkey_conditions", resolveId(id)))) throw saveProblem({ code: "PGRST116" });
 }
 
 // ---- Sightings between sessions (supabase/monkey-sightings.sql) ----
@@ -2363,7 +2501,7 @@ export async function loadLastMoves(monkeyIds) {
 // doing ({ date, description }): an Observation in its Medical
 // records, and a sighting (as Mark As Seen), so it counts as seen that day.
 // Throws a message to show.
-export async function addObservation(monkeyId, { date, description }) {
+export async function addObservation(monkeyId, { date, description, photos = [] }) {
     refuseIfTooLong();
     const me = outboxUser();
     const localId = newLocalId();
@@ -2379,6 +2517,7 @@ export async function addObservation(monkeyId, { date, description }) {
         loggedAt: new Date().toISOString(),
     };
     await submit("observation-add", { ref: newRef(), localId, monkeyId, date, details }, optimistic);
+    await attachRecordPhotos("record", localId, monkeyId, photos);
     await addSpotSighting(monkeyId, { date, note: description });
 }
 

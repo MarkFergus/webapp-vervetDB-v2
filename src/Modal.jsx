@@ -545,6 +545,7 @@ function Modal({
                                                     kind="condition"
                                                     initial={{ date: todayText(), description: "" }}
                                                     max={todayText()}
+                                                    withPhotos
                                                     onSave={async (values) => {
                                                         await addCondition(monkey.id, values);
                                                         setConditionForm(false);
@@ -561,6 +562,7 @@ function Modal({
                                                     kind="observation"
                                                     initial={{ date: todayText(), description: "" }}
                                                     max={todayText()}
+                                                    withPhotos
                                                     onSave={async (values) => {
                                                         await addObservation(monkey.id, values);
                                                         setObservationForm(false);
@@ -576,6 +578,7 @@ function Modal({
                                                 <InjuryForm
                                                     initial={{ date: todayText(), description: "" }}
                                                     max={todayText()}
+                                                    withPhotos
                                                     onSave={async (values) => {
                                                         await injuries.add(values);
                                                         setInjuryForm(false);

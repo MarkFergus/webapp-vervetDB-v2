@@ -29,13 +29,11 @@ test("Monitoring's missing line: no year, to keep it on one line", () => {
     expect(missingText({ missed: 2, lastSeen: "2026-10-12" })).toBe("Not seen last 2 sessions · last seen 12th Oct");
 });
 
-test("the Timeline: a record's own sighting isn't counted again as a sighting", () => {
+test("the Timeline: no sightings in the story (a record's own, or Mark As Seen)", () => {
     const spots = [
         { id: 1, monkeyId: 7, date: "2026-11-04", source: "dewormed" },
         { id: 2, monkeyId: 7, date: "2026-11-05", source: null },
     ];
     const entries = timelineMonths(monkey, { spots }).flatMap((m) => m.entries);
-    const seen = entries.filter((e) => e.kind === "seen");
-    expect(seen).toHaveLength(1);
-    expect(seen[0].date).toBe("2026-11-05");
+    expect(entries.filter((e) => e.kind === "seen")).toEqual([]);
 });

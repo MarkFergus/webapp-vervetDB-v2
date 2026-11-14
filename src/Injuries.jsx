@@ -18,6 +18,8 @@ import { summaryDate } from "./feeding";
 import { UPDATE_DUE_DAYS, updateNeeded } from "./injuryRules";
 import useScrollIntoView from "./useScrollIntoView";
 import { useFormLock } from "./formLock";
+import { PickPhotosButton, usePickedPhotos } from "./MaintenanceIssues";
+import RecordPhotos from "./RecordPhotos";
 import "./IntegrationReports.css";
 
 // Injuries: a section of a monkey's pop-up (staff only): its current ones.
@@ -94,6 +96,9 @@ export function useInjuries(monkeyId, staff) {
             await deleteInjuryUpdate(id);
             changeUpdates(injuryId, (list) => list.filter((u) => u.id !== id));
         },
+        // (deleted by someone else: off the list)
+        forget: (id) => change((list) => list.filter((e) => e.id !== id)),
+        forgetUpdate: (injuryId, id) => changeUpdates(injuryId, (list) => list.filter((u) => u.id !== id)),
         async add(values) {
             const saved = await addInjury(monkeyId, values);
             change((list) => [...list, saved]);
@@ -170,6 +175,9 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
             await deleteInjuryUpdate(id);
             changeUpdates(injuryId, (list) => list.filter((u) => u.id !== id));
         },
+        // (deleted by someone else: off the list)
+        forget: (id) => change((list) => list.filter((e) => e.id !== id)),
+        forgetUpdate: (injuryId, id) => changeUpdates(injuryId, (list) => list.filter((u) => u.id !== id)),
         async add(monkeyId, values) {
             const saved = await addInjury(monkeyId, values);
             change((list) => [...list, { ...saved, updates: [] }]);
@@ -192,7 +200,10 @@ export function useInjuryList(monkeyIds, staff, pastSince = null) {
 //   to show); onCancel(); scrollIntoView: scroll to it as it opens (Edit)
 //   kind: "injury", "update" (an update on one: "Details") or "condition"
 //   (how a monkey looks: Records → Sections → Monitoring)
-export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = false, kind = "injury" }) {
+// onGone(): after an edit finds it was deleted by someone else, Close
+// takes it off the list (none: Close is Cancel)
+//   withPhotos: Add Photos too (a new one: up to 4, given to onSave as photos)
+export function InjuryForm({ initial, max, onSave, onCancel, onGone, scrollIntoView = false, kind = "injury", withPhotos = false }) {
     const isUpdate = kind === "update";
     const words = {
         injury: { label: "Description", placeholder: "What is the injury, and where?", missing: "Please describe the injury." },
@@ -217,6 +228,9 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
     const [values, setValues] = useState(initial);
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
+    // (deleted by someone else while it was open: only Close)
+    const [gone, setGone] = useState(false);
+    const picked = usePickedPhotos(setProblem, "A record");
     const description = values.description.trim();
     const set = (field) => (event) => setValues({ ...values, [field]: event.target.value });
 
@@ -226,9 +240,10 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
         setBusy(true);
         setProblem(null);
         try {
-            await onSave({ date: values.date, description });
+            await onSave({ date: values.date, description, ...(withPhotos && picked.photos.length > 0 && { photos: picked.photos }) });
         } catch (err) {
             setProblem(err.message);
+            setGone(Boolean(err.gone));
             setBusy(false);
         }
     }
@@ -252,18 +267,28 @@ export function InjuryForm({ initial, max, onSave, onCancel, scrollIntoView = fa
             <span className="Integration-count">
                 {values.description.length} / {MAX_INJURY}
             </span>
+            {withPhotos && picked.list}
             {problem && (
                 <p className="Integration-problem" role="alert">
                     {problem}
                 </p>
             )}
             <div className="Integration-actions">
-                <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={confirm}>
-                    {busy ? "Saving…" : "Confirm"}
-                </button>
-                <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
-                    Cancel
-                </button>
+                {gone ? (
+                    <button type="button" className="Modal-edit is-blue-outline" onClick={onGone ?? onCancel}>
+                        Close
+                    </button>
+                ) : (
+                    <>
+                        <button type="button" className="Modal-edit is-confirm" disabled={busy} onClick={confirm}>
+                            {busy ? "Saving…" : "Confirm"}
+                        </button>
+                        <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
+                            Cancel
+                        </button>
+                        {withPhotos && <PickPhotosButton picked={picked} />}
+                    </>
+                )}
             </div>
         </div>
     );
@@ -290,6 +315,7 @@ function UpdateItem({ injuryId, update, injuries, today }) {
                         setMode(null);
                     }}
                     onCancel={cancel}
+                    onGone={() => injuries.forgetUpdate(injuryId, update.id)}
                 />
             </li>
         );
@@ -341,6 +367,7 @@ function UpdateItem({ injuryId, update, injuries, today }) {
                     </span>
                 )}
             </div>
+            <RecordPhotos kind="injury_update" recordId={update.id} />
             {problem && (
                 <p className="Integration-problem" role="alert">
                     {problem}
@@ -385,6 +412,7 @@ export function InjuryItem({ entry, injuries, today }) {
                         setMode(null);
                     }}
                     onCancel={() => setMode(null)}
+                    onGone={() => injuries.forget(entry.id)}
                 />
             </li>
         );
@@ -465,6 +493,7 @@ export function InjuryItem({ entry, injuries, today }) {
                 {entry.healedOn &&
                     ` · Healed on ${dayText(entry.healedOn)}${entry.healedByName ? ` by ${entry.healedByName}` : ""}`}
             </span>
+            <RecordPhotos kind="injury" recordId={entry.id} />
             {problem && (
                 <p className="Integration-problem" role="alert">
                     {problem}
@@ -484,8 +513,9 @@ export function InjuryItem({ entry, injuries, today }) {
                     scrollIntoView
                     initial={{ date: today, description: "" }}
                     max={today}
-                    onSave={async ({ date, description }) => {
-                        await injuries.addUpdate(entry.id, { date, details: description });
+                    withPhotos
+                    onSave={async ({ date, description, photos }) => {
+                        await injuries.addUpdate(entry.id, { date, details: description, photos, monkeyId: entry.monkeyId });
                         setMode(null);
                     }}
                     onCancel={cancel}

@@ -293,6 +293,7 @@ describe("the account menu (computers)", () => {
         expect(within(menu).getByText(EDITOR.email)).toBeInTheDocument();
         expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
             "Account",
+            "My Dashboard",
             "Changelog",
             "Sign Out",
         ]);
@@ -357,8 +358,10 @@ describe("the account menu (computers)", () => {
         const circle = await screen.findByRole("button", { name: "Account (signed in)" });
         await user.click(circle);
         await user.keyboard("{ArrowDown}");
+        expect(screen.getByRole("menuitem", { name: "My Dashboard" })).toHaveFocus();
+        await user.keyboard("{ArrowDown}");
         expect(screen.getByRole("menuitem", { name: "Changelog" })).toHaveFocus();
-        await user.keyboard("{ArrowUp}{ArrowUp}");
+        await user.keyboard("{ArrowUp}{ArrowUp}{ArrowUp}");
         expect(screen.getByRole("menuitem", { name: "Sign Out" })).toHaveFocus();
         await user.keyboard("{ArrowDown}");
         expect(screen.getByRole("menuitem", { name: "Account" })).toHaveFocus();

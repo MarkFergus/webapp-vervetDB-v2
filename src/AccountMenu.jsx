@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
     IconCheck,
     IconHistory,
+    IconLayoutList,
     IconLogout,
     IconMoon,
     IconCoffee,
@@ -17,7 +18,7 @@ import "./AccountMenu.css";
 // Computers: the account circle at the top right (Nav.jsx). Signed out, it
 // opens the sign-in pop-up. Signed in, a menu drops down (like Supabase's):
 // who you are (photo, name, email), Account (the signed-in pop-up, for
-// now the account page), Changelog (staff: your own changes), a Theme
+// now the account page), My Dashboard (staff), Changelog (staff: your own changes), a Theme
 // section listing the four themes (like Supabase's: the chosen one ticked;
 // tapped, it switches and the menu stays open), and Sign Out.
 //   onAccount: opens the account pop-up; onChangelog: opens it on Changelog
@@ -123,6 +124,12 @@ function AccountMenu({ onAccount, onChangelog }) {
                         <IconUser stroke={1.75} size={18} aria-hidden="true" />
                         Account
                     </button>
+                    {role && (
+                        <button type="button" role="menuitem" onClick={choose(() => window.location.assign("#dashboard"))}>
+                            <IconLayoutList stroke={1.75} size={18} aria-hidden="true" />
+                            My Dashboard
+                        </button>
+                    )}
                     {role && (
                         <button type="button" role="menuitem" onClick={choose(onChangelog)}>
                             <IconHistory stroke={1.75} size={18} aria-hidden="true" />

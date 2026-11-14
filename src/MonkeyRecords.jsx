@@ -23,6 +23,8 @@ import {
     splitDose,
     usualDose,
 } from "./dewormingRules";
+import { PickPhotosButton, usePickedPhotos } from "./MaintenanceIssues";
+import RecordPhotos from "./RecordPhotos";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
 
@@ -467,11 +469,14 @@ const WORM_OTHER = "other";
 //   onCancel()
 //   plainOnly: a Vet Visit or Vasectomy record typed in by hand (before
 //   Meds & Sickbay): just its words, no vet
-function RecordForm({ section, initial, places = [], elsewhere = [], locked = false, plainOnly = false, onSave, onCancel, scrollIntoView = false }) {
+//   withPhotos: a new record: Add Photos too (not a Vet Visit or Vasectomy,
+//   kept in their own tables), given to onSave as photos
+function RecordForm({ section, initial, places = [], elsewhere = [], locked = false, plainOnly = false, onSave, onCancel, scrollIntoView = false, withPhotos = false }) {
     const formRef = useScrollIntoView(scrollIntoView);
     const [values, setValues] = useState(() => startValues(initial, places));
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState(null);
+    const picked = usePickedPhotos(setProblem, "A record");
     const set = (field) => (event) => setValues({ ...values, [field]: event.target.value });
     const { categories, older } = SECTIONS[section];
     // (a record saved with a category no longer offered keeps it; a Status
@@ -497,6 +502,8 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
     // (a Vet Visit or Vasectomy: the vet, and a visit's reason; details
     // optional)
     const vetKind = VET_KINDS.includes(values.category) && !plainOnly;
+    // (photos: a new record, not a Vet Visit or Vasectomy)
+    const photosOn = withPhotos && !VET_KINDS.includes(values.category);
     const vetChoices = values.category === "vasectomy" ? VASECTOMY_VETS : VET_PRACTICES;
     // (a Deworming record: Type and Dewormer, then Dose, Unit and Given, as
     // the deworming lists'; details optional, after)
@@ -557,7 +564,8 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
         setProblem(null);
         try {
             const vet = vetKind ? { vet: values.vet, vetOther: values.vetOther ?? "", vetReason: values.vetReason ?? "" } : {};
-            await onSave({ date: values.date, category: values.category, details, ...movePlaces, ...vet });
+            const photos = photosOn && picked.photos.length > 0 ? { photos: picked.photos } : {};
+            await onSave({ date: values.date, category: values.category, details, ...movePlaces, ...vet, ...photos });
         } catch (err) {
             setProblem(err.message);
             setBusy(false);
@@ -733,6 +741,7 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
             <span className="Integration-count">
                 {text.length} / {max}
             </span>
+            {photosOn && picked.list}
             {problem && (
                 <p className="Integration-problem" role="alert">
                     {problem}
@@ -745,6 +754,7 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                 <button type="button" className="Modal-edit is-cancel" disabled={busy} onClick={onCancel}>
                     Cancel
                 </button>
+                {photosOn && <PickPhotosButton picked={picked} />}
             </div>
         </div>
     );
@@ -798,6 +808,7 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                         places={places}
                         elsewhere={Object.keys(elsewhere)}
                         initial={{ date: todayText(), category: "", details: "" }}
+                        withPhotos
                         onSave={async (values) => {
                             const kept = elsewhere[values.category];
                             if (kept) await kept.add({ ...values, description: values.details });
@@ -873,6 +884,13 @@ export function RecordList({ section, records, others, places = [], elsewhere = 
                                 <span className="Records-details" role="cell">
                                     <span className="Records-text">{row.details}</span>
                                     {row.injury && <InjuryFollowUps injury={row.injury} />}
+                                    {row.injury ? (
+                                        <RecordPhotos kind="injury" recordId={row.injury.id} />
+                                    ) : row.condition ? (
+                                        <RecordPhotos kind="condition" recordId={row.condition.id} />
+                                    ) : (
+                                        row.entry && <RecordPhotos kind="record" recordId={row.entry.id} />
+                                    )}
                                     <span className="Integration-by">{row.by}</span>
                                 </span>
                                 {row.entry && (records.canEdit(row.entry) || records.canDelete(row.entry)) && (
