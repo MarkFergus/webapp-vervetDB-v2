@@ -36,6 +36,12 @@ export const RECORD_KINDS = {
         historyDays: 7 * 7,
         hint: "Choose a date and enter the baby weights for that day.",
     },
+    // (its own page: BabyWeeklyReports.jsx)
+    "weekly-reports": {
+        id: "weekly-reports",
+        title: "Weekly Baby Reports",
+        hint: "A weekly report on each baby, ready to copy into WhatsApp.",
+    },
     // Integration's (their own page: IntegrationRecordsPage.jsx)
     reports: {
         id: "reports",
@@ -90,7 +96,7 @@ export const RECORD_KINDS = {
 // choose (Maintenance: MaintenanceRecordsPage.jsx); soon: shown as
 // "Coming soon…", not open yet
 export const TEAMS = [
-    { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights"] },
+    { id: "baby-care", name: BABY_CARE, kinds: ["milk", "weights", "weekly-reports"] },
     { id: "integration", name: "Integration", kinds: ["current", "reports"] },
     { id: "maintenance", name: "Maintenance", kinds: [], page: true, sub: "Reports" },
     { id: "meds-sickbay", name: "Meds & Sickbay", kinds: ["vet-visits", "vasectomies", "microchips", "medications", "food-monitoring"] },
@@ -268,4 +274,75 @@ export function weightReport(records, monkeys, anyDay) {
     const changeOf = (n) => (n === null ? "(first weight)" : `(${n > 0 ? "+" : n < 0 ? "-" : ""}${Math.abs(n)}g)`);
     const text = [`⚖️ *${title}* ⚖️`, "", ...lines.map((l) => `*${l.name}* ${l.value}g ${changeOf(l.change)}`)].join("\n");
     return { title, monday, sunday, lines, text };
+}
+
+// ---- Weekly Baby Reports (BabyWeeklyReports.jsx) ----
+
+export const MAX_BABY_REPORT = 1000;
+
+// A day so many days on ("2026-11-02", 6 → "2026-11-08")
+export function addDays(date, days) {
+    const [y, m, d] = date.split("-").map(Number);
+    return dayText(new Date(y, m - 1, d + days));
+}
+
+// The week a new report is for: this week, but on a Monday last week (the
+// report on the week just ended)
+export function reportWeek(today = new Date()) {
+    const day = dayText(today);
+    return today.getDay() === 1 ? addDays(mondayOf(day), -7) : mondayOf(day);
+}
+
+// "W/C 02.11"
+export function weekCommencing(monday) {
+    const [, m, d] = monday.split("-");
+    return `W/C ${d}.${m}`;
+}
+
+// The babies in Baby Care on any day of a week (Monday to Sunday, up to
+// today): a baby who left during the week is still in it. By name.
+//   moves: as babiesOn
+export function babiesInWeek(monkeys, enclosures, moves, monday, today = dayText(new Date())) {
+    const found = new Map();
+    for (let i = 0; i < 7; i++) {
+        const day = addDays(monday, i);
+        if (day > today) break;
+        for (const baby of babiesOn(monkeys, enclosures, moves, day)) found.set(baby.id, baby);
+    }
+    return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// The next week without a report from `from`, going back (step -1) or on
+// (step 1), never past thisWeek: its Monday, or null
+//   reported: a Set of the reported weeks' Mondays
+export function unreportedWeek(from, step, reported, thisWeek) {
+    let week = from;
+    for (let i = 0; i < 520; i++) {
+        week = addDays(week, 7 * step);
+        if (week > thisWeek) return null;
+        if (!reported.has(week)) return week;
+    }
+    return null;
+}
+
+// The week Enter opens on: the usual one (reportWeek) if it's not been
+// reported yet, else the next unreported one, else the one before
+export function firstUnreportedWeek(reported, today = new Date()) {
+    const start = reportWeek(today);
+    if (!reported.has(start)) return start;
+    const thisWeek = mondayOf(dayText(today));
+    return unreportedWeek(start, 1, reported, thisWeek) ?? unreportedWeek(start, -1, reported, thisWeek);
+}
+
+// A week's reports, for pasting into WhatsApp (Not recorded ones left out):
+//   "*Weekly Baby Report W/C 02.11*", a blank line, then each baby's
+//   "*Masko*" and their report, a blank line between babies (by name)
+//   reports: [{ monkeyId, report }]; monkeys: to find their names
+export function weeklyBabyText(monday, reports, monkeys) {
+    const nameOf = (id) => monkeys.find((m) => m.id === id)?.name ?? "A baby";
+    const babies = reports
+        .filter((r) => r.report)
+        .map((r) => ({ name: nameOf(r.monkeyId), report: r.report }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    return [`*Weekly Baby Report ${weekCommencing(monday)}*`, ...babies.map((b) => `\n*${b.name}*\n${b.report}`)].join("\n");
 }

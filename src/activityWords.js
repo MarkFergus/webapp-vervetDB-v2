@@ -85,6 +85,11 @@ export const SOURCES = {
         group: "records",
         fields: { from_date: field("From", "date"), to_date: field("To", "date"), report: field("Report") },
     },
+    baby_weekly_reports: {
+        label: "Weekly Baby Report",
+        group: "records",
+        fields: { week_start: field("Week Of", "date"), report: field("Report") },
+    },
     monitoring_sessions: {
         label: "Monitoring Session",
         group: "records",

@@ -51,10 +51,12 @@ import SectionsRecordsPage from "./SectionsRecordsPage";
 import DewormingRecordsPage from "./DewormingRecordsPage";
 import MonitoringRecordsPage from "./MonitoringRecordsPage";
 import MedsRecordsPage from "./MedsRecordsPage";
+import BabyWeeklyReports from "./BabyWeeklyReports";
 import "./RecordsPage.css";
 
 // The Records page (#records, staff only): where teams enter their records.
-// First the team, then what to record. Baby Care: Milk Totals or Weights,
+// First the team, then what to record. Baby Care: Milk Totals or Weights
+// (Weekly Baby Reports: its own page, BabyWeeklyReports.jsx),
 // then Enter (a whole batch at once: the date, then each baby's value) or
 // View (each baby's latest, the change since the one before, and its
 // history). Integration: Reports or Current Integrations (their own page:
@@ -78,6 +80,7 @@ const TEAM_ICONS = {
 };
 const KIND_ICONS = {
     milk: IconBottle,
+    "weekly-reports": IconFileText,
     weights: IconScale,
     reports: IconFileText,
     current: IconFriends,
@@ -832,6 +835,8 @@ function RecordsPage({
                     ) : (
                         <SectionsRecordsPage monkeys={monkeys} enclosures={enclosures} staff={staff} />
                     )
+                ) : kind.id === "weekly-reports" ? (
+                    <BabyWeeklyReports monkeys={monkeys} enclosures={enclosures} canEnter={canEnterBaby} />
                 ) : (
                     <KindPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnterBaby} />
                 )

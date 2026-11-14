@@ -2706,6 +2706,47 @@ export async function loadMoves() {
     return data.map((r) => ({ monkeyId: r.monkey_id, date: r.record_date, kind: r.move_kind, fromId: r.from_place_id, toId: r.to_place_id }));
 }
 
+// ---- Weekly Baby Reports (supabase/baby-weekly-reports.sql) ----
+
+// Every week's reports, newest week first: [{ id, monkeyId, week (its
+// Monday), report (null: Not recorded), loggedByName, loggedAt }]. Throws if the database hasn't
+// got them yet (error.code "42P01" / "PGRST205"), or can't be reached.
+export async function loadBabyWeeklyReports() {
+    const { data, error } = await fetchAll(() =>
+        supabase
+            .from("baby_weekly_reports")
+            .select("id, monkey_id, week_start, report, logged_by_name, logged_at")
+            .order("week_start", { ascending: false })
+            .order("id")
+    );
+    if (error) throw error;
+    return data.map((r) => ({
+        id: r.id,
+        monkeyId: r.monkey_id,
+        week: r.week_start,
+        report: r.report,
+        loggedByName: r.logged_by_name ?? null,
+        loggedAt: r.logged_at,
+    }));
+}
+
+// A week's reports ([{ monkeyId, report }]; report null: Not recorded).
+// edit false (Enter): a new week, refused if it's been reported already;
+// edit true (View → Edit): changes to that week's. → how many were saved
+export async function saveBabyWeeklyReports(week, entries, edit = false) {
+    const { data, error } = await supabase.rpc("save_baby_weekly_reports", {
+        week_start: week,
+        reports: entries.map((e) => ({ monkey_id: e.monkeyId, report: e.report })),
+        edit,
+    });
+    if (error) {
+        console.error("Saving the weekly baby reports failed:", error);
+        if (error.code === "42501") throw new Error("The database didn't allow this. Are you still signed in as an editor?");
+        throw saveProblem(error);
+    }
+    return data;
+}
+
 // Save All: a batch of milk totals or weights ([{ monkeyId, date, value,
 // notes }]); a baby that already has one that day is replaced (replace
 // true) or left as it was. → how many were saved

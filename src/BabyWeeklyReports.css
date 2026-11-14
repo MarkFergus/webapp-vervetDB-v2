@@ -1,0 +1,121 @@
+/* Records → Baby Care → Weekly Baby Reports (BabyWeeklyReports.jsx), with
+   Integration's report cards (IntegrationRecordsPage.css) */
+
+/* ‹ W/C 02.11 › */
+.BabyReports-week {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 4px;
+    background-color: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.BabyReports-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.BabyReports-arrow:hover:not(:disabled) {
+    background-color: var(--surface-2);
+}
+
+.BabyReports-arrow:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+}
+
+.BabyReports-arrow:disabled {
+    color: var(--text-3);
+    opacity: 0.4;
+    cursor: default;
+}
+
+.BabyReports-weekText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    text-align: left;
+}
+
+.BabyReports-week .BabyReports-weekText {
+    min-width: 150px;
+    text-align: center;
+}
+
+.BabyReports-weekText strong {
+    font-size: 15px;
+}
+
+.BabyReports-weekText span {
+    font-size: 13px;
+    color: var(--text-3);
+}
+
+/* View: the week's title with Copy beside it */
+.BabyReports-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.BabyReports-head .Modal-edit {
+    height: 36px;
+    padding: 0 16px;
+}
+
+.BabyReports-head .RecordsPage-problem {
+    flex-basis: 100%;
+    margin: 0;
+}
+
+/* A baby's report: their photo, then the words */
+.IntegrationPage-past > li.BabyReports-baby {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.BabyReports-words {
+    flex: 1;
+    min-width: 0;
+}
+
+.RecordsPage .IntegrationPage-more {
+    margin-top: 12px;
+}
+
+/* View: Edit and Copy, side by side */
+.BabyReports-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.BabyReports-none {
+    font-style: italic;
+    color: var(--text-3);
+}
+
+.BabyReports-edit {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.BabyReports-edit .RecordsPage-actions {
+    margin-top: 10px;
+}

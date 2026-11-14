@@ -206,6 +206,47 @@ test("+ New Medical Record: date, category and details, then Confirm", async () 
     expect(screen.queryByRole("button", { name: "Confirm" })).not.toBeInTheDocument();
 });
 
+test("Deworming: Type, Dewormer, Dose, Unit and Given, worded as the deworming lists' records", async () => {
+    const user = userEvent.setup();
+    const records = fakeRecords();
+    render(<RecordList section="medical" records={records} others={[]} />);
+    await user.click(screen.getByRole("button", { name: "New Medical Record" }));
+    await user.selectOptions(screen.getByLabelText("Category"), "deworming");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Please choose the type.");
+    await user.selectOptions(screen.getByLabelText("Type"), "Special");
+    // (Milbeworm: its usual dose, one dose)
+    await user.selectOptions(screen.getByLabelText("Dewormer"), "Milbeworm");
+    expect(screen.getByLabelText("Dose")).toHaveDisplayValue("1/2");
+    expect(screen.getByLabelText("Unit")).toHaveDisplayValue("tab");
+    expect(screen.getByLabelText("Given")).toHaveDisplayValue("One Dose");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(records.add).toHaveBeenCalledWith(
+        expect.objectContaining({ category: "deworming", details: "Special - 1/2 tab Milbeworm, one dose only" })
+    );
+});
+
+test("Deworming, edited: one worded so back in its boxes; one worded otherwise: plain words", async () => {
+    const user = userEvent.setup();
+    const sheet = { id: 1, section: "medical", date: "2026-01-02", category: "deworming", details: "6-Month - 1/4 tab Albendazole, once a day for 3 days. Ate it in banana", loggedByName: "A" };
+    const old = { id: 2, section: "medical", date: "2026-01-01", category: "deworming", details: "Albendazole 1/4 tab", loggedByName: "A" };
+    const records = fakeRecords([sheet, old]);
+    render(<RecordList section="medical" records={records} others={[]} />);
+    await user.click(screen.getAllByRole("button", { name: "Edit" })[0]);
+    expect(screen.getByLabelText("Type")).toHaveDisplayValue("6-Month");
+    expect(screen.getByLabelText("Dewormer")).toHaveDisplayValue("Albendazole");
+    expect(screen.getByLabelText("Given")).toHaveDisplayValue("3 Days");
+    expect(screen.getByLabelText("Details (optional)")).toHaveValue("Ate it in banana");
+    await user.selectOptions(screen.getByLabelText("Given"), "One Dose");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() =>
+        expect(records.update).toHaveBeenCalledWith(1, expect.objectContaining({ details: "6-Month - 1/4 tab Albendazole, one dose only. Ate it in banana" }))
+    );
+    await user.click(screen.getAllByRole("button", { name: "Edit" })[1]);
+    expect(screen.queryByLabelText("Type")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Details")).toHaveValue("Albendazole 1/4 tab");
+});
+
 test("Microchip: a chip number and optional details; saved as its words, and the monkey told", async () => {
     const user = userEvent.setup();
     const records = fakeRecords();

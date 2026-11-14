@@ -11,6 +11,18 @@ import { fullName } from "./places";
 import { MAX_CHIP_NOTE, chipNumberProblem, microchipText, parseMicrochip } from "./chipRules";
 import useScrollIntoView from "./useScrollIntoView";
 import { MAX_OTHER_VET, MAX_VET_DETAILS, VASECTOMY_VETS, VET_PRACTICES, VET_REASONS } from "./medsRules";
+import {
+    AMOUNTS,
+    DEWORMERS,
+    DEWORMING_TYPES,
+    UNITS,
+    daysFor,
+    dewormingRecordText,
+    doseText,
+    parseDewormingRecord,
+    splitDose,
+    usualDose,
+} from "./dewormingRules";
 import "./IntegrationReports.css";
 import "./MonkeyRecords.css";
 
@@ -418,8 +430,20 @@ function startValues(initial, places) {
     const from = place(move?.from);
     const to = place(move?.to);
     const chip = initial.category === "microchip" ? parseMicrochip(initial.details) : null;
+    // (a Deworming record: worded as the sheets', in its boxes; one worded
+    // otherwise: plain words)
+    const worm = initial.category === "deworming" && initial.details ? parseDewormingRecord(initial.details) : null;
+    const knownWormer = worm && DEWORMERS.some((d) => d.name === worm.medication);
     return {
         ...initial,
+        ...(worm && { details: worm.notes }),
+        wormPlain: initial.category === "deworming" && Boolean(initial.details) && !worm,
+        wormType: worm?.type ?? "",
+        wormChoice: worm ? (knownWormer ? worm.medication : WORM_OTHER) : "",
+        wormOther: worm && !knownWormer ? worm.medication : "",
+        wormAmount: worm?.amount ?? "",
+        wormUnit: worm?.unit ?? UNITS[0],
+        wormDays: worm?.days ?? 3,
         chipNumber: chip?.number ?? "",
         chipNote: chip?.note ?? "",
         plain: initial.category === "movement" && Boolean(initial.details) && !move,
@@ -430,6 +454,8 @@ function startValues(initial, places) {
         reason: move?.reason ?? "",
     };
 }
+
+const WORM_OTHER = "other";
 
 // Date, Category, then the details, then Confirm and Cancel (like the
 // pop-up's Quick Actions forms). A Movement: From and To, then Reason
@@ -472,6 +498,16 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
     // optional)
     const vetKind = VET_KINDS.includes(values.category) && !plainOnly;
     const vetChoices = values.category === "vasectomy" ? VASECTOMY_VETS : VET_PRACTICES;
+    // (a Deworming record: Type and Dewormer, then Dose, Unit and Given, as
+    // the deworming lists'; details optional, after)
+    const deworming = values.category === "deworming" && !values.wormPlain;
+    const chooseWormer = (choice) =>
+        setValues({
+            ...values,
+            wormChoice: choice,
+            wormDays: daysFor(choice) ?? values.wormDays,
+            ...(usualDose(choice) && { wormAmount: splitDose(usualDose(choice)).amount, wormUnit: splitDose(usualDose(choice)).unit }),
+        });
     const text = movement ? values.reason : microchip ? values.chipNote : values.details;
     // (an injury's or a condition's description: 500 at most, as their tables)
     const max = microchip ? MAX_CHIP_NOTE : ((locked || elsewhere.includes(values.category)) && SAVED_ELSEWHERE[values.category]) || MAX_RECORD;
@@ -494,6 +530,19 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
             const wrong = chipNumberProblem(values.chipNumber);
             if (wrong) return setProblem(wrong);
             details = microchipText({ number: values.chipNumber, note: values.chipNote });
+        } else if (deworming) {
+            const medication = values.wormChoice === WORM_OTHER ? values.wormOther.trim() : values.wormChoice;
+            if (!values.wormType) return setProblem("Please choose the type.");
+            if (!medication) return setProblem("Please choose the dewormer.");
+            if (!values.wormAmount) return setProblem("Please choose the dose.");
+            details = dewormingRecordText({
+                type: values.wormType,
+                dose: doseText(values.wormAmount, values.wormUnit),
+                medication,
+                days: Number(values.wormDays),
+                notes: details,
+            });
+            if (details.length > max) return setProblem(`Please shorten the details (${max} characters in all).`);
         } else if (vetKind) {
             if (!values.vet) return setProblem("Please choose the vet.");
             if (values.vet === "other" && !values.vetOther.trim()) return setProblem("Please type the vet's name.");
@@ -594,6 +643,83 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                     <input type="text" value={values.vetOther ?? ""} maxLength={MAX_OTHER_VET} onChange={set("vetOther")} />
                 </label>
             )}
+            {deworming && (
+                <>
+                    <div className="Integration-dates">
+                        <label>
+                            <span>Type</span>
+                            <select value={values.wormType} onChange={set("wormType")}>
+                                <option value="" disabled>
+                                    Choose…
+                                </option>
+                                {DEWORMING_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Dewormer</span>
+                            <select value={values.wormChoice} onChange={(e) => chooseWormer(e.target.value)}>
+                                <option value="" disabled>
+                                    Choose…
+                                </option>
+                                {DEWORMERS.map((d) => (
+                                    <option key={d.name} value={d.name}>
+                                        {d.name}
+                                    </option>
+                                ))}
+                                <option value={WORM_OTHER}>Other…</option>
+                            </select>
+                        </label>
+                    </div>
+                    {values.wormChoice === WORM_OTHER && (
+                        <label>
+                            <span>Dewormer&apos;s Name</span>
+                            <input
+                                type="text"
+                                value={values.wormOther}
+                                maxLength={40}
+                                placeholder="e.g. Milbemax"
+                                onChange={set("wormOther")}
+                            />
+                        </label>
+                    )}
+                    <div className="Integration-dates">
+                        <label>
+                            <span>Dose</span>
+                            <select value={values.wormAmount} onChange={set("wormAmount")}>
+                                <option value="" disabled>
+                                    Choose…
+                                </option>
+                                {AMOUNTS.map((a) => (
+                                    <option key={a} value={a}>
+                                        {a}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Unit</span>
+                            <select value={values.wormUnit} onChange={set("wormUnit")}>
+                                {UNITS.map((u) => (
+                                    <option key={u} value={u}>
+                                        {u}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Given</span>
+                            <select value={values.wormDays} onChange={(e) => setValues({ ...values, wormDays: Number(e.target.value) })}>
+                                <option value={1}>One Dose</option>
+                                <option value={3}>3 Days</option>
+                            </select>
+                        </label>
+                    </div>
+                </>
+            )}
             {microchip && (
                 <label>
                     <span>Chip Number</span>
@@ -601,7 +727,7 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                 </label>
             )}
             <label>
-                <span>{movement || microchip || vetKind ? `${movement ? "Reason" : "Details"} (optional)` : "Details"}</span>
+                <span>{movement || microchip || vetKind || deworming ? `${movement ? "Reason" : "Details"} (optional)` : "Details"}</span>
                 <textarea rows={4} value={text} maxLength={max} onChange={set(movement ? "reason" : microchip ? "chipNote" : "details")} />
             </label>
             <span className="Integration-count">

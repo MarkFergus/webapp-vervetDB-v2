@@ -21,6 +21,14 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.7.0",
+        date: "2026-11-14",
+        changes: [
+            "New Weekly Baby Reports in Records > Baby Care",
+            "Added Dewormer, Dose and Given to deworming Medical records",
+        ],
+    },
+    {
         version: "2.6.2",
         date: "2026-11-13",
         changes: [

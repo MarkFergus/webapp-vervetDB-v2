@@ -47,6 +47,33 @@ export function splitDose(dose) {
     return match ? { amount: match[1], unit: match[2] } : { amount: "", unit: UNITS[0] };
 }
 
+// ---- A Deworming record typed in (Full Profile → Medical → New Record),
+// worded as the sheets' records: "Special - 1/2 tab Milbeworm, one dose
+// only" ----
+
+// Its Type: a session, or Special (anything else)
+export const DEWORMING_TYPES = ["6-Month", "6-Month F/U", "3-Month", "3-Month F/U", "Special"];
+// How it was given: one dose, or once a day for 3 days
+export const GIVEN_WORDS = { 1: "one dose only", 3: "once a day for 3 days" };
+
+// { type, dose ("1/2 tab"), medication, days (1 or 3), notes } → the record's
+// words ("…; notes" after, if any)
+export function dewormingRecordText({ type, dose, medication, days, notes = "" }) {
+    const extra = notes.trim();
+    return `${type} - ${dose} ${medication}, ${GIVEN_WORDS[days]}${extra ? `. ${extra}` : ""}`;
+}
+
+// A record's words → { type, amount, unit, medication, days, notes }, or
+// null if it isn't worded so (a sheet's with partial doses, a custom list's,
+// or one typed in before): edited as plain words
+export function parseDewormingRecord(text) {
+    const match = /^(.+?) - (.+?) (tab|tsp|ml) (.+?), (one dose only|once a day for 3 days)(?:\. ([\s\S]*))?$/.exec(text ?? "");
+    if (!match) return null;
+    const [, type, amount, unit, medication, given, notes = ""] = match;
+    if (!DEWORMING_TYPES.includes(type) || !AMOUNTS.includes(amount)) return null;
+    return { type, amount, unit, medication, days: given === GIVEN_WORDS[1] ? 1 : 3, notes };
+}
+
 // The line under a printed sheet's title, unless the admin changes it
 export const DEFAULT_INSTRUCTIONS =
     "Add 2 drops milk thistle & protexin to each dose (Albendazole also needs 2 drops flax oil).";
