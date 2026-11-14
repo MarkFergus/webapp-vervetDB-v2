@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconSquareCheck } from "@tabler/icons-react";
 import { addSpotSighting, loadLastMoves, loadMonkeySightings } from "./monkeyData";
 import { seenDaily, sightingRecord } from "./monitoringRules";
@@ -118,7 +118,16 @@ export function MarkSeenButton({ name, onClick, iconSize = 16 }) {
 export function useMissing(monkey, enabled) {
     const monkeyId = monkey?.id;
     const daily = Boolean(monkey && seenDaily(monkey));
-    const [record, setRecord] = useState(null);
+    const [record, setState] = useState(null);
+    // (an answer that comes back after it's closed is ignored)
+    const live = useRef(true);
+    useEffect(() => {
+        live.current = true;
+        return () => {
+            live.current = false;
+        };
+    }, []);
+    const setRecord = useCallback((value) => live.current && setState(value), []);
     const reload = useCallback(() => {
         if (!enabled || monkeyId == null) {
             setRecord(null);
@@ -137,7 +146,7 @@ export function useMissing(monkey, enabled) {
                 )
             )
             .catch(() => setRecord(null));
-    }, [monkeyId, enabled, daily]);
+    }, [monkeyId, enabled, daily, setRecord]);
     useEffect(() => {
         reload();
     }, [reload]);
