@@ -21,6 +21,16 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.9.0",
+        date: "2026-11-15",
+        changes: [
+            "New Microchips in Records > Meds & Sickbay",
+            "Added Ivermectin and grams to deworming doses",
+            "Improved deworming sheets and results",
+            "Fixed My Dashboard boxes hiding behind the phone keyboard",
+        ],
+    },
+    {
         version: "2.8.0",
         date: "2026-11-14",
         changes: [
