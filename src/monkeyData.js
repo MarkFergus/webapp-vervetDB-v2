@@ -1,4 +1,4 @@
-import { microchipText } from "./chipRules";
+import { microchipText, parseMicrochip } from "./chipRules";
 import { isExpiredSignIn, signInRenewed, supabase } from "./supabase";
 import {
     displayId,
@@ -1676,6 +1676,39 @@ export async function loadChip(monkeyId) {
 export async function addMicrochip(monkeyId, { number, date, note }) {
     await addRecord(monkeyId, { section: "medical", date, category: "microchip", details: microchipText({ number, note }) });
     return loadChip(monkeyId);
+}
+
+// Records → Meds & Sickbay → Microchips: the Microchip records since a day,
+// newest first: { id, monkeyId, date, number, note, loggedBy, loggedByName,
+// monkey ({ name, status }: admins, for archived monkeys) }
+export async function loadMicrochips(since) {
+    const { data, error } = await supabase
+        .from("monkey_records")
+        .select(`id, monkey_id, record_date, details, logged_by, logged_by_name, ${MEDS_MONKEY}`)
+        .eq("category", "microchip")
+        .gte("record_date", since)
+        .order("record_date", { ascending: false })
+        .order("id", { ascending: false });
+    if (error) throw saveProblem(error);
+    return data.map((row) => {
+        const chip = parseMicrochip(row.details) ?? { number: "", note: row.details ?? "" };
+        return {
+            id: row.id,
+            monkeyId: row.monkey_id,
+            date: row.record_date,
+            number: chip.number,
+            note: chip.note,
+            loggedBy: row.logged_by,
+            loggedByName: row.logged_by_name,
+            monkey: medsMonkey(row),
+        };
+    });
+}
+
+// A Microchip record's date and details (admins). Its number stays, and so
+// does the monkey's chip (fixed with Edit's pencil)
+export async function saveMicrochipRecord(id, { number, date, note }) {
+    return saveRecord(id, { date, category: "microchip", details: microchipText({ number, note }) });
 }
 
 // ---- Injuries: a monkey's injuries (current and healed) ----

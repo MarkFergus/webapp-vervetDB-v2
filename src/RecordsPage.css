@@ -156,6 +156,19 @@
     color: var(--text-strong);
 }
 
+/* (beside the title: "In Progress") */
+.RecordsPage-choiceTag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    vertical-align: 2px;
+    color: var(--amber-text);
+    border: 1px solid var(--amber);
+    border-radius: 6px;
+}
+
 .RecordsPage-choiceSub {
     font-size: 14px;
     color: var(--text-2);

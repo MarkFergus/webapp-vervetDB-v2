@@ -135,3 +135,51 @@ export function vasectomyWhatsApp(group) {
         ...[...byHome.entries()].map(([home, names]) => `${home}: ${names.join(", ")}`),
     ].join("\n");
 }
+
+// ---- Microchips ----
+
+// The Microchips Log: the last this many months
+export const MICROCHIP_LOG_MONTHS = 6;
+
+// The first day of the Log ("2026-05-14" for today "2026-11-14")
+export function microchipLogStart(today, months = MICROCHIP_LOG_MONTHS) {
+    const [y, m, d] = today.split("-").map(Number);
+    const start = new Date(Date.UTC(y, m - 1 - months, 1));
+    const last = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0)).getUTCDate();
+    start.setUTCDate(Math.min(d, last));
+    return start.toISOString().slice(0, 10);
+}
+
+// A monkey's chips as a list ("1011 & 1604" → ["1011", "1604"])
+export const chipsOf = (monkey) => (monkey?.chip ? String(monkey.chip).split(" & ").filter(Boolean) : []);
+
+// Before saving a new chip: what to ask first, or null (nothing to ask).
+//   This monkey already has that number: a record for that chip; already has
+//   another: a 2nd chip?; another monkey has it: the same chip twice?
+export function chipQuestion(monkey, number, monkeys) {
+    const n = number.trim();
+    const theirs = chipsOf(monkey);
+    const other = monkeys.find((m) => m.id !== monkey.id && chipsOf(m).includes(n));
+    if (other) return `${n} is already ${other.name}'s chip. Add it to ${monkey.name} too?`;
+    if (theirs.includes(n)) return `${n} is already ${monkey.name}'s chip. Add a record for it?`;
+    if (theirs.length) return `${monkey.name} already has a chip on record (${theirs.join(" & ")}). Add another?`;
+    return null;
+}
+
+// The By Troop view: every monkey at the sanctuary by where they live
+// (troops in section order, anywhere else, then the Bandits), by name.
+//   → [{ home, monkeys: [{ monkey, chips }], chipped }]
+export function chipsByTroop(monkeys) {
+    const groups = new Map();
+    for (const monkey of monkeys) {
+        const home = homeOf(monkey);
+        if (!groups.has(home)) groups.set(home, []);
+        groups.get(home).push({ monkey, chips: chipsOf(monkey) });
+    }
+    return [...groups.entries()]
+        .sort(([a], [b]) => homeRank(a) - homeRank(b) || a.localeCompare(b))
+        .map(([home, list]) => {
+            list.sort((a, b) => a.monkey.name.localeCompare(b.monkey.name));
+            return { home, monkeys: list, chipped: list.filter((m) => m.chips.length).length };
+        });
+}

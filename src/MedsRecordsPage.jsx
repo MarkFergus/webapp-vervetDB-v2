@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { IconCheck, IconCopy, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
-import { deleteVasectomy, deleteVetVisit, loadVasectomies, loadVetVisits, saveVasectomy, saveVetVisit } from "./monkeyData";
+import {
+    addMicrochip,
+    deleteRecord,
+    deleteVasectomy,
+    deleteVetVisit,
+    loadMicrochips,
+    loadVasectomies,
+    loadVetVisits,
+    saveMicrochipRecord,
+    saveVasectomy,
+    saveVetVisit,
+} from "./monkeyData";
 import {
     MAX_OTHER_VET,
     MAX_VET_DETAILS,
@@ -8,12 +19,17 @@ import {
     VET_PRACTICES,
     VET_REASONS,
     VASECTOMY_STATUS_WORDS,
+    MICROCHIP_LOG_MONTHS,
+    chipQuestion,
+    chipsByTroop,
+    microchipLogStart,
     vasectomyWhatsApp,
     vasectomyYears,
     vetFormProblems,
     vetName,
 } from "./medsRules";
 import { intakeYears } from "./intakeReport";
+import { MAX_CHIP_NOTE, chipNumberProblem } from "./chipRules";
 import { dayText } from "./babyRecords";
 import MonkeyFind from "./MonkeyFind";
 import { summaryDate } from "./feeding";
@@ -29,6 +45,11 @@ import "./MedsRecordsPage.css";
 //   Vasectomies   + New Vasectomy, then the Log (newest first) or By Birth
 //                 Year (each year's boys, vasectomised or not, to copy for
 //                 WhatsApp)
+//   Microchips    + New Microchip, then the Log (the last 6 months, newest
+//                 first) or By Troop (every monkey's chip numbers). Each one
+//                 is a Medical record, which adds the number to the monkey
+//                 (microchip-records.sql); editors can add them
+//                 (microchips-editors.sql), admins change and delete them
 // Each one adds the monkey's Medical record, and a vasectomy at a vet (or a
 // vet visit for one) adds the other: the database does that
 // (supabase/vet-visits.sql). Adding: editors and admins (canEnter);
@@ -592,7 +613,271 @@ function Vasectomies({ monkeys, canEnter, staff }) {
     );
 }
 
-export default function MedsRecordsPage({ kind, monkeys = [], canEnter = false, staff = null }) {
+// ---- Microchips ----
+
+// New: the monkey, the date, the number, details (optional). Saving asks
+// first when the monkey already has a chip, or another monkey has that
+// number. Edit (admins): the date and details; the number stays, and so does
+// the monkey's chip.
+//   entry: the record being changed, or none; name: its monkey's
+function ChipForm({ monkeys, entry = null, name = "", onSave, onCancel }) {
+    const today = dayText(new Date());
+    const [monkey, setMonkey] = useState(null);
+    const [date, setDate] = useState(entry?.date ?? today);
+    const [number, setNumber] = useState(entry?.number ?? "");
+    const [note, setNote] = useState(entry?.note ?? "");
+    const [errors, setErrors] = useState({});
+    const [busy, setBusy] = useState(false);
+    const [problem, setProblem] = useState(null);
+    // (the question to answer before saving)
+    const [asking, setAsking] = useState(null);
+    const stopAsking = useCallback(() => setAsking(null), []);
+    const id = useId();
+
+    async function send() {
+        setAsking(null);
+        setBusy(true);
+        try {
+            await onSave({ monkey, number: number.trim(), date, note });
+        } catch (error) {
+            setProblem(error.message);
+            setBusy(false);
+        }
+    }
+    function save(event) {
+        event.preventDefault();
+        const found = {};
+        if (!entry && !monkey) found.monkey = "Please choose the monkey.";
+        if (!date) found.date = "Please choose the date.";
+        else if (date > today) found.date = "Not in the future, please.";
+        const wrong = entry ? null : chipNumberProblem(number);
+        if (wrong) found.number = wrong;
+        setErrors(found);
+        setProblem(null);
+        if (Object.keys(found).length) return;
+        const question = entry ? null : chipQuestion(monkey, number, monkeys);
+        if (question) setAsking(question);
+        else send();
+    }
+
+    const error = (field) =>
+        errors[field] && (
+            <span className="Meds-error" role="alert" id={`${id}-${field}-error`}>
+                {errors[field]}
+            </span>
+        );
+    const describe = (field) => (errors[field] ? { "aria-describedby": `${id}-${field}-error`, "aria-invalid": true } : {});
+
+    return (
+        <form className="IntegrationPage-new" onSubmit={save} noValidate>
+            <h2 className="RecordsPage-subhead">{entry ? `Edit ${name}'s Microchip` : "New Microchip"}</h2>
+            {!entry && (
+                <div>
+                    <MonkeyFind monkeys={monkeys} chosen={monkey} onChoose={setMonkey} label="Search monkeys" none="No monkey found." />
+                    {error("monkey")}
+                </div>
+            )}
+            <div className="Meds-fields">
+                <div className="IntegrationPage-choose">
+                    <label htmlFor={`${id}-date`}>Date</label>
+                    <input id={`${id}-date`} type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} {...describe("date")} />
+                    {error("date")}
+                </div>
+                <div className="IntegrationPage-choose">
+                    <label htmlFor={`${id}-number`}>Microchip Number</label>
+                    <input
+                        id={`${id}-number`}
+                        type="text"
+                        inputMode="numeric"
+                        value={number}
+                        readOnly={Boolean(entry)}
+                        onChange={(e) => setNumber(e.target.value)}
+                        {...describe("number")}
+                    />
+                    {error("number")}
+                </div>
+            </div>
+            <label className="IntegrationPage-choose">
+                <span>Details (optional)</span>
+                <textarea className="IntegrationPage-report" value={note} maxLength={MAX_CHIP_NOTE} onChange={(e) => setNote(e.target.value)} />
+            </label>
+            <div className="IntegrationPage-under">
+                <span />
+                <span className="IntegrationPage-count">
+                    {note.length} / {MAX_CHIP_NOTE}
+                </span>
+            </div>
+            <p className="RecordsPage-hint">
+                {entry
+                    ? "The number can't be changed here, and the monkey's chip stays as it is. To correct a chip, use the pencil beside Chip in their Full Profile's Edit."
+                    : "A Microchip record will be added to Medical records, and the number to the monkey's Chip."}
+            </p>
+            {problem && (
+                <p className="RecordsPage-problem" role="alert">
+                    {problem}
+                </p>
+            )}
+            <div className="RecordsPage-actions">
+                <span className="Meds-ask">
+                    <button type="submit" className="Modal-edit is-confirm" disabled={busy}>
+                        {busy ? "Saving…" : "Save"}
+                    </button>
+                    {asking && <ConfirmBubble question={asking} busy={busy} onCancel={stopAsking} onConfirm={send} />}
+                </span>
+                <button type="button" className="Modal-edit is-cancel" onClick={onCancel} disabled={busy}>
+                    Cancel
+                </button>
+            </div>
+        </form>
+    );
+}
+
+// By Troop: each place's monkeys and their chip numbers ("No Chip" amber)
+function ChipTroop({ group }) {
+    return (
+        <section className="Meds-yearCard" aria-label={group.home}>
+            <div className="Meds-yearTop">
+                <h3>
+                    {group.home}{" "}
+                    <span className="Meds-done">
+                        {group.chipped} of {group.monkeys.length} chipped
+                    </span>
+                </h3>
+            </div>
+            <ul className="Meds-chips">
+                {group.monkeys.map(({ monkey, chips }) => (
+                    <li key={monkey.id} className="Meds-chip">
+                        <span className="Meds-chipName">{monkey.name}</span>
+                        {chips.length ? <span className="Meds-chipNumber">{chips.join(" & ")}</span> : <span className="Meds-noChip">No Chip</span>}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+function Microchips({ monkeys, canEnter, staff, onChipChanged }) {
+    const [tab, setTab] = useState("log");
+    const since = microchipLogStart(dayText(new Date()));
+    // null (loading), [records] or { problem }
+    const [list, setList] = useState(null);
+    const [adding, setAdding] = useState(false);
+    const [editing, setEditing] = useState(null);
+    const [version, setVersion] = useState(0);
+
+    useEffect(() => {
+        let current = true;
+        loadMicrochips(since)
+            .then((found) => current && setList(found))
+            .catch((error) => current && setList({ problem: error.message }));
+        return () => {
+            current = false;
+        };
+    }, [since, version]);
+
+    const loaded = Array.isArray(list) ? list : [];
+    const isAdmin = Boolean(staff?.isAdmin);
+    return (
+        <div className="Meds">
+            <div className="RecordsPage-tabRow">
+                <div className="RecordsPage-tabs" role="tablist" aria-label="Microchips">
+                    {[
+                        ["log", "Log"],
+                        ["troops", "By Troop"],
+                    ].map(([id, label]) => (
+                        <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? "is-on" : ""} onClick={() => setTab(id)}>
+                            {label}
+                        </button>
+                    ))}
+                </div>
+                {canEnter && !adding && (
+                    <button type="button" className="Modal-edit is-action-outline" onClick={() => setAdding(true)}>
+                        <IconPlus size={18} aria-hidden="true" />
+                        New Microchip
+                    </button>
+                )}
+            </div>
+            {adding && (
+                <ChipForm
+                    monkeys={monkeys}
+                    onCancel={() => setAdding(false)}
+                    onSave={async ({ monkey, number, date, note }) => {
+                        const chip = await addMicrochip(monkey.id, { number, date, note });
+                        onChipChanged?.(monkey, chip);
+                        setAdding(false);
+                        setVersion((v) => v + 1);
+                    }}
+                />
+            )}
+            {tab === "troops" ? (
+                <>
+                    <p className="RecordsPage-hint">Every monkey at the sanctuary and their chip numbers, by troop.</p>
+                    {chipsByTroop(monkeys).map((group) => (
+                        <ChipTroop key={group.home} group={group} />
+                    ))}
+                </>
+            ) : list === null ? (
+                <p className="RecordsPage-none">Loading…</p>
+            ) : list.problem ? (
+                <p className="RecordsPage-problem" role="alert">
+                    {list.problem}
+                </p>
+            ) : loaded.length === 0 ? (
+                <p className="RecordsPage-none">No microchips in the last {MICROCHIP_LOG_MONTHS} months.</p>
+            ) : (
+                <>
+                    <p className="SectionsPage-count">
+                        {loaded.length} {loaded.length === 1 ? "microchip" : "microchips"} in the last {MICROCHIP_LOG_MONTHS} months
+                    </p>
+                    <ul className="Meds-list" aria-label="Microchips">
+                        {loaded.map((c) => {
+                            const name = nameOf(monkeys, c);
+                            if (editing === c.id) {
+                                return (
+                                    <li key={c.id}>
+                                        <ChipForm
+                                            monkeys={monkeys}
+                                            entry={c}
+                                            name={name}
+                                            onCancel={() => setEditing(null)}
+                                            onSave={async ({ date, note }) => {
+                                                await saveMicrochipRecord(c.id, { number: c.number, date, note });
+                                                setEditing(null);
+                                                setVersion((n) => n + 1);
+                                            }}
+                                        />
+                                    </li>
+                                );
+                            }
+                            return (
+                                <Row
+                                    key={c.id}
+                                    onEdit={() => setEditing(c.id)}
+                                    date={c.date}
+                                    monkey={monkeyOf(monkeys, c.monkeyId)}
+                                    archived={archivedOf(monkeys, c)}
+                                    name={name}
+                                    what={c.number ? `Chip ${c.number}` : "Microchip"}
+                                    details={c.note}
+                                    by={c.loggedByName}
+                                    canChange={isAdmin}
+                                    deleteWhat={`${name}'s microchip record`}
+                                    onDelete={async () => {
+                                        await deleteRecord(c.id);
+                                        setList((all) => all.filter((x) => x.id !== c.id));
+                                    }}
+                                />
+                            );
+                        })}
+                    </ul>
+                </>
+            )}
+        </div>
+    );
+}
+
+export default function MedsRecordsPage({ kind, monkeys = [], canEnter = false, staff = null, onChipChanged }) {
+    if (kind.id === "microchips") return <Microchips monkeys={monkeys} canEnter={canEnter} staff={staff} onChipChanged={onChipChanged} />;
     return kind.id === "vasectomies" ? (
         <Vasectomies monkeys={monkeys} canEnter={canEnter} staff={staff} />
     ) : (

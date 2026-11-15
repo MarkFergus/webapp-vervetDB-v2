@@ -94,16 +94,17 @@ test("Records: Maintenance, Sections and Meds & Sickbay", () => {
     // (only what's open, under its name)
     const meds = screen.getByRole("link", { name: /Meds & Sickbay/ });
     expect(meds).toHaveAttribute("href", "#records/meds-sickbay");
-    expect(meds).toHaveTextContent("Vet Visits · Vasectomies");
-    expect(meds).not.toHaveTextContent("Microchips");
+    expect(meds).toHaveTextContent("Vet Visits · Vasectomies · Microchips");
+    expect(meds).not.toHaveTextContent("Medications");
 });
 
-test("Meds & Sickbay: Vet Visits and Vasectomies open; Microchips, Medications and Food Monitoring coming soon", () => {
+test("Meds & Sickbay: Vet Visits, Vasectomies and Microchips open; Medications and Food Monitoring coming soon", () => {
     open("records/meds-sickbay");
     expect(screen.getByRole("heading", { level: 1, name: "Meds & Sickbay" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Vet Visits/ })).toHaveAttribute("href", "#records/meds-sickbay/vet-visits");
     expect(screen.getByRole("link", { name: /Vasectomies/ })).toHaveAttribute("href", "#records/meds-sickbay/vasectomies");
-    for (const soon of ["Microchips", "Medications", "Food Monitoring"]) {
+    expect(screen.getByRole("link", { name: /Microchips/ })).toHaveAttribute("href", "#records/meds-sickbay/microchips");
+    for (const soon of ["Medications", "Food Monitoring"]) {
         const card = screen.getByText(soon).closest(".RecordsPage-choice");
         expect(card.tagName).not.toBe("A");
         expect(card).toHaveTextContent("Coming soon…");

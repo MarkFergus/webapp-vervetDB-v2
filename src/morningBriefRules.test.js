@@ -58,7 +58,7 @@ describe("Morning Brief", () => {
         ]);
     });
 
-    test("Must See and Not Seen Last Session; muted monkeys left out", () => {
+    test("Must See; missed once only, and muted monkeys, left out", () => {
         const seen = (id, was) => ({ monkeyId: id, seen: was });
         const b = brief({
             monkeys: [monkey(1, "Malawi", "Gismo"), monkey(2, "Daisy", "Gismo"), monkey(3, "Quiet", "Gismo")],
@@ -73,9 +73,8 @@ describe("Morning Brief", () => {
         expect(group(b, "monitoring", "Must See")).toEqual([
             { text: `Malawi (Gismo): not seen in 2 sessions, last seen ${briefDay(daysAgo(5))}`, alert: true },
         ]);
-        expect(group(b, "monitoring", "Not Seen Last Session")).toEqual([
-            { text: `Daisy (Gismo): not seen in 1 session, last seen ${briefDay(daysAgo(3))}` },
-        ]);
+        expect(group(b, "monitoring", "Not Seen Last Session")).toEqual([]);
+        expect(JSON.stringify(b)).not.toContain("Daisy");
     });
 
     test("problems by issue, not in red: the latest sessions only, no waters; sessions left open before today", () => {
@@ -144,7 +143,7 @@ describe("Morning Brief", () => {
         expect(group(b, "deworming", "Awaiting Approval")).toEqual([{ text: "Dino & Daniel Troop 6-Month F/U" }]);
     });
 
-    test("Camelot's missing monkeys: apart at the bottom of Monitoring, listed by sessions missed, plain, and not in To Do", () => {
+    test("Camelot's missing monkeys: apart at the bottom of Monitoring, listed by sessions missed (more than once), plain, and not in Attention", () => {
         const seen = (id, was) => ({ monkeyId: id, seen: was });
         const b = brief({
             monkeys: [
@@ -166,14 +165,13 @@ describe("Morning Brief", () => {
         expect(monitoring.at(-1).title).toBe("Camelot: Not Seen");
         expect(monitoring.at(-1).lines).toEqual([
             { text: "Not seen in 2 sessions: Gawain, Merlin" },
-            { text: "Not seen in 1 session: Arthur" },
         ]);
         expect(group(b, "monitoring", "Must See").map((l) => l.text)[0]).toMatch(/^Malawi/);
         expect(group(b, "monitoring", "Must See")).toHaveLength(1);
         expect(group(b, "to_do", "Check On").map((l) => l.text).join()).not.toContain("Merlin");
     });
 
-    test("To Do first: who to check on, troops to monitor, deworming sheets to prepare", () => {
+    test("Attention first: who to check on, troops to monitor, deworming sheets to prepare", () => {
         const on = (n) => new Date(Date.UTC(2026, 10, 5 + n)).toISOString().slice(0, 10);
         const seen = (id, was) => ({ monkeyId: id, seen: was });
         const b = brief({
@@ -192,6 +190,7 @@ describe("Morning Brief", () => {
             ],
         });
         expect(b.sections[0].id).toBe("to_do");
+        expect(b.sections[0].title).toBe("Attention");
         expect(group(b, "to_do", "Check On")).toEqual([
             { text: `Malawi (Gismo): not seen in 2 sessions, last seen ${briefDay(daysAgo(5))} (5 days ago)`, toDo: true },
         ]);
@@ -202,7 +201,7 @@ describe("Morning Brief", () => {
         expect(group(b, "to_do", "Prep Deworming Sheets")).toEqual([
             { text: `Gismo Troop 3-Month: ${briefDay(on(2))} (in 2 days)`, toDo: true },
         ]);
-        expect(briefEmail(b).subject).toBe("vervetDB Morning Brief · Thu 5 Nov · 4 To Do");
+        expect(briefEmail(b).subject).toBe("vervetDB Morning Brief · Thu 5 Nov · 4 Need Attention");
         expect(briefEmail(b).html).toContain("color:#b26a00");
     });
 

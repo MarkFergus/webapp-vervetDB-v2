@@ -232,6 +232,7 @@
 }
 
 .Deworming-setAll select,
+.Deworming-setAll input,
 .Deworming-dose select,
 .Deworming-dose input {
     height: 36px;
@@ -246,6 +247,13 @@
 
 .Deworming-dose input {
     width: 130px;
+}
+
+/* (a typed dose, grams or ml: about as wide as the list it replaces) */
+.Deworming-setAll input.DoseAmount,
+.Deworming-dose input.DoseAmount {
+    box-sizing: border-box;
+    width: 88px;
 }
 
 .Deworming-count {
@@ -448,6 +456,11 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--pink);
+}
+
+/* The sheet's dewormer, once changed: crossed out, quieter */
+.Deworming-swapped {
+    color: var(--text-3);
 }
 
 .Deworming-results td.is-none {

@@ -29,7 +29,7 @@ import { deletePhotos } from "./photoUpload";
 import PhotosField from "./PhotosField";
 import AddChip from "./AddChip";
 import { useAuth } from "./auth";
-import { ARCHIVE_STATUSES, DETAILS_HINTS, MAX_STATUS_DETAILS, STATUS_WORDS, removeWarning } from "./monkeyStatus";
+import { ARCHIVE_STATUSES, DETAILS_HINTS, MAX_STATUS_DETAILS, STATUS_WORDS, isArchived, removeWarning } from "./monkeyStatus";
 import "./Modal.css"; // the Quick Actions form look (the new home)
 import "./MonkeyForm.css";
 import CloseButton from "./CloseButton";
@@ -75,6 +75,9 @@ function MonkeyForm({
     // the details)
     const [status, setStatus] = useState({ value: "sanctuary", date: "", lastSeen: "", details: "" });
     const showStatus = Boolean(onStatusUpdate) && !isNew && !quick && isAdmin;
+    // An archived monkey (the Monkey Archive, admins): their last home is
+    // kept as it was (no enclosure to choose, no Movement record)
+    const archived = !isNew && isArchived(monkey);
     const leaving = showStatus && status.value !== "sanctuary";
     // A new arrival always starts in a care unit (so its first location is
     // on record); it's moved to its long-term home afterwards, with Edit
@@ -275,7 +278,13 @@ function MonkeyForm({
 
     async function handleSave(event) {
         event.preventDefault();
-        const { errors: found, values } = checkForm(form, choices);
+        const { errors: found, values: checked } = checkForm(form, choices);
+        let values = checked;
+        if (archived) {
+            delete found.troop;
+            delete found.location;
+            values = { ...checked, troop: monkey.troop ?? null, introcage: monkey.introcage ?? null, introcageId: monkey.introcageId };
+        }
         // (a new status: its date and details, always: there's always context)
         if (leaving) {
             if (!status.date || status.date > todayText()) found.statusDate = "Please choose the date (not in the future).";
@@ -454,45 +463,47 @@ function MonkeyForm({
 
                         {/* Where it lives: its enclosure, then with the troop
                             or in one of that enclosure's introcages */}
-                        <div className="MonkeyForm-row">
-                            <label className="MonkeyForm-field">
-                                <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
-                                <select
-                                    value={form.troop}
-                                    onChange={chooseEnclosure}
-                                    aria-invalid={Boolean(errors.troop)}
-                                    aria-describedby={describedBy("troop")}
-                                >
-                                    <option value="">Choose…</option>
-                                    {choices.map((c) => (
-                                        <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
-                                    ))}
-                                </select>
-                                {errorFor("troop")}
-                            </label>
-                            <label className="MonkeyForm-field">
-                                <span>Home Location <em>(required)</em></span>
-                                <select
-                                    value={form.location}
-                                    onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
-                                    disabled={!choice}
-                                    aria-invalid={Boolean(errors.location)}
-                                    aria-describedby={describedBy("location")}
-                                >
-                                    {!choice && <option value="">Choose an enclosure first</option>}
-                                    {choice && form.location === "" && <option value="">Choose…</option>}
-                                    {choice && (
-                                        <>
-                                            {!choice.noTroop && <option value="troop">{fullName(choice.troop)} Troop</option>}
-                                            {choice.introcages.map((i) => (
-                                                <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
-                                            ))}
-                                        </>
-                                    )}
-                                </select>
-                                {errorFor("location")}
-                            </label>
-                        </div>
+                        {!archived && (
+                            <div className="MonkeyForm-row">
+                                <label className="MonkeyForm-field">
+                                    <span>{rescue ? "Care Unit" : "Enclosure"} <em>(required)</em></span>
+                                    <select
+                                        value={form.troop}
+                                        onChange={chooseEnclosure}
+                                        aria-invalid={Boolean(errors.troop)}
+                                        aria-describedby={describedBy("troop")}
+                                    >
+                                        <option value="">Choose…</option>
+                                        {choices.map((c) => (
+                                            <option key={c.key} value={c.key}>{fullName(c.enclosure)}</option>
+                                        ))}
+                                    </select>
+                                    {errorFor("troop")}
+                                </label>
+                                <label className="MonkeyForm-field">
+                                    <span>Home Location <em>(required)</em></span>
+                                    <select
+                                        value={form.location}
+                                        onChange={(event) => setForm(withPlace({ ...form, location: event.target.value }))}
+                                        disabled={!choice}
+                                        aria-invalid={Boolean(errors.location)}
+                                        aria-describedby={describedBy("location")}
+                                    >
+                                        {!choice && <option value="">Choose an enclosure first</option>}
+                                        {choice && form.location === "" && <option value="">Choose…</option>}
+                                        {choice && (
+                                            <>
+                                                {!choice.noTroop && <option value="troop">{fullName(choice.troop)} Troop</option>}
+                                                {choice.introcages.map((i) => (
+                                                    <option key={i.id} value={String(i.id)}>{fullName(i.name)}</option>
+                                                ))}
+                                            </>
+                                        )}
+                                    </select>
+                                    {errorFor("location")}
+                                </label>
+                            </div>
+                        )}
                         {rescue && (
                             <p className="MonkeyForm-hint">
                                 New arrivals start in a care unit. For adding sanctuary monkeys, select Other at the top.

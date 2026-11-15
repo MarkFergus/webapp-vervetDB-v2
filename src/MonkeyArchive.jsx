@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconMars, IconMinus, IconPlus, IconSearch, IconVenus } from "@tabler/icons-react";
 import { loadArchive } from "./monkeyData";
 import { summaryDate } from "./feeding";
@@ -18,7 +18,8 @@ const dayText = (date) => summaryDate(new Date(`${date}T00:00:00`));
 // The archive, loaded when it's first needed and kept while moving between
 // the list and a profile. list: null (loading), "failed", "not-ready" (the
 // database hasn't got it yet: monkey-archive.sql) or the monkeys.
-export function useArchive(enabled) {
+// version: goes up when an archived monkey's changed (their Edit): loaded again
+export function useArchive(enabled, version = 0) {
     const [list, setList] = useState(null);
     const reload = useCallback(async () => {
         try {
@@ -31,6 +32,13 @@ export function useArchive(enabled) {
     useEffect(() => {
         if (enabled && list === null) reload();
     }, [enabled, list, reload]);
+    // (kept on screen while it reloads)
+    const seen = useRef(version);
+    useEffect(() => {
+        if (seen.current === version) return;
+        seen.current = version;
+        if (enabled) reload();
+    }, [enabled, version, reload]);
     return { list, reload };
 }
 

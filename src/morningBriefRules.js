@@ -23,7 +23,7 @@ export const NOT_IN_CALENDAR_DAYS = 30;
 export const WEIGHT_DUE_DAYS = 7;
 
 // So large there are always some not seen: listed apart at the bottom of
-// Monitoring, not in To Do or in red, so they don't crowd out the others
+// Monitoring, not in Attention or in red, so they don't crowd out the others
 export const LARGE_TROOP = "Camelot";
 
 const SITE = "https://vervetdb.com/";
@@ -61,7 +61,6 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
     const checkOn = [];
     const monitor = [];
     const largeTroop = [];
-    const notSeen = [];
     const overdue = [];
     // (each problem from a troop's latest session → its troops)
     const problems = new Map();
@@ -77,7 +76,8 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
                 today,
             });
             const seen = lastSeen ? `last seen ${briefDay(lastSeen)}` : "not seen before";
-            if (missed > 0 && troop.name === LARGE_TROOP) {
+            // (missed once only: left out, as they're usually just out of sight)
+            if (missed > 1 && troop.name === LARGE_TROOP) {
                 largeTroop.push({ missed, name: m.name });
             } else if (missed >= MUST_SEE_AFTER) {
                 mustSee.push(line(`${m.name} (${name}): not seen in ${missed} sessions, ${seen}`, true));
@@ -85,8 +85,6 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
                     missed,
                     text: `${m.name} (${name}): not seen in ${missed} sessions, ${lastSeen ? `last seen ${briefDay(lastSeen)} (${plural(daysBetween(lastSeen, today), "day")} ago)` : "not seen before"}`,
                 });
-            } else if (missed > 0) {
-                notSeen.push(line(`${m.name} (${name}): not seen in 1 session, ${seen}`));
             }
         }
         const latest = history[0];
@@ -108,7 +106,6 @@ function monitoringPart({ monkeys, enclosures, sessions, spots, lastMoves, monit
         .map((s) => line(`${fullName(placeOf(s.enclosureId))}: session from ${briefDay(s.date)}`));
     const groups = [
         { title: "Must See", lines: mustSee },
-        { title: "Not Seen Last Session", lines: notSeen },
         { title: "Overdue", lines: overdue },
         {
             title: "Problems",
@@ -260,7 +257,7 @@ export function buildMorningBrief(data) {
     const deworming = dewormingPart(data);
     // (most urgent first)
     const todoLines = (texts) => texts.map((text) => ({ text, toDo: true }));
-    const toDo = section("to_do", "To Do", [
+    const toDo = section("to_do", "Attention", [
         {
             title: "Check On",
             lines: todoLines(monitoring.checkOn.sort((a, b) => b.missed - a.missed).map((c) => c.text)),
@@ -299,7 +296,7 @@ const esc = (text) =>
 export function briefEmail(brief) {
     const toDo = (brief.sections.find((s) => s.id === "to_do")?.groups ?? []).reduce((n, g) => n + g.lines.length, 0);
     const alerts = alertCount(brief.sections);
-    const headline = brief.allClear ? " · All clear" : toDo ? ` · ${toDo} To Do` : alerts ? ` · ${plural(alerts, "alert")}` : "";
+    const headline = brief.allClear ? " · All clear" : toDo ? ` · ${toDo} Need Attention` : alerts ? ` · ${plural(alerts, "alert")}` : "";
     let html = brief.allClear ? '<p style="margin:0 0 12px;font-weight:700;color:#1b7a3d">All clear ✓</p>' : "";
     let text = brief.allClear ? "All clear ✓\n\n" : "";
     for (const section of brief.sections) {

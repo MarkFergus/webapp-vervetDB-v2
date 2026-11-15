@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     IconAlertTriangle,
     IconBinoculars,
@@ -134,6 +134,20 @@ function AlertsCard({ monkeys, enclosures, sections, onSections, onOpenMonkey })
 
 // ---- My To-Do ----
 
+// Phones: typing opens the keyboard over the bottom half, hiding the list
+// under the box. So the card moves up to the top (under the page's bars) as
+// a box in it is tapped, and again once the keyboard is up.
+function useCardToTop() {
+    const ref = useRef(null);
+    const toTop = useCallback(() => {
+        if (!window.matchMedia?.("(max-width: 624px)").matches) return;
+        const go = () => ref.current?.scrollIntoView?.({ block: "start", behavior: "auto" });
+        go();
+        setTimeout(go, 350);
+    }, []);
+    return [ref, toTop];
+}
+
 function TodoCard({ todos, setTodos }) {
     const [text, setText] = useState("");
     const [dueOn, setDueOn] = useState("");
@@ -142,6 +156,7 @@ function TodoCard({ todos, setTodos }) {
     const [showDone, setShowDone] = useState(false);
     const today = dayText(new Date());
     const { open, done } = sortTodos(todos);
+    const [cardRef, toTop] = useCardToTop();
 
     async function run(fn) {
         setProblem(null);
@@ -194,7 +209,7 @@ function TodoCard({ todos, setTodos }) {
     };
 
     return (
-        <section className="Dashboard-card" aria-labelledby="Dashboard-todo">
+        <section className="Dashboard-card" aria-labelledby="Dashboard-todo" ref={cardRef}>
             <div className="Dashboard-head">
                 <h2 id="Dashboard-todo">
                     <IconListCheck size={20} aria-hidden="true" />
@@ -209,6 +224,7 @@ function TodoCard({ todos, setTodos }) {
                     maxLength={MAX_TODO}
                     placeholder="Something to do…"
                     aria-label="New to-do"
+                    onFocus={toTop}
                     onChange={(e) => setText(e.target.value)}
                 />
                 <input type="date" value={dueOn} min={today} aria-label="Due date (optional)" title="Due date (optional)" onChange={(e) => setDueOn(e.target.value)} />
@@ -250,6 +266,7 @@ function ChecklistCard({ every, items, setItems, ticks, setTicks }) {
     const doneCount = mine.filter(isTicked).length;
     const [editing, setEditing] = useState(false);
     const [text, setText] = useState("");
+    const [cardRef, toTop] = useCardToTop();
     const [problem, setProblem] = useState(null);
     const title = every === "week" ? "This Week" : "This Month";
     const when = every === "week" ? weekCommencing(period) : MONTHS[Number(period.slice(5, 7)) - 1];
@@ -287,7 +304,7 @@ function ChecklistCard({ every, items, setItems, ticks, setTicks }) {
         });
 
     return (
-        <section className="Dashboard-card" aria-labelledby={id}>
+        <section className="Dashboard-card" aria-labelledby={id} ref={cardRef}>
             <div className="Dashboard-head">
                 <h2 id={id}>
                     <Icon size={20} aria-hidden="true" />
@@ -341,6 +358,7 @@ function ChecklistCard({ every, items, setItems, ticks, setTicks }) {
                         maxLength={MAX_TODO}
                         placeholder={every === "week" ? "Something to do every week…" : "Something to do every month…"}
                         aria-label={`New ${every === "week" ? "weekly" : "monthly"} item`}
+                        onFocus={toTop}
                         onChange={(e) => setText(e.target.value)}
                     />
                     <button type="submit" className="Modal-edit is-confirm">

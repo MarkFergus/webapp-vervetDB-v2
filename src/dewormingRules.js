@@ -25,22 +25,54 @@ export const mainOf = (session) => session.replace(/_fu$/, "");
 
 // The dewormers: how many days each is given (once a day). Albendazole
 // and Pyrantel work as 1 or 3 days, Panacur needs all 3, Milbeworm is 1
-// day only. Others (e.g. Milbemax) are typed in, with their days chosen.
+// day only, Ivermectin one dose. Others (e.g. Milbemax) are typed in, with
+// their days chosen.
 // dose: each one's usual dose, filled in when it's chosen (changed for a
 // youngster's half dose)
 export const DEWORMERS = [
     { name: "Albendazole", days: 3, dose: "1/4 tab" },
     { name: "Panacur", days: 3, dose: "1/2 tsp" },
     { name: "Milbeworm", days: 1, dose: "1/2 tab" },
-    { name: "Pyrantel", days: 3, dose: "1/16 tsp" },
+    { name: "Pyrantel", days: 3, dose: "0.3 ml" },
+    { name: "Ivermectin", days: 1, dose: "0.1 g" },
 ];
 export const daysFor = (medication) => DEWORMERS.find((d) => d.name === medication)?.days ?? null;
 export const usualDose = (medication) => DEWORMERS.find((d) => d.name === medication)?.dose ?? null;
 
-// Doses: an amount and a unit, saved as "1/4 tab"
+// Doses: an amount and a unit, saved as "1/4 tab" or "0.1 g". Tabs and
+// teaspoons: chosen from a list; grams (to 1 decimal place) and ml (to 2):
+// typed in
+export const UNITS = ["tab", "tsp", "ml", "g"];
+export const AMOUNTS_FOR = { tab: ["1/4", "1/2", "3/4", "1"], tsp: ["1/8", "1/4", "1/2"] };
+// (every amount ever listed: older records and sheets have them)
 export const AMOUNTS = ["1/16", "1/8", "1/4", "1/2", "3/4", "1", "1 1/4", "1 1/2", "1 3/4", "2"];
-export const UNITS = ["tab", "tsp", "ml"];
-export const doseText = (amount, unit) => `${amount} ${unit}`;
+export const DECIMALS_FOR = { g: 1, ml: 2 };
+export const typedUnit = (unit) => unit in DECIMALS_FOR;
+// A unit's choices; one already chosen that isn't listed (e.g. Pyrantel's
+// 1/16 tsp, or an older 1 1/2 tab) is kept in, so it isn't lost
+export function amountsFor(unit, current = "") {
+    const list = AMOUNTS_FOR[unit] ?? [];
+    if (!current || list.includes(current)) return list;
+    // (in size order)
+    const rank = (a) => (AMOUNTS.includes(a) ? AMOUNTS.indexOf(a) : AMOUNTS.length);
+    return [...list, current].sort((x, y) => rank(x) - rank(y));
+}
+// A typed amount, tidied to its unit's decimal places: "0.10" → "0.1"; ""
+// if it isn't a number above 0
+export function tidyAmount(unit, text) {
+    if (!typedUnit(unit)) return text;
+    const n = Number(String(text).trim());
+    if (!Number.isFinite(n) || n <= 0 || String(text).trim() === "") return "";
+    const scale = 10 ** DECIMALS_FOR[unit];
+    const rounded = Math.round((n + Number.EPSILON) * scale) / scale;
+    return rounded > 0 ? String(rounded) : "";
+}
+// A new unit: the amount stays if it still fits, else starts empty
+export function amountForUnit(amount, unit) {
+    if (typedUnit(unit)) return /^\d*\.?\d+$/.test(amount ?? "") ? amount : "";
+    return (AMOUNTS_FOR[unit] ?? []).includes(amount) ? amount : "";
+}
+export const doseText = (amount, unit) => `${tidyAmount(unit, amount)} ${unit}`;
 // "1 1/2 tab" → { amount: "1 1/2", unit: "tab" }
 export function splitDose(dose) {
     const match = /^(.*) (\S+)$/.exec(dose ?? "");
@@ -67,10 +99,10 @@ export function dewormingRecordText({ type, dose, medication, days, notes = "" }
 // null if it isn't worded so (a sheet's with partial doses, a custom list's,
 // or one typed in before): edited as plain words
 export function parseDewormingRecord(text) {
-    const match = /^(.+?) - (.+?) (tab|tsp|ml) (.+?), (one dose only|once a day for 3 days)(?:\. ([\s\S]*))?$/.exec(text ?? "");
+    const match = /^(.+?) - (.+?) (tab|tsp|ml|g) (.+?), (one dose only|once a day for 3 days)(?:\. ([\s\S]*))?$/.exec(text ?? "");
     if (!match) return null;
     const [, type, amount, unit, medication, given, notes = ""] = match;
-    if (!DEWORMING_TYPES.includes(type) || !AMOUNTS.includes(amount)) return null;
+    if (!DEWORMING_TYPES.includes(type) || !(AMOUNTS.includes(amount) || /^\d*\.?\d+$/.test(amount))) return null;
     return { type, amount, unit, medication, days: given === GIVEN_WORDS[1] ? 1 : 3, notes };
 }
 
@@ -314,9 +346,25 @@ export function givenOn(line, day) {
     return given;
 }
 
+// Each change of dewormer, in day order: [{ day, medication, dose }] (none:
+// [])
+export function swapsOf(line) {
+    const swaps = [];
+    let given = { medication: line.medication, dose: line.dose };
+    for (const day of Object.keys(line.doses ?? {}).map(Number).sort((x, y) => x - y)) {
+        const dose = doseOf(line, day);
+        if (!dose?.medication) continue;
+        const next = { medication: dose.medication, dose: dose.dose ?? given.dose };
+        if (next.medication !== given.medication || next.dose !== given.dose) swaps.push({ day, ...next });
+        given = next;
+    }
+    return swaps;
+}
+
 // How many days a dewormer is given (one typed in when changing: 3)
 const daysNeeded = (line, medication) => (medication === line.medication ? line.days : (daysFor(medication) ?? 3));
-// Albendazole and Pyrantel work as 1 or 3 days (2 is pointless)
+// Albendazole and Pyrantel work as 1 or 3 days (2 is pointless): a missed
+// or skipped day after a full dose finishes the course
 const ONE_OR_THREE = ["Albendazole", "Pyrantel"];
 
 // The full doses of the same dewormer in a row, up to (not including) a day
@@ -345,11 +393,9 @@ export function dayAdvice(line, day) {
                 warn: true,
             };
         }
+        // (1 or 3 days: after any full dose, a missed or skipped day ends it)
         if (ONE_OR_THREE.includes(medication)) {
-            const before = runBefore(line, missed, medication);
-            return before >= 2
-                ? { text: `Missed Day ${missed} after 2 doses: switch to Milbeworm, or finish here?`, warn: true }
-                : { text: `Finished course as missed dose on Day ${missed}`, done: true, missed };
+            return { text: `Finished course as missed dose on Day ${missed}`, done: true, missed };
         }
     }
     return null;

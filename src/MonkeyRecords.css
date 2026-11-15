@@ -226,3 +226,8 @@
         grid-row: 1;
     }
 }
+
+/* A typed dose (grams, ml): as tall as the lists beside it */
+.Records-form input.DoseAmount {
+    height: 38px;
+}

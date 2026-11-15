@@ -66,8 +66,8 @@ import "./RecordsPage.css";
 // Sections: Monitoring, each troop's sessions (MonitoringRecordsPage.jsx),
 // Injuries, each troop's current and past ones (SectionsRecordsPage.jsx), and
 // Deworming, the deworming sheets (DewormingRecordsPage.jsx);
-// entering: editors and admins. Meds & Sickbay: Vet Visits and Vasectomies
-// (MedsRecordsPage.jsx; entering: editors and admins); Microchips,
+// entering: editors and admins. Meds & Sickbay: Vet Visits, Vasectomies and
+// Microchips (MedsRecordsPage.jsx; entering: editors and admins);
 // Medications and Food Monitoring coming soon.
 //   route: "records", "records/baby-care", "records/baby-care/milk"…
 
@@ -750,6 +750,7 @@ function RecordsPage({
     staff = null,
     inert = false,
     onEnclosureSaved = () => {},
+    onChipChanged = () => {},
 }) {
     const { team, kind } = parseRecordsRoute(route);
     // A part's own title and way back, while something in it is open (in
@@ -822,7 +823,7 @@ function RecordsPage({
             ) : (
                 // (Integration's: its own page)
                 team.id === "meds-sickbay" ? (
-                    <MedsRecordsPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} staff={staff} />
+                    <MedsRecordsPage key={kind.id} kind={kind} monkeys={monkeys} enclosures={enclosures} canEnter={canEnter} staff={staff} onChipChanged={onChipChanged} />
                 ) : team.id === "integration" ? (
                     <IntegrationRecordsPage key={kind.id} kind={kind} monkeys={monkeys} canEnter={canEnter} />
                 ) : team.id === "sections" ? (

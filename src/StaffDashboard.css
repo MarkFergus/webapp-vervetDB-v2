@@ -54,6 +54,7 @@
 
 .Dashboard-card {
     min-width: 0;
+    scroll-margin-top: calc(var(--nav-height) + 12px);
     padding: 14px 16px;
     background-color: var(--surface-1);
     border: 1px solid var(--line);
@@ -350,4 +351,12 @@
 .Dashboard-doneRow .Modal-edit {
     height: 36px;
     padding: 0 14px;
+}
+
+/* Phones, while typing in a box: room under the page, so even the last card
+   can move up to the top of the screen (the keyboard covers this) */
+@media (max-width: 624px) {
+    .Dashboard:has(.Dashboard-add input[type="text"]:focus) {
+        padding-bottom: 60vh;
+    }
 }

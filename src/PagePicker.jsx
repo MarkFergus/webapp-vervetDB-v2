@@ -27,7 +27,8 @@ export function Crumbs({ crumbs }) {
 
 // One of the big rows: an icon, the title and a line under it
 // (no href: not open yet, e.g. a team coming soon)
-export function Choice({ href, Icon, title, sub }) {
+// tag: a small note beside the title ("In Progress")
+export function Choice({ href, Icon, title, sub, tag = null }) {
     if (!href) {
         return (
             <li>
@@ -50,7 +51,10 @@ export function Choice({ href, Icon, title, sub }) {
                     <Icon size={24} stroke={1.75} aria-hidden="true" />
                 </span>
                 <span className="RecordsPage-choiceText">
-                    <span className="RecordsPage-choiceTitle">{title}</span>
+                    <span className="RecordsPage-choiceTitle">
+                        {title}
+                        {tag && <span className="RecordsPage-choiceTag">{tag}</span>}
+                    </span>
                     {sub && <span className="RecordsPage-choiceSub">{sub}</span>}
                 </span>
                 <IconChevronRight size={20} aria-hidden="true" className="RecordsPage-choiceArrow" />

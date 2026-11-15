@@ -1,3 +1,4 @@
+import DoseAmount from "./DoseAmount";
 import { fieldStaff } from "./outbox";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -22,7 +23,7 @@ import { expectedSession, relativeDay, scheduleBuckets, scheduleOf } from "./dew
 import { timeAgo } from "./savedData";
 import { summaryDate } from "./feeding";
 import {
-    AMOUNTS,
+    amountForUnit,
     DEFAULT_INSTRUCTIONS,
     DEWORMERS,
     SESSIONS,
@@ -402,22 +403,11 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
                         </option>
                     ))}
                 </select>
-                <select
-                    aria-label="Amount for all"
-                    value={all.amount}
-                    onChange={(e) => setAll({ ...all, amount: e.target.value })}
-                >
-                    <option value="">Dose…</option>
-                    {AMOUNTS.map((a) => (
-                        <option key={a} value={a}>
-                            {a}
-                        </option>
-                    ))}
-                </select>
+                <DoseAmount label="Amount for all" unit={all.unit} amount={all.amount} onChange={(amount) => setAll({ ...all, amount })} />
                 <select
                     aria-label="Unit for all"
                     value={all.unit}
-                    onChange={(e) => setAll({ ...all, unit: e.target.value })}
+                    onChange={(e) => setAll({ ...all, unit: e.target.value, amount: amountForUnit(all.amount, e.target.value) })}
                 >
                     {UNITS.map((u) => (
                         <option key={u} value={u}>
@@ -534,22 +524,11 @@ function PrepareSheet({ groups, sheets, monkeys, editing, custom = false, onSave
                                             </select>
                                         </>
                                     )}
-                                    <select
-                                        aria-label={`Dose for ${name}`}
-                                        value={line.amount}
-                                        onChange={(e) => change(id, { amount: e.target.value })}
-                                    >
-                                        <option value="">Dose…</option>
-                                        {AMOUNTS.map((a) => (
-                                            <option key={a} value={a}>
-                                                {a}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <DoseAmount label={`Dose for ${name}`} unit={line.unit} amount={line.amount} onChange={(amount) => change(id, { amount })} />
                                     <select
                                         aria-label={`Unit for ${name}`}
                                         value={line.unit}
-                                        onChange={(e) => change(id, { unit: e.target.value })}
+                                        onChange={(e) => change(id, { unit: e.target.value, amount: amountForUnit(line.amount, e.target.value) })}
                                     >
                                         {UNITS.map((u) => (
                                             <option key={u} value={u}>

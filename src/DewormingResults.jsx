@@ -1,3 +1,4 @@
+import DoseAmount from "./DoseAmount";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
     IconCamera,
@@ -25,7 +26,7 @@ import {
 import {
     SESSIONS,
     sheetTitle,
-    AMOUNTS,
+    amountForUnit,
     DAYS,
     DEWORMERS,
     FOODS,
@@ -38,6 +39,7 @@ import {
     doseNumber,
     doseText,
     givenOn,
+    swapsOf,
     lateStart,
     nameList,
     needsDay4,
@@ -119,6 +121,15 @@ function cellResult(dose) {
               : `${dose.result}${dose.food ? ` ${dose.food}` : ""}`;
 }
 
+// A day with nothing entered that isn't needed: after Day 1 of a one-dose
+// dewormer, or once the course has finished (a missed day finishing it
+// only once that day's been entered, not while it's still to come)
+function notNeeded(line, day) {
+    if (line.days === 1 && day > 1) return true;
+    const advice = dayAdvice(line, day);
+    return Boolean(advice?.done && (!advice.missed || line.doses?.[advice.missed]?.result));
+}
+
 export function ResultsTable({ lines }) {
     const days = shownDays(lines);
     return (
@@ -152,12 +163,28 @@ export function ResultsTable({ lines }) {
                                         className={dose?.result ? `is-${dose.result.replace("/", "-")}` : undefined}
                                         title={dose?.note ?? undefined}
                                     >
-                                        {l.days === 1 && d > 1 && !dose ? "N/A" : cellText(dose)}
+                                        {!dose && notNeeded(l, d) ? "N/A" : cellText(dose)}
                                     </td>
                                 );
                             })}
                             <td>
-                                {l.dose} {l.medication}
+                                {/* (changed partway: crossed out, what was given instead under it,
+                                    as in the day's cell) */}
+                                {swapsOf(l).length ? (
+                                    <s className="Deworming-swapped">
+                                        {l.dose} {l.medication}
+                                    </s>
+                                ) : (
+                                    <>
+                                        {l.dose} {l.medication}
+                                    </>
+                                )}
+                                {swapsOf(l).map((sw) => (
+                                    <span key={sw.day} className="Deworming-changed">
+                                        <IconSwitchHorizontal size={14} aria-label="Changed to" />
+                                        {sw.dose} {sw.medication}
+                                    </span>
+                                ))}
                             </td>
                         </tr>
                     ))}
@@ -299,21 +326,11 @@ function ChangeDewormer({ line, day, given, current, onSave, onClose }) {
                             onChange={(e) => setOther(e.target.value)}
                         />
                     )}
-                    <select
-                        aria-label="New dose"
-                        value={dose.amount}
-                        onChange={(e) => setDose({ ...dose, amount: e.target.value })}
-                    >
-                        {AMOUNTS.map((a) => (
-                            <option key={a} value={a}>
-                                {a}
-                            </option>
-                        ))}
-                    </select>
+                    <DoseAmount label="New dose" unit={dose.unit} amount={dose.amount} onChange={(amount) => setDose({ ...dose, amount })} empty={null} />
                     <select
                         aria-label="New unit"
                         value={dose.unit}
-                        onChange={(e) => setDose({ ...dose, unit: e.target.value })}
+                        onChange={(e) => setDose({ unit: e.target.value, amount: amountForUnit(dose.amount, e.target.value) })}
                     >
                         {UNITS.map((u) => (
                             <option key={u} value={u}>
@@ -689,26 +706,20 @@ function AddMonkey({ sheet, day, monkeys, onClose, onAdded }) {
                             onChange={(e) => setOther(e.target.value)}
                         />
                     )}
-                    <select
-                        aria-label="Dose"
-                        value={dose.amount}
-                        onChange={(e) => {
-                            setDose({ ...dose, amount: e.target.value });
+                    <DoseAmount
+                        label="Dose"
+                        unit={dose.unit}
+                        amount={dose.amount}
+                        onChange={(amount) => {
+                            setDose({ ...dose, amount });
                             setChecking(false);
                         }}
-                    >
-                        <option value="">Dose…</option>
-                        {AMOUNTS.map((a) => (
-                            <option key={a} value={a}>
-                                {a}
-                            </option>
-                        ))}
-                    </select>
+                    />
                     <select
                         aria-label="Unit"
                         value={dose.unit}
                         onChange={(e) => {
-                            setDose({ ...dose, unit: e.target.value });
+                            setDose({ unit: e.target.value, amount: amountForUnit(dose.amount, e.target.value) });
                             setChecking(false);
                         }}
                     >

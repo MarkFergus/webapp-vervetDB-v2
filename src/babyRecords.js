@@ -87,7 +87,11 @@ export const RECORD_KINDS = {
         title: "Vasectomies",
         hint: "Record a vasectomy, and check each year's boys.",
     },
-    microchips: { id: "microchips", title: "Microchips", soon: true },
+    microchips: {
+        id: "microchips",
+        title: "Microchips",
+        hint: "Record a microchip, and see every monkey's chip by troop.",
+    },
     medications: { id: "medications", title: "Medications", soon: true },
     "food-monitoring": { id: "food-monitoring", title: "Food Monitoring", soon: true },
 };

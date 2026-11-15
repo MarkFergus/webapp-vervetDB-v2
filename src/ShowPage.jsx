@@ -10,7 +10,7 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import { BUILT_IN_DATA, loadCurrentInjuries, loadMonitoringFor, saveRelease, saveStatus, saveWhereabouts, troopHome } from "./monkeyData";
-import { archivePageHash } from "./monkeyStatus";
+import { ARCHIVE_ROUTE, archivePageHash, isArchived } from "./monkeyStatus";
 import { OpenMonkeyContext } from "./openMonkey";
 import { monitoringNotes } from "./monitoringNotes";
 import MonkeyCard from "./MonkeyCard";
@@ -274,6 +274,11 @@ function ShowPage({
     const [editing, setEditing] = useState(null);
     // Goes up with each new chip, so an open Full Profile lists its new record
     const [chipRecords, setChipRecords] = useState(0);
+    // Goes up with each change to an archived monkey (its Edit, admins), so
+    // the Monkey Archive reloads it. (Archived monkeys aren't in the app's
+    // list, so a save never goes there)
+    const [archiveVersion, setArchiveVersion] = useState(0);
+    const editingArchived = isArchived(editing?.monkey);
     // Add Photos (staff): null when closed, else { files, current, place }
     // (see QuickPhotos). The photo picker is here, always on the page, so
     // the chosen photos arrive even after the menu that opened it has gone.
@@ -582,6 +587,12 @@ function ShowPage({
     }
     // Saved: update the list, then show the monkey (with its new details)
     function handleSaved(saved) {
+        // An archived monkey: their page in the archive shows the change
+        if (editingArchived) {
+            setEditing(null);
+            setArchiveVersion((n) => n + 1);
+            return;
+        }
         onMonkeySaved(saved);
         setEditing(null);
         // On its page: stay there (a new name: a new address)
@@ -595,7 +606,8 @@ function ShowPage({
     // A new chip (Edit's + or a Microchip record): saved straight away, so the
     // list and its Medical records catch up, whatever Edit does next
     function handleChipChanged(monkey, chip) {
-        onMonkeySaved({ ...monkey, chip });
+        if (isArchived(monkey)) setArchiveVersion((n) => n + 1);
+        else onMonkeySaved({ ...monkey, chip });
         setEditing((open) => open && (open.monkey?.id === monkey.id ? { ...open, monkey: { ...open.monkey, chip } } : open));
         setChipRecords((n) => n + 1);
     }
@@ -633,8 +645,11 @@ function ShowPage({
     }
     function handleDeleted(id) {
         onMonkeyDeleted(id);
-        // (its page has gone too: back to the list)
-        if (onMonkeyPage) window.location.hash = "";
+        // (its page has gone too: back to the list, or the Monkey Archive)
+        if (editingArchived) {
+            setArchiveVersion((n) => n + 1);
+            window.location.hash = `#${ARCHIVE_ROUTE}`;
+        } else if (onMonkeyPage) window.location.hash = "";
         setEditing(null);
         setSelectedMonkey(null);
     }
@@ -1054,6 +1069,7 @@ function ShowPage({
                             canEnter={canEdit}
                             canEnterBaby={canEdit || (isEditor && fieldWork)}
                             onEnclosureSaved={onEnclosureSaved}
+                            onChipChanged={handleChipChanged}
                             maintenance={{
                                 // (reports carry on with no signal; nothing's changed)
                                 live: enclosureEditing.live || (fieldWork && Boolean(role)),
@@ -1070,7 +1086,17 @@ function ShowPage({
                 // (nothing while checking who's signed in, or leaving)
                 adminLocked ? null : (
                     <Suspense fallback={<p className="ShowPage-loading">Loading…</p>}>
-                        <AdminPage route={route} staff={staff} onRestored={handleRestored} inert={isAnyModalOpen} places={recordPlaces} />
+                        <AdminPage
+                            route={route}
+                            staff={staff}
+                            onRestored={handleRestored}
+                            inert={isAnyModalOpen}
+                            places={recordPlaces}
+                            // (an archived monkey's Full Profile Edit, as for any monkey's)
+                            onEdit={canEdit && isAdmin ? startEdit : undefined}
+                            archiveVersion={archiveVersion}
+                            onChipChanged={handleChipChanged}
+                        />
                     </Suspense>
                 )
             ) : onMonkeyPage ? (
@@ -1369,7 +1395,8 @@ function ShowPage({
                     // the Full Profile's Edit (not Quick Actions: too important,
                     // and rare); the monkey goes to the Monkey Archive
                     onStatusUpdate={
-                        isAdmin && editing.monkey?.status !== undefined
+                        // (an archived monkey: their page's own Status Update)
+                        isAdmin && editing.monkey?.status !== undefined && !editingArchived
                             ? async (monkey, values) => {
                                   await handleStatusUpdate(monkey, values);
                                   setEditing(null);

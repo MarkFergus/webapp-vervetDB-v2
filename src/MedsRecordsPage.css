@@ -272,3 +272,57 @@
         padding: 0 10px;
     }
 }
+
+/* ---- Microchips ---- */
+
+/* (Save's "Add another?" bubble sits above it) */
+.Meds-ask {
+    position: relative;
+    display: inline-flex;
+}
+
+/* By Troop: each monkey and their chip, two columns on wider screens */
+.Meds-chips {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+@media (min-width: 625px) {
+    .Meds-chips {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.Meds-chip {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+}
+
+.Meds-chipName {
+    min-width: 0;
+    font-weight: 600;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.Meds-chipNumber {
+    flex-shrink: 0;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.Meds-noChip {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--amber-text);
+}

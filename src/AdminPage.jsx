@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArchive, IconCheck, IconFileText, IconHistory, IconMail, IconMinus, IconPlaneArrival, IconUsers } from "@tabler/icons-react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { IconArchive, IconCheck, IconFileText, IconHistory, IconMail, IconMinus, IconPlaneArrival, IconPresentation, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "./auth";
 import { loadStaff, saveStaffRole, saveStatus } from "./monkeyData";
 import { Choice, Crumbs } from "./PagePicker";
@@ -9,6 +9,8 @@ import StaffActivity from "./StaffActivity";
 import MorningBrief from "./MorningBrief";
 import WeeklyReports from "./WeeklyReports";
 import MonkeyIntake from "./MonkeyIntake";
+// (only loaded when it's opened)
+const YearEndPresentation = lazy(() => import("./YearEndPresentation"));
 import { ARCHIVE_ROUTE, STATUS_WORDS, archiveIdFromRoute } from "./monkeyStatus";
 import "./ConfirmBubble.css";
 import "./AdminPage.css";
@@ -31,6 +33,9 @@ import "./AdminPage.css";
 //   Monkey Intake (#admin/intake)   a year's arrivals, releases, deaths,
 //                                   escaped and missing (MonkeyIntake.jsx),
 //                                   as Excel or PDF
+//   Year End Presentation           a year's look back for staff and
+//     (#admin/year-end)             volunteers, made from the records
+//                                   (YearEndPresentation.jsx): Present, PDF
 //   Weekly Reports (#admin/reports) your own weekly report email: on or off,
 //                                   when, and what's in it (WeeklyReports.jsx)
 
@@ -67,7 +72,7 @@ export const ACCESS = [
     { what: "Change or delete anyone's records", who: ["admin"] },
     { what: "Status Update and the Monkey Archive", who: ["admin"] },
     { what: "Prepare deworming lists", who: ["admin"] },
-    { what: "Admin Dashboard: user types, Staff Activity, Monkey Intake and Weekly Reports", who: ["admin"] },
+    { what: "Admin Dashboard: user types, Staff Activity, Monkey Intake, Year End Presentation and Weekly Reports", who: ["admin"] },
 ];
 
 function AccessTable() {
@@ -236,6 +241,7 @@ const PARTS = [
     { id: "intake", title: "Monkey Intake", sub: "A year's arrivals, releases, deaths, escapes and missing monkeys, to download", Icon: IconPlaneArrival },
     { id: "reports", title: "Weekly Reports", sub: "Your weekly report email: when it comes and what's in it", Icon: IconMail },
     { id: "brief", title: "Morning Brief", sub: "Today's brief: what needs doing, as the 06:50 email has it", Icon: IconFileText },
+    { id: "year-end", title: "Year End Presentation", sub: "A look back at the year for staff and volunteers, to present or download", Icon: IconPresentation, tag: "In Progress" },
 ];
 
 // "admin" → no part (the choices); "admin/staff"; "admin/archive" and an
@@ -266,7 +272,7 @@ function StaffAccess() {
 
 // An archived monkey's Full Profile, with Status Update: any other status,
 // or back to the sanctuary (then it's in the list again: onRestored)
-function ArchivedMonkey({ archive, id, staff, onRestored, inert, places }) {
+function ArchivedMonkey({ archive, id, staff, onRestored, inert, places, onEdit, onChipChanged }) {
     const back = { href: `#${ARCHIVE_ROUTE}`, label: "Monkey Archive" };
     if (archive.list === null) return <p className="Admin-note">Loading…</p>;
     const monkey = Array.isArray(archive.list) ? (archive.list.find((m) => m.id === id) ?? null) : null;
@@ -281,7 +287,8 @@ function ArchivedMonkey({ archive, id, staff, onRestored, inert, places }) {
             inert={inert}
             statusChoices={choices}
             places={places}
-            onChipChanged={() => archive.reload()}
+            onEdit={onEdit}
+            onChipChanged={(m, chip) => (onChipChanged ? onChipChanged(m, chip) : archive.reload())}
             onStatusUpdate={async (m, values) => {
                 const restored = await saveStatus(m.id, values);
                 await archive.reload();
@@ -294,12 +301,25 @@ function ArchivedMonkey({ archive, id, staff, onRestored, inert, places }) {
 // route: "admin", "admin/staff", "admin/archive"…
 // staff: as MonkeyPage's (for an archived monkey's records)
 // onRestored(monkey): one restored to the sanctuary
-function AdminPage({ route = "admin", staff = null, onRestored, inert = false, places = [] }) {
+// onEdit(monkey): an archived monkey's Full Profile Edit (ShowPage's form);
+// archiveVersion goes up when one's saved, so the archive reloads
+function AdminPage({ route = "admin", staff = null, onRestored, inert = false, places = [], onEdit, archiveVersion = 0, onChipChanged }) {
     const { part, archiveId } = parseAdminRoute(route);
-    const archive = useArchive(part?.id === "archive");
+    const archive = useArchive(part?.id === "archive", archiveVersion);
     // An archived monkey's page: its Full Profile, as for any monkey
     if (archiveId !== null) {
-        return <ArchivedMonkey archive={archive} id={archiveId} staff={staff} onRestored={onRestored} inert={inert} places={places} />;
+        return (
+            <ArchivedMonkey
+                archive={archive}
+                id={archiveId}
+                staff={staff}
+                onRestored={onRestored}
+                inert={inert}
+                places={places}
+                onEdit={onEdit}
+                onChipChanged={onChipChanged}
+            />
+        );
     }
     const crumbs = [{ href: "#admin", label: "Admin Dashboard" }, ...(part ? [{ label: part.title }] : [])];
     return (
@@ -311,7 +331,7 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false, p
                     <p className="Admin-intro">For admins only.</p>
                     <ul className="RecordsPage-choices">
                         {PARTS.map((p) => (
-                            <Choice key={p.id} href={`#admin/${p.id}`} Icon={p.Icon} title={p.title} sub={p.sub} />
+                            <Choice key={p.id} href={`#admin/${p.id}`} Icon={p.Icon} title={p.title} sub={p.sub} tag={p.tag} />
                         ))}
                     </ul>
                 </>
@@ -331,6 +351,13 @@ function AdminPage({ route = "admin", staff = null, onRestored, inert = false, p
                 <>
                     <p className="Admin-intro">Arrivals, releases, deaths, and escaped or missing monkeys, by year.</p>
                     <MonkeyIntake />
+                </>
+            ) : part.id === "year-end" ? (
+                <>
+                    <p className="Admin-intro">The year&apos;s arrivals, babies, integrations, releases and vet work, with a few fun facts.</p>
+                    <Suspense fallback={<p className="Admin-note">Loading…</p>}>
+                        <YearEndPresentation />
+                    </Suspense>
                 </>
             ) : part.id === "reports" ? (
                 <>

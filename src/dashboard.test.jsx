@@ -111,6 +111,32 @@ describe("the page", () => {
         expect(setTicked).toHaveBeenCalledWith(5, expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), true);
     });
 
+    test("phones: tapping a box moves its card to the top, so the list under it isn't behind the keyboard", async () => {
+        const user = userEvent.setup();
+        vi.spyOn(data, "loadDashboard").mockResolvedValue({ todos: [], items: [], ticks: [], sections: [] });
+        const matchMedia = window.matchMedia;
+        window.matchMedia = (query) => ({ matches: query.includes("max-width"), media: query, addEventListener() {}, removeEventListener() {} });
+        const scrolled = [];
+        const scrollIntoView = Element.prototype.scrollIntoView;
+        Element.prototype.scrollIntoView = function (options) {
+            scrolled.push([this, options]);
+        };
+        try {
+            render(<StaffDashboard monkeys={MONKEYS} enclosures={ENCLOSURES} />);
+            await user.click(await screen.findByLabelText("New to-do"));
+            const card = screen.getByRole("region", { name: /My To-Do/ });
+            expect(scrolled).toContainEqual([card, { block: "start", behavior: "auto" }]);
+
+            const week = screen.getByRole("region", { name: /This Week/ });
+            await user.click(within(week).getByRole("button", { name: "Edit This Week" }));
+            await user.click(within(week).getByLabelText("New weekly item"));
+            expect(scrolled.some(([el]) => el === week)).toBe(true);
+        } finally {
+            window.matchMedia = matchMedia;
+            Element.prototype.scrollIntoView = scrollIntoView;
+        }
+    });
+
     test("before the SQL's been run: says so", async () => {
         vi.spyOn(data, "loadDashboard").mockRejectedValue(Object.assign(new Error("My Dashboard needs supabase/staff-dashboard.sql to be run first."), { notReady: true }));
         render(<StaffDashboard monkeys={MONKEYS} enclosures={ENCLOSURES} />);

@@ -1,3 +1,4 @@
+import DoseAmount from "./DoseAmount";
 import { useCallback, useEffect, useState } from "react";
 import { IconChevronDown, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import ConfirmBubble from "./ConfirmBubble";
@@ -12,7 +13,7 @@ import { MAX_CHIP_NOTE, chipNumberProblem, microchipText, parseMicrochip } from 
 import useScrollIntoView from "./useScrollIntoView";
 import { MAX_OTHER_VET, MAX_VET_DETAILS, VASECTOMY_VETS, VET_PRACTICES, VET_REASONS } from "./medsRules";
 import {
-    AMOUNTS,
+    amountForUnit,
     DEWORMERS,
     DEWORMING_TYPES,
     UNITS,
@@ -697,20 +698,20 @@ function RecordForm({ section, initial, places = [], elsewhere = [], locked = fa
                     <div className="Integration-dates">
                         <label>
                             <span>Dose</span>
-                            <select value={values.wormAmount} onChange={set("wormAmount")}>
-                                <option value="" disabled>
-                                    Choose…
-                                </option>
-                                {AMOUNTS.map((a) => (
-                                    <option key={a} value={a}>
-                                        {a}
-                                    </option>
-                                ))}
-                            </select>
+                            <DoseAmount
+                                unit={values.wormUnit}
+                                amount={values.wormAmount}
+                                onChange={(wormAmount) => setValues({ ...values, wormAmount })}
+                                empty="Choose…"
+                                emptyDisabled
+                            />
                         </label>
                         <label>
                             <span>Unit</span>
-                            <select value={values.wormUnit} onChange={set("wormUnit")}>
+                            <select
+                                value={values.wormUnit}
+                                onChange={(e) => setValues({ ...values, wormUnit: e.target.value, wormAmount: amountForUnit(values.wormAmount, e.target.value) })}
+                            >
                                 {UNITS.map((u) => (
                                     <option key={u} value={u}>
                                         {u}

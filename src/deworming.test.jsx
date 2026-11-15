@@ -493,8 +493,8 @@ describe("the page", () => {
         expect(form.getByLabelText("Dose for Meggy")).toHaveDisplayValue("1/2");
         expect(form.getByLabelText("Unit for Meggy")).toHaveDisplayValue("tab");
         await user.selectOptions(form.getByLabelText("Dewormer for Ash"), "Pyrantel");
-        expect(form.getByLabelText("Dose for Ash")).toHaveDisplayValue("1/16");
-        expect(form.getByLabelText("Unit for Ash")).toHaveDisplayValue("tsp");
+        expect(form.getByLabelText("Dose for Ash")).toHaveValue(0.3);
+        expect(form.getByLabelText("Unit for Ash")).toHaveDisplayValue("ml");
         await user.selectOptions(form.getByLabelText("Dewormer for Ash"), "Albendazole");
         await user.selectOptions(form.getByLabelText("Dewormer for Oldie"), "Other…");
         await user.type(form.getByLabelText("Other dewormer for Oldie"), "Milbemax");
@@ -579,11 +579,11 @@ describe("the page", () => {
         const form = within(screen.getByRole("region", { name: "Edit List" }));
         expect(form.getByRole("checkbox", { name: "Sybil" })).toBeChecked();
         expect(form.getByRole("checkbox", { name: "Leeloo" })).not.toBeChecked();
-        await user.selectOptions(form.getByLabelText("Dose for Sybil"), "3/4");
+        await user.selectOptions(form.getByLabelText("Dose for Sybil"), "1/4");
         await user.click(form.getByRole("button", { name: "Save List" }));
         // (not Panacur's usual 1/2 tsp: checked first)
         const check = within(form.getByRole("alertdialog", { name: "Check these doses" }));
-        expect(check.getByRole("listitem")).toHaveTextContent("Sybil: 3/4 tsp Panacur (usually 1/2 tsp)");
+        expect(check.getByRole("listitem")).toHaveTextContent("Sybil: 1/4 tsp Panacur (usually 1/2 tsp)");
         expect(saveDewormingSheet).not.toHaveBeenCalled();
         await user.click(check.getByRole("button", { name: "Save Anyway" }));
         await waitFor(() => expect(saveDewormingSheet).toHaveBeenCalled());
@@ -591,7 +591,7 @@ describe("the page", () => {
             id: 7,
             groupKey: "ics:Top",
             session: "3_month",
-            lines: [{ monkeyId: 5, medication: "Panacur", dose: "3/4 tsp", days: 3 }],
+            lines: [{ monkeyId: 5, medication: "Panacur", dose: "1/4 tsp", days: 3 }],
         });
 
         // (back on the sheet; then on the list) Delete
@@ -638,14 +638,25 @@ describe("the dose rules", () => {
         });
     });
 
-    test("Albendazole: a missed Day 2 after one dose finishes as one dose; after two, a choice", () => {
+    test("Albendazole and Pyrantel (1 or 3 days): a missed or skipped day after a full dose finishes the course", () => {
         expect(dayAdvice(withDoses(alb, { 1: "full", 2: "none" }), 3)).toMatchObject({
             done: true,
             text: "Finished course as missed dose on Day 2",
         });
         expect(dayAdvice(withDoses(alb, { 1: "full", 2: "full", 3: "1/2" }), 4)).toMatchObject({
-            warn: true,
-            text: "Missed Day 3 after 2 doses: switch to Milbeworm, or finish here?",
+            done: true,
+            text: "Finished course as missed dose on Day 3",
+        });
+        expect(dayAdvice(withDoses({ ...alb, medication: "Pyrantel" }, { 1: "full", 2: "skipped" }), 3)).toMatchObject({
+            done: true,
+            text: "Finished course as missed dose on Day 2",
+        });
+    });
+
+    test("Ivermectin: one dose finishes the course", () => {
+        expect(dayAdvice(withDoses({ ...alb, medication: "Ivermectin", days: 1 }, { 1: "full" }), 2)).toMatchObject({
+            done: true,
+            text: "Finished course: one dose on Day 1",
         });
     });
 
@@ -1106,7 +1117,7 @@ describe("completing a sheet", () => {
         expect(screen.queryByRole("button", { name: /Results/ })).toBeNull();
         expect(screen.queryByRole("region", { name: "Review" })).toBeNull();
         // (the results, day by day, and the photo)
-        expect(screen.getAllByRole("row")[1]).toHaveTextContent("Ash✓ Banana✗1/4 tab Albendazole");
+        expect(screen.getAllByRole("row")[1]).toHaveTextContent("Ash✓ Banana✗N/A1/4 tab Albendazole");
         expect(await screen.findByRole("img", { name: "Paper copy, photo 1" })).toBeInTheDocument();
         unmount();
 

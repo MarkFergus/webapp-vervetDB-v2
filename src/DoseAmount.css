@@ -1,0 +1,5 @@
+/* A typed dose (grams, ml): about as wide as the list it replaces */
+.DoseAmount {
+    width: 6.5em;
+    min-width: 0;
+}

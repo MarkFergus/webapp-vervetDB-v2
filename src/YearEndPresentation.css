@@ -1,0 +1,872 @@
+/* The Year End Presentation (YearEndPresentation.jsx). The page around it
+   uses the app's colours; the slides have their own warm, bright look (the
+   same in every theme: they're shown on a screen or printed), each 1280 ×
+   720, scaled to fit. */
+
+/* ---- The page ---- */
+
+.YearEnd {
+    display: grid;
+    gap: 12px;
+}
+
+.YearEnd-bar,
+.YearEnd-nav {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+}
+
+.YearEnd-year select {
+    min-width: 110px;
+}
+
+.YearEnd-actions,
+.YearEnd-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.YearEnd-nav {
+    align-items: center;
+}
+
+.YearEnd-nav > .Modal-edit {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+}
+
+.YearEnd-where {
+    min-width: 92px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.YearEnd-stage {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
+}
+
+.YearEnd-scaled {
+    width: 1280px;
+    height: 720px;
+    transform-origin: 0 0;
+}
+
+.YearEnd-panel {
+    display: grid;
+    gap: 10px;
+}
+
+.YearEnd-lines {
+    display: grid;
+    gap: 10px;
+}
+
+.YearEnd-lineRow {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.YearEnd-lineField {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.YearEnd-lineField input,
+.YearEnd-lineField textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.YearEnd-lineField input:focus-visible,
+.YearEnd-lineField textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+.YearEnd-saved {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green);
+}
+
+.YearEnd-unsaved {
+    align-self: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber-text);
+}
+
+/* Change Photos: the year's monkeys, tapped to choose (numbered in order) */
+.YearEnd-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.YearEnd-choice {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.YearEnd-choice img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.YearEnd-choice span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.YearEnd-choice.is-on {
+    border-color: var(--green);
+}
+
+.YearEnd-choice:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.YearEnd-choice:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.YearEnd-order {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    color: var(--on-status);
+    background: var(--green);
+    border-radius: 50%;
+}
+
+/* Present: full screen, black around the slide */
+.YearEnd-present {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    background: #000;
+    cursor: pointer;
+}
+
+.YearEnd-present .YearEnd-scaled {
+    transform-origin: center;
+}
+
+.YearEnd-count {
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    font: 600 13px var(--font-ui);
+    color: rgb(255 255 255 / 0.45);
+}
+
+.YearEnd-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: rgb(255 255 255 / 0.6);
+    background: rgb(0 0 0 / 0.35);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.YearEnd-present:hover .YearEnd-close,
+.YearEnd-close:focus-visible {
+    opacity: 1;
+}
+
+/* Download PDF: only the slides, a page each */
+.YearEnd-print {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: 1280px 720px;
+        margin: 0;
+    }
+
+    body > *:not(.YearEnd-print) {
+        display: none !important;
+    }
+
+    body {
+        margin: 0;
+        background: #fff !important;
+    }
+
+    .YearEnd-print {
+        display: block;
+    }
+
+    .YearEnd-printPage {
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        break-after: page;
+    }
+
+    .YearEnd-printPage:last-child {
+        break-after: auto;
+    }
+
+    .YearEnd-print .YE-slide {
+        border-radius: 0;
+    }
+}
+
+/* ---- The slides ---- */
+
+.YE-slide {
+    --ye-cream: #fbf6ec;
+    --ye-sand: #f3e6cc;
+    --ye-ink: #2b2a26;
+    --ye-ink-2: #5d594f;
+    --ye-green: #2f6b4f;
+    --ye-green-2: #3f8a66;
+    --ye-sun: #f5b83d;
+    --ye-coral: #e0603f;
+    --ye-sky: #3f8fbd;
+    --ye-plum: #8a5aa8;
+    --ye-gold: #b97c12;
+
+    position: relative;
+    box-sizing: border-box;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    color: var(--ye-ink);
+    background: var(--ye-cream);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.YE-slide *,
+.YE-slide *::before,
+.YE-slide *::after {
+    box-sizing: border-box;
+}
+
+.YE-pad {
+    padding: 52px 56px;
+}
+
+.YE-kicker {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ye-coral);
+}
+
+.YE-title {
+    margin: 0;
+    font: 800 50px/1.05 "Bitter", Georgia, serif;
+    color: var(--ye-green);
+}
+
+.YE-line {
+    margin: 8px 0 0;
+    font-size: 21px;
+    font-weight: 500;
+    color: var(--ye-ink-2);
+}
+
+.YE-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.YE-note {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ye-coral);
+    white-space: nowrap;
+}
+
+.YE-foot {
+    position: absolute;
+    right: 56px;
+    bottom: 26px;
+    left: 56px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ye-ink-2);
+}
+
+.YE-foot b {
+    font-family: "Saira", sans-serif;
+    letter-spacing: 0.02em;
+    color: var(--ye-green);
+}
+
+.YE-small {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ye-ink-2);
+}
+
+.YE-small b {
+    color: var(--ye-coral);
+}
+
+/* A monkey's photo; none yet: a friendly stand-in */
+.YE-photo {
+    display: block;
+    width: 112px;
+    height: 112px;
+    object-fit: cover;
+    border: 5px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+
+.YE-photo.is-none {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    background: var(--ye-sand);
+}
+
+.YE-photo.is-none small {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ye-ink-2);
+}
+
+/* Title */
+.YE-titleSlide {
+    background: radial-gradient(circle at 78% 40%, #fff3d6 0, #fbe7bd 38%, #f5d38f 100%);
+}
+
+.YE-sunburst {
+    position: absolute;
+    top: 70px;
+    right: 90px;
+    width: 470px;
+    height: 470px;
+    background: repeating-conic-gradient(rgb(255 255 255 / 0.45) 0 8deg, transparent 8deg 16deg);
+    border-radius: 50%;
+}
+
+.YE-collage {
+    position: absolute;
+}
+
+.YE-titleText {
+    position: absolute;
+    top: 150px;
+    left: 80px;
+    width: 640px;
+}
+
+.YE-year {
+    font: 800 210px/0.85 "Saira", sans-serif;
+    letter-spacing: -0.02em;
+    color: var(--ye-green);
+}
+
+.YE-year span {
+    color: var(--ye-coral);
+}
+
+.YE-sub {
+    margin: 18px 0 0;
+    font: 700 46px/1.1 "Bitter", Georgia, serif;
+    color: var(--ye-ink);
+}
+
+.YE-tag {
+    margin: 16px 0 0;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ye-ink-2);
+}
+
+/* The Year in Numbers */
+.YE-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+}
+
+.YE-tiles.is-four {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.YE-tile {
+    position: relative;
+    height: 222px;
+    padding: 20px 22px;
+    color: #fff;
+    border-radius: 16px;
+}
+
+.YE-tiles.is-four .YE-tile {
+    height: 230px;
+    padding: 18px 20px;
+}
+
+.YE-emoji {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    font-size: 42px;
+}
+
+.YE-n {
+    font: 800 88px/1 "Saira", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.YE-tiles.is-four .YE-n {
+    font-size: 76px;
+}
+
+.YE-what {
+    margin-top: 4px;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.YE-tiles.is-four .YE-what {
+    font-size: 21px;
+}
+
+.YE-quip {
+    margin: 8px 0 0;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.3;
+    opacity: 0.95;
+}
+
+.YE-quip.is-note {
+    margin-top: 4px;
+    font-weight: 700;
+}
+
+.YE-tile.is-c0 { background: var(--ye-green); }
+.YE-tile.is-c1 { background: var(--ye-coral); }
+.YE-tile.is-c2 { background: var(--ye-gold); }
+.YE-tile.is-c3 { background: var(--ye-plum); }
+.YE-tile.is-c4 { background: var(--ye-sky); }
+.YE-tile.is-c5 { background: #b8572f; }
+.YE-tile.is-c6 { background: var(--ye-green-2); }
+.YE-tile.is-c7 { background: #4b5f8f; }
+
+/* Bars (why they came, why to the vet…) */
+.YE-bars {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.YE-bars li {
+    display: grid;
+    grid-template-columns: 210px 1fr 48px;
+    align-items: center;
+    gap: 12px;
+}
+
+/* (a long name: on two lines) */
+.YE-barLabel {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.15;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.YE-barTrack {
+    height: 26px;
+    background: var(--ye-sand);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.YE-bar {
+    display: block;
+    height: 100%;
+    background: var(--ye-green);
+    border-radius: 6px;
+}
+
+.YE-bars li:first-child .YE-bar {
+    background: var(--ye-coral);
+}
+
+.YE-barN {
+    font: 800 24px "Saira", sans-serif;
+    color: var(--ye-ink);
+    text-align: right;
+}
+
+.YE-chartGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    margin-top: 40px;
+}
+
+/* Months: a column each */
+.YE-months {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    height: 300px;
+}
+
+.YE-monthCol {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+}
+
+.YE-month {
+    width: 100%;
+    background: var(--ye-sun);
+    border-radius: 5px 5px 0 0;
+}
+
+.YE-month.is-max {
+    background: var(--ye-coral);
+}
+
+.YE-monthN {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ye-ink-2);
+}
+
+.YE-monthLabel {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ye-ink-2);
+}
+
+/* Monkeys: 6 by 2 */
+.YE-babies {
+    background: linear-gradient(180deg, var(--ye-cream), #fdf0e4);
+}
+
+.YE-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 18px 14px;
+    margin: 30px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* (a few: one bigger row) */
+.YE-grid.is-few {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px 44px;
+    margin-top: 64px;
+}
+
+.YE-grid.is-few .YE-baby {
+    width: 180px;
+}
+
+.YE-grid.is-few .YE-photo {
+    width: 160px;
+    height: 160px;
+}
+
+.YE-grid.is-few .YE-photo.is-none {
+    font-size: 52px;
+}
+
+.YE-grid.is-few .YE-nm {
+    font-size: 25px;
+}
+
+.YE-grid.is-few .YE-mo {
+    font-size: 16px;
+}
+
+.YE-grid.is-few .YE-by {
+    font-size: 15px;
+}
+
+.YE-baby {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+}
+
+.YE-baby .YE-photo {
+    margin-bottom: 8px;
+}
+
+.YE-nm {
+    max-width: 100%;
+    overflow: hidden;
+    font: 700 21px "Bitter", Georgia, serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.YE-mo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ye-ink-2);
+}
+
+.YE-by {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ye-green);
+}
+
+/* Vet Visits, Vasectomies */
+.YE-statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 34px 56px;
+    margin-top: 36px;
+}
+
+.YE-statsGrid .YE-bars li {
+    grid-template-columns: 230px 1fr 44px;
+}
+
+.YE-statFacts {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 14px;
+    grid-column: 1 / -1;
+}
+
+/* (one group of bars: the facts beside it) */
+.YE-statsGrid.is-single .YE-statFacts {
+    flex-direction: column;
+    grid-column: auto;
+    padding-top: 30px;
+}
+
+.YE-statsGrid.is-single .YE-statFact b {
+    font-size: 40px;
+}
+
+.YE-statFact {
+    display: grid;
+    gap: 2px;
+    padding: 14px 20px;
+    background: #fff;
+    border: 2px solid var(--ye-sand);
+    border-radius: 14px;
+}
+
+.YE-statFact span {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ye-ink-2);
+}
+
+.YE-statFact b {
+    font: 800 28px "Saira", sans-serif;
+    color: var(--ye-green);
+}
+
+/* Fun facts and the busy year: cards, 3 by 2 */
+.YE-facts {
+    background: #fff8ea;
+}
+
+.YE-stamp {
+    position: absolute;
+    top: 46px;
+    right: 60px;
+    margin: 0;
+    padding: 10px 18px;
+    font-size: 20px;
+    font-weight: 800;
+    background: var(--ye-sun);
+    border-radius: 10px;
+    transform: rotate(6deg);
+}
+
+.YE-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.YE-card {
+    height: 212px;
+    padding: 16px 22px;
+    background: #fff;
+    border: 2px solid var(--ye-sand);
+    border-radius: 16px;
+}
+
+.YE-cardEmoji {
+    font-size: 32px;
+    line-height: 1.1;
+}
+
+.YE-big {
+    margin-top: 4px;
+    font: 800 52px/1 "Saira", sans-serif;
+    color: var(--ye-green);
+}
+
+.YE-card:nth-child(2) .YE-big,
+.YE-card:nth-child(4) .YE-big {
+    color: var(--ye-coral);
+}
+
+.YE-card:nth-child(6) .YE-big {
+    color: var(--ye-plum);
+}
+
+.YE-big small {
+    font-size: 26px;
+}
+
+.YE-lab {
+    margin-top: 8px;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.YE-who {
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ye-ink-2);
+}
+
+.YE-who.is-quip {
+    margin-top: 2px;
+    font-style: italic;
+    color: var(--ye-coral);
+}
+
+/* Thank you */
+.YE-thanks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 120px 80px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 30%, #fff3d6 0, #fbe7bd 45%, #f5d38f 100%);
+}
+
+.YE-thanksPhotos {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.YE-thanksTitle {
+    margin: 0;
+    font: 800 110px/1 "Saira", sans-serif;
+    color: var(--ye-green);
+}
+
+.YE-thanksMessage {
+    max-width: 900px;
+    margin: 18px 0 0;
+    font: 600 28px/1.35 "Bitter", Georgia, serif;
+    color: var(--ye-ink);
+}
