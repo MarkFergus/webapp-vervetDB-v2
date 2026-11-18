@@ -1,6 +1,6 @@
 import { Document, Page, Text, Image, StyleSheet } from "@react-pdf/renderer";
 import { FORM_FONT, REPORT_FONT } from "./pdfFonts";
-import { sheetTitle } from "./dewormingRules";
+import { sheetTitle, staffText } from "./dewormingRules";
 import { dayLabel } from "./babyRecords";
 
 // A submitted deworming sheet's photos as a PDF, emailed on Submit
@@ -38,7 +38,7 @@ export default function DewormingPhotosPDF({ sheet, photos }) {
     const title = sheetTitle(sheet);
     const meta = [
         `Started ${dayLabel(sheet.startedOn ?? sheet.startDate)}`,
-        sheet.staffNames && `Staff: ${sheet.staffNames}`,
+        staffText(sheet) && `Staff: ${staffText(sheet)}`,
     ]
         .filter(Boolean)
         .join(" · ");

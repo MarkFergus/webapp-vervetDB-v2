@@ -21,6 +21,14 @@ export const CHANGE_TYPES = ["New", "Added", "Improved", "Fixed"];
 
 export const CHANGELOG = [
     {
+        version: "2.9.1",
+        date: "2026-11-18",
+        changes: [
+            "Added Tick All, Food for All and staff for each day to deworming results",
+            "Improved deworming steps: Enter Results, Add Photo and Submit in order",
+        ],
+    },
+    {
         version: "2.9.0",
         date: "2026-11-15",
         changes: [

@@ -812,7 +812,7 @@ describe("completing a sheet", () => {
 
         // Day 2 opens once Day 1 is saved complete
         expect(form.getByRole("tab", { name: "Day 2" })).toBeDisabled();
-        await user.type(form.getByLabelText("Staff Member(s)"), "Sam");
+        await user.type(form.getByLabelText("Staff for Day 1"), "Sam");
         await user.click(form.getByRole("button", { name: "Save Day 1" }));
         // (the button says so: no line)
         expect(await form.findByRole("button", { name: "Saved!" })).toBeInTheDocument();
@@ -831,6 +831,7 @@ describe("completing a sheet", () => {
         expect(saved).toMatchObject({
             startedOn: "2026-11-02",
             staffNames: "Sam",
+            dayStaff: { 1: "Sam" },
             submit: false,
             photos: [],
             daysDone: [1],
@@ -976,9 +977,12 @@ describe("completing a sheet", () => {
                 "Enter Results at the end of each day. When all days are complete, upload a photo of the completed sheet and press Submit to finalise deworming."
             )
         ).toBeInTheDocument();
-        // (Day 3 not complete: Add Photo and Submit wait)
+        // (Day 3 not complete: Add Photo and Submit wait, grey; Enter Results next, filled)
         expect(screen.getByLabelText("Add Photo")).toBeDisabled();
         expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Enter Results" })).toHaveClass("is-blue");
+        expect(screen.getByText("Add Photo").closest("label")).toHaveClass("Deworming-later");
+        expect(screen.getByRole("button", { name: "Submit" })).toHaveClass("Deworming-later");
         unmount();
 
         current = {
@@ -996,6 +1000,9 @@ describe("completing a sheet", () => {
         expect(screen.getByLabelText("Add Photo")).toBeEnabled();
         expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
         expect(screen.queryByRole("img", { name: "Photo added" })).toBeNull();
+        // (Enter Results done: a green outline; Add Photo next)
+        expect(screen.getByRole("button", { name: "Enter Results" })).toHaveClass("is-confirm-outline");
+        expect(screen.getByText("Add Photo").closest("label")).toHaveClass("is-blue");
 
         await user.upload(screen.getByLabelText("Add Photo"), new File(["x"], "sheet.jpg", { type: "image/jpeg" }));
         await waitFor(() => expect(saveDewormingResults).toHaveBeenCalled());
@@ -1005,6 +1012,11 @@ describe("completing a sheet", () => {
             "https://x/1/sheet.jpg"
         );
         expect(screen.getByRole("img", { name: "Photo added" })).toBeInTheDocument();
+        // (the photo under Add Photo, then Submit: next, filled green)
+        const steps = screen.getAllByRole("listitem").filter((li) => li.parentElement.classList.contains("Deworming-stepList"));
+        expect(steps.map((li) => li.textContent)).toEqual(["Enter Results", "Add Photo", "Submit"]);
+        expect(within(steps[1]).getByRole("img", { name: "Paper copy, photo 1" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Submit" })).toHaveClass("is-confirm");
         await user.click(screen.getByRole("button", { name: "Submit" }));
         expect(screen.getByRole("dialog")).toHaveAccessibleName(
             "Submit for approval? Only an admin can change it after."

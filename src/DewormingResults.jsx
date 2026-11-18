@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
     IconCamera,
     IconCheck,
+    IconChecks,
     IconCopy,
     IconEraser,
     IconLoader2,
@@ -10,6 +11,7 @@ import {
     IconSwitchHorizontal,
     IconPlus,
     IconTrash,
+    IconUser,
     IconX,
 } from "@tabler/icons-react";
 import {
@@ -26,6 +28,7 @@ import {
 import {
     SESSIONS,
     sheetTitle,
+    allStaffNames,
     amountForUnit,
     DAYS,
     DEWORMERS,
@@ -235,9 +238,16 @@ export function SheetPhotos({ paths, onRemove = null }) {
     );
 }
 
-// Add Photo: the paper sheet's photo(s), uploaded → onAdded(paths); a green
-// tick once there's one (done)
-export function AddPhotoButton({ sheetId, done, disabled, onAdded, onProblem }) {
+// The sheet's steps (Enter Results → Add Photo → Submit), each coloured by
+// where it's at: done (a green outline, with a tick), next (filled: its own
+// colour) or not yet (grey, faded)
+export const stepClass = (state, next = "is-blue") =>
+    state === "done" ? "is-confirm-outline" : state === "next" ? next : "is-soft Deworming-later";
+
+// Add Photo: the paper sheet's photo(s), uploaded → onAdded(paths)
+//   step: "done" (there's one: a tick), "next" or "later" (every day's not
+//   complete yet: can't be pressed)
+export function AddPhotoButton({ sheetId, step, onAdded, onProblem, disabled = false }) {
     const [busy, setBusy] = useState(false);
     async function add(event) {
         const files = [...event.target.files];
@@ -255,22 +265,21 @@ export function AddPhotoButton({ sheetId, done, disabled, onAdded, onProblem }) 
             setBusy(false);
         }
     }
-    const off = disabled || busy;
+    const off = disabled || busy || step === "later";
+    const done = step === "done";
     return (
-        <span className="Deworming-photoRow">
-            <label
-                className={`Modal-edit is-soft Deworming-photoAdd${busy ? " is-busy" : ""}${off ? " is-off" : ""}`}
-                aria-disabled={off || undefined}
-            >
+        <label
+            className={`Modal-edit ${stepClass(step)} Deworming-photoAdd${busy ? " is-busy" : ""}${off ? " is-off" : ""}`}
+            aria-disabled={off || undefined}
+        >
+            {done && !busy ? (
+                <IconCheck size={16} stroke={3} aria-label="Photo added" role="img" />
+            ) : (
                 <IconCamera size={16} aria-hidden="true" />
-                {busy ? "Uploading…" : "Add Photo"}
-                <input type="file" accept="image/*" multiple hidden disabled={off} onChange={add} />
-            </label>
-            {/* (a photo's there: done) */}
-            {done && !busy && (
-                <IconCheck className="Deworming-photoDone" size={22} stroke={3} aria-label="Photo added" role="img" />
             )}
-        </span>
+            {busy ? "Uploading…" : "Add Photo"}
+            <input type="file" accept="image/*" multiple hidden disabled={off} onChange={add} />
+        </label>
     );
 }
 
@@ -383,6 +392,8 @@ function DoseEntry({ line, day, onChange, onRemove }) {
     };
     const knownFood = !dose?.food || FOODS.includes(dose.food);
     const [otherFood, setOtherFood] = useState(!knownFood);
+    // (Food for All chose one from the list: shown there, not as Other)
+    if (otherFood && dose?.food && FOODS.includes(dose.food)) setOtherFood(false);
     const result = dose?.result ?? null;
     const pick = (id) => update({ result: result === id ? null : id });
 
@@ -880,10 +891,12 @@ const tidy = (dose) => ({
 });
 
 // A sheet's results to save (saveDewormingResults), from the sheet and its
-// lines: { startedOn, staffNames, dayNotes, photos, daysDone, lines }
+// lines: { startedOn, staffNames, dayStaff, dayNotes, photos, daysDone,
+// lines } (staffNames: everyone in dayStaff; an older sheet's as it was)
 export const resultsOf = (sheet, lines) => ({
     startedOn: sheet.startedOn ?? sheet.startDate,
-    staffNames: sheet.staffNames ?? "",
+    staffNames: Object.keys(sheet.dayStaff ?? {}).length ? allStaffNames(sheet.dayStaff) : (sheet.staffNames ?? ""),
+    dayStaff: sheet.dayStaff ?? {},
     dayNotes: sheet.dayNotes ?? {},
     photos: sheet.photos ?? [],
     daysDone: sheet.daysDone ?? [],
@@ -901,8 +914,8 @@ const COPY_PAUSE = 350;
 
 // Is a day saved, and not changed since? (its results saved, or it was
 // saved complete; and the day's entries, its note, the start date and
-// staff as saved)
-//   stored: what's saved; now: { lines, dayNotes, startedOn, staffNames }
+// day's staff as saved)
+//   stored: what's saved; now: { lines, dayNotes, startedOn, dayStaff }
 function isSaved(stored, now, day) {
     // (each entry's result, food, note and change, whatever its shape)
     const entry = (d) =>
@@ -916,7 +929,7 @@ function isSaved(stored, now, day) {
         entries(stored.lines) === entries(now.lines) &&
         (stored.dayNotes[day] ?? "").trim() === (now.dayNotes[day] ?? "").trim() &&
         stored.startedOn === now.startedOn &&
-        stored.staffNames.trim() === now.staffNames.trim()
+        (stored.dayStaff[day] ?? "").trim() === (now.dayStaff[day] ?? "").trim()
     );
 }
 
@@ -925,7 +938,9 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
     const [daysDone, setDaysDone] = useState(sheet.daysDone ?? []);
     const [day, setDay] = useState(() => firstOpenDay(sheetDays(startLines), sheet.daysDone ?? []));
     const [startedOn, setStartedOn] = useState(sheet.startedOn ?? sheet.startDate);
-    const [staffNames, setStaffNames] = useState(sheet.staffNames ?? "");
+    const [dayStaff, setDayStaff] = useState(() => startingStaff(sheet));
+    // Food for All's choice (Tick All gives it too)
+    const [allFood, setAllFood] = useState("");
     const [dayNotes, setDayNotes] = useState(sheet.dayNotes ?? {});
     // null, "saving" or { problem }
     const [status, setStatus] = useState(null);
@@ -935,7 +950,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
         lines: startLines,
         dayNotes: sheet.dayNotes ?? {},
         startedOn: sheet.startedOn ?? sheet.startDate,
-        staffNames: sheet.staffNames ?? "",
+        dayStaff: startingStaff(sheet),
         daysDone: sheet.daysDone ?? [],
     }));
     // Copy's "Copied!" (a short spinner first: copied again), until something's changed
@@ -954,7 +969,7 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
     // complete: Save Day N, to complete it)
     const toDo = stored.daysDone.includes(day) ? [] : stillToDo(lines, day);
     const saved =
-        isSaved(stored, { lines, dayNotes, startedOn, staffNames }, day) &&
+        isSaved(stored, { lines, dayNotes, startedOn, dayStaff }, day) &&
         (stored.daysDone.includes(day) || toDo.length > 0);
     const missing = saved ? toDo : [];
     // (a day opens once the one before it is complete)
@@ -968,6 +983,34 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                 if (value === null) delete doses[day];
                 else doses[day] = value;
                 return { ...l, doses };
+            })
+        );
+        changed();
+    };
+
+    // Tick All: Full for everyone still to do today (not those finished
+    // already), with Food for All's food if one's chosen
+    const tickAll = () => {
+        setLines((ls) =>
+            ls.map((l) => {
+                const dose = l.doses?.[day];
+                if (!onDay(l, day) || dose?.result || dayAdvice(l, day)?.done) return l;
+                const food = allFood || dose?.food || null;
+                return { ...l, doses: { ...l.doses, [day]: { ...(dose ?? {}), result: "full", food } } };
+            })
+        );
+        changed();
+    };
+
+    // Food for All: the food for everyone given a dose today (Full or partial)
+    const foodForAll = (food) => {
+        setAllFood(food);
+        if (!food) return;
+        setLines((ls) =>
+            ls.map((l) => {
+                const dose = l.doses?.[day];
+                if (!onDay(l, day) || !GIVEN.includes(dose?.result)) return l;
+                return { ...l, doses: { ...l.doses, [day]: { ...dose, food } } };
             })
         );
         changed();
@@ -992,13 +1035,13 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
         setStatus("saving");
         try {
             await saveDewormingResults(sheet.id, {
-                ...resultsOf({ ...sheet, startedOn, staffNames, dayNotes, daysDone: done }, saving),
+                ...resultsOf({ ...sheet, startedOn, dayStaff: tidyStaff(dayStaff), dayNotes, daysDone: done }, saving),
                 submit: false,
             });
             setLines(saving);
             setDaysDone(done);
             // (the button says Saved!; anyone still to do: said too)
-            setStored({ lines: saving, dayNotes, startedOn, staffNames, daysDone: done });
+            setStored({ lines: saving, dayNotes, startedOn, dayStaff, daysDone: done });
             setStatus(null);
             await onSaved();
         } catch (error) {
@@ -1051,42 +1094,67 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
                         }}
                     />
                 </label>
-                <label className="IntegrationPage-choose">
-                    <span>Staff Member(s)</span>
+            </div>
+
+            {/* The days, and beside them who's giving the open day's doses */}
+            <div className="Deworming-dayRow">
+                <div className="RecordsPage-tabs Deworming-days" role="tablist" aria-label="Day">
+                    {days.map((d) => (
+                        <button
+                            key={d}
+                            type="button"
+                            role="tab"
+                            aria-selected={day === d}
+                            aria-label={`Day ${d}${daysDone.includes(d) ? " (complete)" : ""}`}
+                            className={`${day === d ? "is-on" : ""}${daysDone.includes(d) ? " is-complete" : ""}`}
+                            disabled={!isOpen(d)}
+                            title={isOpen(d) ? undefined : `Complete Day ${d - 1} first`}
+                            onClick={() => {
+                                setDay(d);
+                                setAllFood("");
+                                changed();
+                            }}
+                        >
+                            Day {d}
+                            {daysDone.includes(d) && <IconCheck size={15} stroke={3} aria-hidden="true" />}
+                        </button>
+                    ))}
+                </div>
+                <label className="Deworming-dayStaff" title={`Staff for Day ${day}`}>
+                    <IconUser size={17} aria-hidden="true" />
                     <input
                         type="text"
                         maxLength={120}
-                        value={staffNames}
+                        aria-label={`Staff for Day ${day}`}
+                        placeholder="Staff Names"
+                        value={dayStaff[day] ?? ""}
                         onChange={(e) => {
-                            setStaffNames(e.target.value);
+                            setDayStaff({ ...dayStaff, [day]: e.target.value });
                             changed();
                         }}
                     />
                 </label>
             </div>
-
-            <div className="RecordsPage-tabs Deworming-days" role="tablist" aria-label="Day">
-                {days.map((d) => (
-                    <button
-                        key={d}
-                        type="button"
-                        role="tab"
-                        aria-selected={day === d}
-                        aria-label={`Day ${d}${daysDone.includes(d) ? " (complete)" : ""}`}
-                        className={`${day === d ? "is-on" : ""}${daysDone.includes(d) ? " is-complete" : ""}`}
-                        disabled={!isOpen(d)}
-                        title={isOpen(d) ? undefined : `Complete Day ${d - 1} first`}
-                        onClick={() => {
-                            setDay(d);
-                            changed();
-                        }}
-                    >
-                        Day {d}
-                        {daysDone.includes(d) && <IconCheck size={15} stroke={3} aria-hidden="true" />}
-                    </button>
-                ))}
+            <div className="Deworming-allRow">
+                <p className="Deworming-meta">{startedOn ? dayLabel(addDays(startedOn, day - 1)) : ""}</p>
+                <select aria-label="Food for All" value={allFood} onChange={(e) => foodForAll(e.target.value)}>
+                    <option value="">Food for All…</option>
+                    {FOODS.map((f) => (
+                        <option key={f} value={f}>
+                            {f}
+                        </option>
+                    ))}
+                </select>
+                <button
+                    type="button"
+                    className="Modal-edit is-confirm-outline"
+                    disabled={!lines.some((l) => onDay(l, day) && !l.doses?.[day]?.result && !dayAdvice(l, day)?.done)}
+                    onClick={tickAll}
+                >
+                    <IconChecks size={16} aria-hidden="true" />
+                    Tick All
+                </button>
             </div>
-            <p className="Deworming-meta">{startedOn ? dayLabel(addDays(startedOn, day - 1)) : ""}</p>
             <ul className="Deworming-entries">
                 {lines
                     .filter((l) => onDay(l, day))
@@ -1177,6 +1245,24 @@ export function ResultsForm({ sheet, lines: startLines, monkeys = [], onSaved, o
         </section>
     );
 }
+
+// A day's results that were given (and so had food)
+const GIVEN = ["full", ...PARTIALS];
+
+// Each day's staff as opened: the sheet's, or (an older sheet, one name for
+// it all) its staff on each day already done
+function startingStaff(sheet) {
+    if (Object.keys(sheet.dayStaff ?? {}).length || !sheet.staffNames) return sheet.dayStaff ?? {};
+    return Object.fromEntries((sheet.daysDone ?? []).map((d) => [d, sheet.staffNames]));
+}
+
+// Each day's staff, tidied for saving (none: left out)
+const tidyStaff = (dayStaff) =>
+    Object.fromEntries(
+        Object.entries(dayStaff)
+            .map(([d, names]) => [d, (names ?? "").trim()])
+            .filter(([, names]) => names)
+    );
 
 // "2026-11-02" plus days → "2026-11-04"
 function addDays(date, days) {

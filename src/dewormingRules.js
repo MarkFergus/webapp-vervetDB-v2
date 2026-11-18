@@ -575,3 +575,37 @@ export function daySummary(sheet, allLines, day, note = "") {
         ...(extras.length ? ["", ...extras] : []),
     ].join("\n");
 }
+
+// Who gave each day's doses (dayStaff: { 1: "Lindi", 2: "Sam, Jo" }); an
+// older sheet has only staffNames, for all of it
+const dayStaffOf = (sheet) =>
+    Object.entries(sheet.dayStaff ?? {})
+        .map(([d, names]) => [Number(d), (names ?? "").trim()])
+        .filter(([, names]) => names)
+        .sort(([a], [b]) => a - b);
+
+// The sheet's staff, said once: "Lindi" (the same every day), "Day 1:
+// Lindi · Day 2: Sam" (different), or the older staffNames → "" for none
+export function staffText(sheet) {
+    const days = dayStaffOf(sheet);
+    if (!days.length) return (sheet.staffNames ?? "").trim();
+    const names = [...new Set(days.map(([, n]) => n))];
+    return names.length === 1 ? names[0] : days.map(([d, n]) => `Day ${d}: ${n}`).join(" · ");
+}
+
+// Everyone on the sheet, for the one staff_names column (the Weekly Report
+// says it): "Lindi, Sam, Jo" (each once; up to 120 characters)
+export function allStaffNames(dayStaff) {
+    const people = Object.values(dayStaff ?? {})
+        .flatMap((names) => (names ?? "").split(/,|&|\band\b/))
+        .map((n) => n.trim())
+        .filter(Boolean);
+    const unique = people.filter((n, i) => people.findIndex((x) => x.toLowerCase() === n.toLowerCase()) === i);
+    let text = "";
+    for (const name of unique) {
+        const next = text ? `${text}, ${name}` : name;
+        if (next.length > 120) break;
+        text = next;
+    }
+    return text;
+}

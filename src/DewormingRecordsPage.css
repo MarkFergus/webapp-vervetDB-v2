@@ -95,17 +95,58 @@
     margin-top: 8px;
 }
 
-/* Enter Results: blue (the same blue as Awaiting Approval: the theme's), apart
-   from Submit's green */
-/* Add Photo, until every day's complete */
-.Deworming-photoAdd.is-off {
-    opacity: 0.35;
-    cursor: not-allowed;
-    pointer-events: none;
+/* The steps (Enter Results → Add Photo and its photos → Submit), one under
+   another: done a green outline (ticked), next filled, not yet grey */
+.Deworming-stepList {
+    display: grid;
+    /* (the steps' column: as wide as Enter Results; admins' Edit beside it) */
+    grid-template-columns: max-content auto;
+    justify-items: start;
+    align-items: center;
+    gap: 12px 10px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
 }
 
-.Deworming-sheet .Deworming-actions .Modal-edit.is-confirm:disabled {
-    opacity: 0.35;
+/* (each step's parts sit straight in the grid) */
+.Deworming-stepList > li {
+    display: contents;
+}
+
+/* Add Photo and Submit: the same width as Enter Results */
+.Deworming-stepList > li > .Modal-edit:first-child,
+.Deworming-stepList .Deworming-confirmHost,
+.Deworming-stepList .Deworming-confirmHost > .Modal-edit {
+    box-sizing: border-box;
+    justify-content: center;
+    justify-self: stretch;
+    width: 100%;
+}
+
+/* A step on its own: the whole row (Edit's column left empty) */
+.Deworming-stepList > li:not(.Deworming-actions) > :first-child {
+    grid-column: 1;
+}
+
+/* The photos, under Add Photo: the full width */
+.Deworming-stepList .Deworming-photoList {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+/* A step not open yet: grey, faded */
+.Modal-edit.Deworming-later,
+.Modal-edit.Deworming-later:disabled {
+    color: var(--text-3);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Add Photo while it can't be pressed */
+.Deworming-photoAdd.is-off {
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .Deworming-item {
@@ -197,6 +238,11 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
+}
+
+/* Record Results: Date Started only as wide as a date */
+.Deworming-results .Deworming-fields {
+    grid-template-columns: minmax(0, 200px);
 }
 
 .Deworming-instructions {
@@ -475,7 +521,83 @@
 }
 
 .Deworming-days {
+    margin: 0;
+}
+
+/* The days, with the open day's staff beside them (the same height) */
+.Deworming-dayRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin: 16px 0 4px;
+}
+
+.Deworming-dayRow .Deworming-days {
+    flex: none;
+}
+
+.Deworming-dayStaff {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    min-width: 0;
+    max-width: 320px;
+}
+
+.Deworming-dayStaff svg {
+    position: absolute;
+    left: 10px;
+    color: var(--text-3);
+    pointer-events: none;
+}
+
+.Deworming-dayStaff input {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    padding: 0 10px 0 34px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+/* The day's date, then Food for All and Tick All on the right */
+.Deworming-allRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 0;
+}
+
+.Deworming-allRow .Deworming-meta {
+    margin: 0 auto 0 0;
+}
+
+.Deworming-allRow select {
+    height: 36px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: 16px; /* (16px: phones don't zoom in) */
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.Deworming-allRow .Modal-edit {
+    height: 36px;
+}
+
+/* A phone: narrower day tabs, so the staff still fits beside them */
+@media (max-width: 480px) {
+    .Deworming-dayRow .RecordsPage-tabs button {
+        padding: 0 10px;
+    }
 }
 
 /* A day saved complete: its tick; one not open yet (the day before isn't
@@ -832,16 +954,6 @@
     border: 1px solid var(--line);
     border-radius: 6px;
     cursor: pointer;
-}
-
-.Deworming-photoRow {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.Deworming-photoDone {
-    color: var(--green);
 }
 
 .Modal-edit.Deworming-photoAdd {

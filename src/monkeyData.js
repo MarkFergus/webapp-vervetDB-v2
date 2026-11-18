@@ -2952,7 +2952,7 @@ registerSender(
 
 // A database sheet → { id, groupKey, groupName, session, startDate,
 // instructions, status ("ready", "submitted", "approved"), preparedByName,
-// startedOn, staffNames, dayNotes ({ 1: "…" }), photos (paths), daysDone
+// startedOn, staffNames, dayStaff ({ 1: "Lindi" }), dayNotes ({ 1: "…" }), photos (paths), daysDone
 // (the days saved complete: [1, 2]),
 // submittedByName, approvedByName, returnNote, lines: [{ id, monkeyId,
 // medication, dose, days, recordText, kind ("list", "added",
@@ -2969,6 +2969,8 @@ const toAppSheet = (row) => ({
     preparedByName: row.prepared_by_name ?? null,
     startedOn: row.started_on ?? null,
     staffNames: row.staff_names ?? "",
+    // (deworming-day-staff.sql: who gave each day's doses, { 1: "Lindi" })
+    dayStaff: row.day_staff ?? {},
     dayNotes: row.day_notes ?? {},
     photos: row.photos ?? [],
     daysDone: row.days_done ?? [],
@@ -3021,7 +3023,8 @@ export async function loadDewormingSheets() {
             .select(columns)
             .order("start_date", { ascending: false })
             .order("id", { ascending: false });
-    let { data, error } = await load(`${SHEET_COLUMNS}, different_schedule, ${resultColumns(ADDED_COLUMNS)}`);
+    let { data, error } = await load(`${SHEET_COLUMNS}, different_schedule, day_staff, ${resultColumns(ADDED_COLUMNS)}`);
+    if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, different_schedule, ${resultColumns(ADDED_COLUMNS)}`));
     if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns(ADDED_COLUMNS)}`));
     if (isOlderDatabase(error)) ({ data, error } = await load(`${SHEET_COLUMNS}, ${resultColumns("")}`));
     if (isOlderDatabase(error)) {
@@ -3052,12 +3055,13 @@ export function withOutboxSheets(list) {
         }
         for (const { payload } of waiting("deworming-results")) {
             if (payload.sheetId !== sheet.id) continue;
-            const { startedOn, staffNames, dayNotes, photos, daysDone, lines } = payload.results;
+            const { startedOn, staffNames, dayStaff, dayNotes, photos, daysDone, lines } = payload.results;
             const changed = (l) => lines.find((x) => sameId(x.id, l.id));
             out = {
                 ...out,
                 startedOn,
                 staffNames,
+                dayStaff: dayStaff ?? out.dayStaff,
                 dayNotes,
                 photos,
                 daysDone,
@@ -3123,7 +3127,7 @@ function dewormingProblem(error, what) {
 
 // Saves a sheet's results (staff, as they go), or submits them for
 // approval (submit: true) → its status. Throws a message to show.
-//   results: { startedOn, staffNames, dayNotes, photos, daysDone, lines
+//   results: { startedOn, staffNames, dayStaff, dayNotes, photos, daysDone, lines
 //   (with their doses), submit }
 export async function saveDewormingResults(sheetId, results) {
     // Submit needs the database there and then: what it emails is made from
@@ -3148,6 +3152,7 @@ async function sendDewormingResults(sheetId, results) {
         results: {
             started_on: results.startedOn,
             staff_names: results.staffNames,
+            day_staff: results.dayStaff ?? {},
             day_notes: results.dayNotes,
             photos: results.photos,
             days_done: results.daysDone ?? [],

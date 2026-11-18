@@ -2,6 +2,7 @@ import DoseAmount from "./DoseAmount";
 import { fieldStaff } from "./outbox";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+    IconCheck,
     IconClipboardCheck,
     IconPencil,
     IconPlus,
@@ -39,6 +40,7 @@ import {
     differentScheduleText,
     sheetTitle,
     splitDose,
+    staffText,
     startingLines,
     usualDose,
 } from "./dewormingRules";
@@ -55,6 +57,7 @@ import {
     Review,
     SheetPhotos,
     allDaysDone,
+    stepClass,
     resultsOf,
 } from "./DewormingResults";
 import "./IntegrationRecordsPage.css"; // (the pickers' look)
@@ -853,7 +856,7 @@ function SheetView({ sheet, monkeys, enclosures, canPrepare, canRecord, onEdit, 
                 </div>
             )}
             {sheet.instructions && <p className="Deworming-note">{sheet.instructions}</p>}
-            {sheet.staffNames && <p className="Deworming-meta">Staff: {sheet.staffNames}</p>}
+            {staffText(sheet) && <p className="Deworming-meta">Staff: {staffText(sheet)}</p>}
             {started || sheet.status !== "ready" ? (
                 <ResultsTable lines={lines} />
             ) : (
@@ -881,7 +884,7 @@ function SheetView({ sheet, monkeys, enclosures, canPrepare, canRecord, onEdit, 
             {differentScheduleText(sheet, monkeys) && (
                 <p className="Deworming-meta Deworming-differentNote">{differentScheduleText(sheet, monkeys)}</p>
             )}
-            {photos.length > 0 && (
+            {photos.length > 0 && !completing && (
                 <>
                     <h3 className="RecordsPage-subhead">Photo of the Paper Copy</h3>
                     <SheetPhotos
@@ -907,68 +910,102 @@ function SheetView({ sheet, monkeys, enclosures, canPrepare, canRecord, onEdit, 
                     {problem}
                 </p>
             )}
-            {completing && (
-                <p className="Deworming-meta Deworming-steps">
-                    Enter Results at the end of each day. When all days are complete, upload a photo of the completed
-                    sheet and press Submit to finalise deworming.
-                </p>
-            )}
-            <div className="Deworming-actions">
-                {canEnter && (
-                    <button
-                        type="button"
-                        className="Modal-edit is-blue"
-                        disabled={busy}
-                        onClick={() => setRecording(true)}
-                    >
-                        <IconClipboardCheck size={16} aria-hidden="true" />
-                        {sheet.status === "submitted" ? "Edit Results" : "Enter Results"}
-                    </button>
-                )}
-                {completing && (
-                    <>
-                        <AddPhotoButton
-                            sheetId={sheet.id}
-                            done={photos.length > 0}
-                            disabled={busy || !daysDone}
-                            onAdded={(added) => saveSheet({ photos: [...photos, ...added] })}
-                            onProblem={setProblem}
-                        />
-                        <span className="Deworming-confirmHost">
+            {completing ? (
+                <>
+                    <p className="Deworming-meta Deworming-steps">
+                        Enter Results at the end of each day. When all days are complete, upload a photo of the
+                        completed sheet and press Submit to finalise deworming.
+                    </p>
+                    {/* The steps in order, each under the one before: done
+                        (green outline, ticked), next (filled), not yet (grey) */}
+                    <ol className="Deworming-stepList">
+                        <li className="Deworming-actions">
                             <button
                                 type="button"
-                                className="Modal-edit is-confirm"
-                                disabled={busy || !daysDone || !photos.length}
-                                title={
-                                    !daysDone
-                                        ? "Complete every day first"
-                                        : photos.length
-                                          ? undefined
-                                          : "Add a photo of the deworming sheet first"
-                                }
-                                onClick={() => setSubmitting(true)}
+                                className={`Modal-edit ${stepClass(daysDone ? "done" : "next")}`}
+                                disabled={busy}
+                                onClick={() => setRecording(true)}
                             >
-                                <IconSend size={16} aria-hidden="true" />
-                                Submit
+                                {daysDone ? (
+                                    <IconCheck size={16} stroke={3} aria-hidden="true" />
+                                ) : (
+                                    <IconClipboardCheck size={16} aria-hidden="true" />
+                                )}
+                                Enter Results
                             </button>
-                            {submitting && (
-                                <ConfirmBubble
-                                    question="Submit for approval? Only an admin can change it after."
-                                    busy={busy}
-                                    onConfirm={() => saveSheet({}, true)}
-                                    onCancel={stopSubmitting}
+                            {canPrepare && !started && (
+                                <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={onEdit}>
+                                    <IconPencil size={16} aria-hidden="true" />
+                                    Edit
+                                </button>
+                            )}
+                        </li>
+                        <li>
+                            <AddPhotoButton
+                                sheetId={sheet.id}
+                                step={!daysDone ? "later" : photos.length ? "done" : "next"}
+                                disabled={busy}
+                                onAdded={(added) => saveSheet({ photos: [...photos, ...added] })}
+                                onProblem={setProblem}
+                            />
+                            {photos.length > 0 && (
+                                <SheetPhotos
+                                    paths={photos}
+                                    onRemove={(p) => saveSheet({ photos: photos.filter((x) => x !== p) })}
                                 />
                             )}
-                        </span>
-                    </>
-                )}
-                {canPrepare && sheet.status === "ready" && !started && (
-                    <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={onEdit}>
-                        <IconPencil size={16} aria-hidden="true" />
-                        Edit
-                    </button>
-                )}
-            </div>
+                        </li>
+                        <li>
+                            <span className="Deworming-confirmHost">
+                                <button
+                                    type="button"
+                                    className={`Modal-edit ${stepClass(daysDone && photos.length ? "next" : "later", "is-confirm")}`}
+                                    disabled={busy || !daysDone || !photos.length}
+                                    title={
+                                        !daysDone
+                                            ? "Complete every day first"
+                                            : photos.length
+                                              ? undefined
+                                              : "Add a photo of the deworming sheet first"
+                                    }
+                                    onClick={() => setSubmitting(true)}
+                                >
+                                    <IconSend size={16} aria-hidden="true" />
+                                    Submit
+                                </button>
+                                {submitting && (
+                                    <ConfirmBubble
+                                        question="Submit for approval? Only an admin can change it after."
+                                        busy={busy}
+                                        onConfirm={() => saveSheet({}, true)}
+                                        onCancel={stopSubmitting}
+                                    />
+                                )}
+                            </span>
+                        </li>
+                    </ol>
+                </>
+            ) : (
+                <div className="Deworming-actions">
+                    {canEnter && (
+                        <button
+                            type="button"
+                            className="Modal-edit is-blue"
+                            disabled={busy}
+                            onClick={() => setRecording(true)}
+                        >
+                            <IconClipboardCheck size={16} aria-hidden="true" />
+                            {sheet.status === "submitted" ? "Edit Results" : "Enter Results"}
+                        </button>
+                    )}
+                    {canPrepare && sheet.status === "ready" && !started && (
+                        <button type="button" className="Modal-edit is-blue-outline" disabled={busy} onClick={onEdit}>
+                            <IconPencil size={16} aria-hidden="true" />
+                            Edit
+                        </button>
+                    )}
+                </div>
+            )}
             {canPrepare && sheet.status === "submitted" && <Review sheet={sheet} lines={lines} onDone={onChanged} />}
         </section>
     );
